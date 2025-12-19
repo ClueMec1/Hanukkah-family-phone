@@ -130,3 +130,27 @@ function next() {
 
 </body>
 </html>
+
+
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyByh09evolR8lCvwWZ160zLUJdGXIzPXIk",
+  authDomain: "family-phone-game.firebaseapp.com",
+  databaseURL: "https://family-phone-game-default-rtdb.firebaseio.com",
+  projectId: "family-phone-game",
+  storageBucket: "family-phone-game.firebasestorage.app",
+  messagingSenderId: "933908338610",
+  appId: "1:933908338610:web:ca5ce26b24118b833bb6ab",
+  measurementId: "G-DRVXJM4THP"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
