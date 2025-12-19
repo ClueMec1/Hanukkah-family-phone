@@ -1,137 +1,128 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Family Quiz Game</title>
-  <style>
-    body { font-family: Arial; margin: 0; }
-    .side {
-      position: fixed;
-      right: 0;
-      top: 0;
-      width: 200px;
-      height: 100%;
-      background: #222;
-      color: white;
-      padding: 10px;
-    }
-    .hidden { display: none; }
-    button { padding: 10px; margin: 5px 0; width: 100%; }
-  </style>
+<meta charset="UTF-8">
+<title>Neon Quiz Live</title>
+
+<style>
+:root {
+  --bg:#050505; --panel:#000c; --neon:#00ff9c; --soft:#00ff9c55;
+}
+*{box-sizing:border-box;font-family:Arial}
+body{
+  margin:0;height:100vh;background:radial-gradient(circle,#0b2d1f,#000);
+  color:#eafff5;overflow:hidden;
+}
+.hidden{display:none}
+button{
+  border:2px solid var(--neon);background:black;color:var(--neon);
+  padding:14px;border-radius:12px;cursor:pointer;
+  transition:.2s;
+}
+button:hover{background:var(--neon);color:black;box-shadow:0 0 20px var(--neon)}
+input,select{
+  width:100%;padding:10px;margin:6px 0;
+  background:black;color:white;border:1px solid var(--soft);
+  border-radius:8px;
+}
+.modal{
+  position:fixed;inset:0;background:#000a;
+  display:flex;align-items:center;justify-content:center;
+}
+.box{
+  background:var(--panel);padding:25px;width:330px;
+  border-radius:16px;text-align:center;
+  box-shadow:0 0 30px var(--soft);
+}
+#game{padding:30px}
+#question{font-size:28px;margin-bottom:25px}
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.correct{background:var(--neon)!important;color:black}
+.wrong{opacity:.3}
+#hostPanel{
+  position:fixed;bottom:0;width:100%;
+  background:black;border-top:2px solid var(--soft);
+  padding:10px;display:flex;gap:10px;justify-content:center;
+}
+#players{
+  position:fixed;right:0;top:0;width:220px;height:100%;
+  background:black;border-left:2px solid var(--soft);padding:10px;
+}
+.player{padding:6px;border-bottom:1px solid #133}
+</style>
 </head>
+
 <body>
 
-<!-- SIDE BAR -->
-<div class="side">
-  <button onclick="openHost()">HOST</button>
+<!-- LOGIN -->
+<div id="login" class="modal">
+  <div class="box">
+    <h2>JOIN GAME</h2>
+    <input id="fname" placeholder="First name">
+    <input id="lname" placeholder="Last name">
+    <button onclick="join()">Join</button><br><br>
+    <button onclick="openHost()">Host</button>
+  </div>
 </div>
 
-<!-- PLAYER SIGN IN -->
-<div id="playerLogin">
-  <h2>Join Game</h2>
-  <input id="fname" placeholder="First Name"><br><br>
-  <input id="lname" placeholder="Last Name"><br><br>
-
-  <label>
-    <input type="radio" name="mode" value="private"> Private
-  </label><br>
-  <label>
-    <input type="radio" name="mode" value="group"> Group
-  </label><br><br>
-
-  <select id="team" class="hidden">
-    <option value="">Choose Team</option>
-    <option value="red">🔴 Red</option>
-    <option value="blue">🔵 Blue</option>
-  </select><br><br>
-
-  <button onclick="join()">Join</button>
+<!-- HOST LOGIN -->
+<div id="hostLogin" class="modal hidden">
+  <div class="box">
+    <h3>Host Password</h3>
+    <input id="hostPass" type="password">
+    <button onclick="hostLogin()">Enter</button>
+  </div>
 </div>
 
-<!-- GAME VIEW -->
+<!-- GAME -->
 <div id="game" class="hidden">
-  <h2 id="question"></h2>
-  <div id="answers"></div>
+  <h1 id="question"></h1>
+  <div class="answers" id="answers"></div>
 </div>
 
-<!-- HOST PASSWORD -->
-<div id="hostLogin" class="hidden">
-  <h3>Host Password</h3>
-  <input id="hostPass" type="password">
-  <button onclick="hostLogin()">Enter</button>
-</div>
-
-<!-- HOST PANEL -->
+<!-- HOST CONTROLS -->
 <div id="hostPanel" class="hidden">
-  <h3>Host Control</h3>
-  <button onclick="startGame()">Start Game</button>
-  <button onclick="reveal()">Reveal Answer</button>
-  <button onclick="next()">Next Question</button>
+  <button onclick="reveal()">Reveal</button>
+  <button onclick="next()">Next</button>
+  <button onclick="showAdd()">Add Question</button>
 </div>
 
-<script>
-let isHost = false;
-let currentQuestion = 0;
+<!-- PLAYERS -->
+<div id="players" class="hidden">
+  <h3>Players</h3>
+  <div id="playerList"></div>
+</div>
 
-document.querySelectorAll('input[name="mode"]').forEach(r => {
-  r.onchange = () => {
-    document.getElementById("team").classList.toggle("hidden", r.value !== "group");
-  };
-});
+<!-- ADD QUESTION -->
+<div id="addQ" class="modal hidden">
+  <div class="box">
+    <h3>New Question</h3>
+    <input id="qText" placeholder="Question">
+    <input id="a0" placeholder="Answer 1">
+    <input id="a1" placeholder="Answer 2">
+    <input id="a2" placeholder="Answer 3">
+    <input id="a3" placeholder="Answer 4">
+    <select id="correct">
+      <option value="0">Correct: 1</option>
+      <option value="1">Correct: 2</option>
+      <option value="2">Correct: 3</option>
+      <option value="3">Correct: 4</option>
+    </select>
+    <button onclick="addQuestion()">Save</button>
+  </div>
+</div>
 
-function openHost() {
-  document.getElementById("hostLogin").classList.remove("hidden");
-}
+<!-- SOUNDS -->
+<audio id="clickS" src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3"></audio>
+<audio id="rightS" src="https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3"></audio>
+<audio id="wrongS" src="https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3"></audio>
 
-function hostLogin() {
-  if (document.getElementById("hostPass").value === "1027") {
-    isHost = true;
-    document.getElementById("hostLogin").classList.add("hidden");
-    document.getElementById("hostPanel").classList.remove("hidden");
-    alert("You are now the host");
-  } else {
-    alert("Wrong password");
-  }
-}
+<script type="module">
+/* ================= FIREBASE ================= */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, set, update, onValue, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-function join() {
-  document.getElementById("playerLogin").classList.add("hidden");
-  document.getElementById("game").classList.remove("hidden");
-  loadQuestion();
-}
-
-function loadQuestion() {
-  let q = {
-    question: "What is 5 + 3?",
-    answers: ["6", "7", "8", "9"]
-  };
-
-  document.getElementById("question").innerText = q.question;
-  document.getElementById("answers").innerHTML = q.answers
-    .map((a, i) => `<button onclick="answer(${i})">${a}</button>`)
-    .join("");
-}
-
-function answer(i) {
-  alert("Answer locked: " + (i + 1));
-}
-
-function startGame() {
-  alert("Game started");
-}
-
-function reveal() {
-  alert("Correct answer revealed");
-}
-
-function next() {
-  alert("Next question");
-}
-</script>
-
-</body>
-</html>
-
-
+/* 
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
@@ -154,3 +145,103 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
+const firebaseConfig = {
+  apiKey: "PASTE_HERE",
+  authDomain: "PASTE_HERE",
+  databaseURL: "PASTE_HERE",
+  projectId: "PASTE_HERE",
+  storageBucket: "PASTE_HERE",
+  messagingSenderId: "PASTE_HERE",
+  appId: "PASTE_HERE"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+/* ================= STATE ================= */
+let playerId=null,isHost=false;
+let QUESTIONS=[];
+
+/* ================= JOIN ================= */
+window.join=()=>{
+  const name=fname.value+" "+lname.value;
+  playerId=push(ref(db,"players")).key;
+  set(ref(db,"players/"+playerId),{name,score:0});
+  login.classList.add("hidden");
+  game.classList.remove("hidden");
+};
+
+window.openHost=()=>hostLogin.classList.remove("hidden");
+
+window.hostLogin=()=>{
+  if(hostPass.value==="1027"){
+    isHost=true;
+    hostLogin.classList.add("hidden");
+    hostPanel.classList.remove("hidden");
+    players.classList.remove("hidden");
+  }
+};
+
+/* ================= ANSWER ================= */
+window.answer=i=>{
+  clickS.play();
+  set(ref(db,"answers/"+playerId),i);
+};
+
+/* ================= HOST ================= */
+window.reveal=()=>update(ref(db,"game"),{reveal:true});
+window.next=()=>update(ref(db,"game"),{index:Date.now(),reveal:false,answers:{}});
+window.showAdd=()=>addQ.classList.remove("hidden");
+
+window.addQuestion=()=>{
+  QUESTIONS.push({
+    q:qText.value,
+    a:[a0.value,a1.value,a2.value,a3.value],
+    correct:+correct.value
+  });
+  set(ref(db,"questions"),QUESTIONS);
+  addQ.classList.add("hidden");
+};
+
+/* ================= LISTENERS ================= */
+onValue(ref(db,"questions"),s=>QUESTIONS=s.val()||[]);
+
+onValue(ref(db,"game"),snap=>{
+  if(!QUESTIONS.length)return;
+  const d=snap.val()||{};
+  const q=QUESTIONS[(d.index||0)%QUESTIONS.length];
+  question.innerText=q.q;
+  answers.innerHTML=q.a.map((x,i)=>
+    `<button onclick="answer(${i})">${x}</button>`).join("");
+
+  if(d.reveal){
+    document.querySelectorAll("#answers button").forEach((b,i)=>{
+      if(i===q.correct){b.classList.add("correct");rightS.play();}
+      else b.classList.add("wrong");
+    });
+  }
+});
+
+onValue(ref(db,"answers"),snap=>{
+  if(!snap.exists())return;
+  snap.forEach(a=>{
+    if(a.val()===QUESTIONS[0]?.correct){
+      update(ref(db,"players/"+a.key+"/score"),{".sv":{increment:1}});
+    }
+  });
+});
+
+onValue(ref(db,"players"),snap=>{
+  playerList.innerHTML="";
+  snap.forEach(p=>{
+    const d=p.val();
+    playerList.innerHTML+=`<div class="player">${d.name} — ${d.score}</div>`;
+  });
+});
+</script>
+
+</body>
+</html>
+
+
+
