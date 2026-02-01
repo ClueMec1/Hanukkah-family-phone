@@ -1,906 +1,939 @@
-import React, { useState, useEffect } from 'react';
-import { Camera, Music, FileText, Video, Image, Link, Settings, Mail, Upload, Trash2, Edit2 } from 'lucide-react';
-
-const FamilyContentPlatform = () => {
-  const [user, setUser] = useState(null);
-  const [isHost, setIsHost] = useState(false);
-  const [showAuth, setShowAuth] = useState(true);
-  const [isSignUp, setIsSignUp] = useState(true);
-  const [activeCategory, setActiveCategory] = useState(0);
-  const [showHostControls, setShowHostControls] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-  const [showEmailConfig, setShowEmailConfig] = useState(false);
-  
-  // EmailJS Configuration
-  const [emailJsServiceId, setEmailJsServiceId] = useState('');
-  const [emailJsTemplateId, setEmailJsTemplateId] = useState('');
-  const [emailJsPublicKey, setEmailJsPublicKey] = useState('');
-  
-  // Form states
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [hostPin, setHostPin] = useState('');
-  const [isHostSignup, setIsHostSignup] = useState(false);
-  
-  // Category states
-  const [categories, setCategories] = useState([
-    { id: 0, name: 'Music', icon: Music, bg: '#1a1a2e' },
-    { id: 1, name: 'Stories', icon: FileText, bg: '#16213e' },
-    { id: 2, name: 'Videos', icon: Video, bg: '#0f3460' },
-    { id: 3, name: 'Photos', icon: Image, bg: '#533483' },
-    { id: 4, name: 'Links', icon: Link, bg: '#2a2a72' },
-    { id: 5, name: 'Other', icon: Camera, bg: '#1a1a2e' }
-  ]);
-  
-  // Content and settings states
-  const [contentItems, setContentItems] = useState({
-    0: [], 1: [], 2: [], 3: [], 4: [], 5: []
-  });
-  const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState('');
-  const [editingCategory, setEditingCategory] = useState(null);
-  const [newCategoryName, setNewCategoryName] = useState('');
-  const [reminderDays, setReminderDays] = useState(3);
-  const [notifyOnUpload, setNotifyOnUpload] = useState(true);
-  const [draggedItem, setDraggedItem] = useState(null);
-  
-  // Load data from storage
-  useEffect(() => {
-    loadFromStorage();
-  }, []);
-  
-  const loadFromStorage = async () => {
-    try {
-      const userData = await window.storage.get('current_user');
-      if (userData) {
-        const user = JSON.parse(userData.value);
-        setUser(user);
-        setIsHost(user.isHost);
-        setShowAuth(false);
-      }
-      
-      const categoriesData = await window.storage.get('categories');
-      if (categoriesData) {
-        setCategories(JSON.parse(categoriesData.value));
-      }
-      
-      const contentData = await window.storage.get('content_items');
-      if (contentData) {
-        setContentItems(JSON.parse(contentData.value));
-      }
-      
-      const commentsData = await window.storage.get('comments', true);
-      if (commentsData) {
-        setComments(JSON.parse(commentsData.value));
-      }
-      
-      const settingsData = await window.storage.get('host_settings');
-      if (settingsData) {
-        const settings = JSON.parse(settingsData.value);
-        setReminderDays(settings.reminderDays || 3);
-        setNotifyOnUpload(settings.notifyOnUpload !== false);
-      }
-      
-      const emailConfigData = await window.storage.get('email_config');
-      if (emailConfigData) {
-        const config = JSON.parse(emailConfigData.value);
-        setEmailJsServiceId(config.serviceId || '');
-        setEmailJsTemplateId(config.templateId || '');
-        setEmailJsPublicKey(config.publicKey || '');
-      }
-    } catch (error) {
-      console.log('No saved data found, starting fresh');
-    }
-  };
-  
-  const saveToStorage = async (key, value, shared = false) => {
-    try {
-      await window.storage.set(key, JSON.stringify(value), shared);
-    } catch (error) {
-      console.error('Error saving to storage:', error);
-    }
-  };
-  
-  const handleAuth = async () => {
-    if (!firstName || !lastName || !email) {
-      alert('Please fill in all fields');
-      return;
-    }
-    
-    if (isHostSignup && hostPin !== '1027') {
-      alert('Incorrect host PIN');
-      return;
-    }
-    
-    const newUser = {
-      firstName,
-      lastName,
-      email,
-      isHost: isHostSignup,
-      lastLogin: new Date().toISOString()
-    };
-    
-    await saveToStorage('current_user', newUser);
-    await saveToStorage(`user_${email}`, newUser, true);
-    
-    setUser(newUser);
-    setIsHost(isHostSignup);
-    setShowAuth(false);
-    
-    // Reset form
-    setFirstName('');
-    setLastName('');
-    setEmail('');
-    setHostPin('');
-    setIsHostSignup(false);
-  };
-  
-  const handleLogout = async () => {
-    await window.storage.delete('current_user');
-    setUser(null);
-    setIsHost(false);
-    setShowAuth(true);
-    setShowHostControls(false);
-  };
-  
-  const handleAddContent = async (type) => {
-    if (!isHost) return;
-    
-    const input = document.createElement('input');
-    input.type = type === 'link' ? 'text' : 'file';
-    
-    if (type === 'link') {
-      const url = prompt('Enter URL:');
-      const title = prompt('Enter title for this link:');
-      if (url && title) {
-        const newItem = {
-          id: Date.now(),
-          type: 'link',
-          url,
-          title,
-          addedBy: user.email,
-          addedAt: new Date().toISOString()
-        };
-        
-        const updated = { ...contentItems };
-        updated[activeCategory] = [...updated[activeCategory], newItem];
-        setContentItems(updated);
-        await saveToStorage('content_items', updated);
-        
-        if (notifyOnUpload) {
-          console.log('Would send email notification to all users');
+x<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🖥️ REMOTE CONTROL HUB</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-      }
-    } else {
-      input.accept = type === 'audio' ? 'audio/*' : type === 'video' ? 'video/*' : 'image/*';
-      input.onchange = async (e) => {
-        const file = e.target.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = async (event) => {
-            const thumbnail = type === 'audio' ? prompt('Enter image URL for thumbnail (optional):') : null;
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000000;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+            color: #00ff41;
+        }
+
+        /* Animated starfield background */
+        .stars, .stars2, .stars3 {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .stars {
+            background: transparent url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="2" height="2"><circle cx="1" cy="1" r="1" fill="%2300ff41" opacity="0.3"/></svg>') repeat;
+            animation: animateStars 50s linear infinite;
+        }
+
+        .stars2 {
+            background: transparent url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="3" height="3"><circle cx="1.5" cy="1.5" r="1" fill="%2300ff41" opacity="0.2"/></svg>') repeat;
+            animation: animateStars 100s linear infinite;
+        }
+
+        .stars3 {
+            background: transparent url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4"><circle cx="2" cy="2" r="1.5" fill="%2300ff41" opacity="0.1"/></svg>') repeat;
+            animation: animateStars 150s linear infinite;
+        }
+
+        @keyframes animateStars {
+            from { transform: translateY(0); }
+            to { transform: translateY(-2000px); }
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        header h1 {
+            font-size: 3.5em;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            color: #00ff41;
+            text-shadow: 
+                0 0 10px #00ff41,
+                0 0 20px #00ff41,
+                0 0 30px #00ff41,
+                0 0 40px #00ff41;
+            position: relative;
+            animation: glitch 3s infinite;
+        }
+
+        @keyframes glitch {
+            0%, 90%, 100% { transform: translate(0); }
+            92% { transform: translate(-2px, 2px); }
+            94% { transform: translate(2px, -2px); }
+            96% { transform: translate(-2px, -2px); }
+            98% { transform: translate(2px, 2px); }
+        }
+
+        #status {
+            font-size: 1.2em;
+            color: #00ff41;
+            text-shadow: 0 0 10px #00ff41;
+            letter-spacing: 3px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            margin-bottom: 50px;
+        }
+
+        .mode-btn {
+            position: relative;
+            padding: 25px 50px;
+            font-size: 1.3em;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            border: 3px solid #00ff41;
+            border-radius: 0;
+            background: rgba(0, 0, 0, 0.9);
+            color: #00ff41;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            overflow: hidden;
+            box-shadow: 
+                0 0 20px rgba(0, 255, 65, 0.5),
+                inset 0 0 20px rgba(0, 255, 65, 0.1);
+        }
+
+        .mode-btn::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #00ff41, #000, #00ff41, #000);
+            background-size: 400%;
+            z-index: -1;
+            filter: blur(15px);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .mode-btn:hover::before {
+            opacity: 1;
+            animation: glow 2s linear infinite;
+        }
+
+        @keyframes glow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 400% 50%; }
+        }
+
+        .mode-btn:hover {
+            box-shadow: 
+                0 0 30px #00ff41,
+                inset 0 0 30px rgba(0, 255, 65, 0.3);
+            transform: translateY(-3px) scale(1.05);
+        }
+
+        .mode-btn:active {
+            transform: translateY(0);
+        }
+
+        /* PIN View */
+        #pinView {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+        }
+
+        .pin-container {
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid #00ff41;
+            padding: 60px;
+            text-align: center;
+            box-shadow: 
+                0 0 40px rgba(0, 255, 65, 0.5),
+                inset 0 0 40px rgba(0, 255, 65, 0.1);
+        }
+
+        .pin-container h2 {
+            color: #00ff41;
+            font-size: 2.2em;
+            margin-bottom: 30px;
+            text-shadow: 
+                0 0 10px #00ff41,
+                0 0 20px #00ff41;
+            letter-spacing: 4px;
+        }
+
+        #pinInput {
+            width: 220px;
+            padding: 20px;
+            font-size: 2.2em;
+            font-family: 'Courier New', monospace;
+            background: #000;
+            border: 3px solid #00ff41;
+            color: #00ff41;
+            text-align: center;
+            letter-spacing: 15px;
+            margin-bottom: 30px;
+            box-shadow: 
+                0 0 20px rgba(0, 255, 65, 0.5),
+                inset 0 0 20px rgba(0, 255, 65, 0.2);
+        }
+
+        #pinInput:focus {
+            outline: none;
+            box-shadow: 
+                0 0 30px #00ff41,
+                inset 0 0 30px rgba(0, 255, 65, 0.3);
+        }
+
+        .error-msg {
+            color: #ff0040;
+            text-shadow: 
+                0 0 10px #ff0040,
+                0 0 20px #ff0040;
+            font-size: 1.3em;
+            margin-top: 20px;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        /* Host View */
+        #hostView, #sharerView {
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid #00ff41;
+            padding: 40px;
+            box-shadow: 
+                0 0 40px rgba(0, 255, 65, 0.5),
+                inset 0 0 40px rgba(0, 255, 65, 0.05);
+        }
+
+        .host-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #00ff41;
+            box-shadow: 0 2px 10px rgba(0, 255, 65, 0.3);
+        }
+
+        #hostView h2, #sharerView h2 {
+            color: #00ff41;
+            font-size: 2.5em;
+            text-shadow: 
+                0 0 15px #00ff41,
+                0 0 30px #00ff41;
+            letter-spacing: 4px;
+        }
+
+        .host-stats {
+            font-size: 1.4em;
+            color: #00ff41;
+            text-shadow: 0 0 15px #00ff41;
+        }
+
+        .info {
+            color: #00ff41;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            letter-spacing: 2px;
+        }
+
+        .screen-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .screen-item {
+            background: #000;
+            border: 3px solid #00ff41;
+            padding: 20px;
+            position: relative;
+            box-shadow: 
+                0 0 30px rgba(0, 255, 65, 0.5),
+                inset 0 0 30px rgba(0, 255, 65, 0.05);
+        }
+
+        .screen-item h3 {
+            color: #00ff41;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            text-shadow: 
+                0 0 10px #00ff41,
+                0 0 20px #00ff41;
+            letter-spacing: 3px;
+        }
+
+        .screen-item video {
+            width: 100%;
+            border: 2px solid #00ff41;
+            background: #000;
+            box-shadow: 
+                0 0 20px rgba(0, 255, 65, 0.3),
+                inset 0 0 10px rgba(0, 255, 65, 0.1);
+        }
+
+        .action-btn {
+            position: relative;
+            padding: 20px 45px;
+            font-size: 1.4em;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            border: 3px solid #00ff41;
+            background: rgba(0, 0, 0, 0.95);
+            color: #00ff41;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 15px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            overflow: hidden;
+            box-shadow: 
+                0 0 25px rgba(0, 255, 65, 0.5),
+                inset 0 0 25px rgba(0, 255, 65, 0.1);
+        }
+
+        .action-btn:hover {
+            box-shadow: 
+                0 0 40px #00ff41,
+                inset 0 0 40px rgba(0, 255, 65, 0.3);
+            transform: translateY(-3px) scale(1.05);
+        }
+
+        .stop-btn {
+            border-color: #ff0040;
+            color: #ff0040;
+            box-shadow: 
+                0 0 25px rgba(255, 0, 64, 0.5),
+                inset 0 0 25px rgba(255, 0, 64, 0.1);
+        }
+
+        .stop-btn:hover {
+            box-shadow: 
+                0 0 40px #ff0040,
+                inset 0 0 40px rgba(255, 0, 64, 0.3);
+        }
+
+        #localPreview {
+            margin-top: 40px;
+        }
+
+        .transmission-status {
+            color: #00ff41;
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            text-shadow: 
+                0 0 15px #00ff41,
+                0 0 30px #00ff41;
+            animation: pulse 1s infinite;
+        }
+
+        #localVideo {
+            width: 100%;
+            max-width: 700px;
+            border: 3px solid #00ff41;
+            box-shadow: 
+                0 0 40px rgba(0, 255, 65, 0.6),
+                inset 0 0 20px rgba(0, 255, 65, 0.2);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .status-connected {
+            color: #00ff41;
+        }
+
+        .status-error {
+            color: #ff0040;
+            text-shadow: 
+                0 0 10px #ff0040,
+                0 0 20px #ff0040;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2em;
+            }
             
-            const newItem = {
-              id: Date.now(),
-              type,
-              name: file.name,
-              data: event.target.result,
-              thumbnail,
-              addedBy: user.email,
-              addedAt: new Date().toISOString()
+            .mode-selector {
+                flex-direction: column;
+            }
+            
+            .screen-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars"></div>
+    <div class="stars2"></div>
+    <div class="stars3"></div>
+    
+    <div class="container">
+        <header>
+            <h1>🖥️ REMOTE CONTROL HUB</h1>
+            <p id="status">SYSTEM READY</p>
+        </header>
+
+        <div class="mode-selector">
+            <button id="hostBtn" class="mode-btn">HOST CONTROL</button>
+            <button id="shareBtn" class="mode-btn">CONNECT SCREEN</button>
+        </div>
+
+        <!-- PIN Entry for Host -->
+        <div id="pinView" class="hidden">
+            <div class="pin-container">
+                <h2>ENTER ACCESS CODE</h2>
+                <input type="password" id="pinInput" placeholder="••••" maxlength="4" autocomplete="off">
+                <button id="pinSubmit" class="action-btn">AUTHENTICATE</button>
+                <p id="pinError" class="error-msg hidden">ACCESS DENIED</p>
+            </div>
+        </div>
+
+        <!-- Host View -->
+        <div id="hostView" class="hidden">
+            <div class="host-header">
+                <h2>CONTROL DASHBOARD</h2>
+                <div class="host-stats">
+                    <span id="connectedCount">0 CONNECTED</span>
+                </div>
+            </div>
+            <p class="info">Waiting for incoming connections...</p>
+            <div id="screenGrid" class="screen-grid"></div>
+        </div>
+
+        <!-- Sharer View -->
+        <div id="sharerView" class="hidden">
+            <div class="sharer-container">
+                <h2>SCREEN SHARING</h2>
+                <p class="info">Click below to share your screen with the host</p>
+                <button id="startShareBtn" class="action-btn">START TRANSMISSION</button>
+                <button id="stopShareBtn" class="action-btn stop-btn hidden">STOP TRANSMISSION</button>
+                <div id="localPreview" class="hidden">
+                    <p class="transmission-status">⚡ TRANSMITTING</p>
+                    <video id="localVideo" autoplay muted></video>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyByh09evolR8lCvwWZ160zLUJdGXIzPXIk",
+            authDomain: "family-phone-game.firebaseapp.com",
+            databaseURL: "https://family-phone-game-default-rtdb.firebaseio.com",
+            projectId: "family-phone-game",
+            storageBucket: "family-phone-game.firebasestorage.app",
+            messagingSenderId: "933908338610",
+            appId: "1:933908338610:web:ca5ce26b24118b833bb6ab"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // WebRTC Configuration
+        const ICE_SERVERS = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        };
+
+        // Host PIN
+        const HOST_PIN = "1027";
+
+        // Global variables
+        let localStream = null;
+        let peerConnections = {};
+        let dataChannels = {};
+        let isHost = false;
+        let userId = null;
+        let connectionCount = 0;
+
+        // DOM Elements
+        const statusEl = document.getElementById('status');
+        const hostBtn = document.getElementById('hostBtn');
+        const shareBtn = document.getElementById('shareBtn');
+        const pinView = document.getElementById('pinView');
+        const pinInput = document.getElementById('pinInput');
+        const pinSubmit = document.getElementById('pinSubmit');
+        const pinError = document.getElementById('pinError');
+        const hostView = document.getElementById('hostView');
+        const sharerView = document.getElementById('sharerView');
+        const startShareBtn = document.getElementById('startShareBtn');
+        const stopShareBtn = document.getElementById('stopShareBtn');
+        const localVideo = document.getElementById('localVideo');
+        const screenGrid = document.getElementById('screenGrid');
+        const modeSelector = document.querySelector('.mode-selector');
+        const connectedCount = document.getElementById('connectedCount');
+
+        // Initialize
+        function init() {
+            userId = 'user_' + Math.random().toString(36).substr(2, 9);
+            updateStatus('SYSTEM READY', 'connected');
+            
+            hostBtn.addEventListener('click', () => {
+                modeSelector.classList.add('hidden');
+                pinView.classList.remove('hidden');
+            });
+            
+            shareBtn.addEventListener('click', enterShareMode);
+            pinSubmit.addEventListener('click', verifyPin);
+            pinInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') verifyPin();
+            });
+            startShareBtn.addEventListener('click', startScreenShare);
+            stopShareBtn.addEventListener('click', stopScreenShare);
+        }
+
+        function updateStatus(message, type = '') {
+            statusEl.textContent = message;
+            statusEl.className = type ? `status-${type}` : '';
+        }
+
+        // PIN Verification
+        function verifyPin() {
+            const enteredPin = pinInput.value.trim();
+            
+            if (enteredPin === HOST_PIN) {
+                pinError.classList.add('hidden');
+                enterHostMode();
+            } else {
+                pinError.classList.remove('hidden');
+                pinInput.value = '';
+            }
+        }
+
+        // Host Mode
+        function enterHostMode() {
+            isHost = true;
+            pinView.classList.add('hidden');
+            hostView.classList.remove('hidden');
+            updateStatus('HOST MODE ACTIVE', 'connected');
+            
+            // Listen for new sharers
+            database.ref('sharers').on('child_added', handleNewSharer);
+            database.ref('sharers').on('child_removed', handleSharerLeft);
+            
+            // Listen for WebRTC offers
+            database.ref('offers').on('child_added', handleOffer);
+            
+            // Clean up old data on refresh
+            database.ref('offers').remove();
+            database.ref('answers').remove();
+        }
+
+        function handleNewSharer(snapshot) {
+            console.log('New connection detected');
+            updateConnectionCount();
+        }
+
+        function handleSharerLeft(snapshot) {
+            const sharerId = snapshot.key;
+            console.log('Connection terminated:', sharerId);
+            
+            // Close peer connection and data channel
+            if (peerConnections[sharerId]) {
+                peerConnections[sharerId].close();
+                delete peerConnections[sharerId];
+            }
+            
+            if (dataChannels[sharerId]) {
+                dataChannels[sharerId].close();
+                delete dataChannels[sharerId];
+            }
+            
+            // Remove video element
+            const videoContainer = document.getElementById(`screen_${sharerId}`);
+            if (videoContainer) {
+                videoContainer.remove();
+            }
+            
+            connectionCount--;
+            updateConnectionCount();
+        }
+
+        function updateConnectionCount() {
+            database.ref('sharers').once('value', (snapshot) => {
+                const count = snapshot.numChildren();
+                connectionCount = count;
+                connectedCount.textContent = `${count} CONNECTED`;
+            });
+        }
+
+        async function handleOffer(snapshot) {
+            if (!isHost) return;
+            
+            const data = snapshot.val();
+            const sharerId = data.from;
+            
+            console.log('Incoming connection from:', sharerId);
+            
+            // Create peer connection
+            const pc = new RTCPeerConnection(ICE_SERVERS);
+            peerConnections[sharerId] = pc;
+            
+            // Create data channel for mouse control
+            const dataChannel = pc.createDataChannel('control');
+            dataChannels[sharerId] = dataChannel;
+            
+            dataChannel.onopen = () => {
+                console.log('Control channel open for:', sharerId);
             };
             
-            const updated = { ...contentItems };
-            updated[activeCategory] = [...updated[activeCategory], newItem];
-            setContentItems(updated);
-            await saveToStorage('content_items', updated);
+            // Handle incoming stream
+            pc.ontrack = (event) => {
+                console.log('Stream received from:', sharerId);
+                displayRemoteStream(sharerId, event.streams[0]);
+            };
             
-            if (notifyOnUpload) {
-              console.log('Would send email notification to all users');
-            }
-          };
-          reader.readAsDataURL(file);
-        }
-      };
-      input.click();
-    }
-  };
-  
-  const handleDeleteContent = async (itemId) => {
-    if (!isHost) return;
-    
-    const updated = { ...contentItems };
-    updated[activeCategory] = updated[activeCategory].filter(item => item.id !== itemId);
-    setContentItems(updated);
-    await saveToStorage('content_items', updated);
-  };
-  
-  const handleDragStart = (e, item) => {
-    if (!isHost) return;
-    setDraggedItem(item);
-    e.dataTransfer.effectAllowed = 'move';
-  };
-  
-  const handleDragOver = (e) => {
-    if (!isHost) return;
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  };
-  
-  const handleDrop = async (e, targetIndex) => {
-    if (!isHost || !draggedItem) return;
-    e.preventDefault();
-    
-    const updated = { ...contentItems };
-    const items = [...updated[activeCategory]];
-    const draggedIndex = items.findIndex(item => item.id === draggedItem.id);
-    
-    items.splice(draggedIndex, 1);
-    items.splice(targetIndex, 0, draggedItem);
-    
-    updated[activeCategory] = items;
-    setContentItems(updated);
-    await saveToStorage('content_items', updated);
-    setDraggedItem(null);
-  };
-  
-  const handleAddComment = async () => {
-    if (!newComment.trim()) return;
-    
-    const comment = {
-      id: Date.now(),
-      text: newComment,
-      author: `${user.firstName} ${user.lastName}`,
-      email: user.email,
-      createdAt: new Date().toISOString()
-    };
-    
-    const updated = [...comments, comment];
-    setComments(updated);
-    await saveToStorage('comments', updated, true);
-    setNewComment('');
-  };
-  
-  const handleUpdateCategoryName = async (categoryId) => {
-    if (!newCategoryName.trim()) return;
-    
-    const updated = categories.map(cat => 
-      cat.id === categoryId ? { ...cat, name: newCategoryName } : cat
-    );
-    setCategories(updated);
-    await saveToStorage('categories', updated);
-    setEditingCategory(null);
-    setNewCategoryName('');
-  };
-  
-  const handleUpdateCategoryBackground = async (categoryId) => {
-    const color = prompt('Enter background color (hex code):');
-    if (!color) return;
-    
-    const updated = categories.map(cat => 
-      cat.id === categoryId ? { ...cat, bg: color } : cat
-    );
-    setCategories(updated);
-    await saveToStorage('categories', updated);
-  };
-  
-  const sendEmailToAll = async () => {
-    if (!emailJsServiceId || !emailJsTemplateId || !emailJsPublicKey) {
-      alert('Please configure EmailJS settings first!');
-      setShowEmailConfig(true);
-      return;
-    }
-    
-    const message = prompt('Enter message to send to all users:');
-    if (!message) return;
-    
-    try {
-      // Load EmailJS script if not loaded
-      if (!window.emailjs) {
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js';
-        script.onload = () => {
-          window.emailjs.init(emailJsPublicKey);
-        };
-        document.head.appendChild(script);
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
-      
-      // Get all users
-      const usersResult = await window.storage.list('user_', true);
-      const users = [];
-      
-      if (usersResult && usersResult.keys) {
-        for (const key of usersResult.keys) {
-          try {
-            const userData = await window.storage.get(key, true);
-            if (userData) {
-              users.push(JSON.parse(userData.value));
-            }
-          } catch (error) {
-            console.error('Error loading user:', error);
-          }
-        }
-      }
-      
-      // Send emails
-      let sent = 0;
-      for (const targetUser of users) {
-        try {
-          await window.emailjs.send(
-            emailJsServiceId,
-            emailJsTemplateId,
-            {
-              to_email: targetUser.email,
-              to_name: targetUser.firstName,
-              from_name: user.firstName + ' ' + user.lastName,
-              message: message,
-              subject: 'Family Platform Update'
-            }
-          );
-          sent++;
-        } catch (error) {
-          console.error('Failed to send to:', targetUser.email, error);
-        }
-      }
-      
-      alert(`Email sent to ${sent} user(s)!`);
-    } catch (error) {
-      console.error('Email error:', error);
-      alert('Failed to send emails. Please check your EmailJS configuration.');
-    }
-  };
-  
-  const sendEmailToUser = async () => {
-    if (!emailJsServiceId || !emailJsTemplateId || !emailJsPublicKey) {
-      alert('Please configure EmailJS settings first!');
-      setShowEmailConfig(true);
-      return;
-    }
-    
-    const userEmail = prompt('Enter user email:');
-    const message = prompt('Enter message:');
-    if (!userEmail || !message) return;
-    
-    try {
-      // Load EmailJS script if not loaded
-      if (!window.emailjs) {
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js';
-        script.onload = () => {
-          window.emailjs.init(emailJsPublicKey);
-        };
-        document.head.appendChild(script);
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
-      
-      await window.emailjs.send(
-        emailJsServiceId,
-        emailJsTemplateId,
-        {
-          to_email: userEmail,
-          to_name: userEmail.split('@')[0],
-          from_name: user.firstName + ' ' + user.lastName,
-          message: message,
-          subject: 'Family Platform Message'
-        }
-      );
-      
-      alert('Email sent successfully!');
-    } catch (error) {
-      console.error('Email error:', error);
-      alert('Failed to send email. Please check your EmailJS configuration.');
-    }
-  };
-  
-  const saveEmailConfig = async () => {
-    await saveToStorage('email_config', {
-      serviceId: emailJsServiceId,
-      templateId: emailJsTemplateId,
-      publicKey: emailJsPublicKey
-    });
-    alert('Email configuration saved!');
-    setShowEmailConfig(false);
-  };
-  
-  const saveSettings = async () => {
-    await saveToStorage('host_settings', {
-      reminderDays,
-      notifyOnUpload
-    });
-    alert('Settings saved!');
-  };
-
-  if (showAuth) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full">
-          <h1 className="text-3xl font-bold text-center mb-6 text-gray-800">
-            Family Content Platform
-          </h1>
-          
-          <div className="mb-6">
-            <div className="flex gap-2 mb-4">
-              <button
-                onClick={() => setIsSignUp(true)}
-                className={`flex-1 py-2 rounded ${isSignUp ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
-              >
-                Sign Up
-              </button>
-              <button
-                onClick={() => setIsSignUp(false)}
-                className={`flex-1 py-2 rounded ${!isSignUp ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
-              >
-                Sign In
-              </button>
-            </div>
+            // Handle ICE candidates
+            pc.onicecandidate = (event) => {
+                if (event.candidate) {
+                    database.ref(`ice-candidates-host/${sharerId}`).push({
+                        candidate: event.candidate,
+                        timestamp: Date.now()
+                    });
+                }
+            };
             
-            <input
-              type="text"
-              placeholder="First Name"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              className="w-full p-3 border rounded mb-3"
-            />
-            <input
-              type="text"
-              placeholder="Last Name"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              className="w-full p-3 border rounded mb-3"
-            />
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3 border rounded mb-3"
-            />
-            
-            {isSignUp && (
-              <div className="mb-3">
-                <label className="flex items-center gap-2 mb-2">
-                  <input
-                    type="checkbox"
-                    checked={isHostSignup}
-                    onChange={(e) => setIsHostSignup(e.target.checked)}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-sm text-gray-700">Sign up as Host</span>
-                </label>
+            // Set remote description and create answer
+            try {
+                await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
+                const answer = await pc.createAnswer();
+                await pc.setLocalDescription(answer);
                 
-                {isHostSignup && (
-                  <input
-                    type="password"
-                    placeholder="Host PIN (1027)"
-                    value={hostPin}
-                    onChange={(e) => setHostPin(e.target.value)}
-                    className="w-full p-3 border rounded"
-                  />
-                )}
-              </div>
-            )}
-            
-            <button
-              onClick={handleAuth}
-              className="w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 transition"
-            >
-              {isSignUp ? 'Sign Up' : 'Sign In'}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      {/* Header */}
-      <div className="bg-gray-800 border-b border-gray-700 p-4">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Family Content Platform</h1>
-          <div className="flex items-center gap-4">
-            <span className="text-sm">Welcome, {user.firstName}!</span>
-            {isHost && (
-              <>
-                <button
-                  onClick={() => setShowHostControls(!showHostControls)}
-                  className="bg-purple-600 px-4 py-2 rounded hover:bg-purple-700 transition flex items-center gap-2"
-                >
-                  <Settings size={16} />
-                  Host Controls
-                </button>
-                <button
-                  onClick={() => setShowSettings(!showSettings)}
-                  className="bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700 transition flex items-center gap-2"
-                >
-                  <Settings size={16} />
-                  Settings
-                </button>
-              </>
-            )}
-            <button
-              onClick={handleLogout}
-              className="bg-red-600 px-4 py-2 rounded hover:bg-red-700 transition"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Category Navigation */}
-      <div className="bg-gray-800 border-b border-gray-700 p-4">
-        <div className="max-w-7xl mx-auto flex gap-2 overflow-x-auto">
-          {categories.map((cat) => {
-            const Icon = cat.icon;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => {
-                  if (isHost && showHostControls) {
-                    const clicks = (window.categoryClicks || {})[cat.id] || 0;
-                    window.categoryClicks = { ...window.categoryClicks, [cat.id]: clicks + 1 };
-                    
-                    if (clicks + 1 === 2) {
-                      setEditingCategory(cat.id);
-                      setNewCategoryName(cat.name);
-                      window.categoryClicks[cat.id] = 0;
+                // Send answer back
+                database.ref(`answers/${sharerId}`).set({
+                    answer: answer,
+                    timestamp: Date.now()
+                });
+                
+                // Listen for ICE candidates from sharer
+                database.ref(`ice-candidates-sharer/${sharerId}`).on('child_added', async (candidateSnapshot) => {
+                    const candidateData = candidateSnapshot.val();
+                    try {
+                        await pc.addIceCandidate(new RTCIceCandidate(candidateData.candidate));
+                    } catch (e) {
+                        console.error('Error adding ICE candidate:', e);
                     }
-                    
-                    setTimeout(() => {
-                      if (window.categoryClicks[cat.id] > 0) {
-                        window.categoryClicks[cat.id] = 0;
-                      }
-                    }, 500);
-                  } else {
-                    setActiveCategory(cat.id);
-                  }
-                }}
-                className={`flex items-center gap-2 px-6 py-3 rounded-lg transition whitespace-nowrap ${
-                  activeCategory === cat.id
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                }`}
-              >
-                <Icon size={20} />
-                {cat.name}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Settings Modal */}
-      {showSettings && isHost && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full">
-            <h2 className="text-2xl font-bold mb-4">Host Settings</h2>
+                });
+                
+            } catch (e) {
+                console.error('Error handling offer:', e);
+            }
             
-            <div className="space-y-4">
-              <div>
-                <label className="block mb-2">Inactive User Reminder (days)</label>
-                <input
-                  type="number"
-                  min="1"
-                  max="7"
-                  value={reminderDays}
-                  onChange={(e) => setReminderDays(parseInt(e.target.value))}
-                  className="w-full p-2 bg-gray-700 rounded"
-                />
-              </div>
-              
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={notifyOnUpload}
-                  onChange={(e) => setNotifyOnUpload(e.target.checked)}
-                  className="w-4 h-4"
-                />
-                <span>Notify users on new uploads</span>
-              </label>
-              
-              <button
-                onClick={() => handleUpdateCategoryBackground(activeCategory)}
-                className="w-full bg-purple-600 px-4 py-2 rounded hover:bg-purple-700 transition"
-              >
-                Change Category Background
-              </button>
-              
-              <button
-                onClick={() => setShowEmailConfig(true)}
-                className="w-full bg-yellow-600 px-4 py-2 rounded hover:bg-yellow-700 transition"
-              >
-                Configure Email (EmailJS)
-              </button>
-              
-              <div className="flex gap-2">
-                <button
-                  onClick={sendEmailToAll}
-                  className="flex-1 bg-green-600 px-4 py-2 rounded hover:bg-green-700 transition flex items-center justify-center gap-2"
-                >
-                  <Mail size={16} />
-                  Email All
-                </button>
-                <button
-                  onClick={sendEmailToUser}
-                  className="flex-1 bg-blue-600 px-4 py-2 rounded hover:bg-blue-700 transition flex items-center justify-center gap-2"
-                >
-                  <Mail size={16} />
-                  Email User
-                </button>
-              </div>
-              
-              <button
-                onClick={saveSettings}
-                className="w-full bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700 transition"
-              >
-                Save Settings
-              </button>
-              
-              <button
-                onClick={() => setShowSettings(false)}
-                className="w-full bg-gray-600 px-4 py-2 rounded hover:bg-gray-700 transition"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            // Remove the processed offer
+            snapshot.ref.remove();
+        }
 
-      {/* Email Configuration Modal */}
-      {showEmailConfig && isHost && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full max-h-screen overflow-y-auto">
-            <h2 className="text-2xl font-bold mb-4">Configure EmailJS</h2>
+        function displayRemoteStream(sharerId, stream) {
+            // Check if already displayed
+            let container = document.getElementById(`screen_${sharerId}`);
             
-            <div className="mb-4 p-3 bg-blue-900 rounded text-sm">
-              <p className="font-semibold mb-2">Setup Instructions:</p>
-              <ol className="list-decimal list-inside space-y-1 text-xs">
-                <li>Go to <a href="https://www.emailjs.com" target="_blank" rel="noopener noreferrer" className="text-blue-300 underline">emailjs.com</a> and sign up</li>
-                <li><strong>Email Services</strong> → Add service → Note the Service ID (e.g., service_abc123)</li>
-                <li><strong>Email Templates</strong> → Create template with variables: to_email, to_name, from_name, message, subject → Note Template ID</li>
-                <li><strong>Account → General</strong> → Copy your <strong>Public Key</strong> (NOT private key!)</li>
-                <li>Paste all three below</li>
-              </ol>
-            </div>
+            if (!container) {
+                connectionCount++;
+                container = document.createElement('div');
+                container.id = `screen_${sharerId}`;
+                container.className = 'screen-item';
+                
+                const title = document.createElement('h3');
+                title.textContent = `CONNECTION ${connectionCount}`;
+                
+                const videoWrapper = document.createElement('div');
+                videoWrapper.style.position = 'relative';
+                videoWrapper.style.cursor = 'crosshair';
+                
+                const video = document.createElement('video');
+                video.autoplay = true;
+                video.id = `video_${sharerId}`;
+                video.srcObject = stream;
+                
+                // Create canvas for mouse overlay
+                const canvas = document.createElement('canvas');
+                canvas.id = `canvas_${sharerId}`;
+                canvas.style.position = 'absolute';
+                canvas.style.top = '0';
+                canvas.style.left = '0';
+                canvas.style.pointerEvents = 'none';
+                canvas.style.zIndex = '10';
+                
+                videoWrapper.appendChild(video);
+                videoWrapper.appendChild(canvas);
+                container.appendChild(title);
+                container.appendChild(videoWrapper);
+                screenGrid.appendChild(container);
+                
+                // Set canvas size to match video
+                video.onloadedmetadata = () => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    canvas.style.width = '100%';
+                    canvas.style.height = 'auto';
+                };
+                
+                // Add mouse control
+                setupMouseControl(sharerId, videoWrapper, canvas, video);
+            }
+        }
+
+        function setupMouseControl(sharerId, videoWrapper, canvas, video) {
+            const ctx = canvas.getContext('2d');
             
-            <div className="space-y-4">
-              <div>
-                <label className="block mb-2 text-sm font-semibold">Service ID</label>
-                <p className="text-xs text-gray-400 mb-1">From "Email Services" section</p>
-                <input
-                  type="text"
-                  value={emailJsServiceId}
-                  onChange={(e) => setEmailJsServiceId(e.target.value)}
-                  placeholder="service_xxxxxxx"
-                  className="w-full p-2 bg-gray-700 rounded text-sm"
-                />
-              </div>
-              
-              <div>
-                <label className="block mb-2 text-sm font-semibold">Template ID</label>
-                <p className="text-xs text-gray-400 mb-1">From "Email Templates" section</p>
-                <input
-                  type="text"
-                  value={emailJsTemplateId}
-                  onChange={(e) => setEmailJsTemplateId(e.target.value)}
-                  placeholder="template_xxxxxxx"
-                  className="w-full p-2 bg-gray-700 rounded text-sm"
-                />
-              </div>
-              
-              <div>
-                <label className="block mb-2 text-sm font-semibold">Public Key (NOT Private Key!)</label>
-                <p className="text-xs text-gray-400 mb-1">From Account → General (starts with letters/numbers, not "sk_")</p>
-                <input
-                  type="text"
-                  value={emailJsPublicKey}
-                  onChange={(e) => setEmailJsPublicKey(e.target.value)}
-                  placeholder="Your_Public_Key_123abc"
-                  className="w-full p-2 bg-gray-700 rounded text-sm"
-                />
-              </div>
-              
-              <div className="flex gap-2">
-                <button
-                  onClick={saveEmailConfig}
-                  className="flex-1 bg-green-600 px-4 py-2 rounded hover:bg-green-700 transition"
-                >
-                  Save Configuration
-                </button>
-                <button
-                  onClick={() => setShowEmailConfig(false)}
-                  className="flex-1 bg-gray-600 px-4 py-2 rounded hover:bg-gray-700 transition"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+            // Draw cursor on canvas
+            function drawCursor(x, y) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#00ff41';
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = '#00ff41';
+                ctx.beginPath();
+                ctx.arc(x, y, 12, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                
+                // Inner white dot
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Send mouse movements
+            videoWrapper.addEventListener('mousemove', (e) => {
+                const rect = video.getBoundingClientRect();
+                const x = ((e.clientX - rect.left) / rect.width) * canvas.width;
+                const y = ((e.clientY - rect.top) / rect.height) * canvas.height;
+                
+                drawCursor(x, y);
+                
+                if (dataChannels[sharerId] && dataChannels[sharerId].readyState === 'open') {
+                    dataChannels[sharerId].send(JSON.stringify({
+                        type: 'mousemove',
+                        x: x / canvas.width,
+                        y: y / canvas.height
+                    }));
+                }
+            });
+            
+            // Send mouse clicks
+            videoWrapper.addEventListener('click', (e) => {
+                const rect = video.getBoundingClientRect();
+                const x = ((e.clientX - rect.left) / rect.width);
+                const y = ((e.clientY - rect.top) / rect.height);
+                
+                if (dataChannels[sharerId] && dataChannels[sharerId].readyState === 'open') {
+                    dataChannels[sharerId].send(JSON.stringify({
+                        type: 'click',
+                        x: x,
+                        y: y
+                    }));
+                }
+            });
+            
+            // Clear cursor when mouse leaves
+            videoWrapper.addEventListener('mouseleave', () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            });
+        }
 
-      {/* Category Name Edit Modal */}
-      {editingCategory !== null && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full">
-            <h2 className="text-2xl font-bold mb-4">Edit Category Name</h2>
-            <input
-              type="text"
-              value={newCategoryName}
-              onChange={(e) => setNewCategoryName(e.target.value)}
-              className="w-full p-3 bg-gray-700 rounded mb-4"
-              placeholder="Category name"
-            />
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleUpdateCategoryName(editingCategory)}
-                className="flex-1 bg-blue-600 px-4 py-2 rounded hover:bg-blue-700 transition"
-              >
-                Save
-              </button>
-              <button
-                onClick={() => {
-                  setEditingCategory(null);
-                  setNewCategoryName('');
-                }}
-                className="flex-1 bg-gray-600 px-4 py-2 rounded hover:bg-gray-700 transition"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+        // Sharer Mode
+        function enterShareMode() {
+            isHost = false;
+            modeSelector.classList.add('hidden');
+            sharerView.classList.remove('hidden');
+            updateStatus('SHARER MODE', 'connected');
+        }
 
-      {/* Content Area */}
-      <div 
-        className="max-w-7xl mx-auto p-6"
-        style={{ background: categories[activeCategory].bg }}
-      >
-        {isHost && showHostControls && (
-          <div className="mb-6 flex gap-2 flex-wrap">
-            <button
-              onClick={() => handleAddContent('audio')}
-              className="bg-green-600 px-4 py-2 rounded hover:bg-green-700 transition flex items-center gap-2"
-            >
-              <Upload size={16} />
-              Add Audio
-            </button>
-            <button
-              onClick={() => handleAddContent('video')}
-              className="bg-blue-600 px-4 py-2 rounded hover:bg-blue-700 transition flex items-center gap-2"
-            >
-              <Upload size={16} />
-              Add Video
-            </button>
-            <button
-              onClick={() => handleAddContent('image')}
-              className="bg-purple-600 px-4 py-2 rounded hover:bg-purple-700 transition flex items-center gap-2"
-            >
-              <Upload size={16} />
-              Add Image
-            </button>
-            <button
-              onClick={() => handleAddContent('link')}
-              className="bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700 transition flex items-center gap-2"
-            >
-              <Link size={16} />
-              Add Link
-            </button>
-          </div>
-        )}
+        async function startScreenShare() {
+            try {
+                // Get screen share
+                localStream = await navigator.mediaDevices.getDisplayMedia({
+                    video: { 
+                        cursor: "always",
+                        displaySurface: "monitor"
+                    },
+                    audio: false
+                });
+                
+                // Show local preview
+                localVideo.srcObject = localStream;
+                document.getElementById('localPreview').classList.remove('hidden');
+                startShareBtn.classList.add('hidden');
+                stopShareBtn.classList.remove('hidden');
+                
+                // Register as sharer
+                database.ref(`sharers/${userId}`).set({
+                    timestamp: Date.now()
+                });
+                
+                // Create peer connection
+                const pc = new RTCPeerConnection(ICE_SERVERS);
+                peerConnections['host'] = pc;
+                
+                // Add tracks
+                localStream.getTracks().forEach(track => {
+                    pc.addTrack(track, localStream);
+                });
+                
+                // Handle data channel for receiving mouse control
+                pc.ondatachannel = (event) => {
+                    const dataChannel = event.channel;
+                    dataChannel.onmessage = handleRemoteControl;
+                };
+                
+                // Handle ICE candidates
+                pc.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        database.ref(`ice-candidates-sharer/${userId}`).push({
+                            candidate: event.candidate,
+                            timestamp: Date.now()
+                        });
+                    }
+                };
+                
+                // Create and send offer
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                
+                database.ref('offers').push({
+                    from: userId,
+                    offer: offer,
+                    timestamp: Date.now()
+                });
+                
+                // Listen for answer
+                database.ref(`answers/${userId}`).on('value', async (snapshot) => {
+                    const data = snapshot.val();
+                    if (data && data.answer) {
+                        try {
+                            await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+                            console.log('Connected to host!');
+                            updateStatus('⚡ CONNECTED - HOST HAS CONTROL', 'connected');
+                        } catch (e) {
+                            console.error('Error setting remote description:', e);
+                        }
+                    }
+                });
+                
+                // Listen for ICE candidates from host
+                database.ref(`ice-candidates-host/${userId}`).on('child_added', async (candidateSnapshot) => {
+                    const candidateData = candidateSnapshot.val();
+                    try {
+                        await pc.addIceCandidate(new RTCIceCandidate(candidateData.candidate));
+                    } catch (e) {
+                        console.error('Error adding ICE candidate:', e);
+                    }
+                });
+                
+                // Handle stream ending
+                localStream.getVideoTracks()[0].onended = () => {
+                    stopScreenShare();
+                };
+                
+                updateStatus('CONNECTING TO HOST...', 'connected');
+                
+            } catch (error) {
+                console.error('Error starting screen share:', error);
+                updateStatus('ERROR: ' + error.message, 'error');
+                alert('Could not start screen sharing. Make sure you granted permission.');
+            }
+        }
 
-        {/* Content Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {contentItems[activeCategory].map((item, index) => (
-            <div
-              key={item.id}
-              draggable={isHost}
-              onDragStart={(e) => handleDragStart(e, item)}
-              onDragOver={handleDragOver}
-              onDrop={(e) => handleDrop(e, index)}
-              className="bg-gray-800 rounded-lg p-4 shadow-lg hover:shadow-xl transition cursor-move"
-            >
-              {item.type === 'audio' && (
-                <div>
-                  {item.thumbnail && (
-                    <img src={item.thumbnail} alt="Thumbnail" className="w-full h-32 object-cover rounded mb-2" />
-                  )}
-                  <audio controls className="w-full mb-2">
-                    <source src={item.data} />
-                  </audio>
-                  <p className="text-sm text-gray-400">{item.name}</p>
-                </div>
-              )}
-              
-              {item.type === 'video' && (
-                <div>
-                  <video controls className="w-full rounded mb-2">
-                    <source src={item.data} />
-                  </video>
-                  <p className="text-sm text-gray-400">{item.name}</p>
-                </div>
-              )}
-              
-              {item.type === 'image' && (
-                <div>
-                  <img src={item.data} alt={item.name} className="w-full h-48 object-cover rounded mb-2" />
-                  <p className="text-sm text-gray-400">{item.name}</p>
-                </div>
-              )}
-              
-              {item.type === 'link' && (
-                <div>
-                  <a
-                    href={item.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block p-4 bg-blue-600 rounded hover:bg-blue-700 transition text-center"
-                  >
-                    <Link size={24} className="mx-auto mb-2" />
-                    <p className="font-semibold">{item.title}</p>
-                  </a>
-                </div>
-              )}
-              
-              {isHost && showHostControls && (
-                <button
-                  onClick={() => handleDeleteContent(item.id)}
-                  className="mt-2 w-full bg-red-600 px-3 py-1 rounded hover:bg-red-700 transition flex items-center justify-center gap-2"
-                >
-                  <Trash2 size={14} />
-                  Delete
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
+        function handleRemoteControl(event) {
+            try {
+                const data = JSON.parse(event.data);
+                
+                if (data.type === 'mousemove') {
+                    console.log('Host moved mouse to:', data.x, data.y);
+                } else if (data.type === 'click') {
+                    console.log('Host clicked at:', data.x, data.y);
+                }
+            } catch (e) {
+                console.error('Error handling remote control:', e);
+            }
+        }
 
-        {/* Comments Section */}
-        <div className="bg-gray-800 rounded-lg p-6">
-          <h2 className="text-2xl font-bold mb-4">Comments</h2>
-          
-          <div className="mb-4 flex gap-2">
-            <input
-              type="text"
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleAddComment()}
-              placeholder="Add a comment..."
-              className="flex-1 p-3 bg-gray-700 rounded"
-            />
-            <button
-              onClick={handleAddComment}
-              className="bg-blue-600 px-6 py-3 rounded hover:bg-blue-700 transition"
-            >
-              Post
-            </button>
-          </div>
-          
-          <div className="space-y-3 max-h-96 overflow-y-auto">
-            {comments.map((comment) => (
-              <div key={comment.id} className="bg-gray-700 p-4 rounded">
-                <div className="flex justify-between items-start mb-2">
-                  <span className="font-semibold">{comment.author}</span>
-                  <span className="text-xs text-gray-400">
-                    {new Date(comment.createdAt).toLocaleString()}
-                  </span>
-                </div>
-                <p className="text-gray-300">{comment.text}</p>
-              </div>
-            ))}
-            {comments.length === 0 && (
-              <p className="text-gray-400 text-center py-8">No comments yet. Be the first to comment!</p>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
+        function stopScreenShare() {
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            
+            if (peerConnections['host']) {
+                peerConnections['host'].close();
+                delete peerConnections['host'];
+            }
+            
+            // Clean up Firebase
+            database.ref(`sharers/${userId}`).remove();
+            database.ref(`answers/${userId}`).remove();
+            database.ref(`ice-candidates-sharer/${userId}`).remove();
+            database.ref(`ice-candidates-host/${userId}`).remove();
+            
+            // Reset UI
+            document.getElementById('localPreview').classList.add('hidden');
+            startShareBtn.classList.remove('hidden');
+            stopShareBtn.classList.add('hidden');
+            
+            updateStatus('TRANSMISSION STOPPED', 'connected');
+        }
 
-export default FamilyContentPlatform;
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (!isHost && userId) {
+                database.ref(`sharers/${userId}`).remove();
+            }
+            
+            Object.values(peerConnections).forEach(pc => pc.close());
+        });
+
+        // Start the app
+        init();
+    </script>
+</body>
+</html>
