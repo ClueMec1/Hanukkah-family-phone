@@ -1,923 +1,940 @@
-[mmm.html](https://github.com/user-attachments/files/24276689/mmm.html)
+[remote-control-hub.html](https://github.com/user-attachments/files/24987281/remote-control-hub.html)
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Family Holiday Quiz 🎄</title>
-
-<style>
-:root {
-  --neon: #00ff9c;
-  --neon-glow: #00ff9c55;
-  --red: #ff3366;
-  --gold: #ffd700;
-}
-
-* {
-  box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-body {
-  margin: 0;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #0a1f1a 0%, #050505 100%);
-  color: #eafff5;
-  overflow-x: hidden;
-}
-
-body.host-mode {
-  margin-right: 280px;
-}
-
-/* Animated Background */
-.bg-animation {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.snowflake {
-  position: absolute;
-  top: -10px;
-  color: white;
-  opacity: 0.6;
-  animation: fall linear infinite;
-}
-
-@keyframes fall {
-  to { transform: translateY(100vh); }
-}
-
-/* General Styles */
-.hidden { display: none !important; }
-
-button {
-  border: 2px solid var(--neon);
-  background: black;
-  color: var(--neon);
-  padding: 14px 24px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.3s;
-  font-size: 16px;
-  font-weight: 600;
-  position: relative;
-  overflow: hidden;
-}
-
-button:hover {
-  background: var(--neon);
-  color: black;
-  box-shadow: 0 0 25px var(--neon);
-  transform: translateY(-2px);
-}
-
-button:active {
-  transform: translateY(0);
-}
-
-button.danger {
-  border-color: var(--red);
-  color: var(--red);
-}
-
-button.danger:hover {
-  background: var(--red);
-  box-shadow: 0 0 25px var(--red);
-}
-
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-button:disabled:hover {
-  background: black;
-  color: var(--neon);
-  transform: none;
-}
-
-input, select, textarea {
-  width: 100%;
-  padding: 12px;
-  margin: 8px 0;
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
-  border: 2px solid var(--neon-glow);
-  border-radius: 8px;
-  font-size: 16px;
-  transition: border-color 0.3s;
-}
-
-input:focus, select:focus, textarea:focus {
-  outline: none;
-  border-color: var(--neon);
-  box-shadow: 0 0 10px var(--neon-glow);
-}
-
-textarea {
-  min-height: 100px;
-  resize: vertical;
-  font-family: inherit;
-}
-
-/* Modal */
-.modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(5px);
-}
-
-.box {
-  background: rgba(0, 12, 12, 0.95);
-  padding: 35px;
-  max-width: 500px;
-  width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
-  border-radius: 20px;
-  text-align: center;
-  box-shadow: 0 0 40px var(--neon-glow), inset 0 0 60px rgba(0, 255, 156, 0.1);
-  border: 2px solid var(--neon-glow);
-  animation: modalIn 0.3s ease-out;
-}
-
-@keyframes modalIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.box h2, .box h3 {
-  margin-top: 0;
-  color: var(--neon);
-  text-shadow: 0 0 10px var(--neon-glow);
-}
-
-/* Drag and Drop Area */
-.drop-zone {
-  border: 3px dashed var(--neon-glow);
-  border-radius: 12px;
-  padding: 40px;
-  margin: 20px 0;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s;
-  background: rgba(0, 255, 156, 0.05);
-}
-
-.drop-zone:hover, .drop-zone.drag-over {
-  border-color: var(--neon);
-  background: rgba(0, 255, 156, 0.15);
-  transform: scale(1.02);
-}
-
-.drop-zone-text {
-  font-size: 18px;
-  color: var(--neon);
-  margin: 10px 0;
-}
-
-.music-list {
-  max-height: 300px;
-  overflow-y: auto;
-  margin: 15px 0;
-}
-
-.music-item {
-  background: rgba(0, 255, 156, 0.1);
-  border: 1px solid var(--neon-glow);
-  border-radius: 8px;
-  padding: 12px;
-  margin: 8px 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: all 0.3s;
-}
-
-.music-item:hover {
-  background: rgba(0, 255, 156, 0.2);
-}
-
-.music-item.active {
-  border-color: var(--neon);
-  background: rgba(0, 255, 156, 0.3);
-}
-
-.music-item-name {
-  font-weight: 600;
-  flex: 1;
-  text-align: left;
-}
-
-.music-item button {
-  padding: 8px 16px;
-  font-size: 14px;
-  margin-left: 10px;
-}
-
-/* Game Area */
-#game {
-  padding: 30px;
-  max-width: 900px;
-  margin: 0 auto;
-  position: relative;
-  z-index: 1;
-}
-
-/* Player Score Display */
-.player-score-badge {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.9);
-  border: 2px solid var(--neon);
-  border-radius: 15px;
-  padding: 10px 25px;
-  font-size: 20px;
-  font-weight: bold;
-  z-index: 999;
-  color: var(--neon);
-  text-shadow: 0 0 10px var(--neon-glow);
-  box-shadow: 0 0 20px var(--neon-glow);
-}
-
-/* Result Notification */
-.result-notification {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0);
-  background: rgba(0, 0, 0, 0.95);
-  border: 4px solid var(--neon);
-  border-radius: 20px;
-  padding: 40px;
-  font-size: 32px;
-  font-weight: bold;
-  z-index: 1001;
-  text-align: center;
-  min-width: 300px;
-  animation: popIn 0.5s ease-out forwards;
-  box-shadow: 0 0 50px var(--neon-glow);
-}
-
-.result-notification.correct {
-  border-color: var(--neon);
-  color: var(--neon);
-}
-
-.result-notification.wrong {
-  border-color: var(--red);
-  color: var(--red);
-}
-
-@keyframes popIn {
-  0% { transform: translate(-50%, -50%) scale(0); }
-  50% { transform: translate(-50%, -50%) scale(1.1); }
-  100% { transform: translate(-50%, -50%) scale(1); }
-}
-
-/* Timer Display */
-#timerDisplay {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background: rgba(0, 0, 0, 0.9);
-  border: 3px solid var(--neon);
-  border-radius: 50%;
-  width: 100px;
-  height: 100px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 36px;
-  font-weight: bold;
-  color: var(--neon);
-  z-index: 999;
-  box-shadow: 0 0 30px var(--neon-glow);
-  transition: all 0.3s;
-}
-
-body.host-mode #timerDisplay {
-  right: 300px;
-}
-
-#timerDisplay.warning {
-  border-color: var(--gold);
-  color: var(--gold);
-  animation: pulse-warning 1s infinite;
-}
-
-#timerDisplay.danger {
-  border-color: var(--red);
-  color: var(--red);
-  animation: pulse-danger 0.5s infinite;
-}
-
-@keyframes pulse-warning {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-}
-
-@keyframes pulse-danger {
-  0%, 100% { transform: scale(1); box-shadow: 0 0 30px var(--red); }
-  50% { transform: scale(1.15); box-shadow: 0 0 50px var(--red); }
-}
-
-#question {
-  font-size: clamp(24px, 4vw, 36px);
-  margin-bottom: 30px;
-  text-align: center;
-  color: white;
-  text-shadow: 0 0 20px var(--neon-glow);
-  padding: 20px;
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 15px;
-  border: 2px solid var(--neon-glow);
-}
-
-.answers {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  margin-bottom: 100px;
-}
-
-.answers button {
-  min-height: 80px;
-  font-size: 18px;
-  padding: 20px;
-  text-align: center;
-  word-wrap: break-word;
-}
-
-.correct {
-  background: var(--neon) !important;
-  color: black !important;
-  animation: pulse 0.5s ease-in-out;
-}
-
-.wrong {
-  opacity: 0.3;
-  filter: grayscale(1);
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-
-/* Host Panel */
-#hostPanel {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: rgba(0, 0, 0, 0.95);
-  border-top: 2px solid var(--neon);
-  padding: 15px;
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  flex-wrap: wrap;
-  z-index: 100;
-}
-
-body.host-mode #hostPanel {
-  right: 280px;
-}
-
-/* Music Controls */
-#musicControls {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  display: flex;
-  gap: 10px;
-  z-index: 999;
-}
-
-#musicControls button {
-  padding: 10px 16px;
-  font-size: 14px;
-}
-
-/* Timer Settings */
-.timer-settings {
-  margin: 20px 0;
-  padding: 15px;
-  background: rgba(0, 255, 156, 0.1);
-  border: 1px solid var(--neon-glow);
-  border-radius: 8px;
-}
-
-.timer-settings label {
-  display: block;
-  margin: 10px 0;
-  color: var(--neon);
-}
-
-/* Players Sidebar */
-#players {
-  position: fixed;
-  right: 0;
-  top: 0;
-  width: 280px;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.95);
-  border-left: 2px solid var(--neon);
-  padding: 20px;
-  overflow-y: auto;
-  z-index: 100;
-  box-shadow: -5px 0 20px rgba(0, 0, 0, 0.5);
-}
-
-#players h3 {
-  margin-top: 0;
-  color: var(--neon);
-  text-align: center;
-  font-size: 24px;
-  text-shadow: 0 0 10px var(--neon-glow);
-}
-
-.player {
-  padding: 12px;
-  margin: 8px 0;
-  border-radius: 8px;
-  background: rgba(0, 255, 156, 0.1);
-  border: 1px solid var(--neon-glow);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: all 0.3s;
-  gap: 10px;
-}
-
-.player:hover {
-  background: rgba(0, 255, 156, 0.2);
-}
-
-.player-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
-}
-
-.player-name {
-  font-weight: 600;
-}
-
-.player-score {
-  background: var(--neon);
-  color: black;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-weight: bold;
-}
-
-.player-delete {
-  padding: 6px 12px;
-  font-size: 12px;
-  border-color: var(--red);
-  color: var(--red);
-  background: transparent;
-}
-
-.player-delete:hover {
-  background: var(--red);
-  color: white;
-}
-
-/* Question List */
-.question-list {
-  max-height: 400px;
-  overflow-y: auto;
-  margin: 20px 0;
-}
-
-.question-item {
-  background: rgba(0, 255, 156, 0.1);
-  border: 1px solid var(--neon-glow);
-  border-radius: 8px;
-  padding: 15px;
-  margin: 10px 0;
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.question-item:hover {
-  background: rgba(0, 255, 156, 0.2);
-  transform: translateX(5px);
-}
-
-.question-item.active {
-  border-color: var(--neon);
-  background: rgba(0, 255, 156, 0.3);
-}
-
-.question-item-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.question-item-text {
-  font-weight: bold;
-  color: var(--neon);
-  flex: 1;
-}
-
-.question-item button {
-  padding: 8px 16px;
-  font-size: 14px;
-  margin-left: 10px;
-}
-
-.question-item-answers {
-  font-size: 14px;
-  color: #aaa;
-  margin-top: 5px;
-}
-
-/* Status Messages */
-#status {
-  position: fixed;
-  top: 120px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.9);
-  padding: 15px 30px;
-  border-radius: 10px;
-  border: 2px solid var(--neon);
-  z-index: 999;
-  animation: slideDown 0.3s ease-out;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  body.host-mode {
-    margin-right: 0;
-  }
-  
-  #players {
-    transform: translateX(100%);
-    transition: transform 0.3s;
-  }
-  
-  #players.show {
-    transform: translateX(0);
-  }
-  
-  body.host-mode #hostPanel {
-    right: 0;
-  }
-  
-  .answers {
-    grid-template-columns: 1fr;
-  }
-  
-  #timerDisplay {
-    top: 10px;
-    right: 10px;
-    width: 80px;
-    height: 80px;
-    font-size: 28px;
-  }
-  
-  body.host-mode #timerDisplay {
-    right: 10px;
-  }
-  
-  .player-score-badge {
-    font-size: 16px;
-    padding: 8px 20px;
-  }
-}
-
-/* Loading Spinner */
-.spinner {
-  border: 3px solid var(--neon-glow);
-  border-top: 3px solid var(--neon);
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  animation: spin 1s linear infinite;
-  margin: 20px auto;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🖥️ REMOTE CONTROL HUB</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000000;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+            color: #00ff41;
+        }
+
+        /* Animated starfield background */
+        .stars, .stars2, .stars3 {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .stars {
+            background: transparent url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="2" height="2"><circle cx="1" cy="1" r="1" fill="%2300ff41" opacity="0.3"/></svg>') repeat;
+            animation: animateStars 50s linear infinite;
+        }
+
+        .stars2 {
+            background: transparent url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="3" height="3"><circle cx="1.5" cy="1.5" r="1" fill="%2300ff41" opacity="0.2"/></svg>') repeat;
+            animation: animateStars 100s linear infinite;
+        }
+
+        .stars3 {
+            background: transparent url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4"><circle cx="2" cy="2" r="1.5" fill="%2300ff41" opacity="0.1"/></svg>') repeat;
+            animation: animateStars 150s linear infinite;
+        }
+
+        @keyframes animateStars {
+            from { transform: translateY(0); }
+            to { transform: translateY(-2000px); }
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        header h1 {
+            font-size: 3.5em;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            color: #00ff41;
+            text-shadow: 
+                0 0 10px #00ff41,
+                0 0 20px #00ff41,
+                0 0 30px #00ff41,
+                0 0 40px #00ff41;
+            position: relative;
+            animation: glitch 3s infinite;
+        }
+
+        @keyframes glitch {
+            0%, 90%, 100% { transform: translate(0); }
+            92% { transform: translate(-2px, 2px); }
+            94% { transform: translate(2px, -2px); }
+            96% { transform: translate(-2px, -2px); }
+            98% { transform: translate(2px, 2px); }
+        }
+
+        #status {
+            font-size: 1.2em;
+            color: #00ff41;
+            text-shadow: 0 0 10px #00ff41;
+            letter-spacing: 3px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            margin-bottom: 50px;
+        }
+
+        .mode-btn {
+            position: relative;
+            padding: 25px 50px;
+            font-size: 1.3em;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            border: 3px solid #00ff41;
+            border-radius: 0;
+            background: rgba(0, 0, 0, 0.9);
+            color: #00ff41;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            overflow: hidden;
+            box-shadow: 
+                0 0 20px rgba(0, 255, 65, 0.5),
+                inset 0 0 20px rgba(0, 255, 65, 0.1);
+        }
+
+        .mode-btn::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #00ff41, #000, #00ff41, #000);
+            background-size: 400%;
+            z-index: -1;
+            filter: blur(15px);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .mode-btn:hover::before {
+            opacity: 1;
+            animation: glow 2s linear infinite;
+        }
+
+        @keyframes glow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 400% 50%; }
+        }
+
+        .mode-btn:hover {
+            box-shadow: 
+                0 0 30px #00ff41,
+                inset 0 0 30px rgba(0, 255, 65, 0.3);
+            transform: translateY(-3px) scale(1.05);
+        }
+
+        .mode-btn:active {
+            transform: translateY(0);
+        }
+
+        /* PIN View */
+        #pinView {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+        }
+
+        .pin-container {
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid #00ff41;
+            padding: 60px;
+            text-align: center;
+            box-shadow: 
+                0 0 40px rgba(0, 255, 65, 0.5),
+                inset 0 0 40px rgba(0, 255, 65, 0.1);
+        }
+
+        .pin-container h2 {
+            color: #00ff41;
+            font-size: 2.2em;
+            margin-bottom: 30px;
+            text-shadow: 
+                0 0 10px #00ff41,
+                0 0 20px #00ff41;
+            letter-spacing: 4px;
+        }
+
+        #pinInput {
+            width: 220px;
+            padding: 20px;
+            font-size: 2.2em;
+            font-family: 'Courier New', monospace;
+            background: #000;
+            border: 3px solid #00ff41;
+            color: #00ff41;
+            text-align: center;
+            letter-spacing: 15px;
+            margin-bottom: 30px;
+            box-shadow: 
+                0 0 20px rgba(0, 255, 65, 0.5),
+                inset 0 0 20px rgba(0, 255, 65, 0.2);
+        }
+
+        #pinInput:focus {
+            outline: none;
+            box-shadow: 
+                0 0 30px #00ff41,
+                inset 0 0 30px rgba(0, 255, 65, 0.3);
+        }
+
+        .error-msg {
+            color: #ff0040;
+            text-shadow: 
+                0 0 10px #ff0040,
+                0 0 20px #ff0040;
+            font-size: 1.3em;
+            margin-top: 20px;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        /* Host View */
+        #hostView, #sharerView {
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid #00ff41;
+            padding: 40px;
+            box-shadow: 
+                0 0 40px rgba(0, 255, 65, 0.5),
+                inset 0 0 40px rgba(0, 255, 65, 0.05);
+        }
+
+        .host-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #00ff41;
+            box-shadow: 0 2px 10px rgba(0, 255, 65, 0.3);
+        }
+
+        #hostView h2, #sharerView h2 {
+            color: #00ff41;
+            font-size: 2.5em;
+            text-shadow: 
+                0 0 15px #00ff41,
+                0 0 30px #00ff41;
+            letter-spacing: 4px;
+        }
+
+        .host-stats {
+            font-size: 1.4em;
+            color: #00ff41;
+            text-shadow: 0 0 15px #00ff41;
+        }
+
+        .info {
+            color: #00ff41;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            letter-spacing: 2px;
+        }
+
+        .screen-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .screen-item {
+            background: #000;
+            border: 3px solid #00ff41;
+            padding: 20px;
+            position: relative;
+            box-shadow: 
+                0 0 30px rgba(0, 255, 65, 0.5),
+                inset 0 0 30px rgba(0, 255, 65, 0.05);
+        }
+
+        .screen-item h3 {
+            color: #00ff41;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            text-shadow: 
+                0 0 10px #00ff41,
+                0 0 20px #00ff41;
+            letter-spacing: 3px;
+        }
+
+        .screen-item video {
+            width: 100%;
+            border: 2px solid #00ff41;
+            background: #000;
+            box-shadow: 
+                0 0 20px rgba(0, 255, 65, 0.3),
+                inset 0 0 10px rgba(0, 255, 65, 0.1);
+        }
+
+        .action-btn {
+            position: relative;
+            padding: 20px 45px;
+            font-size: 1.4em;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            border: 3px solid #00ff41;
+            background: rgba(0, 0, 0, 0.95);
+            color: #00ff41;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 15px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            overflow: hidden;
+            box-shadow: 
+                0 0 25px rgba(0, 255, 65, 0.5),
+                inset 0 0 25px rgba(0, 255, 65, 0.1);
+        }
+
+        .action-btn:hover {
+            box-shadow: 
+                0 0 40px #00ff41,
+                inset 0 0 40px rgba(0, 255, 65, 0.3);
+            transform: translateY(-3px) scale(1.05);
+        }
+
+        .stop-btn {
+            border-color: #ff0040;
+            color: #ff0040;
+            box-shadow: 
+                0 0 25px rgba(255, 0, 64, 0.5),
+                inset 0 0 25px rgba(255, 0, 64, 0.1);
+        }
+
+        .stop-btn:hover {
+            box-shadow: 
+                0 0 40px #ff0040,
+                inset 0 0 40px rgba(255, 0, 64, 0.3);
+        }
+
+        #localPreview {
+            margin-top: 40px;
+        }
+
+        .transmission-status {
+            color: #00ff41;
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            text-shadow: 
+                0 0 15px #00ff41,
+                0 0 30px #00ff41;
+            animation: pulse 1s infinite;
+        }
+
+        #localVideo {
+            width: 100%;
+            max-width: 700px;
+            border: 3px solid #00ff41;
+            box-shadow: 
+                0 0 40px rgba(0, 255, 65, 0.6),
+                inset 0 0 20px rgba(0, 255, 65, 0.2);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .status-connected {
+            color: #00ff41;
+        }
+
+        .status-error {
+            color: #ff0040;
+            text-shadow: 
+                0 0 10px #ff0040,
+                0 0 20px #ff0040;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2em;
+            }
+            
+            .mode-selector {
+                flex-direction: column;
+            }
+            
+            .screen-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
-
 <body>
-
-<!-- Background Animation -->
-<div class="bg-animation" id="bgAnimation"></div>
-
-<!-- Music Controls -->
-<div id="musicControls" class="hidden">
-  <button onclick="toggleMusic()" id="musicBtn">🎵 Music ON</button>
-  <button onclick="toggleSFX()" id="sfxBtn">🔊 SFX ON</button>
-</div>
-
-<!-- Timer Display -->
-<div id="timerDisplay" class="hidden">30</div>
-
-<!-- Player Score Badge -->
-<div id="playerScoreBadge" class="player-score-badge hidden">
-  🏆 Your Score: <span id="myScore">0</span>
-</div>
-
-<!-- LOGIN SCREEN -->
-<div id="login" class="modal">
-  <div class="box">
-    <h2>🕎 Hanukkah Family Fun 🕎</h2>
-    <input id="fname" placeholder="First name" autocomplete="given-name">
-    <input id="lname" placeholder="Last name" autocomplete="family-name">
-    <button onclick="join()">Join Game</button>
-    <br><br>
-    <button onclick="openHost()" class="danger">Host Controls</button>
-  </div>
-</div>
-
-<!-- HOST LOGIN -->
-<div id="hostLogin" class="modal hidden">
-  <div class="box">
-    <h3>🔒 Host Password</h3>
-    <input id="hostPass" type="password" placeholder="Enter host password">
-    <button onclick="hostLogin()">Enter</button>
-    <button onclick="closeHostLogin()" class="danger">Cancel</button>
-  </div>
-</div>
-
-<!-- GAME SCREEN -->
-<div id="game" class="hidden">
-  <div id="question">Loading question...</div>
-  <div class="answers" id="answers"></div>
-</div>
-
-<!-- HOST CONTROL PANEL -->
-<div id="hostPanel" class="hidden">
-  <button onclick="startTimer()">⏱️ Start Timer</button>
-  <button onclick="pauseTimer()">⏸️ Pause</button>
-  <button onclick="reveal()">🎯 Reveal Answer</button>
-  <button onclick="previousQuestion()">⬅️ Previous</button>
-  <button onclick="nextQuestion()">➡️ Next</button>
-  <button onclick="showQuestionList()">📋 All Questions</button>
-  <button onclick="showAddQuestion()">➕ Add Question</button>
-  <button onclick="showMusicManager()">🎵 Music Manager</button>
-  <button onclick="showTimerSettings()">⚙️ Timer Settings</button>
-  <button onclick="resetScores()" class="danger">🔄 Reset Scores</button>
-  <button onclick="resetGame()" class="danger">🗑️ Reset Game</button>
-</div>
-
-<!-- PLAYERS SIDEBAR -->
-<div id="players" class="hidden">
-  <h3>🏆 Leaderboard</h3>
-  <div id="playerList">
-    <div class="spinner"></div>
-  </div>
-</div>
-
-<!-- MUSIC MANAGER MODAL -->
-<div id="musicManagerModal" class="modal hidden">
-  <div class="box">
-    <h3>🎵 Music Manager</h3>
-    <p style="color: #aaa; font-size: 14px;">Upload custom MP3 files for countdown music</p>
+    <div class="stars"></div>
+    <div class="stars2"></div>
+    <div class="stars3"></div>
     
-    <div class="drop-zone" id="dropZone">
-      <div style="font-size: 48px;">🎵</div>
-      <div class="drop-zone-text">Drag & Drop MP3 files here</div>
-      <div style="color: #aaa; font-size: 14px;">or click to browse</div>
-      <input type="file" id="musicFileInput" accept="audio/mp3,audio/mpeg" multiple style="display: none;">
+    <div class="container">
+        <header>
+            <h1>🖥️ REMOTE CONTROL HUB</h1>
+            <p id="status">SYSTEM READY</p>
+        </header>
+
+        <div class="mode-selector">
+            <button id="hostBtn" class="mode-btn">HOST CONTROL</button>
+            <button id="shareBtn" class="mode-btn">CONNECT SCREEN</button>
+        </div>
+
+        <!-- PIN Entry for Host -->
+        <div id="pinView" class="hidden">
+            <div class="pin-container">
+                <h2>ENTER ACCESS CODE</h2>
+                <input type="password" id="pinInput" placeholder="••••" maxlength="4" autocomplete="off">
+                <button id="pinSubmit" class="action-btn">AUTHENTICATE</button>
+                <p id="pinError" class="error-msg hidden">ACCESS DENIED</p>
+            </div>
+        </div>
+
+        <!-- Host View -->
+        <div id="hostView" class="hidden">
+            <div class="host-header">
+                <h2>CONTROL DASHBOARD</h2>
+                <div class="host-stats">
+                    <span id="connectedCount">0 CONNECTED</span>
+                </div>
+            </div>
+            <p class="info">Waiting for incoming connections...</p>
+            <div id="screenGrid" class="screen-grid"></div>
+        </div>
+
+        <!-- Sharer View -->
+        <div id="sharerView" class="hidden">
+            <div class="sharer-container">
+                <h2>SCREEN SHARING</h2>
+                <p class="info">Click below to share your screen with the host</p>
+                <button id="startShareBtn" class="action-btn">START TRANSMISSION</button>
+                <button id="stopShareBtn" class="action-btn stop-btn hidden">STOP TRANSMISSION</button>
+                <div id="localPreview" class="hidden">
+                    <p class="transmission-status">⚡ TRANSMITTING</p>
+                    <video id="localVideo" autoplay muted></video>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
-    <div class="music-list" id="musicList"></div>
-    
-    <button onclick="closeMusicManager()">Close</button>
-  </div>
-</div>
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyByh09evolR8lCvwWZ160zLUJdGXIzPXIk",
+            authDomain: "family-phone-game.firebaseapp.com",
+            databaseURL: "https://family-phone-game-default-rtdb.firebaseio.com",
+            projectId: "family-phone-game",
+            storageBucket: "family-phone-game.firebasestorage.app",
+            messagingSenderId: "933908338610",
+            appId: "1:933908338610:web:ca5ce26b24118b833bb6ab"
+        };
 
-<!-- TIMER SETTINGS MODAL -->
-<div id="timerSettingsModal" class="modal hidden">
-  <div class="box">
-    <h3>⚙️ Timer Settings</h3>
-    <div class="timer-settings">
-      <label>
-        Timer Duration (seconds):
-        <input type="number" id="timerDuration" value="30" min="5" max="300">
-      </label>
-      <label>
-        <input type="checkbox" id="autoReveal" checked>
-        Auto-reveal answer when time expires
-      </label>
-    </div>
-    <button onclick="saveTimerSettings()">Save Settings</button>
-    <button onclick="closeTimerSettings()" class="danger">Cancel</button>
-  </div>
-</div>
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
-<!-- QUESTION LIST MODAL -->
-<div id="questionListModal" class="modal hidden">
-  <div class="box">
-    <h3>📋 All Questions</h3>
-    <div class="question-list" id="questionListContent"></div>
-    <button onclick="closeQuestionList()">Close</button>
-  </div>
-</div>
+        // WebRTC Configuration
+        const ICE_SERVERS = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        };
 
-<!-- ADD QUESTION MODAL -->
-<div id="addQuestionModal" class="modal hidden">
-  <div class="box">
-    <h3>➕ Add New Question</h3>
-    <input id="qText" placeholder="Enter your question">
-    <input id="a0" placeholder="Answer option 1">
-    <input id="a1" placeholder="Answer option 2">
-    <input id="a2" placeholder="Answer option 3">
-    <input id="a3" placeholder="Answer option 4">
-    <select id="correctAnswer">
-      <option value="0">✅ Correct: Option 1</option>
-      <option value="1">✅ Correct: Option 2</option>
-      <option value="2">✅ Correct: Option 3</option>
-      <option value="3">✅ Correct: Option 4</option>
-    </select>
-    <br><br>
-    <button onclick="addQuestion()">Save Question</button>
-    <button onclick="closeAddQuestion()" class="danger">Cancel</button>
-  </div>
-</div>
+        // Host PIN
+        const HOST_PIN = "1027";
 
-<!-- STATUS MESSAGE -->
-<div id="status" class="hidden"></div>
+        // Global variables
+        let localStream = null;
+        let peerConnections = {};
+        let dataChannels = {};
+        let isHost = false;
+        let userId = null;
+        let connectionCount = 0;
 
-<!-- AUDIO -->
-<audio id="bgMusic" loop></audio>
-<audio id="countdownMusic" loop></audio>
-<audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3"></audio>
-<audio id="correctSound" src="https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3"></audio>
-<audio id="wrongSound" src="https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3"></audio>
-<audio id="tickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-clock-countdown-bleeps-916.mp3"></audio>
-<audio id="timeUpSound" src="https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3"></audio>
-<audio id="typeSound" src="https://assets.mixkit.co/sfx/preview/mixkit-keyboard-click-1406.mp3"></audio>
+        // DOM Elements
+        const statusEl = document.getElementById('status');
+        const hostBtn = document.getElementById('hostBtn');
+        const shareBtn = document.getElementById('shareBtn');
+        const pinView = document.getElementById('pinView');
+        const pinInput = document.getElementById('pinInput');
+        const pinSubmit = document.getElementById('pinSubmit');
+        const pinError = document.getElementById('pinError');
+        const hostView = document.getElementById('hostView');
+        const sharerView = document.getElementById('sharerView');
+        const startShareBtn = document.getElementById('startShareBtn');
+        const stopShareBtn = document.getElementById('stopShareBtn');
+        const localVideo = document.getElementById('localVideo');
+        const screenGrid = document.getElementById('screenGrid');
+        const modeSelector = document.querySelector('.mode-selector');
+        const connectedCount = document.getElementById('connectedCount');
 
-<script type="module">
-/* ================= FIREBASE SETUP ================= */
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, set, update, onValue, push, remove, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        // Initialize
+        function init() {
+            userId = 'user_' + Math.random().toString(36).substr(2, 9);
+            updateStatus('SYSTEM READY', 'connected');
+            
+            hostBtn.addEventListener('click', () => {
+                modeSelector.classList.add('hidden');
+                pinView.classList.remove('hidden');
+            });
+            
+            shareBtn.addEventListener('click', enterShareMode);
+            pinSubmit.addEventListener('click', verifyPin);
+            pinInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') verifyPin();
+            });
+            startShareBtn.addEventListener('click', startScreenShare);
+            stopShareBtn.addEventListener('click', stopScreenShare);
+        }
 
-const firebaseConfig = {
-  apiKey: "AIzaSyByh09evolR8lCvwWZ160zLUJdGXIzPXIk",
-  authDomain: "family-phone-game.firebaseapp.com",
-  databaseURL: "https://family-phone-game-default-rtdb.firebaseio.com",
-  projectId: "family-phone-game",
-  storageBucket: "family-phone-game.firebasestorage.app",
-  messagingSenderId: "933908338610",
-  appId: "1:933908338610:web:ca5ce26b24118b833bb6ab"
-};
+        function updateStatus(message, type = '') {
+            statusEl.textContent = message;
+            statusEl.className = type ? `status-${type}` : '';
+        }
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+        // PIN Verification
+        function verifyPin() {
+            const enteredPin = pinInput.value.trim();
+            
+            if (enteredPin === HOST_PIN) {
+                pinError.classList.add('hidden');
+                enterHostMode();
+            } else {
+                pinError.classList.remove('hidden');
+                pinInput.value = '';
+            }
+        }
 
-/* ================= STATE ================= */
-let playerId = null;
-let isHost = false;
-let questions = [];
-let currentQuestionIndex = 0;
-let hasAnswered = false;
-let timerInterval = null;
-let timerDuration = 30;
-let autoReveal = true;
-let musicEnabled = true;
-let sfxEnabled = true;
-let uploadedMusic = [];
-let currentMusicIndex = 0;
+        // Host Mode
+        function enterHostMode() {
+            isHost = true;
+            pinView.classList.add('hidden');
+            hostView.classList.remove('hidden');
+            updateStatus('HOST MODE ACTIVE', 'connected');
+            
+            // Listen for new sharers
+            database.ref('sharers').on('child_added', handleNewSharer);
+            database.ref('sharers').on('child_removed', handleSharerLeft);
+            
+            // Listen for WebRTC offers
+            database.ref('offers').on('child_added', handleOffer);
+            
+            // Clean up old data on refresh
+            database.ref('offers').remove();
+            database.ref('answers').remove();
+        }
 
-/* ================= BACKGROUND ANIMATION ================= */
-function createSnowflakes() {
-  const container = document.getElementById('bgAnimation');
-  for (let i = 0; i < 20; i++) {
-    const snowflake = document.createElement('div');
-    snowflake.className = 'snowflake';
-    snowflake.innerHTML = '❄';
-    snowflake.style.left = Math.random() * 100 + '%';
-    snowflake.style.animationDuration = (Math.random() * 3 + 2) + 's';
-    snowflake.style.animationDelay = Math.random() * 5 + 's';
-    snowflake.style.fontSize = (Math.random() * 10 + 10) + 'px';
-    container.appendChild(snowflake);
-  }
-}
-createSnowflakes();
+        function handleNewSharer(snapshot) {
+            console.log('New connection detected');
+            updateConnectionCount();
+        }
 
-/* ================= TYPING SOUND ================= */
-document.addEventListener('DOMContentLoaded', () => {
-  const inputs = document.querySelectorAll('input[type="text"], input[placeholder]');
-  inputs.forEach(input => {
-    input.addEventListener('keydown', () => {
-      playSound('typeSound');
-    });
-  });
-});
+        function handleSharerLeft(snapshot) {
+            const sharerId = snapshot.key;
+            console.log('Connection terminated:', sharerId);
+            
+            // Close peer connection and data channel
+            if (peerConnections[sharerId]) {
+                peerConnections[sharerId].close();
+                delete peerConnections[sharerId];
+            }
+            
+            if (dataChannels[sharerId]) {
+                dataChannels[sharerId].close();
+                delete dataChannels[sharerId];
+            }
+            
+            // Remove video element
+            const videoContainer = document.getElementById(`screen_${sharerId}`);
+            if (videoContainer) {
+                videoContainer.remove();
+            }
+            
+            connectionCount--;
+            updateConnectionCount();
+        }
 
-/* ================= AUDIO FUNCTIONS ================= */
-function playSound(soundId) {
-  if (!sfxEnabled) return;
-  const sound = document.getElementById(soundId);
-  if (sound) {
-    sound.currentTime = 0;
-    sound.play().catch(() => {});
-  }
-}
+        function updateConnectionCount() {
+            database.ref('sharers').once('value', (snapshot) => {
+                const count = snapshot.numChildren();
+                connectionCount = count;
+                connectedCount.textContent = `${count} CONNECTED`;
+            });
+        }
 
-window.toggleMusic = () => {
-  const music = document.getElementById('bgMusic');
-  const btn = document.getElementById('musicBtn');
-  musicEnabled = !musicEnabled;
-  
-  if (musicEnabled) {
-    music.play().catch(() => {});
-    btn.textContent = '🎵 Music ON';
-  } else {
-    music.pause();
-    btn.textContent = '🎵 Music OFF';
-  }
-  playSound('clickSound');
-};
+        async function handleOffer(snapshot) {
+            if (!isHost) return;
+            
+            const data = snapshot.val();
+            const sharerId = data.from;
+            
+            console.log('Incoming connection from:', sharerId);
+            
+            // Create peer connection
+            const pc = new RTCPeerConnection(ICE_SERVERS);
+            peerConnections[sharerId] = pc;
+            
+            // Create data channel for mouse control
+            const dataChannel = pc.createDataChannel('control');
+            dataChannels[sharerId] = dataChannel;
+            
+            dataChannel.onopen = () => {
+                console.log('Control channel open for:', sharerId);
+            };
+            
+            // Handle incoming stream
+            pc.ontrack = (event) => {
+                console.log('Stream received from:', sharerId);
+                displayRemoteStream(sharerId, event.streams[0]);
+            };
+            
+            // Handle ICE candidates
+            pc.onicecandidate = (event) => {
+                if (event.candidate) {
+                    database.ref(`ice-candidates-host/${sharerId}`).push({
+                        candidate: event.candidate,
+                        timestamp: Date.now()
+                    });
+                }
+            };
+            
+            // Set remote description and create answer
+            try {
+                await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
+                const answer = await pc.createAnswer();
+                await pc.setLocalDescription(answer);
+                
+                // Send answer back
+                database.ref(`answers/${sharerId}`).set({
+                    answer: answer,
+                    timestamp: Date.now()
+                });
+                
+                // Listen for ICE candidates from sharer
+                database.ref(`ice-candidates-sharer/${sharerId}`).on('child_added', async (candidateSnapshot) => {
+                    const candidateData = candidateSnapshot.val();
+                    try {
+                        await pc.addIceCandidate(new RTCIceCandidate(candidateData.candidate));
+                    } catch (e) {
+                        console.error('Error adding ICE candidate:', e);
+                    }
+                });
+                
+            } catch (e) {
+                console.error('Error handling offer:', e);
+            }
+            
+            // Remove the processed offer
+            snapshot.ref.remove();
+        }
 
-window.toggleSFX = () => {
-  sfxEnabled = !sfxEnabled;
-  const btn = document.getElementById('sfxBtn');
-  btn.textContent = sfxEnabled ? '🔊 SFX ON' : '🔇 SFX OFF';
-  playSound('clickSound');
-};
+        function displayRemoteStream(sharerId, stream) {
+            // Check if already displayed
+            let container = document.getElementById(`screen_${sharerId}`);
+            
+            if (!container) {
+                connectionCount++;
+                container = document.createElement('div');
+                container.id = `screen_${sharerId}`;
+                container.className = 'screen-item';
+                
+                const title = document.createElement('h3');
+                title.textContent = `CONNECTION ${connectionCount}`;
+                
+                const videoWrapper = document.createElement('div');
+                videoWrapper.style.position = 'relative';
+                videoWrapper.style.cursor = 'crosshair';
+                
+                const video = document.createElement('video');
+                video.autoplay = true;
+                video.id = `video_${sharerId}`;
+                video.srcObject = stream;
+                
+                // Create canvas for mouse overlay
+                const canvas = document.createElement('canvas');
+                canvas.id = `canvas_${sharerId}`;
+                canvas.style.position = 'absolute';
+                canvas.style.top = '0';
+                canvas.style.left = '0';
+                canvas.style.pointerEvents = 'none';
+                canvas.style.zIndex = '10';
+                
+                videoWrapper.appendChild(video);
+                videoWrapper.appendChild(canvas);
+                container.appendChild(title);
+                container.appendChild(videoWrapper);
+                screenGrid.appendChild(container);
+                
+                // Set canvas size to match video
+                video.onloadedmetadata = () => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    canvas.style.width = '100%';
+                    canvas.style.height = 'auto';
+                };
+                
+                // Add mouse control
+                setupMouseControl(sharerId, videoWrapper, canvas, video);
+            }
+        }
 
-/* ================= MUSIC MANAGER ================= */
-window.showMusicManager = () => {
-  document.getElementById('musicManagerModal').classList.remove('hidden');
-  updateMusicList();
-  playSound('clickSound');
-};
+        function setupMouseControl(sharerId, videoWrapper, canvas, video) {
+            const ctx = canvas.getContext('2d');
+            
+            // Draw cursor on canvas
+            function drawCursor(x, y) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#00ff41';
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = '#00ff41';
+                ctx.beginPath();
+                ctx.arc(x, y, 12, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                
+                // Inner white dot
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Send mouse movements
+            videoWrapper.addEventListener('mousemove', (e) => {
+                const rect = video.getBoundingClientRect();
+                const x = ((e.clientX - rect.left) / rect.width) * canvas.width;
+                const y = ((e.clientY - rect.top) / rect.height) * canvas.height;
+                
+                drawCursor(x, y);
+                
+                if (dataChannels[sharerId] && dataChannels[sharerId].readyState === 'open') {
+                    dataChannels[sharerId].send(JSON.stringify({
+                        type: 'mousemove',
+                        x: x / canvas.width,
+                        y: y / canvas.height
+                    }));
+                }
+            });
+            
+            // Send mouse clicks
+            videoWrapper.addEventListener('click', (e) => {
+                const rect = video.getBoundingClientRect();
+                const x = ((e.clientX - rect.left) / rect.width);
+                const y = ((e.clientY - rect.top) / rect.height);
+                
+                if (dataChannels[sharerId] && dataChannels[sharerId].readyState === 'open') {
+                    dataChannels[sharerId].send(JSON.stringify({
+                        type: 'click',
+                        x: x,
+                        y: y
+                    }));
+                }
+            });
+            
+            // Clear cursor when mouse leaves
+            videoWrapper.addEventListener('mouseleave', () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            });
+        }
 
-window.closeMusicManager = () => {
-  document.getElementById('musicManagerModal').classList.add('hidden');
-};
+        // Sharer Mode
+        function enterShareMode() {
+            isHost = false;
+            modeSelector.classList.add('hidden');
+            sharerView.classList.remove('hidden');
+            updateStatus('SHARER MODE', 'connected');
+        }
 
-function updateMusicList() {
-  const list = document.getElementById('musicList');
-  if (uploadedMusic.length === 0) {
-    list.innerHTML = '<p style="color: #aaa; text-align: center; padding: 20px;">No music uploaded yet</p>';
-    return;
-  }
-  
-  list.innerHTML = uploadedMusic.map((music, index) => `
-    <div class="music-item ${index === currentMusicIndex ? 'active' : ''}">
-      <span class="music-item-name">${index === currentMusicIndex ? '▶️ ' : ''}${music.name}</span>
-      <button onclick="selectMusic(${index})">Select</button>
-      <button onclick="deleteMusic(${index})" class="danger">Delete</button>
-    </div>
-  `).join('');
-}
+        async function startScreenShare() {
+            try {
+                // Get screen share
+                localStream = await navigator.mediaDevices.getDisplayMedia({
+                    video: { 
+                        cursor: "always",
+                        displaySurface: "monitor"
+                    },
+                    audio: false
+                });
+                
+                // Show local preview
+                localVideo.srcObject = localStream;
+                document.getElementById('localPreview').classList.remove('hidden');
+                startShareBtn.classList.add('hidden');
+                stopShareBtn.classList.remove('hidden');
+                
+                // Register as sharer
+                database.ref(`sharers/${userId}`).set({
+                    timestamp: Date.now()
+                });
+                
+                // Create peer connection
+                const pc = new RTCPeerConnection(ICE_SERVERS);
+                peerConnections['host'] = pc;
+                
+                // Add tracks
+                localStream.getTracks().forEach(track => {
+                    pc.addTrack(track, localStream);
+                });
+                
+                // Handle data channel for receiving mouse control
+                pc.ondatachannel = (event) => {
+                    const dataChannel = event.channel;
+                    dataChannel.onmessage = handleRemoteControl;
+                };
+                
+                // Handle ICE candidates
+                pc.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        database.ref(`ice-candidates-sharer/${userId}`).push({
+                            candidate: event.candidate,
+                            timestamp: Date.now()
+                        });
+                    }
+                };
+                
+                // Create and send offer
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                
+                database.ref('offers').push({
+                    from: userId,
+                    offer: offer,
+                    timestamp: Date.now()
+                });
+                
+                // Listen for answer
+                database.ref(`answers/${userId}`).on('value', async (snapshot) => {
+                    const data = snapshot.val();
+                    if (data && data.answer) {
+                        try {
+                            await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+                            console.log('Connected to host!');
+                            updateStatus('⚡ CONNECTED - HOST HAS CONTROL', 'connected');
+                        } catch (e) {
+                            console.error('Error setting remote description:', e);
+                        }
+                    }
+                });
+                
+                // Listen for ICE candidates from host
+                database.ref(`ice-candidates-host/${userId}`).on('child_added', async (candidateSnapshot) => {
+                    const candidateData = candidateSnapshot.val();
+                    try {
+                        await pc.addIceCandidate(new RTCIceCandidate(candidateData.candidate));
+                    } catch (e) {
+                        console.error('Error adding ICE candidate:', e);
+                    }
+                });
+                
+                // Handle stream ending
+                localStream.getVideoTracks()[0].onended = () => {
+                    stopScreenShare();
+                };
+                
+                updateStatus('CONNECTING TO HOST...', 'connected');
+                
+            } catch (error) {
+                console.error('Error starting screen share:', error);
+                updateStatus('ERROR: ' + error.message, 'error');
+                alert('Could not start screen sharing. Make sure you granted permission.');
+            }
+        }
 
-window.selectMusic = (index) => {
-  currentMusicIndex = index;
-  const countdownMusic = document.getElementById('countdownMusic');
-  countdownMusic.src = uploadedMusic[index].url;
-  updateMusicList();
-  showStatus(`🎵 Selected: ${uploadedMusic[index].name}`);
-  playSound('correctSound');
-};
+        function handleRemoteControl(event) {
+            try {
+                const data = JSON.parse(event.data);
+                
+                if (data.type === 'mousemove') {
+                    console.log('Host moved mouse to:', data.x, data.y);
+                } else if (data.type === 'click') {
+                    console.log('Host clicked at:', data.x, data.y);
+                }
+            } catch (e) {
+                console.error('Error handling remote control:', e);
+            }
+        }
 
-window.deleteMusic = (index) =>
+        function stopScreenShare() {
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            
+            if (peerConnections['host']) {
+                peerConnections['host'].close();
+                delete peerConnections['host'];
+            }
+            
+            // Clean up Firebase
+            database.ref(`sharers/${userId}`).remove();
+            database.ref(`answers/${userId}`).remove();
+            database.ref(`ice-candidates-sharer/${userId}`).remove();
+            database.ref(`ice-candidates-host/${userId}`).remove();
+            
+            // Reset UI
+            document.getElementById('localPreview').classList.add('hidden');
+            startShareBtn.classList.remove('hidden');
+            stopShareBtn.classList.add('hidden');
+            
+            updateStatus('TRANSMISSION STOPPED', 'connected');
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (!isHost && userId) {
+                database.ref(`sharers/${userId}`).remove();
+            }
+            
+            Object.values(peerConnections).forEach(pc => pc.close());
+        });
+
+        // Start the app
+        init();
+    </script>
+</body>
+</html>
