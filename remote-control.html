@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🖥️ REMOTE CONTROL HUB</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000000;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+            color: #00ff41;
+        }
+
+        /* Animated starfield background */
+        .stars, .stars2, .stars3 {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .stars {
+            background: transparent url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="2" height="2"><circle cx="1" cy="1" r="1" fill="%2300ff41" opacity="0.3"/></svg>') repeat;
+            animation: animateStars 50s linear infinite;
+        }
+
+        .stars2 {
+            background: transparent url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="3" height="3"><circle cx="1.5" cy="1.5" r="1" fill="%2300ff41" opacity="0.2"/></svg>') repeat;
+            animation: animateStars 100s linear infinite;
+        }
+
+        .stars3 {
+            background: transparent url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4"><circle cx="2" cy="2" r="1.5" fill="%2300ff41" opacity="0.1"/></svg>') repeat;
+            animation: animateStars 150s linear infinite;
+        }
+
+        @keyframes animateStars {
+            from { transform: translateY(0); }
+            to { transform: translateY(-2000px); }
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .host-btn-corner {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            border: 2px solid #00ff41;
+            background: rgba(0, 0, 0, 0.9);
+            color: #00ff41;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.5);
+            z-index: 1000;
+        }
+
+        .host-btn-corner:hover {
+            box-shadow: 0 0 25px #00ff41;
+            transform: scale(1.05);
+        }
+
+        #status {
+            text-align: center;
+            font-size: 1em;
+            color: #00ff41;
+            text-shadow: 0 0 10px #00ff41;
+            letter-spacing: 3px;
+            animation: pulse 2s infinite;
+            margin-bottom: 30px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .start-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+        }
+
+        .start-btn {
+            position: relative;
+            padding: 40px 100px;
+            font-size: 3em;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            border: 5px solid #00ff41;
+            border-radius: 0;
+            background: rgba(0, 0, 0, 0.9);
+            color: #00ff41;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            overflow: hidden;
+            box-shadow: 
+                0 0 40px rgba(0, 255, 65, 0.7),
+                inset 0 0 40px rgba(0, 255, 65, 0.1);
+        }
+
+        .start-btn:hover {
+            box-shadow: 
+                0 0 60px #00ff41,
+                inset 0 0 60px rgba(0, 255, 65, 0.3);
+            transform: scale(1.1);
+        }
+
+        .pin-container {
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid #00ff41;
+            padding: 60px;
+            text-align: center;
+            box-shadow: 
+                0 0 40px rgba(0, 255, 65, 0.5),
+                inset 0 0 40px rgba(0, 255, 65, 0.1);
+        }
+
+        .pin-container h2 {
+            color: #00ff41;
+            font-size: 2.2em;
+            margin-bottom: 30px;
+            text-shadow: 
+                0 0 10px #00ff41,
+                0 0 20px #00ff41;
+            letter-spacing: 4px;
+        }
+
+        #pinInput {
+            width: 220px;
+            padding: 20px;
+            font-size: 2.2em;
+            font-family: 'Courier New', monospace;
+            background: #000;
+            border: 3px solid #00ff41;
+            color: #00ff41;
+            text-align: center;
+            letter-spacing: 15px;
+            margin-bottom: 30px;
+            box-shadow: 
+                0 0 20px rgba(0, 255, 65, 0.5),
+                inset 0 0 20px rgba(0, 255, 65, 0.2);
+        }
+
+        .error-msg {
+            color: #ff0040;
+            text-shadow: 
+                0 0 10px #ff0040,
+                0 0 20px #ff0040;
+            font-size: 1.3em;
+            margin-top: 20px;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #shareSection {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid #00ff41;
+            box-shadow: 0 0 40px rgba(0, 255, 65, 0.5);
+        }
+
+        .share-title {
+            text-align: center;
+            color: #00ff41;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px #00ff41;
+            letter-spacing: 5px;
+        }
+
+        .screen-controls {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .control-btn {
+            padding: 15px 40px;
+            font-size: 1.2em;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            border: 2px solid #00ff41;
+            background: rgba(0, 0, 0, 0.9);
+            color: #00ff41;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.5);
+        }
+
+        .control-btn:hover:not(:disabled) {
+            box-shadow: 0 0 25px #00ff41;
+            transform: scale(1.05);
+        }
+
+        .control-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        #localPreview {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        #localVideo {
+            width: 100%;
+            max-width: 800px;
+            border: 3px solid #00ff41;
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.5);
+            background: #000;
+        }
+
+        .transmission-status {
+            text-align: center;
+            color: #00ff41;
+            font-size: 1.5em;
+            margin: 20px 0;
+            text-shadow: 0 0 10px #00ff41;
+        }
+
+        @media (max-width: 768px) {
+            .start-btn {
+                font-size: 2em;
+                padding: 30px 60px;
+            }
+
+            .share-title {
+                font-size: 1.8em;
+            }
+
+            .screen-controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars"></div>
+    <div class="stars2"></div>
+    <div class="stars3"></div>
+
+    <button class="host-btn-corner hidden" id="hostBtn" onclick="switchToHost()">🎮 HOST MODE</button>
+
+    <div class="container">
+        <div id="status">⚡ INITIALIZING REMOTE CONTROL HUB ⚡</div>
+
+        <!-- Start Screen -->
+        <div id="startScreen" class="start-section">
+            <button class="start-btn" onclick="startSharing()">
+                ▶ START
+            </button>
+        </div>
+
+        <!-- PIN Entry -->
+        <div id="pinView" class="hidden">
+            <div class="pin-container">
+                <h2>🔐 ENTER SECURITY PIN</h2>
+                <input type="text" id="pinInput" maxlength="4" placeholder="••••" />
+                <div id="pinError" class="error-msg hidden">INVALID PIN - TRY AGAIN</div>
+            </div>
+        </div>
+
+        <!-- Sharing Screen -->
+        <div id="shareSection" class="hidden">
+            <h2 class="share-title">🎥 SCREEN SHARE ACTIVE</h2>
+            <div class="transmission-status">🖥️ BROADCASTING...</div>
+            
+            <div class="screen-controls">
+                <button class="control-btn" id="startShareBtn" onclick="startScreenShare()">START SHARE</button>
+                <button class="control-btn hidden" id="stopShareBtn" onclick="stopScreenShare()">STOP SHARE</button>
+                <button class="control-btn hidden" id="flipCameraBtn" onclick="flipCamera()">🔄 FLIP CAMERA</button>
+            </div>
+
+            <div id="localPreview" class="hidden">
+                <video id="localVideo" autoplay playsinline muted></video>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyByh09evolR8lCvwWZ160zLUJdGXIzPXIk",
+            authDomain: "family-phone-game.firebaseapp.com",
+            databaseURL: "https://family-phone-game-default-rtdb.firebaseio.com",
+            projectId: "family-phone-game",
+            storageBucket: "family-phone-game.firebasestorage.app",
+            messagingSenderId: "933908338610",
+            appId: "1:933908338610:web:ca5ce26b24118b833bb6ab"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // ICE servers for WebRTC
+        const ICE_SERVERS = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        };
+
+        const CORRECT_PIN = '1234'; // Change this to your desired PIN
+        let isHost = false;
+        let localStream = null;
+        let userId = null;
+        let peerConnections = {};
+        let currentFacingMode = 'environment';
+
+        const startScreen = document.getElementById('startScreen');
+        const pinView = document.getElementById('pinView');
+        const shareSection = document.getElementById('shareSection');
+        const pinInput = document.getElementById('pinInput');
+        const pinError = document.getElementById('pinError');
+        const startShareBtn = document.getElementById('startShareBtn');
+        const stopShareBtn = document.getElementById('stopShareBtn');
+        const flipCameraBtn = document.getElementById('flipCameraBtn');
+        const localVideo = document.getElementById('localVideo');
+        const hostBtn = document.getElementById('hostBtn');
+
+        function init() {
+            userId = 'user_' + Math.random().toString(36).substr(2, 9);
+            updateStatus('✓ SYSTEM READY', 'connected');
+            
+            // Show HOST button
+            hostBtn.classList.remove('hidden');
+        }
+
+        function updateStatus(message, state = 'waiting') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            
+            if (state === 'connected') {
+                statusEl.style.color = '#00ff41';
+                statusEl.style.textShadow = '0 0 10px #00ff41';
+            } else if (state === 'error') {
+                statusEl.style.color = '#ff0040';
+                statusEl.style.textShadow = '0 0 10px #ff0040';
+            }
+        }
+
+        function startSharing() {
+            startScreen.classList.add('hidden');
+            pinView.classList.remove('hidden');
+            pinInput.focus();
+            
+            pinInput.addEventListener('input', function(e) {
+                if (e.target.value.length === 4) {
+                    checkPin();
+                }
+            });
+            
+            pinInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    checkPin();
+                }
+            });
+        }
+
+        function checkPin() {
+            const pin = pinInput.value;
+            
+            if (pin === CORRECT_PIN) {
+                pinError.classList.add('hidden');
+                pinView.classList.add('hidden');
+                shareSection.classList.remove('hidden');
+                updateStatus('✓ ACCESS GRANTED', 'connected');
+            } else {
+                pinError.classList.remove('hidden');
+                pinInput.value = '';
+                pinInput.style.animation = 'shake 0.5s';
+                setTimeout(() => {
+                    pinInput.style.animation = '';
+                }, 500);
+            }
+        }
+
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+
+        async function flipCamera() {
+            if (!isMobileDevice() || !localStream) return;
+            
+            currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+            
+            localStream.getTracks().forEach(track => track.stop());
+            
+            try {
+                const newStream = await navigator.mediaDevices.getUserMedia({
+                    video: { 
+                        facingMode: currentFacingMode,
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    },
+                    audio: false
+                });
+                
+                localStream = newStream;
+                localVideo.srcObject = newStream;
+                
+                if (peerConnections['host']) {
+                    const videoTrack = newStream.getVideoTracks()[0];
+                    const sender = peerConnections['host'].getSenders().find(s => s.track && s.track.kind === 'video');
+                    if (sender) {
+                        sender.replaceTrack(videoTrack);
+                    }
+                }
+            } catch (error) {
+                console.error('Error flipping camera:', error);
+                alert('Could not flip camera');
+            }
+        }
+
+        async function startScreenShare() {
+            try {
+                let stream;
+                const isMobile = isMobileDevice();
+                
+                if (isMobile) {
+                    updateStatus('📱 STARTING CAMERA...', 'connected');
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: { 
+                            facingMode: currentFacingMode,
+                            width: { ideal: 1920 },
+                            height: { ideal: 1080 }
+                        },
+                        audio: false
+                    });
+                    flipCameraBtn.classList.remove('hidden');
+                } else {
+                    stream = await navigator.mediaDevices.getDisplayMedia({
+                        video: { 
+                            cursor: "always",
+                            displaySurface: "monitor"
+                        },
+                        audio: false
+                    });
+                }
+                
+                localStream = stream;
+                localVideo.srcObject = localStream;
+                document.getElementById('localPreview').classList.remove('hidden');
+                startShareBtn.classList.add('hidden');
+                stopShareBtn.classList.remove('hidden');
+                
+                if (isMobile) {
+                    document.querySelector('.transmission-status').textContent = '📱 CAMERA ACTIVE';
+                }
+                
+                // Register as sharer
+                await database.ref(`sharers/${userId}`).set({
+                    timestamp: Date.now(),
+                    isMobile: isMobile
+                });
+                
+                // Create peer connection
+                const pc = new RTCPeerConnection(ICE_SERVERS);
+                peerConnections['host'] = pc;
+                
+                localStream.getTracks().forEach(track => {
+                    pc.addTrack(track, localStream);
+                });
+                
+                pc.ondatachannel = (event) => {
+                    const dataChannel = event.channel;
+                    dataChannel.onmessage = handleRemoteControl;
+                };
+                
+                pc.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        database.ref(`ice-candidates-sharer/${userId}`).push({
+                            candidate: event.candidate,
+                            timestamp: Date.now()
+                        });
+                    }
+                };
+                
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                
+                await database.ref('offers').push({
+                    from: userId,
+                    offer: offer,
+                    timestamp: Date.now()
+                });
+                
+                database.ref(`answers/${userId}`).on('value', async (snapshot) => {
+                    const data = snapshot.val();
+                    if (data && data.answer) {
+                        try {
+                            await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+                            console.log('Connected to host!');
+                            updateStatus(isMobile ? '📱 CONNECTED - CAMERA STREAMING' : '⚡ CONNECTED - HOST HAS CONTROL', 'connected');
+                        } catch (e) {
+                            console.error('Error setting remote description:', e);
+                        }
+                    }
+                });
+                
+                database.ref(`ice-candidates-host/${userId}`).on('child_added', async (candidateSnapshot) => {
+                    const candidateData = candidateSnapshot.val();
+                    try {
+                        await pc.addIceCandidate(new RTCIceCandidate(candidateData.candidate));
+                    } catch (e) {
+                        console.error('Error adding ICE candidate:', e);
+                    }
+                });
+                
+                localStream.getTracks()[0].onended = () => {
+                    stopScreenShare();
+                };
+                
+                updateStatus('🔗 CONNECTING TO HOST...', 'connected');
+                
+            } catch (error) {
+                console.error('Error starting share:', error);
+                updateStatus('❌ ERROR: ' + error.message, 'error');
+                
+                if (isMobileDevice()) {
+                    alert('Could not start camera. Please grant camera permission.');
+                } else {
+                    alert('Could not start screen sharing. Please grant permission.');
+                }
+            }
+        }
+
+        function handleRemoteControl(event) {
+            try {
+                const data = JSON.parse(event.data);
+                console.log('Remote control:', data);
+            } catch (e) {
+                console.error('Error handling remote control:', e);
+            }
+        }
+
+        function stopScreenShare() {
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            
+            if (peerConnections['host']) {
+                peerConnections['host'].close();
+                delete peerConnections['host'];
+            }
+            
+            database.ref(`sharers/${userId}`).remove();
+            database.ref(`answers/${userId}`).remove();
+            database.ref(`ice-candidates-sharer/${userId}`).remove();
+            database.ref(`ice-candidates-host/${userId}`).remove();
+            
+            document.getElementById('localPreview').classList.add('hidden');
+            startShareBtn.classList.remove('hidden');
+            stopShareBtn.classList.add('hidden');
+            flipCameraBtn.classList.add('hidden');
+            
+            updateStatus('⏹️ TRANSMISSION STOPPED', 'connected');
+        }
+
+        function switchToHost() {
+            window.location.href = 'host-control.html';
+        }
+
+        window.addEventListener('beforeunload', () => {
+            if (!isHost && userId) {
+                database.ref(`sharers/${userId}`).remove();
+            }
+            Object.values(peerConnections).forEach(pc => pc.close());
+        });
+
+        init();
+    </script>
+</body>
+</html>
