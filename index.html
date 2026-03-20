@@ -887,199 +887,181 @@ function detectMediaType(url){
 function showCardPopup(card,cardData,sectionIndex,cardId){
     popupClose();
 
-    const currentUrl=cardData.mediaUrl||'';
-    const media=detectMediaType(currentUrl);
+    const currentUrl = cardData.mediaUrl || '';
+    const isYT = currentUrl.includes('youtube') || currentUrl.includes('youtu.be');
+    const ytUrl = isYT ? currentUrl : '';
+    const hasMedia = currentUrl && !isYT;
 
-    // Build preview block
-    let previewHtml='';
+    // Build preview for existing media
+    let previewHtml = '';
     if(currentUrl){
-        let thumbSrc='';
-        let label='';
-        if(media.type==='youtube'){
-            const ytId=media.embed.split('/embed/')[1];
-            thumbSrc='https://img.youtube.com/vi/'+ytId+'/hqdefault.jpg';
-            label='YouTube video';
-        }else if(media.type==='streamable'){
-            const stId=media.embed.split('/e/')[1];
-            thumbSrc='https://cdn-cf-east.streamable.com/image/'+stId+'.jpg';
-            label='Streamable video';
-        }else if(media.type==='image'){
-            thumbSrc=currentUrl;
-            label='Image';
-        }else if(media.type==='gdrive'){
-            label='Google Drive file';
-        }else if(media.type==='audio'){
-            label='Audio file';
-        }else{
-            label='Link saved';
-        }
-        previewHtml='<div class="ce-preview">'
-            +(thumbSrc
-                ?'<img src="'+esc(thumbSrc)+'">'
-                :'<div style="width:54px;height:40px;background:var(--surface2);border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px;">📎</div>')
-            +'<div class="ce-preview-info">'
-            +'<div class="ce-preview-type">'+label+'</div>'
-            +'<div class="ce-preview-url">'+esc(currentUrl.length>50?currentUrl.slice(0,50)+'…':currentUrl)+'</div>'
-            +'</div>'
-            +'<button class="ce-remove-btn" id="pp-remove">Remove</button>'
-            +'</div>';
+        let thumbSrc='', label='';
+        const m = detectMediaType(currentUrl);
+        if(m.type==='youtube'){ const id=m.embed.split('/embed/')[1]; thumbSrc='https://img.youtube.com/vi/'+id+'/hqdefault.jpg'; label='YouTube video'; }
+        else if(m.type==='image'){ thumbSrc=currentUrl; label='Image'; }
+        else if(m.type==='audio'){ label='Audio file'; }
+        else if(m.type==='video'){ label='Video file'; }
+        else if(m.type==='gdrive'){ label='Google Drive file'; }
+        else { label='Link saved'; }
+        previewHtml = '<div class="ce-preview">'
+            + (thumbSrc ? '<img src="'+esc(thumbSrc)+'">' : '<div style="width:54px;height:40px;background:var(--surface2);border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px;">📎</div>')
+            + '<div class="ce-preview-info"><div class="ce-preview-type">'+label+'</div>'
+            + '<div class="ce-preview-url">'+esc(currentUrl.length>50?currentUrl.slice(0,50)+'…':currentUrl)+'</div></div>'
+            + '<button class="ce-remove-btn" id="pp-remove">Remove</button>'
+            + '</div>';
     }
 
-    // Build full overlay
-    const overlay=document.createElement('div');
-    overlay.className='card-editor-overlay';
-    overlay.id='cardEditorOverlay';
+    const overlay = document.createElement('div');
+    overlay.className = 'card-editor-overlay';
+    overlay.id = 'cardEditorOverlay';
 
-    overlay.innerHTML=
-        '<div class="card-editor-box">'
-        +'<div class="card-editor-header">'
-        +'<div class="card-editor-title">✎ Edit Card</div>'
-        +'<div class="card-editor-close" id="pp-cancel">✕</div>'
-        +'</div>'
-        +'<div class="card-editor-body">'
-        +'<label class="ce-label">Card Name</label>'
-        +'<input class="ce-input" id="pp-name" type="text" placeholder="Give this card a name…" value="'+esc(cardData.name||'')+'">'
-        +'<label class="ce-label">Description <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>'
-        +'<input class="ce-input" id="pp-desc" type="text" placeholder="Short description…" value="'+esc(cardData.desc||'')+'">'
-        +'<label class="ce-label">Photo / Video / Audio</label>'
-        +'<div id="ce-upload-area" style="border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg);" '
-        +'onmouseenter="this.style.borderColor=\'var(--accent)\'" onmouseleave="this.style.borderColor=\'var(--border)\'" '
-        +'onclick="document.getElementById(\'ce-file-input\').click()">'
-        +'<div style="font-size:28px;margin-bottom:6px;">📁</div>'
-        +'<div style="font-weight:700;font-size:14px;color:var(--text);margin-bottom:4px;">Tap to pick a file</div>'
-        +'<div style="font-size:11px;color:var(--muted);">Photos, videos, audio — plays on iPhone, Android & desktop</div>'
-        +'</div>'
-        +'<input type="file" id="ce-file-input" accept="image/*,video/*,audio/*" style="display:none">'
-        +'<div id="ce-upload-progress" style="display:none;margin-top:10px;">'
-        +'<div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden;">'
-        +'<div id="ce-upload-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;"></div>'
-        +'</div>'
-        +'<div id="ce-upload-status" style="font-size:12px;color:var(--muted);margin-top:6px;text-align:center;">Uploading…</div>'
-        +'</div>'
-        +previewHtml
-        +'<label class="ce-label" style="margin-top:12px;">Or paste a YouTube link</label>'
-        +'<input class="ce-input" id="pp-url" type="text" placeholder="https://youtube.com/watch?v=…" value="'+esc(currentUrl.startsWith(\'http\')&&!currentUrl.includes(\'res.cloudinary\')&&!currentUrl.match(/\.(jpg|jpeg|png|gif|webp|mp4|webm|mp3|wav|ogg)/)? currentUrl:\'\')+'">
-        +'<div class="ce-actions">'
-        +'<button class="ce-btn save" id="pp-save">✓ Save Card</button>'
-        +'<button class="ce-btn del" id="pp-del">🗑 Delete Card</button>'
-        +'<button class="ce-btn cancel" id="pp-cancel2">✕ Cancel</button>'
-        +'</div>'
-        +'</div>'
-        +'</div>';
+    overlay.innerHTML = `
+        <div class="card-editor-box">
+            <div class="card-editor-header">
+                <div class="card-editor-title">✎ Edit Card</div>
+                <div class="card-editor-close" id="pp-cancel">✕</div>
+            </div>
+            <div class="card-editor-body">
+                <label class="ce-label">Card Name</label>
+                <input class="ce-input" id="pp-name" type="text" placeholder="Give this card a name…" value="${esc(cardData.name||'')}">
+                <label class="ce-label">Description <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+                <input class="ce-input" id="pp-desc" type="text" placeholder="Short description…" value="${esc(cardData.desc||'')}">
+                <label class="ce-label">Photo / Video / Audio</label>
+                <div id="ce-upload-area" style="border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg);">
+                    <div style="font-size:28px;margin-bottom:6px;">📁</div>
+                    <div style="font-weight:700;font-size:14px;color:var(--text);margin-bottom:4px;">Tap to pick a file</div>
+                    <div style="font-size:11px;color:var(--muted);">Photos, videos, audio — plays on iPhone, Android &amp; desktop</div>
+                </div>
+                <input type="file" id="ce-file-input" accept="image/*,video/*,audio/*" style="display:none">
+                <div id="ce-upload-progress" style="display:none;margin-top:10px;">
+                    <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden;">
+                        <div id="ce-upload-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;"></div>
+                    </div>
+                    <div id="ce-upload-status" style="font-size:12px;color:var(--muted);margin-top:6px;text-align:center;">Uploading…</div>
+                </div>
+                ${previewHtml}
+                <label class="ce-label" style="margin-top:12px;">Or paste a YouTube link</label>
+                <input class="ce-input" id="pp-url" type="text" placeholder="https://youtube.com/watch?v=…" value="${esc(ytUrl)}">
+                <div class="ce-actions">
+                    <button class="ce-btn save" id="pp-save">✓ Save Card</button>
+                    <button class="ce-btn del" id="pp-del">🗑 Delete Card</button>
+                    <button class="ce-btn cancel" id="pp-cancel2">✕ Cancel</button>
+                </div>
+            </div>
+        </div>`;
 
     document.body.appendChild(overlay);
     document.getElementById('pp-name').focus();
 
-    // Only close when clicking the dark backdrop — never when clicking inside the box
-    overlay.addEventListener('mousedown',e=>{if(e.target===overlay)popupClose();});
-    overlay.querySelector('.card-editor-box').addEventListener('mousedown',e=>e.stopPropagation());
-    overlay.querySelector('.card-editor-box').addEventListener('click',e=>e.stopPropagation());
+    // Click upload area to pick file
+    document.getElementById('ce-upload-area').addEventListener('click', function(){
+        document.getElementById('ce-file-input').click();
+    });
+
+    // Only close when clicking dark backdrop
+    overlay.addEventListener('mousedown', e=>{ if(e.target===overlay) popupClose(); });
+    overlay.querySelector('.card-editor-box').addEventListener('mousedown', e=>e.stopPropagation());
+    overlay.querySelector('.card-editor-box').addEventListener('click', e=>e.stopPropagation());
 
     // Cloudinary file upload
-    document.getElementById('ce-file-input').addEventListener('change',async function(){
-        const file=this.files[0]; if(!file)return;
+    document.getElementById('ce-file-input').addEventListener('change', async function(){
+        const file = this.files[0]; if(!file) return;
         if(CLOUDINARY_CLOUD_NAME==='YOUR_CLOUD_NAME'){
-            toast('Please set up Cloudinary first in the app settings!','warn'); return;
+            toast('Please set up Cloudinary first in Host Settings!','warn'); return;
         }
-        const progressWrap=document.getElementById('ce-upload-progress');
-        const bar=document.getElementById('ce-upload-bar');
-        const status=document.getElementById('ce-upload-status');
-        const uploadArea=document.getElementById('ce-upload-area');
-        progressWrap.style.display='block';
-        uploadArea.style.opacity='0.5';
-        status.textContent='Uploading '+file.name+'…';
-        bar.style.width='0%';
+        const progressWrap = document.getElementById('ce-upload-progress');
+        const bar = document.getElementById('ce-upload-bar');
+        const status = document.getElementById('ce-upload-status');
+        const uploadArea = document.getElementById('ce-upload-area');
+        progressWrap.style.display = 'block';
+        uploadArea.style.opacity = '0.5';
+        status.textContent = 'Uploading '+file.name+'…';
+        bar.style.width = '0%';
         try{
-            const fd=new FormData();
-            fd.append('file',file);
-            fd.append('upload_preset',CLOUDINARY_UPLOAD_PRESET);
-            const xhr=new XMLHttpRequest();
-            xhr.upload.onprogress=e=>{
+            const fd = new FormData();
+            fd.append('file', file);
+            fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+            const xhr = new XMLHttpRequest();
+            xhr.upload.onprogress = e=>{
                 if(e.lengthComputable){
-                    const pct=Math.round(e.loaded/e.total*100);
-                    bar.style.width=pct+'%';
-                    status.textContent='Uploading… '+pct+'%';
+                    const pct = Math.round(e.loaded/e.total*100);
+                    bar.style.width = pct+'%';
+                    status.textContent = 'Uploading… '+pct+'%';
                 }
             };
-            const result=await new Promise((res,rej)=>{
-                xhr.onload=()=>{
-                    if(xhr.status===200) res(JSON.parse(xhr.responseText));
-                    else rej(new Error('Upload failed: '+xhr.statusText));
-                };
-                xhr.onerror=()=>rej(new Error('Network error'));
+            const result = await new Promise((res,rej)=>{
+                xhr.onload = ()=>{ if(xhr.status===200) res(JSON.parse(xhr.responseText)); else rej(new Error('Upload failed: '+xhr.statusText)); };
+                xhr.onerror = ()=>rej(new Error('Network error'));
                 xhr.open('POST','https://api.cloudinary.com/v1_1/'+CLOUDINARY_CLOUD_NAME+'/auto/upload');
                 xhr.send(fd);
             });
-            const url=result.secure_url;
-            document.getElementById('pp-url').value=url;
-            bar.style.width='100%';
-            status.textContent='✓ Uploaded! Ready to save.';
-            status.style.color='var(--success)';
-            uploadArea.innerHTML='<div style="font-size:22px;margin-bottom:4px;">✅</div><div style="font-size:13px;font-weight:600;color:var(--success);">'+file.name+'</div><div style="font-size:11px;color:var(--muted);">Tap to replace</div>';
-            uploadArea.style.opacity='1';
-            uploadArea.style.borderColor='var(--success)';
+            const url = result.secure_url;
+            document.getElementById('pp-url').value = url;
+            bar.style.width = '100%';
+            status.textContent = '✓ Uploaded! Press Save Card.';
+            status.style.color = 'var(--success)';
+            uploadArea.innerHTML = '<div style="font-size:22px;margin-bottom:4px;">✅</div><div style="font-size:13px;font-weight:600;color:var(--success);">'+file.name+'</div><div style="font-size:11px;color:var(--muted);">Tap to replace</div>';
+            uploadArea.style.opacity = '1';
+            uploadArea.style.borderColor = 'var(--success)';
             toast('File uploaded! ✓');
         }catch(err){
-            progressWrap.style.display='none';
-            uploadArea.style.opacity='1';
+            progressWrap.style.display = 'none';
+            uploadArea.style.opacity = '1';
             toast('Upload failed: '+err.message,'danger');
         }
     });
 
     // Save
-    document.getElementById('pp-save').onclick=async()=>{
-        const name=document.getElementById('pp-name').value.trim()||cardData.name||('Card '+cardId);
-        const desc=document.getElementById('pp-desc').value.trim();
-        const url=document.getElementById('pp-url').value.trim();
-        const m=detectMediaType(url);
-        const cd={name,desc,mediaUrl:url,mediaType:m.type};
+    document.getElementById('pp-save').onclick = async()=>{
+        const name = document.getElementById('pp-name').value.trim() || cardData.name || ('Card '+cardId);
+        const desc = document.getElementById('pp-desc').value.trim();
+        const url  = document.getElementById('pp-url').value.trim();
+        const m    = detectMediaType(url);
+        const cd   = {name, desc, mediaUrl:url, mediaType:m.type};
         try{
-            await window.dbSet(window.dbRef(window.db,'cards/section'+sectionIndex+'/'+cardId),cd);
-            if(!allCards[sectionIndex])allCards[sectionIndex]={};
-            allCards[sectionIndex][cardId]=cd;
+            await window.dbSet(window.dbRef(window.db,'cards/section'+sectionIndex+'/'+cardId), cd);
+            if(!allCards[sectionIndex]) allCards[sectionIndex]={};
+            allCards[sectionIndex][cardId] = cd;
             toast('Card saved! ✓'); popupClose(); loadCards(currentSection);
-        }catch(ex){toast('Save failed: '+(ex.message||ex.code||ex),'danger');}
+        }catch(ex){ toast('Save failed: '+(ex.message||ex.code||ex),'danger'); }
     };
 
     // Remove media
-    const ppRemove=document.getElementById('pp-remove');
-    if(ppRemove) ppRemove.onclick=async()=>{
-        const name=document.getElementById('pp-name').value.trim()||cardData.name||('Card '+cardId);
-        const desc=document.getElementById('pp-desc').value.trim();
-        const cd={name,desc,mediaUrl:'',mediaType:'none'};
+    const ppRemove = document.getElementById('pp-remove');
+    if(ppRemove) ppRemove.onclick = async()=>{
+        const name = document.getElementById('pp-name').value.trim() || cardData.name || ('Card '+cardId);
+        const desc = document.getElementById('pp-desc').value.trim();
+        const cd   = {name, desc, mediaUrl:'', mediaType:'none'};
         try{
-            await window.dbSet(window.dbRef(window.db,'cards/section'+sectionIndex+'/'+cardId),cd);
-            if(!allCards[sectionIndex])allCards[sectionIndex]={};
-            allCards[sectionIndex][cardId]=cd;
+            await window.dbSet(window.dbRef(window.db,'cards/section'+sectionIndex+'/'+cardId), cd);
+            if(!allCards[sectionIndex]) allCards[sectionIndex]={};
+            allCards[sectionIndex][cardId] = cd;
             toast('Media removed','warn'); popupClose(); loadCards(currentSection);
-        }catch(ex){toast('Failed: '+(ex.message||ex.code||ex),'danger');}
+        }catch(ex){ toast('Failed: '+(ex.message||ex.code||ex),'danger'); }
     };
 
     // Delete card
-    document.getElementById('pp-del').onclick=async()=>{
-        if(!confirm('Delete this card permanently?'))return;
+    document.getElementById('pp-del').onclick = async()=>{
+        if(!confirm('Delete this card permanently?')) return;
         try{
             await window.dbRemove(window.dbRef(window.db,'cards/section'+sectionIndex+'/'+cardId));
             toast('Card deleted','warn'); popupClose(); loadCards(currentSection);
-        }catch(ex){toast('Delete failed: '+(ex.message||ex.code||ex),'danger');}
+        }catch(ex){ toast('Delete failed: '+(ex.message||ex.code||ex),'danger'); }
     };
 
-    // Cancel buttons
-    document.getElementById('pp-cancel').onclick=popupClose;
-    document.getElementById('pp-cancel2').onclick=popupClose;
+    document.getElementById('pp-cancel').onclick  = popupClose;
+    document.getElementById('pp-cancel2').onclick = popupClose;
 
-    // Escape key
-    overlay._keyHandler=e=>{if(e.key==='Escape')popupClose();};
-    document.addEventListener('keydown',overlay._keyHandler);
+    overlay._keyHandler = e=>{ if(e.key==='Escape') popupClose(); };
+    document.addEventListener('keydown', overlay._keyHandler);
 }
 
 function popupClose(){
-    const ov=document.getElementById('cardEditorOverlay');
+    const ov = document.getElementById('cardEditorOverlay');
     if(ov){
-        if(ov._keyHandler)document.removeEventListener('keydown',ov._keyHandler);
+        if(ov._keyHandler) document.removeEventListener('keydown', ov._keyHandler);
         ov.remove();
     }
-    // also clean up any old-style popups
     document.querySelectorAll('.card-popup').forEach(p=>p.remove());
 }
 
