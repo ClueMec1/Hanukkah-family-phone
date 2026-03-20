@@ -1,4 +1,4 @@
-x<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -353,49 +353,18 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 <div class="modal" id="videoChatModal">
     <div class="modal-content">
         <h2>📹 Family Video Call</h2>
-        <p style="color:var(--muted);font-size:13px;text-align:center;margin-bottom:20px;line-height:1.6;">Pick any option — everyone clicks the same link to join. All free!</p>
-
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:10px;">
-            <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
-                <div style="width:38px;height:38px;background:#97c53d;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                    <svg width="20" height="20" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
-                </div>
-                <div style="flex:1">
-                    <div style="font-weight:700;font-size:14px;color:var(--text);">Jitsi Meet</div>
-                    <div style="font-size:11px;color:var(--muted);">No account needed — private family room, works on all devices</div>
-                </div>
-                <span style="background:rgba(52,211,153,.15);color:var(--success);font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap;">RECOMMENDED</span>
+        <div style="text-align:center;padding:10px 0 20px;">
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:28px 20px;margin-bottom:20px;">
+                <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="color:var(--accent);margin-bottom:14px;display:block;margin-left:auto;margin-right:auto;"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+                <div style="color:var(--text);font-size:16px;font-weight:600;margin-bottom:6px;">Join Family Meeting</div>
+                <div style="color:var(--muted);font-size:13px;line-height:1.6;" id="meetRoomHint">The host has set up a meeting room for everyone.</div>
             </div>
-            <button class="btn btn-outline" onclick="joinJitsiRoom()" style="width:100%;font-size:13px;padding:11px;">Open Jitsi Room →</button>
+            <button class="btn btn-outline" onclick="joinGoogleMeet()" style="width:100%;padding:16px;font-size:16px;">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+                Join Meeting
+            </button>
         </div>
-
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:10px;">
-            <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
-                <div style="width:38px;height:38px;background:#1a73e8;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>
-                </div>
-                <div>
-                    <div style="font-weight:700;font-size:14px;color:var(--text);">Google Meet</div>
-                    <div style="font-size:11px;color:var(--muted);">Create a room and share the link with family</div>
-                </div>
-            </div>
-            <button class="btn btn-outline" onclick="joinGoogleMeet()" style="width:100%;font-size:13px;padding:11px;">Open Google Meet →</button>
-        </div>
-
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:6px;">
-            <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
-                <div style="width:38px;height:38px;background:#25d366;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                </div>
-                <div>
-                    <div style="font-weight:700;font-size:14px;color:var(--text);">WhatsApp Video</div>
-                    <div style="font-size:11px;color:var(--muted);">If your family already uses WhatsApp</div>
-                </div>
-            </div>
-            <button class="btn btn-outline" onclick="openWhatsApp()" style="width:100%;font-size:13px;padding:11px;border-color:#25d366;color:#25d366;">Open WhatsApp →</button>
-        </div>
-
-        <div class="modal-buttons" style="margin-top:14px;">
+        <div class="modal-buttons">
             <button class="btn btn-ghost" onclick="closeModal('videoChatModal')">Close</button>
         </div>
     </div>
@@ -473,6 +442,22 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
             </div>
             <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
                 <div>
+                    <div class="setting-label">☁️ Cloudinary Setup</div>
+                    <div class="setting-desc">Needed to upload photos, videos &amp; audio that work on all devices</div>
+                </div>
+                <div style="width:100%;display:flex;flex-direction:column;gap:7px;">
+                    <input type="text" id="cloudNameInput" placeholder="Cloud Name  (e.g. myfamilyhub)" style="width:100%;padding:8px 10px;font-size:12px;">
+                    <input type="text" id="uploadPresetInput" placeholder="Upload Preset  (e.g. family_hub_uploads)" style="width:100%;padding:8px 10px;font-size:12px;">
+                </div>
+                <div style="font-size:11px;color:var(--muted);line-height:1.6;">
+                    1. Go to <strong style="color:var(--accent);">cloudinary.com</strong> → sign up free (no credit card)<br>
+                    2. Dashboard → top-left shows your <strong>Cloud Name</strong><br>
+                    3. Settings → Upload → Add upload preset → set to <strong>Unsigned</strong> → copy name<br>
+                    4. Paste both above → Save
+                </div>
+            </div>
+            <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
+                <div>
                     <div class="setting-label">&#x1F4F9; Google Meet Link</div>
                     <div class="setting-desc">Everyone automatically joins this meeting when they click Video Call</div>
                 </div>
@@ -546,6 +531,11 @@ let emojiPickerOpen  = null;
 let meetLink    = '';
 
 const PRIVATE_ROOM = 'FamilyHub-8x4k2m9q7w3j5p1r6n0y';
+
+// ── Cloudinary config ─────────────────────────────────────
+// Replace these with your own values from cloudinary.com → Settings → API Keys
+let CLOUDINARY_CLOUD_NAME = 'YOUR_CLOUD_NAME';   // e.g. 'myfamilyhub'
+let CLOUDINARY_UPLOAD_PRESET = 'YOUR_UPLOAD_PRESET'; // e.g. 'family_hub_uploads'
 const EMOJIS = ['📁','📂','🏠','❤️','⭐','🎵','🎬','📸','🎮','📖','🍕','🌟',
                 '🔥','💡','🎯','🎁','🌈','🦁','🐻','🌺','⚽','🎸','🧩','🍎',
                 '🌙','☀️','🎉','💎','🔖','📌'];
@@ -623,6 +613,10 @@ async function loadContent(){
         if(dc.exists())defaultCardCount=Number(dc.val())||20;
         const ml=await window.dbGet(window.dbRef(window.db,'meetLink'));
         if(ml.exists())meetLink=ml.val()||'';
+        const cn=await window.dbGet(window.dbRef(window.db,'cloudinaryName'));
+        if(cn.exists()&&cn.val())CLOUDINARY_CLOUD_NAME=cn.val();
+        const cp=await window.dbGet(window.dbRef(window.db,'cloudinaryPreset'));
+        if(cp.exists()&&cp.val())CLOUDINARY_UPLOAD_PRESET=cp.val();
     }catch(e){}
     loadSections();
     loadCards(currentSection); // reload now that we have real defaultCardCount
@@ -947,21 +941,24 @@ function showCardPopup(card,cardData,sectionIndex,cardId){
         +'<input class="ce-input" id="pp-name" type="text" placeholder="Give this card a name…" value="'+esc(cardData.name||'')+'">'
         +'<label class="ce-label">Description <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>'
         +'<input class="ce-input" id="pp-desc" type="text" placeholder="Short description…" value="'+esc(cardData.desc||'')+'">'
-        +'<label class="ce-label">Media Link</label>'
-        +'<a class="ce-drive-btn" href="https://drive.google.com/drive/my-drive" target="_blank" rel="noopener" onclick="event.stopPropagation();">'
-        +'<svg width="20" height="20" viewBox="0 0 87.3 78" fill="none" xmlns="http://www.w3.org/2000/svg">'
-        +'<path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3L27.5 53H0c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>'
-        +'<path d="M43.65 25L29.9 1.2C28.55.4 27 0 25.45 0c-1.55 0-3.1.4-4.45 1.2L6.6 25H43.65z" fill="#00ac47"/>'
-        +'<path d="M73.55 25L59.8 1.2C58.45.4 56.9 0 55.35 0H25.45L43.65 25H73.55z" fill="#ea4335"/>'
-        +'<path d="M43.65 25L25.45 53H62.35L43.65 25z" fill="#00832d"/>'
-        +'<path d="M62.35 53L80.55 25H43.65L62.35 53z" fill="#2684fc"/>'
-        +'<path d="M62.35 53H25.45l-11.7 20.8c1.35.8 2.9 1.2 4.45 1.2H68.9c1.55 0 3.1-.4 4.45-1.2L62.35 53z" fill="#ffba00"/>'
-        +'</svg>'
-        +'Open Google Drive to upload your photo or video'
-        +'</a>'
-        +'<p class="ce-hint">Upload to Drive → right-click file → Share → "Anyone with the link" → Copy link → paste below</p>'
+        +'<label class="ce-label">Photo / Video / Audio</label>'
+        +'<div id="ce-upload-area" style="border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg);" '
+        +'onmouseenter="this.style.borderColor=\'var(--accent)\'" onmouseleave="this.style.borderColor=\'var(--border)\'" '
+        +'onclick="document.getElementById(\'ce-file-input\').click()">'
+        +'<div style="font-size:28px;margin-bottom:6px;">📁</div>'
+        +'<div style="font-weight:700;font-size:14px;color:var(--text);margin-bottom:4px;">Tap to pick a file</div>'
+        +'<div style="font-size:11px;color:var(--muted);">Photos, videos, audio — plays on iPhone, Android & desktop</div>'
+        +'</div>'
+        +'<input type="file" id="ce-file-input" accept="image/*,video/*,audio/*" style="display:none">'
+        +'<div id="ce-upload-progress" style="display:none;margin-top:10px;">'
+        +'<div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden;">'
+        +'<div id="ce-upload-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;"></div>'
+        +'</div>'
+        +'<div id="ce-upload-status" style="font-size:12px;color:var(--muted);margin-top:6px;text-align:center;">Uploading…</div>'
+        +'</div>'
         +previewHtml
-        +'<input class="ce-input" id="pp-url" type="text" placeholder="Paste Google Drive (or YouTube) link here…" value="'+esc(currentUrl)+'" style="margin-top:10px;">'
+        +'<label class="ce-label" style="margin-top:12px;">Or paste a YouTube link</label>'
+        +'<input class="ce-input" id="pp-url" type="text" placeholder="https://youtube.com/watch?v=…" value="'+esc(currentUrl.startsWith(\'http\')&&!currentUrl.includes(\'res.cloudinary\')&&!currentUrl.match(/\.(jpg|jpeg|png|gif|webp|mp4|webm|mp3|wav|ogg)/)? currentUrl:\'\')+'">
         +'<div class="ce-actions">'
         +'<button class="ce-btn save" id="pp-save">✓ Save Card</button>'
         +'<button class="ce-btn del" id="pp-del">🗑 Delete Card</button>'
@@ -977,6 +974,57 @@ function showCardPopup(card,cardData,sectionIndex,cardId){
     overlay.addEventListener('mousedown',e=>{if(e.target===overlay)popupClose();});
     overlay.querySelector('.card-editor-box').addEventListener('mousedown',e=>e.stopPropagation());
     overlay.querySelector('.card-editor-box').addEventListener('click',e=>e.stopPropagation());
+
+    // Cloudinary file upload
+    document.getElementById('ce-file-input').addEventListener('change',async function(){
+        const file=this.files[0]; if(!file)return;
+        if(CLOUDINARY_CLOUD_NAME==='YOUR_CLOUD_NAME'){
+            toast('Please set up Cloudinary first in the app settings!','warn'); return;
+        }
+        const progressWrap=document.getElementById('ce-upload-progress');
+        const bar=document.getElementById('ce-upload-bar');
+        const status=document.getElementById('ce-upload-status');
+        const uploadArea=document.getElementById('ce-upload-area');
+        progressWrap.style.display='block';
+        uploadArea.style.opacity='0.5';
+        status.textContent='Uploading '+file.name+'…';
+        bar.style.width='0%';
+        try{
+            const fd=new FormData();
+            fd.append('file',file);
+            fd.append('upload_preset',CLOUDINARY_UPLOAD_PRESET);
+            const xhr=new XMLHttpRequest();
+            xhr.upload.onprogress=e=>{
+                if(e.lengthComputable){
+                    const pct=Math.round(e.loaded/e.total*100);
+                    bar.style.width=pct+'%';
+                    status.textContent='Uploading… '+pct+'%';
+                }
+            };
+            const result=await new Promise((res,rej)=>{
+                xhr.onload=()=>{
+                    if(xhr.status===200) res(JSON.parse(xhr.responseText));
+                    else rej(new Error('Upload failed: '+xhr.statusText));
+                };
+                xhr.onerror=()=>rej(new Error('Network error'));
+                xhr.open('POST','https://api.cloudinary.com/v1_1/'+CLOUDINARY_CLOUD_NAME+'/auto/upload');
+                xhr.send(fd);
+            });
+            const url=result.secure_url;
+            document.getElementById('pp-url').value=url;
+            bar.style.width='100%';
+            status.textContent='✓ Uploaded! Ready to save.';
+            status.style.color='var(--success)';
+            uploadArea.innerHTML='<div style="font-size:22px;margin-bottom:4px;">✅</div><div style="font-size:13px;font-weight:600;color:var(--success);">'+file.name+'</div><div style="font-size:11px;color:var(--muted);">Tap to replace</div>';
+            uploadArea.style.opacity='1';
+            uploadArea.style.borderColor='var(--success)';
+            toast('File uploaded! ✓');
+        }catch(err){
+            progressWrap.style.display='none';
+            uploadArea.style.opacity='1';
+            toast('Upload failed: '+err.message,'danger');
+        }
+    });
 
     // Save
     document.getElementById('pp-save').onclick=async()=>{
@@ -1300,6 +1348,8 @@ function openSettings(){
     loadOnlineUsers();
     document.getElementById('hubNameInput').value=document.getElementById('appName').textContent;
     document.getElementById('meetLinkInput').value=meetLink||'';
+    document.getElementById('cloudNameInput').value=CLOUDINARY_CLOUD_NAME!=='YOUR_CLOUD_NAME'?CLOUDINARY_CLOUD_NAME:'';
+    document.getElementById('uploadPresetInput').value=CLOUDINARY_UPLOAD_PRESET!=='YOUR_UPLOAD_PRESET'?CLOUDINARY_UPLOAD_PRESET:'';
 }
 function switchHostTab(name,btn){
     document.querySelectorAll('.host-tab').forEach(t=>t.classList.remove('active'));
@@ -1351,13 +1401,19 @@ async function saveHubSettings(){
     const name=document.getElementById('hubNameInput').value.trim();
     const count=parseInt(document.getElementById('defaultCardsInput').value)||20;
     const link=document.getElementById('meetLinkInput').value.trim();
+    const cloudName=document.getElementById('cloudNameInput').value.trim();
+    const uploadPreset=document.getElementById('uploadPresetInput').value.trim();
     try{
         if(name)await window.dbSet(window.dbRef(window.db,'appName'),name);
         await window.dbSet(window.dbRef(window.db,'defaultCardCount'),count);
         await window.dbSet(window.dbRef(window.db,'meetLink'),link);
+        if(cloudName)await window.dbSet(window.dbRef(window.db,'cloudinaryName'),cloudName);
+        if(uploadPreset)await window.dbSet(window.dbRef(window.db,'cloudinaryPreset'),uploadPreset);
         document.getElementById('appName').textContent=name||'Family Hub';
         defaultCardCount=count;
         meetLink=link;
+        if(cloudName)CLOUDINARY_CLOUD_NAME=cloudName;
+        if(uploadPreset)CLOUDINARY_UPLOAD_PRESET=uploadPreset;
         toast('Saved! ✓');
     }catch(e){toast('Failed','danger');}
 }
@@ -1468,26 +1524,13 @@ function closeVideoLightbox(){
 function openVideoChat(){document.getElementById('videoChatModal').classList.add('active');}
 
 function joinGoogleMeet(){
-    const url=meetLink&&meetLink.startsWith('https://meet.google.com/')?meetLink:'https://meet.google.com/new';
-    const isNew=!meetLink||!meetLink.startsWith('https://meet.google.com/');
-    window.open(url,'_blank','noopener');
+    if(!meetLink||!meetLink.startsWith('https://meet.google.com/')){
+        toast('No meeting set yet! Host: go to ⚙️ Settings → Hub Settings to add a Google Meet link.','warn');
+        return;
+    }
+    window.open(meetLink,'_blank','noopener');
     closeModal('videoChatModal');
-    if(isNew)toast('No meeting link set yet! Go to Host Settings → Hub Settings to save one. 📋','warn');
-    else toast('Joining family meeting! 📹');
-}
-
-function joinJitsiRoom(){
-    const name=encodeURIComponent(currentUser||'Guest');
-    // Use 8x8.vc — Jitsi's official hosted version, more reliable than meet.jit.si
-    window.open('https://8x8.vc/'+PRIVATE_ROOM,'_blank','noopener');
-    closeModal('videoChatModal');
-    toast('Jitsi room opened! 🎥');
-}
-
-function openWhatsApp(){
-    window.open('https://web.whatsapp.com','_blank','noopener');
-    closeModal('videoChatModal');
-    toast('WhatsApp opened!');
+    toast('Joining family meeting! 📹');
 }
 
 // ── Global events ─────────────────────────────────────────
