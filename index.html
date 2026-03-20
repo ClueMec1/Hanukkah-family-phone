@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+x<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -471,6 +471,17 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
                 <div><div class="setting-label">Default card count</div><div class="setting-desc">Empty cards per section</div></div>
                 <input type="number" id="defaultCardsInput" value="20" min="4" max="50" style="width:70px;padding:8px 10px;font-size:13px;">
             </div>
+            <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
+                <div>
+                    <div class="setting-label">&#x1F4F9; Google Meet Link</div>
+                    <div class="setting-desc">Everyone automatically joins this meeting when they click Video Call</div>
+                </div>
+                <div style="display:flex;gap:8px;width:100%;flex-wrap:wrap;">
+                    <input type="text" id="meetLinkInput" placeholder="Paste your Google Meet link here… e.g. https://meet.google.com/abc-defg-hij" style="flex:1;min-width:0;padding:8px 10px;font-size:12px;">
+                    <a href="https://meet.google.com/new" target="_blank" rel="noopener" style="padding:8px 12px;background:rgba(26,115,232,.15);border:1px solid rgba(26,115,232,.4);border-radius:var(--radius);color:#4285f4;font-size:12px;font-weight:700;text-decoration:none;display:flex;align-items:center;gap:5px;white-space:nowrap;">+ New Meet</a>
+                </div>
+                <div style="font-size:11px;color:var(--muted);">Click <strong style="color:#4285f4;">+ New Meet</strong> &rarr; copy the link from your browser &rarr; paste above &rarr; Save</div>
+            </div>
             <div class="modal-buttons">
                 <button class="btn btn-outline" onclick="saveHubSettings()">
                     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
@@ -532,6 +543,7 @@ let userRef     = null;
 let allCards    = {};
 let defaultCardCount = 20;
 let emojiPickerOpen  = null;
+let meetLink    = '';
 
 const PRIVATE_ROOM = 'FamilyHub-8x4k2m9q7w3j5p1r6n0y';
 const EMOJIS = ['📁','📂','🏠','❤️','⭐','🎵','🎬','📸','🎮','📖','🍕','🌟',
@@ -543,6 +555,11 @@ function esc(s){
     const d=document.createElement('div');
     d.appendChild(document.createTextNode(String(s??'')));
     return d.innerHTML;
+}
+
+// Detect mobile/tablet — iframes are blocked on iOS Safari & many Android browsers
+function isMobile(){
+    return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 }
 
 function toast(msg,type='success'){
@@ -604,6 +621,8 @@ async function loadContent(){
         if(n.exists())document.getElementById('appName').textContent=n.val();
         const dc=await window.dbGet(window.dbRef(window.db,'defaultCardCount'));
         if(dc.exists())defaultCardCount=Number(dc.val())||20;
+        const ml=await window.dbGet(window.dbRef(window.db,'meetLink'));
+        if(ml.exists())meetLink=ml.val()||'';
     }catch(e){}
     loadSections();
     loadCards(currentSection); // reload now that we have real defaultCardCount
@@ -762,27 +781,38 @@ function buildCard(cardData,sectionIndex,cardId){
                  +'<svg width="22" height="22" fill="white" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></div></div>';
             body='';
         }else if(media.type==='gdrive'){
-            thumb='<div style="position:absolute;inset:0;background:linear-gradient(135deg,'+c1+'33,'+c2+'33);display:flex;align-items:center;justify-content:center;">'
-                 +'<svg width="44" height="44" viewBox="0 0 87.3 78" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:.7;">'
-                 +'<path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3L27.5 53H0c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>'
-                 +'<path d="M43.65 25L29.9 1.2C28.55.4 27 0 25.45 0c-1.55 0-3.1.4-4.45 1.2L6.6 25H43.65z" fill="#00ac47"/>'
-                 +'<path d="M73.55 25L59.8 1.2C58.45.4 56.9 0 55.35 0H25.45L43.65 25H73.55z" fill="#ea4335"/>'
-                 +'<path d="M43.65 25L25.45 53H62.35L43.65 25z" fill="#00832d"/>'
-                 +'<path d="M62.35 53L80.55 25H43.65L62.35 53z" fill="#2684fc"/>'
-                 +'<path d="M62.35 53H25.45l-11.7 20.8c1.35.8 2.9 1.2 4.45 1.2H68.9c1.55 0 3.1-.4 4.45-1.2L62.35 53z" fill="#ffba00"/>'
-                 +'</svg></div>';
-            body='<iframe src="'+media.embed+'" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;margin-top:8px;" allowfullscreen></iframe>';
+            const driveIcon='<svg width="44" height="44" viewBox="0 0 87.3 78" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:.8;">'
+                +'<path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3L27.5 53H0c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>'
+                +'<path d="M43.65 25L29.9 1.2C28.55.4 27 0 25.45 0c-1.55 0-3.1.4-4.45 1.2L6.6 25H43.65z" fill="#00ac47"/>'
+                +'<path d="M73.55 25L59.8 1.2C58.45.4 56.9 0 55.35 0H25.45L43.65 25H73.55z" fill="#ea4335"/>'
+                +'<path d="M43.65 25L25.45 53H62.35L43.65 25z" fill="#00832d"/>'
+                +'<path d="M62.35 53L80.55 25H43.65L62.35 53z" fill="#2684fc"/>'
+                +'<path d="M62.35 53H25.45l-11.7 20.8c1.35.8 2.9 1.2 4.45 1.2H68.9c1.55 0 3.1-.4 4.45-1.2L62.35 53z" fill="#ffba00"/>'
+                +'</svg>';
+            thumb='<div style="position:absolute;inset:0;background:linear-gradient(135deg,'+c1+'33,'+c2+'33);display:flex;align-items:center;justify-content:center;">'+driveIcon+'</div>';
+            if(isMobile()){
+                // On iPhone/Android iframes are blocked — show a big tap-to-open button instead
+                body='<a href="'+esc(url)+'" target="_blank" rel="noopener" '
+                    +'style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px;padding:13px 16px;'
+                    +'background:rgba(26,115,232,.12);border:1.5px solid rgba(26,115,232,.5);border-radius:10px;'
+                    +'color:#4285f4;font-size:13px;font-weight:700;text-decoration:none;">'
+                    +driveIcon.replace('width="44" height="44"','width="22" height="22"')
+                    +'Open in Google Drive</a>';
+            }else{
+                body='<iframe src="'+media.embed+'" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;margin-top:8px;" allowfullscreen></iframe>';
+            }
         }else if(media.type==='image'){
             thumb='<img src="'+esc(url)+'" loading="lazy" style="width:100%;height:100%;object-fit:cover;">';
         }else if(media.type==='video'){
             thumb='<video src="'+esc(url)+'" muted playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover;"></video>';
-            body='<video controls class="card-media"><source src="'+esc(url)+'"></video>';
+            // On mobile always show controls inline so tapping works
+            body='<video controls playsinline class="card-media" style="max-width:100%;"><source src="'+esc(url)+'"></video>';
         }else if(media.type==='audio'){
             thumb='<div style="position:absolute;inset:0;background:linear-gradient(135deg,'+c1+'33,'+c2+'33);"></div>'
                  +'<div style="position:relative;z-index:1;color:rgba(255,255,255,.3);">'
                  +'<svg width="38" height="38" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">'
                  +'<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>';
-            body='<audio controls class="card-media"><source src="'+esc(url)+'"></audio>';
+            body='<audio controls class="card-media" style="width:100%;"><source src="'+esc(url)+'"></audio>';
         }else if(media.type==='link'){
             // Try as image, fall back to gradient placeholder
             thumb='<div class="link-img-wrap" style="position:absolute;inset:0;">'
@@ -1269,6 +1299,7 @@ function openSettings(){
     document.getElementById('settingsModal').classList.add('active');
     loadOnlineUsers();
     document.getElementById('hubNameInput').value=document.getElementById('appName').textContent;
+    document.getElementById('meetLinkInput').value=meetLink||'';
 }
 function switchHostTab(name,btn){
     document.querySelectorAll('.host-tab').forEach(t=>t.classList.remove('active'));
@@ -1319,12 +1350,15 @@ async function clearAnnouncement(){
 async function saveHubSettings(){
     const name=document.getElementById('hubNameInput').value.trim();
     const count=parseInt(document.getElementById('defaultCardsInput').value)||20;
+    const link=document.getElementById('meetLinkInput').value.trim();
     try{
         if(name)await window.dbSet(window.dbRef(window.db,'appName'),name);
         await window.dbSet(window.dbRef(window.db,'defaultCardCount'),count);
+        await window.dbSet(window.dbRef(window.db,'meetLink'),link);
         document.getElementById('appName').textContent=name||'Family Hub';
         defaultCardCount=count;
-        toast('Saved!');
+        meetLink=link;
+        toast('Saved! ✓');
     }catch(e){toast('Failed','danger');}
 }
 
@@ -1434,10 +1468,12 @@ function closeVideoLightbox(){
 function openVideoChat(){document.getElementById('videoChatModal').classList.add('active');}
 
 function joinGoogleMeet(){
-    // Opens Google Meet new meeting page — host creates a room and shares the link with family
-    window.open('https://meet.google.com/new','_blank','noopener');
+    const url=meetLink&&meetLink.startsWith('https://meet.google.com/')?meetLink:'https://meet.google.com/new';
+    const isNew=!meetLink||!meetLink.startsWith('https://meet.google.com/');
+    window.open(url,'_blank','noopener');
     closeModal('videoChatModal');
-    toast('Google Meet opened! Share the link with your family 📋');
+    if(isNew)toast('No meeting link set yet! Go to Host Settings → Hub Settings to save one. 📋','warn');
+    else toast('Joining family meeting! 📹');
 }
 
 function joinJitsiRoom(){
