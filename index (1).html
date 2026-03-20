@@ -1,1 +1,898 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* Sign In Screen */
+        .signin-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+
+        .signin-overlay.hidden {
+            display: none;
+        }
+
+        .signin-box {
+            background: #1a1a1a;
+            padding: 50px 40px;
+            border-radius: 20px;
+            border: 3px solid #00ff00;
+            box-shadow: 0 0 50px rgba(0, 255, 0, 0.5);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .signin-box h1 {
+            color: #00ff00;
+            font-size: 36px;
+            margin-bottom: 15px;
+            text-shadow: 0 0 20px rgba(0, 255, 0, 0.8);
+        }
+
+        .signin-box p {
+            color: #aaa;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .signin-box input {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            background: #0a0a0a;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            color: #fff;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .signin-box input:focus {
+            outline: none;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.6);
+        }
+
+        .signin-box button {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            background: #00ff00;
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .signin-box button:hover {
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.8);
+            transform: scale(1.05);
+        }
+
+        /* Header */
+        .header {
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            border-bottom: 2px solid #00ff00;
+            box-shadow: 0 5px 30px rgba(0, 255, 0, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            color: #00ff00;
+            text-shadow: 0 0 15px rgba(0, 255, 0, 0.8);
+        }
+
+        .header-icons {
+            display: flex;
+            gap: 20px;
+        }
+
+        .header-icon {
+            width: 45px;
+            height: 45px;
+            background: rgba(0, 255, 0, 0.1);
+            border: 2px solid #00ff00;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .header-icon:hover {
+            background: rgba(0, 255, 0, 0.3);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.6);
+            transform: scale(1.1);
+        }
+
+        .user-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #00ff00;
+            color: #000;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Top Navigation Buttons */
+        .top-nav {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px 20px;
+            background: rgba(10, 10, 10, 0.8);
+            border-bottom: 1px solid #00ff00;
+        }
+
+        .nav-button {
+            width: 80px;
+            background: #1a1a1a;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 10px 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .nav-button:hover {
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .nav-button.active {
+            background: rgba(0, 255, 0, 0.3);
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.9);
+            transform: scale(1.1);
+            border-width: 3px;
+        }
+
+        .nav-button-image {
+            width: 100%;
+            height: 50px;
+            background: #0a0a0a;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 6px;
+            border: 1px solid #00ff00;
+        }
+
+        .nav-button-text {
+            color: #00ff00;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        /* Content Area */
+        .content {
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: #1a1a1a;
+            border: 2px solid #00ff00;
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.5);
+            transform: translateY(-5px);
+        }
+
+        .card-name {
+            color: #00ff00;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .card-media {
+            width: 100%;
+            border-radius: 10px;
+            border: 1px solid #00ff00;
+        }
+
+        audio, video {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            padding: 40px;
+            border-radius: 20px;
+            border: 3px solid #00ff00;
+            box-shadow: 0 0 50px rgba(0, 255, 0, 0.6);
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h2 {
+            color: #00ff00;
+            margin-bottom: 25px;
+            font-size: 28px;
+            text-align: center;
+        }
+
+        .modal-content input,
+        .modal-content textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            background: #0a0a0a;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 16px;
+        }
+
+        .modal-content input:focus,
+        .modal-content textarea:focus {
+            outline: none;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .modal-button {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #00ff00;
+            background: transparent;
+            color: #00ff00;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .modal-button:hover {
+            background: #00ff00;
+            color: #000;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.6);
+        }
+
+        .modal-button.primary {
+            background: #00ff00;
+            color: #000;
+        }
+
+        .modal-button.primary:hover {
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.8);
+            transform: scale(1.05);
+        }
+
+        /* Comments Section */
+        .comments-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+
+        .comment {
+            background: #0a0a0a;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border-left: 3px solid #00ff00;
+        }
+
+        .comment-author {
+            color: #00ff00;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .comment-time {
+            color: #888;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .comment-text {
+            color: #ccc;
+            line-height: 1.5;
+        }
+
+        /* Online Users Panel */
+        .users-panel {
+            background: #0a0a0a;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .user-item {
+            padding: 10px;
+            margin: 8px 0;
+            background: #1a1a1a;
+            border-radius: 8px;
+            border-left: 3px solid #00ff00;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-name {
+            color: #00ff00;
+            font-weight: bold;
+        }
+
+        .online-indicator {
+            width: 10px;
+            height: 10px;
+            background: #00ff00;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
+        }
+
+        .admin-badge {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #00ff00;
+            color: #000;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            z-index: 9998;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.8);
+            display: none;
+        }
+
+        .admin-badge.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .top-nav {
+                padding: 15px;
+            }
+            
+            .nav-button {
+                min-width: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sign In Overlay -->
+    <div class="signin-overlay" id="signinOverlay">
+        <div class="signin-box">
+            <h1>👋 Welcome!</h1>
+            <p>Enter your name to join the family hub</p>
+            <input type="text" id="nameInput" placeholder="Your Name" maxlength="30">
+            <button onclick="signIn()">Join Now</button>
+        </div>
+    </div>
+
+    <!-- Admin Mode Badge -->
+    <div class="admin-badge" id="adminBadge">🔓 HOST MODE ACTIVE</div>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="logo" id="appName">Family Hub</div>
+        <div class="header-icons">
+            <div class="header-icon" onclick="toggleSearch()" title="Search">
+                🔍
+            </div>
+            <div class="header-icon" onclick="openComments()" title="Comments">
+                💬
+                <span class="user-badge" id="commentCount">0</span>
+            </div>
+            <div class="header-icon" onclick="openVideoChat()" title="Video Chat">
+                📹
+            </div>
+            <div class="header-icon" onclick="showHostLogin()" title="Host Login">
+                🏠
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Navigation -->
+    <div class="top-nav" id="topNav">
+        <div class="nav-button active" data-section="0" onclick="switchSection(0)">
+            <div class="nav-button-image">📁</div>
+            <div class="nav-button-text">Section 1</div>
+        </div>
+        <div class="nav-button" data-section="1" onclick="switchSection(1)">
+            <div class="nav-button-image">📁</div>
+            <div class="nav-button-text">Section 2</div>
+        </div>
+        <div class="nav-button" data-section="2" onclick="switchSection(2)">
+            <div class="nav-button-image">📁</div>
+            <div class="nav-button-text">Section 3</div>
+        </div>
+        <div class="nav-button" data-section="3" onclick="switchSection(3)">
+            <div class="nav-button-image">📁</div>
+            <div class="nav-button-text">Section 4</div>
+        </div>
+        <div class="nav-button" data-section="4" onclick="switchSection(4)">
+            <div class="nav-button-image">📁</div>
+            <div class="nav-button-text">Section 5</div>
+        </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="content">
+        <div class="cards-grid" id="cardsGrid">
+            <!-- Cards will be dynamically loaded here -->
+        </div>
+    </div>
+
+    <!-- Host Login Modal -->
+    <div class="modal" id="hostModal">
+        <div class="modal-content">
+            <h2>🏠 Host Login</h2>
+            <input type="password" id="hostPin" placeholder="Enter PIN" maxlength="4">
+            <div class="modal-buttons">
+                <button class="modal-button" onclick="closeModal('hostModal')">Cancel</button>
+                <button class="modal-button primary" onclick="checkHostPin()">Login</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comments Modal -->
+    <div class="modal" id="commentsModal">
+        <div class="modal-content">
+            <h2>💬 Comments</h2>
+            <div class="comments-list" id="commentsList">
+                <!-- Comments will be loaded here -->
+            </div>
+            <textarea id="newComment" placeholder="Write a comment..." rows="3"></textarea>
+            <div class="modal-buttons">
+                <button class="modal-button" onclick="closeModal('commentsModal')">Close</button>
+                <button class="modal-button primary" onclick="postComment()">Post Comment</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Host Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <h2>⚙️ Host Settings</h2>
+            <h3 style="color: #00ff00; margin-top: 20px;">👥 Online Users</h3>
+            <div class="users-panel" id="onlineUsersList">
+                <!-- Online users will be shown here -->
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-button primary" onclick="closeModal('settingsModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Card Modal -->
+    <div class="modal" id="editCardModal">
+        <div class="modal-content">
+            <h2>✏️ Edit Card</h2>
+            <input type="text" id="cardName" placeholder="Card Name">
+            <input type="file" id="cardMedia" accept="audio/*,video/*">
+            <div class="modal-buttons">
+                <button class="modal-button" onclick="closeModal('editCardModal')">Cancel</button>
+                <button class="modal-button primary" onclick="saveCard()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, get, onValue, push, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyByh09evolR8lCvwWZ160zLUJdGXIzPXIk",
+            authDomain: "family-phone-game.firebaseapp.com",
+            databaseURL: "https://family-phone-game-default-rtdb.firebaseio.com",
+            projectId: "family-phone-game",
+            storageBucket: "family-phone-game.firebasestorage.app",
+            messagingSenderId: "933908338610",
+            appId: "1:933908338610:web:ca5ce26b24118b833bb6ab",
+            measurementId: "G-DRVXJM4THP"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        window.db = getDatabase(app);
+        window.storage = getStorage(app);
+        window.dbRef = ref;
+        window.dbSet = set;
+        window.dbGet = get;
+        window.dbOnValue = onValue;
+        window.dbPush = push;
+        window.dbRemove = remove;
+        window.storageRef = storageRef;
+        window.uploadBytes = uploadBytes;
+        window.getDownloadURL = getDownloadURL;
+
+        // Initialize
+        initializeApp();
+    </script>
+
+    <script>
+        let currentUser = null;
+        let isHost = false;
+        let currentSection = 0;
+        let currentEditCard = null;
+
+        async function initializeApp() {
+            // Check if user is already signed in (localStorage)
+            const savedUser = localStorage.getItem('userName');
+            if (savedUser) {
+                currentUser = savedUser;
+                document.getElementById('signinOverlay').classList.add('hidden');
+                await registerOnlineUser();
+                loadContent();
+            }
+        }
+
+        function signIn() {
+            const name = document.getElementById('nameInput').value.trim();
+            if (name) {
+                currentUser = name;
+                localStorage.setItem('userName', name);
+                document.getElementById('signinOverlay').classList.add('hidden');
+                registerOnlineUser();
+                loadContent();
+            } else {
+                alert('Please enter your name!');
+            }
+        }
+
+        async function registerOnlineUser() {
+            if (!currentUser) return;
+            const userRef = window.dbRef(window.db, `onlineUsers/${currentUser.replace(/[.#$[\]]/g, '_')}`);
+            await window.dbSet(userRef, {
+                name: currentUser,
+                timestamp: Date.now()
+            });
+
+            // Remove user on disconnect
+            window.addEventListener('beforeunload', async () => {
+                await window.dbRemove(userRef);
+            });
+        }
+
+        async function loadContent() {
+            // Load app name
+            const appNameSnapshot = await window.dbGet(window.dbRef(window.db, 'appName'));
+            if (appNameSnapshot.exists()) {
+                document.getElementById('appName').textContent = appNameSnapshot.val();
+            }
+
+            // Load sections
+            loadSections();
+            
+            // Load cards for current section
+            loadCards(currentSection);
+
+            // Load comments count
+            loadCommentsCount();
+        }
+
+        async function loadSections() {
+            const sectionsSnapshot = await window.dbGet(window.dbRef(window.db, 'sections'));
+            if (sectionsSnapshot.exists()) {
+                const sections = sectionsSnapshot.val();
+                const buttons = document.querySelectorAll('.nav-button');
+                sections.forEach((section, index) => {
+                    if (buttons[index]) {
+                        buttons[index].querySelector('.nav-button-text').textContent = section.name;
+                        if (section.icon) {
+                            buttons[index].querySelector('.nav-button-image').textContent = section.icon;
+                        }
+                    }
+                });
+            }
+        }
+
+        async function loadCards(sectionIndex) {
+            const cardsSnapshot = await window.dbGet(window.dbRef(window.db, `cards/section${sectionIndex}`));
+            const grid = document.getElementById('cardsGrid');
+            grid.innerHTML = '';
+
+            if (cardsSnapshot.exists()) {
+                const cards = cardsSnapshot.val();
+                Object.keys(cards).forEach(cardId => {
+                    const card = cards[cardId];
+                    createCardElement(card, sectionIndex, cardId);
+                });
+            } else {
+                // Create 20 empty cards
+                for (let i = 0; i < 20; i++) {
+                    createCardElement({ name: `Card ${i + 1}` }, sectionIndex, i);
+                }
+            }
+        }
+
+        function createCardElement(cardData, sectionIndex, cardId) {
+            const grid = document.getElementById('cardsGrid');
+            const cardEl = document.createElement('div');
+            cardEl.className = 'card';
+            cardEl.setAttribute('data-section', sectionIndex);
+            cardEl.setAttribute('data-card', cardId);
+
+            let mediaHtml = '';
+            if (cardData.mediaUrl) {
+                if (cardData.mediaType === 'audio') {
+                    mediaHtml = `<audio controls class="card-media"><source src="${cardData.mediaUrl}"></audio>`;
+                } else if (cardData.mediaType === 'video') {
+                    mediaHtml = `<video controls class="card-media"><source src="${cardData.mediaUrl}"></video>`;
+                }
+            }
+
+            cardEl.innerHTML = `
+                <div class="card-name">${cardData.name || 'Empty Card'}</div>
+                ${mediaHtml}
+            `;
+
+            if (isHost) {
+                cardEl.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    openEditCard(sectionIndex, cardId, cardData);
+                });
+            }
+
+            grid.appendChild(cardEl);
+        }
+
+        function switchSection(index) {
+            currentSection = index;
+            document.querySelectorAll('.nav-button').forEach((btn, i) => {
+                btn.classList.toggle('active', i === index);
+            });
+            loadCards(index);
+        }
+
+        function showHostLogin() {
+            document.getElementById('hostModal').classList.add('active');
+            document.getElementById('hostPin').value = '';
+        }
+
+        async function checkHostPin() {
+            const pin = document.getElementById('hostPin').value;
+            if (pin === '2011') {
+                isHost = true;
+                document.getElementById('adminBadge').classList.add('active');
+                closeModal('hostModal');
+                alert('Host mode activated! Right-click cards to edit.');
+                openSettings();
+            } else {
+                alert('Incorrect PIN');
+            }
+        }
+
+        function openSettings() {
+            document.getElementById('settingsModal').classList.add('active');
+            loadOnlineUsers();
+        }
+
+        async function loadOnlineUsers() {
+            const usersRef = window.dbRef(window.db, 'onlineUsers');
+            window.dbOnValue(usersRef, (snapshot) => {
+                const panel = document.getElementById('onlineUsersList');
+                panel.innerHTML = '';
+                
+                if (snapshot.exists()) {
+                    const users = snapshot.val();
+                    Object.keys(users).forEach(key => {
+                        const user = users[key];
+                        const userEl = document.createElement('div');
+                        userEl.className = 'user-item';
+                        userEl.innerHTML = `
+                            <span class="user-name">${user.name}</span>
+                            <span class="online-indicator"></span>
+                        `;
+                        panel.appendChild(userEl);
+                    });
+                } else {
+                    panel.innerHTML = '<p style="color: #888; text-align: center;">No users online</p>';
+                }
+            });
+        }
+
+        function openEditCard(sectionIndex, cardId, cardData) {
+            currentEditCard = { sectionIndex, cardId };
+            document.getElementById('cardName').value = cardData.name || '';
+            document.getElementById('editCardModal').classList.add('active');
+        }
+
+        async function saveCard() {
+            if (!currentEditCard) return;
+
+            const name = document.getElementById('cardName').value;
+            const mediaFile = document.getElementById('cardMedia').files[0];
+
+            const cardData = { name };
+
+            if (mediaFile) {
+                const fileName = `cards/${currentEditCard.sectionIndex}/${currentEditCard.cardId}/${Date.now()}_${mediaFile.name}`;
+                const fileRef = window.storageRef(window.storage, fileName);
+                
+                await window.uploadBytes(fileRef, mediaFile);
+                const downloadURL = await window.getDownloadURL(fileRef);
+                
+                cardData.mediaUrl = downloadURL;
+                cardData.mediaType = mediaFile.type.startsWith('audio/') ? 'audio' : 'video';
+            }
+
+            await window.dbSet(
+                window.dbRef(window.db, `cards/section${currentEditCard.sectionIndex}/${currentEditCard.cardId}`),
+                cardData
+            );
+
+            closeModal('editCardModal');
+            loadCards(currentSection);
+            document.getElementById('cardMedia').value = '';
+        }
+
+        async function openComments() {
+            document.getElementById('commentsModal').classList.add('active');
+            loadComments();
+        }
+
+        async function loadComments() {
+            const commentsRef = window.dbRef(window.db, 'comments');
+            window.dbOnValue(commentsRef, (snapshot) => {
+                const list = document.getElementById('commentsList');
+                list.innerHTML = '';
+                
+                if (snapshot.exists()) {
+                    const comments = snapshot.val();
+                    Object.keys(comments).forEach(key => {
+                        const comment = comments[key];
+                        const commentEl = document.createElement('div');
+                        commentEl.className = 'comment';
+                        commentEl.innerHTML = `
+                            <div class="comment-author">${comment.author}</div>
+                            <div class="comment-time">${new Date(comment.timestamp).toLocaleString()}</div>
+                            <div class="comment-text">${comment.text}</div>
+                        `;
+                        list.appendChild(commentEl);
+                    });
+                    list.scrollTop = list.scrollHeight;
+                }
+            });
+        }
+
+        async function loadCommentsCount() {
+            const commentsRef = window.dbRef(window.db, 'comments');
+            window.dbOnValue(commentsRef, (snapshot) => {
+                const count = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
+                document.getElementById('commentCount').textContent = count;
+            });
+        }
+
+        async function postComment() {
+            const text = document.getElementById('newComment').value.trim();
+            if (!text) {
+                alert('Please write a comment!');
+                return;
+            }
+
+            const commentsRef = window.dbRef(window.db, 'comments');
+            const newCommentRef = window.dbPush(commentsRef);
+            
+            await window.dbSet(newCommentRef, {
+                author: currentUser,
+                text: text,
+                timestamp: Date.now()
+            });
+
+            document.getElementById('newComment').value = '';
+        }
+
+        function toggleSearch() {
+            alert('Search feature coming soon!');
+        }
+
+        function openVideoChat() {
+            alert('Video chat feature coming soon!');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Enter key shortcuts
+        document.getElementById('nameInput')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') signIn();
+        });
+
+        document.getElementById('hostPin')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') checkHostPin();
+        });
+    </script>
+</body>
+</html>
