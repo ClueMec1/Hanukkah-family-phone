@@ -519,6 +519,18 @@ window.getDownloadURL = getDownloadURL;
 // ═══════════════════════════════════════════════════════════
 //  FAMILY HUB — clean rewrite, no legacy patches
 // ═══════════════════════════════════════════════════════════
+// Pre-declare all onclick functions on window immediately so browser
+// never gets "not defined" even before the rest of the script parses
+['signIn','checkHostPin','clearAllComments','clearAnnouncement','closeModal',
+ 'closeVideoLightbox','deleteComment','joinGoogleMeet','kickUser','openComments',
+ 'openSearch','openStreamableLightbox','openVideoChat','openVideoLightbox',
+ 'postComment','saveHubSettings','sendAnnouncement','showHostLogin',
+ 'switchHostTab','runSearch'].forEach(fn=>{
+    window[fn]=function(){
+        // Real function will be assigned below once script finishes parsing
+        console.warn(fn+' called before ready');
+    };
+});
 
 // ── State ─────────────────────────────────────────────────
 let currentUser = null;
