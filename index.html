@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+x<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -1592,6 +1592,29 @@ waitForFirebase(()=>{
     loadCommentsCount();
     listenAnnouncements();
 });
+
+// ── Expose all functions needed by HTML onclick attributes ───
+window.signIn=signIn;
+window.checkHostPin=checkHostPin;
+window.clearAllComments=clearAllComments;
+window.clearAnnouncement=clearAnnouncement;
+window.closeModal=closeModal;
+window.closeVideoLightbox=closeVideoLightbox;
+window.deleteComment=deleteComment;
+window.joinGoogleMeet=joinGoogleMeet;
+window.kickUser=kickUser;
+window.openComments=openComments;
+window.openSearch=openSearch;
+window.openStreamableLightbox=openStreamableLightbox;
+window.openVideoChat=openVideoChat;
+window.openVideoLightbox=openVideoLightbox;
+window.postComment=postComment;
+window.saveHubSettings=saveHubSettings;
+window.sendAnnouncement=sendAnnouncement;
+window.showHostLogin=showHostLogin;
+window.switchHostTab=switchHostTab;
+window.runSearch=runSearch;
+window.joinVideoRoom=typeof joinVideoRoom!=='undefined'?joinVideoRoom:undefined;
 </script>
 </body>
 </html>
