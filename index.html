@@ -22,9 +22,88 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 /* SIGN-IN */
 .signin-overlay{position:fixed;inset:0;background:rgba(13,15,20,.97);display:flex;justify-content:center;align-items:center;z-index:10000;backdrop-filter:blur(8px);transition:opacity .4s,visibility .4s;}
 .signin-overlay.hidden{opacity:0;visibility:hidden;pointer-events:none;}
-.signin-box{background:var(--surface);padding:52px 44px;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:0 0 80px var(--accent-glow),0 24px 60px rgba(0,0,0,.5);text-align:center;max-width:400px;width:90%;animation:slideUp .5s cubic-bezier(.22,1,.36,1);}
+.signin-box{background:var(--surface);padding:36px 30px;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:0 0 80px var(--accent-glow),0 24px 60px rgba(0,0,0,.5);text-align:center;max-width:420px;width:92%;animation:slideUp .5s cubic-bezier(.22,1,.36,1);}
 .signin-logo{font-family:'Playfair Display',serif;font-size:38px;color:var(--accent);margin-bottom:6px;}
-.signin-sub{color:var(--muted);margin-bottom:32px;font-size:15px;}
+.signin-sub{color:var(--muted);margin-bottom:18px;font-size:14px;}
+/* Saved accounts */
+.saved-accounts{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;max-height:280px;overflow-y:auto;}
+.saved-btn{display:flex;align-items:center;gap:11px;padding:12px 14px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all .2s;width:100%;font-family:inherit;text-align:left;}
+.saved-btn:hover{border-color:var(--accent);background:rgba(124,106,247,.1);transform:translateY(-1px);}
+.saved-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;}
+.saved-name{font-size:14px;font-weight:600;color:var(--text);flex:1;}
+.saved-remove{width:26px;height:26px;background:transparent;border:none;color:var(--muted);cursor:pointer;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s;padding:0;}
+.saved-remove:hover{background:rgba(248,113,113,.15);color:var(--danger);}
+.signin-divider{display:flex;align-items:center;gap:10px;margin:12px 0;color:var(--muted);font-size:12px;}
+.signin-divider::before,.signin-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+/* Feature nav tabs */
+.feature-tabs{display:flex;gap:6px;padding:8px 14px;background:rgba(13,15,20,.5);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;}
+.feature-tabs::-webkit-scrollbar{display:none;}
+.feature-tab{flex-shrink:0;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:7px 13px;cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);font-family:inherit;transition:all .2s;display:flex;align-items:center;gap:5px;}
+.feature-tab:hover{border-color:var(--accent);color:var(--text);}
+.feature-tab.active{border-color:var(--accent);background:rgba(124,106,247,.15);color:var(--accent);}
+/* Feature panels */
+.feature-panel{display:none;padding:18px 16px;max-width:1400px;margin:0 auto;}
+.feature-panel.active{display:block;}
+/* Calendar */
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.cal-month{font-family:'Playfair Display',serif;font-size:20px;color:var(--text);}
+.cal-nav{width:34px;height:34px;background:var(--surface);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:16px;transition:all .2s;font-family:inherit;}
+.cal-nav:hover{border-color:var(--accent);color:var(--accent);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:16px;}
+.cal-day-name{text-align:center;font-size:11px;font-weight:700;color:var(--muted);padding:4px 0;text-transform:uppercase;line-height:1.3;}
+.cal-day{min-height:62px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:5px;cursor:pointer;transition:all .2s;position:relative;}
+.cal-day:hover{border-color:var(--accent);background:rgba(124,106,247,.07);}
+.cal-day.today{border-color:var(--accent);background:rgba(124,106,247,.12);}
+.cal-day.other-month{opacity:.35;}
+.cal-day.has-event{border-color:var(--accent2);}
+.cal-day-num{font-size:12px;font-weight:600;color:var(--text);line-height:1.2;}.cal-day-heb{font-size:9px;color:var(--accent2);direction:rtl;text-align:right;line-height:1.2;margin-top:1px;white-space:nowrap;overflow:hidden;}
+.cal-dot{width:6px;height:6px;border-radius:50%;margin-top:3px;}
+.cal-events-list{display:flex;flex-direction:column;gap:8px;margin-top:8px;}
+.cal-event-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:10px;}
+.cal-event-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.cal-event-info{flex:1;}
+.cal-event-title{font-size:13px;font-weight:600;color:var(--text);}
+.cal-event-date{font-size:11px;color:var(--muted);margin-top:2px;}
+.cal-event-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:4px;border-radius:5px;font-family:inherit;}
+.cal-event-del:hover{color:var(--danger);}
+/* Recipes */
+.recipe-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;}
+.recipe-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:all .25s;}
+.recipe-card:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 8px 24px var(--accent-glow);}
+.recipe-card-thumb{height:130px;background:linear-gradient(135deg,var(--accent)22,var(--accent2)18);display:flex;align-items:center;justify-content:center;font-size:44px;}
+.recipe-card-body{padding:12px 14px;}
+.recipe-card-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.recipe-card-meta{font-size:11px;color:var(--muted);}
+/* Poll */
+.poll-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:12px;}
+.poll-question{font-size:16px;font-weight:700;color:var(--text);margin-bottom:14px;}
+.poll-option{display:flex;align-items:center;gap:10px;margin-bottom:8px;cursor:pointer;}
+.poll-bar-wrap{flex:1;background:var(--surface2);border-radius:6px;height:32px;position:relative;overflow:hidden;border:1px solid var(--border);}
+.poll-bar-fill{height:100%;border-radius:6px;transition:width .4s cubic-bezier(.22,1,.36,1);}
+.poll-bar-label{position:absolute;inset:0;display:flex;align-items:center;padding:0 10px;font-size:13px;font-weight:600;color:var(--text);}
+.poll-bar-pct{position:absolute;right:10px;font-size:12px;font-weight:700;color:var(--muted);}
+.poll-voted{font-size:11px;color:var(--muted);margin-top:8px;text-align:right;}
+/* Spin wheel */
+.wheel-wrap{display:flex;flex-direction:column;align-items:center;gap:16px;padding:10px 0;}
+.wheel-canvas-wrap{position:relative;width:min(320px,80vw);height:min(320px,80vw);}
+#wheelCanvas{width:100%;height:100%;border-radius:50%;box-shadow:0 0 40px var(--accent-glow);}
+.wheel-pointer{position:absolute;top:-14px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-top:24px solid var(--accent);filter:drop-shadow(0 2px 6px var(--accent-glow));}
+.wheel-spin-btn{padding:14px 36px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;box-shadow:0 4px 20px var(--accent-glow);transition:all .2s;}
+.wheel-spin-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px var(--accent-glow);}
+.wheel-spin-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.wheel-result{font-family:'Playfair Display',serif;font-size:22px;color:var(--accent);text-align:center;min-height:34px;}
+.wheel-names{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:8px;}
+.wheel-name-tag{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px;}
+.wheel-name-remove{background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:0;line-height:1;}
+.wheel-name-remove:hover{color:var(--danger);}
+/* Birthday banner */
+.bday-banner{background:linear-gradient(135deg,rgba(251,191,36,.15),rgba(248,113,113,.1));border:1px solid rgba(251,191,36,.4);border-radius:12px;padding:14px 18px;margin-bottom:14px;display:none;align-items:center;gap:12px;animation:slideUp .4s cubic-bezier(.22,1,.36,1);}
+.bday-banner.active{display:flex;}
+.bday-banner-text{flex:1;font-size:14px;font-weight:600;color:var(--warn);}
+/* Add event/recipe modal extras */
+.color-picker{display:flex;gap:7px;flex-wrap:wrap;margin-top:6px;}
+.color-dot{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .15s;}
+.color-dot.selected{border-color:#fff;transform:scale(1.2);}
 @keyframes slideUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
 .field{position:relative;margin-bottom:14px;text-align:left;}
 .field .field-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);display:flex;}
@@ -237,18 +316,27 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 <div class="signin-overlay" id="signinOverlay">
     <div class="signin-box">
         <div class="signin-logo">Family Hub</div>
-        <p class="signin-sub">Enter your name to join</p>
-        <div style="position:relative;margin-bottom:14px;">
-            <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);display:flex;">
-                <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            </span>
-            <input type="text" id="nameInput" placeholder="Your name" maxlength="30" autocomplete="off"
-                style="width:100%;padding:13px 16px 13px 44px;font-size:15px;font-family:inherit;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);color:var(--text);transition:border-color .25s,box-shadow .25s;outline:none;">
-        </div>
-        <button onclick="signIn()" class="btn btn-primary">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-            Join Now
+        <p class="signin-sub" id="signinSub">Who's using the app?</p>
+        <!-- Saved accounts list -->
+        <div class="saved-accounts" id="savedAccountsList"></div>
+        <!-- Toggle to show new name input -->
+        <button id="showNewNameBtn" onclick="toggleNewName()" style="display:none;width:100%;margin-top:4px;padding:11px;background:transparent;border:1.5px dashed var(--border);border-radius:var(--radius);color:var(--muted);font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .2s;">
+            + Use a different name
         </button>
+        <!-- New name input -->
+        <div id="newNameWrap" style="margin-top:8px;">
+            <div style="position:relative;margin-bottom:10px;">
+                <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);display:flex;">
+                    <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </span>
+                <input type="text" id="nameInput" placeholder="Enter your name…" maxlength="30" autocomplete="off"
+                    style="width:100%;padding:13px 16px 13px 44px;font-size:15px;font-family:inherit;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);color:var(--text);transition:border-color .25s,box-shadow .25s;outline:none;">
+            </div>
+            <button onclick="signIn()" class="btn btn-primary">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                Join Now
+            </button>
+        </div>
     </div>
 </div>
 
@@ -294,16 +382,89 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     <span>🖼 <strong>Drag & drop any file</strong> onto a card to upload it instantly</span>
 </div>
 
-<!-- Content -->
-<div class="content">
-    <div class="section-header">
-        <div class="section-title" id="sectionTitle">Section 1</div>
+<!-- Birthday Banner -->
+<div class="bday-banner" id="bdayBanner">
+    <span style="font-size:26px;">🎂</span>
+    <div class="bday-banner-text" id="bdayBannerText"></div>
+</div>
+
+<!-- Feature Tabs -->
+<div class="feature-tabs" id="featureTabs">
+    <button class="feature-tab active" data-panel="cards" onclick="switchFeatureTab('cards',this)">🏠 Home</button>
+    <button class="feature-tab" data-panel="calendar" onclick="switchFeatureTab('calendar',this)">📅 Calendar</button>
+    <button class="feature-tab" data-panel="recipes" onclick="switchFeatureTab('recipes',this)">🍳 Recipes</button>
+    <button class="feature-tab" data-panel="poll" onclick="switchFeatureTab('poll',this)">🗳️ Poll</button>
+    <button class="feature-tab" data-panel="wheel" onclick="switchFeatureTab('wheel',this)">🎡 Spin Wheel</button>
+</div>
+
+<!-- Home Panel -->
+<div class="feature-panel active" id="panel-cards">
+    <div class="content" style="padding:18px 16px;">
+        <div class="section-header">
+            <div class="section-title" id="sectionTitle">Section 1</div>
+        </div>
+        <div class="announcement-box" id="announcementBanner">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:var(--warn);flex-shrink:0"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <p id="announcementText"></p>
+        </div>
+        <div class="cards-grid" id="cardsGrid"></div>
     </div>
-    <div class="announcement-box" id="announcementBanner">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:var(--warn);flex-shrink:0"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        <p id="announcementText"></p>
+</div>
+
+<!-- Calendar Panel -->
+<div class="feature-panel" id="panel-calendar">
+    <div class="cal-header">
+        <button class="cal-nav" onclick="calNav(-1)">&#8249;</button>
+        <div class="cal-month" id="calMonthLabel"></div>
+        <button class="cal-nav" onclick="calNav(1)">&#8250;</button>
     </div>
-    <div class="cards-grid" id="cardsGrid"></div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="font-size:13px;font-weight:700;color:var(--text);">Upcoming Events</div>
+        <button class="btn btn-outline" style="padding:7px 14px;font-size:12px;" onclick="openAddEvent()">+ Add Event</button>
+    </div>
+    <div class="cal-events-list" id="calEventsList"></div>
+</div>
+
+<!-- Recipes Panel -->
+<div class="feature-panel" id="panel-recipes">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div style="font-family:'Playfair Display',serif;font-size:20px;">Family Recipes 🍳</div>
+        <button class="btn btn-outline" style="padding:7px 14px;font-size:12px;" onclick="openAddRecipe()">+ Add Recipe</button>
+    </div>
+    <div class="recipe-grid" id="recipeGrid"></div>
+</div>
+
+<!-- Poll Panel -->
+<div class="feature-panel" id="panel-poll">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div style="font-family:'Playfair Display',serif;font-size:20px;">Family Poll 🗳️</div>
+        <button class="btn btn-outline" style="padding:7px 14px;font-size:12px;" id="createPollBtn" onclick="openCreatePoll()">+ New Poll</button>
+    </div>
+    <div id="pollContainer"></div>
+</div>
+
+<!-- Spin Wheel Panel -->
+<div class="feature-panel" id="panel-wheel">
+    <div style="font-family:'Playfair Display',serif;font-size:20px;margin-bottom:16px;text-align:center;">Spin the Wheel 🎡</div>
+    <div class="wheel-wrap">
+        <div class="wheel-canvas-wrap">
+            <div class="wheel-pointer"></div>
+            <canvas id="wheelCanvas" width="320" height="320"></canvas>
+        </div>
+        <div class="wheel-result" id="wheelResult"></div>
+        <button class="wheel-spin-btn" id="wheelSpinBtn" onclick="spinWheel()">🎲 Spin!</button>
+        <div style="width:100%;max-width:400px;">
+            <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Names on the wheel</div>
+            <div class="wheel-names" id="wheelNames"></div>
+            <div style="display:flex;gap:8px;margin-top:10px;">
+                <input class="field" id="wheelNewName" type="text" placeholder="Add a name…" maxlength="20"
+                    style="flex:1;padding:9px 12px;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:13px;font-family:inherit;outline:none;">
+                <button class="btn btn-outline" style="padding:9px 16px;font-size:13px;" onclick="addWheelName()">Add</button>
+            </div>
+            <div style="font-size:11px;color:var(--muted);margin-top:6px;">💡 Tip: The wheel auto-adds everyone who is signed in. You can also add custom names or tasks above.</div>
+        </div>
+    </div>
 </div>
 
 <!-- Hidden file inputs -->
@@ -481,12 +642,100 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     </div>
 </div>
 
+<!-- Add Event Modal -->
+<div class="modal" id="addEventModal">
+    <div class="modal-content">
+        <h2>📅 Add Event</h2>
+        <label>Event Name</label>
+        <input type="text" id="evtTitle" placeholder="e.g. Mom's Birthday 🎂" maxlength="50">
+        <label>Date</label>
+        <input type="date" id="evtDate">
+        <label>Type</label>
+        <select id="evtType">
+            <option value="birthday">🎂 Birthday</option>
+            <option value="holiday">🎉 Holiday</option>
+            <option value="gathering">👨‍👩‍👧 Family Gathering</option>
+            <option value="appointment">🏥 Appointment</option>
+            <option value="other">📌 Other</option>
+        </select>
+        <label>Added by</label>
+        <input type="text" id="evtAuthor" placeholder="Your name" readonly style="opacity:.6;">
+        <div class="modal-buttons">
+            <button class="btn btn-ghost" onclick="closeModal('addEventModal')">Cancel</button>
+            <button class="btn btn-outline" onclick="saveEvent()">Save Event</button>
+        </div>
+    </div>
+</div>
+
+<!-- Add Recipe Modal -->
+<div class="modal" id="addRecipeModal">
+    <div class="modal-content wide">
+        <h2>🍳 Add Recipe</h2>
+        <label>Recipe Name</label>
+        <input type="text" id="recTitle" placeholder="e.g. Grandma's Lasagna" maxlength="60">
+        <label>Emoji / Icon</label>
+        <input type="text" id="recEmoji" placeholder="🍕" maxlength="4" style="width:80px;">
+        <label>Prep time</label>
+        <input type="text" id="recTime" placeholder="e.g. 45 mins" maxlength="20">
+        <label>Serves</label>
+        <input type="text" id="recServes" placeholder="e.g. 4 people" maxlength="20">
+        <label>Ingredients (one per line)</label>
+        <textarea id="recIngredients" rows="5" placeholder="2 cups flour&#10;1 egg&#10;..."></textarea>
+        <label>Steps (one per line)</label>
+        <textarea id="recSteps" rows="6" placeholder="1. Preheat oven to 375F&#10;2. Mix flour and eggs&#10;..."></textarea>
+        <label>Added by</label>
+        <input type="text" id="recAuthor" placeholder="Your name" readonly style="opacity:.6;">
+        <div class="modal-buttons">
+            <button class="btn btn-ghost" onclick="closeModal('addRecipeModal')">Cancel</button>
+            <button class="btn btn-outline" onclick="saveRecipe()">Save Recipe</button>
+        </div>
+    </div>
+</div>
+
+<!-- View Recipe Modal -->
+<div class="modal" id="viewRecipeModal">
+    <div class="modal-content wide">
+        <div id="viewRecipeContent"></div>
+        <div class="modal-buttons">
+            <button class="btn btn-ghost" onclick="closeModal('viewRecipeModal')">Close</button>
+            <button class="btn btn-danger" id="deleteRecipeBtn" style="display:none;">🗑 Delete</button>
+        </div>
+    </div>
+</div>
+
+<!-- Create Poll Modal -->
+<div class="modal" id="createPollModal">
+    <div class="modal-content">
+        <h2>🗳️ New Poll</h2>
+        <label>Question</label>
+        <input type="text" id="pollQuestion" placeholder="e.g. Where should we eat tonight?" maxlength="80">
+        <label>Options (one per line, min 2)</label>
+        <textarea id="pollOptions" rows="5" placeholder="Pizza&#10;Burgers&#10;Sushi&#10;Tacos"></textarea>
+        <div class="modal-buttons">
+            <button class="btn btn-ghost" onclick="closeModal('createPollModal')">Cancel</button>
+            <button class="btn btn-outline" onclick="savePoll()">Create Poll</button>
+        </div>
+    </div>
+</div>
+
 <!-- YouTube Lightbox -->
 <div id="ytLightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:99999;align-items:center;justify-content:center;flex-direction:column;" onclick="closeVideoLightbox()">
     <div style="position:relative;width:min(860px,94vw);aspect-ratio:16/9;" onclick="event.stopPropagation()">
         <iframe id="ytFrame" src="" style="width:100%;height:100%;border:none;border-radius:14px;" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe>
     </div>
     <button onclick="closeVideoLightbox()" style="margin-top:18px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);color:#fff;padding:10px 28px;border-radius:20px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">✕ Close</button>
+</div>
+
+<!-- Google Drive Full-Screen Lightbox (mobile) -->
+<div id="driveLightbox" style="display:none;position:fixed;inset:0;background:#000;z-index:99999;flex-direction:column;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:rgba(0,0,0,.8);">
+        <div style="color:#4285f4;font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px;">
+            <svg width="18" height="18" viewBox="0 0 87.3 78" fill="none"><path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3L27.5 53H0c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/><path d="M43.65 25L29.9 1.2C28.55.4 27 0 25.45 0c-1.55 0-3.1.4-4.45 1.2L6.6 25H43.65z" fill="#00ac47"/><path d="M73.55 25L59.8 1.2C58.45.4 56.9 0 55.35 0H25.45L43.65 25H73.55z" fill="#ea4335"/><path d="M43.65 25L25.45 53H62.35L43.65 25z" fill="#00832d"/><path d="M62.35 53L80.55 25H43.65L62.35 53z" fill="#2684fc"/><path d="M62.35 53H25.45l-11.7 20.8c1.35.8 2.9 1.2 4.45 1.2H68.9c1.55 0 3.1-.4 4.45-1.2L62.35 53z" fill="#ffba00"/></svg>
+            Google Drive
+        </div>
+        <button onclick="closeDriveLightbox()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:8px 18px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">✕ Close</button>
+    </div>
+    <iframe id="driveFrame" src="" style="flex:1;width:100%;border:none;" allowfullscreen></iframe>
 </div>
 
 <!-- Firebase -->
@@ -519,18 +768,7 @@ window.getDownloadURL = getDownloadURL;
 // ═══════════════════════════════════════════════════════════
 //  FAMILY HUB — clean rewrite, no legacy patches
 // ═══════════════════════════════════════════════════════════
-// Pre-declare all onclick functions on window immediately so browser
-// never gets "not defined" even before the rest of the script parses
-['signIn','checkHostPin','clearAllComments','clearAnnouncement','closeModal',
- 'closeVideoLightbox','deleteComment','joinGoogleMeet','kickUser','openComments',
- 'openSearch','openStreamableLightbox','openVideoChat','openVideoLightbox',
- 'postComment','saveHubSettings','sendAnnouncement','showHostLogin',
- 'switchHostTab','runSearch'].forEach(fn=>{
-    window[fn]=function(){
-        // Real function will be assigned below once script finishes parsing
-        console.warn(fn+' called before ready');
-    };
-});
+// Functions are assigned to window at the bottom of this script
 
 // ── State ─────────────────────────────────────────────────
 let currentUser = null;
@@ -541,6 +779,14 @@ let allCards    = {};
 let defaultCardCount = 20;
 let emojiPickerOpen  = null;
 let meetLink    = '';
+
+// ── Multi-account & wheel constants (declared early so boot functions can use them) ──
+const MAX_ACCOUNTS  = 5;
+const AVATAR_COLORS = ['#7c6af7','#4fd1c5','#f87171','#fbbf24','#34d399','#f472b6','#60a5fa'];
+const WHEEL_COLORS  = ['#7c6af7','#4fd1c5','#f87171','#fbbf24','#34d399','#f472b6','#60a5fa','#fb923c'];
+let wheelNames      = [];
+let wheelSpinning   = false;
+let wheelAngle      = 0;
 
 const PRIVATE_ROOM = 'FamilyHub-8x4k2m9q7w3j5p1r6n0y';
 
@@ -768,7 +1014,11 @@ function buildCard(cardData,sectionIndex,cardId){
     let thumb='';
     let body='';
     if(cardData.mediaUrl){
-        const url=cardData.mediaUrl;
+        // On mobile prefer Cloudinary (works everywhere); fall back to Drive
+        const url = isMobile()
+            ? (cardData.cloudinaryUrl || cardData.mediaUrl || '')
+            : (cardData.mediaUrl || cardData.cloudinaryUrl || '');
+        if(!url){ }  // no media
         const media=detectMediaType(url);
         if(media.type==='youtube'){
             // YouTube — thumbnail with play button; clicking opens a lightbox player
@@ -797,13 +1047,14 @@ function buildCard(cardData,sectionIndex,cardId){
                 +'</svg>';
             thumb='<div style="position:absolute;inset:0;background:linear-gradient(135deg,'+c1+'33,'+c2+'33);display:flex;align-items:center;justify-content:center;">'+driveIcon+'</div>';
             if(isMobile()){
-                // On iPhone/Android iframes are blocked — show a big tap-to-open button instead
-                body='<a href="'+esc(url)+'" target="_blank" rel="noopener" '
-                    +'style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px;padding:13px 16px;'
+                // On mobile open Drive in a full-screen in-app overlay
+                const driveEmbed = media.embed;
+                body='<button data-driveurl="'+esc(driveEmbed)+'" class="drive-lightbox-btn" '
+                    +'style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px;padding:13px 16px;width:100%;'
                     +'background:rgba(26,115,232,.12);border:1.5px solid rgba(26,115,232,.5);border-radius:10px;'
-                    +'color:#4285f4;font-size:13px;font-weight:700;text-decoration:none;">'
+                    +'color:#4285f4;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">'
                     +driveIcon.replace('width="44" height="44"','width="22" height="22"')
-                    +'Open in Google Drive</a>';
+                    +'&#9654; View in Full Screen</button>';
             }else{
                 body='<iframe src="'+media.embed+'" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;margin-top:8px;" allowfullscreen></iframe>';
             }
@@ -899,33 +1150,39 @@ function detectMediaType(url){
 function showCardPopup(card,cardData,sectionIndex,cardId){
     popupClose();
 
-    const currentUrl = cardData.mediaUrl || '';
-    const isYT = currentUrl.includes('youtube') || currentUrl.includes('youtu.be');
-    const ytUrl = isYT ? currentUrl : '';
-    const hasMedia = currentUrl && !isYT;
-
-    // Build preview for existing media
-    let previewHtml = '';
-    if(currentUrl){
-        let thumbSrc='', label='';
-        const m = detectMediaType(currentUrl);
-        if(m.type==='youtube'){ const id=m.embed.split('/embed/')[1]; thumbSrc='https://img.youtube.com/vi/'+id+'/hqdefault.jpg'; label='YouTube video'; }
-        else if(m.type==='image'){ thumbSrc=currentUrl; label='Image'; }
-        else if(m.type==='audio'){ label='Audio file'; }
-        else if(m.type==='video'){ label='Video file'; }
-        else if(m.type==='gdrive'){ label='Google Drive file'; }
-        else { label='Link saved'; }
-        previewHtml = '<div class="ce-preview">'
-            + (thumbSrc ? '<img src="'+esc(thumbSrc)+'">' : '<div style="width:54px;height:40px;background:var(--surface2);border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px;">📎</div>')
-            + '<div class="ce-preview-info"><div class="ce-preview-type">'+label+'</div>'
-            + '<div class="ce-preview-url">'+esc(currentUrl.length>50?currentUrl.slice(0,50)+'…':currentUrl)+'</div></div>'
-            + '<button class="ce-remove-btn" id="pp-remove">Remove</button>'
-            + '</div>';
+    // cardData now stores both cloudinaryUrl and driveUrl separately
+    const cloudinaryUrl = cardData.cloudinaryUrl || '';
+    const driveUrl      = cardData.driveUrl || '';
+    // legacy: if only mediaUrl exists, detect which type it was
+    if(!cloudinaryUrl && !driveUrl && cardData.mediaUrl){
+        const m = detectMediaType(cardData.mediaUrl);
+        if(m.type==='gdrive') cardData.driveUrl = cardData.mediaUrl;
+        else cardData.cloudinaryUrl = cardData.mediaUrl;
     }
 
     const overlay = document.createElement('div');
     overlay.className = 'card-editor-overlay';
     overlay.id = 'cardEditorOverlay';
+
+    // Show existing Cloudinary preview if set
+    const clPreview = cardData.cloudinaryUrl ? (() => {
+        const m = detectMediaType(cardData.cloudinaryUrl);
+        const thumb = m.type==='image' ? '<img src="'+esc(cardData.cloudinaryUrl)+'" style="width:54px;height:40px;object-fit:cover;border-radius:6px;flex-shrink:0;">'
+            : '<div style="width:54px;height:40px;background:var(--surface2);border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;">'+(m.type==='video'?'🎬':m.type==='audio'?'🎵':'📎')+'</div>';
+        return '<div class="ce-preview" id="cl-preview">'+thumb
+            +'<div class="ce-preview-info"><div class="ce-preview-type" style="color:var(--accent2);">✅ Cloudinary (works everywhere)</div>'
+            +'<div class="ce-preview-url">'+esc(cardData.cloudinaryUrl.length>50?cardData.cloudinaryUrl.slice(0,50)+'…':cardData.cloudinaryUrl)+'</div></div>'
+            +'<button class="ce-remove-btn" id="pp-remove-cl">Remove</button></div>';
+    })() : '';
+
+    // Show existing Drive preview if set
+    const drPreview = cardData.driveUrl ? (() => {
+        return '<div class="ce-preview" id="dr-preview">'
+            +'<div style="width:54px;height:40px;background:rgba(66,133,244,.15);border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;">📂</div>'
+            +'<div class="ce-preview-info"><div class="ce-preview-type" style="color:#4285f4;">Google Drive link</div>'
+            +'<div class="ce-preview-url">'+esc(cardData.driveUrl.length>50?cardData.driveUrl.slice(0,50)+'…':cardData.driveUrl)+'</div></div>'
+            +'<button class="ce-remove-btn" id="pp-remove-dr">Remove</button></div>';
+    })() : '';
 
     overlay.innerHTML = `
         <div class="card-editor-box">
@@ -938,22 +1195,41 @@ function showCardPopup(card,cardData,sectionIndex,cardId){
                 <input class="ce-input" id="pp-name" type="text" placeholder="Give this card a name…" value="${esc(cardData.name||'')}">
                 <label class="ce-label">Description <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
                 <input class="ce-input" id="pp-desc" type="text" placeholder="Short description…" value="${esc(cardData.desc||'')}">
-                <label class="ce-label">Photo / Video / Audio</label>
-                <div id="ce-upload-area" style="border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg);">
-                    <div style="font-size:28px;margin-bottom:6px;">📁</div>
-                    <div style="font-weight:700;font-size:14px;color:var(--text);margin-bottom:4px;">Tap to pick a file</div>
-                    <div style="font-size:11px;color:var(--muted);">Photos, videos, audio — plays on iPhone, Android &amp; desktop</div>
-                </div>
-                <input type="file" id="ce-file-input" accept="image/*,video/*,audio/*" style="display:none">
-                <div id="ce-upload-progress" style="display:none;margin-top:10px;">
-                    <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden;">
-                        <div id="ce-upload-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;"></div>
+
+                <!-- CLOUDINARY SECTION -->
+                <div style="background:rgba(79,209,197,.07);border:1.5px solid rgba(79,209,197,.3);border-radius:12px;padding:14px;margin-top:14px;">
+                    <div style="font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+                        ☁️ Cloudinary — Works on iPhone, Android &amp; desktop
+                        <span style="font-size:10px;background:rgba(79,209,197,.2);padding:2px 7px;border-radius:10px;">RECOMMENDED</span>
                     </div>
-                    <div id="ce-upload-status" style="font-size:12px;color:var(--muted);margin-top:6px;text-align:center;">Uploading…</div>
+                    <div id="ce-upload-area" style="border:2px dashed rgba(79,209,197,.4);border-radius:10px;padding:16px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg);">
+                        <div style="font-size:24px;margin-bottom:4px;">📁</div>
+                        <div style="font-weight:700;font-size:13px;color:var(--text);margin-bottom:3px;">Tap to upload a file</div>
+                        <div style="font-size:11px;color:var(--muted);">Photo, video or audio</div>
+                    </div>
+                    <input type="file" id="ce-file-input" accept="image/*,video/*,audio/*" style="display:none">
+                    <div id="ce-upload-progress" style="display:none;margin-top:8px;">
+                        <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden;">
+                            <div id="ce-upload-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;"></div>
+                        </div>
+                        <div id="ce-upload-status" style="font-size:11px;color:var(--muted);margin-top:5px;text-align:center;">Uploading…</div>
+                    </div>
+                    ${clPreview}
                 </div>
-                ${previewHtml}
-                <label class="ce-label" style="margin-top:12px;">Or paste a YouTube link</label>
-                <input class="ce-input" id="pp-url" type="text" placeholder="https://youtube.com/watch?v=…" value="${esc(ytUrl)}">
+
+                <!-- GOOGLE DRIVE SECTION -->
+                <div style="background:rgba(66,133,244,.07);border:1.5px solid rgba(66,133,244,.3);border-radius:12px;padding:14px;margin-top:10px;">
+                    <div style="font-size:12px;font-weight:700;color:#4285f4;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+                        📂 Google Drive — Backup link
+                    </div>
+                    <a href="https://drive.google.com/drive/my-drive" target="_blank" rel="noopener"
+                       style="display:flex;align-items:center;justify-content:center;gap:7px;padding:9px;background:rgba(66,133,244,.1);border:1px solid rgba(66,133,244,.3);border-radius:8px;color:#4285f4;font-size:12px;font-weight:700;text-decoration:none;margin-bottom:8px;">
+                        Open Google Drive to copy a link
+                    </a>
+                    <input class="ce-input" id="pp-drive-url" type="text" placeholder="Paste Google Drive link here…" value="${esc(cardData.driveUrl||'')}">
+                    ${drPreview}
+                </div>
+
                 <div class="ce-actions">
                     <button class="ce-btn save" id="pp-save">✓ Save Card</button>
                     <button class="ce-btn del" id="pp-del">🗑 Delete Card</button>
@@ -965,10 +1241,11 @@ function showCardPopup(card,cardData,sectionIndex,cardId){
     document.body.appendChild(overlay);
     document.getElementById('pp-name').focus();
 
-    // Click upload area to pick file
-    document.getElementById('ce-upload-area').addEventListener('click', function(){
-        document.getElementById('ce-file-input').click();
-    });
+    // Upload area events
+    const uploadArea = document.getElementById('ce-upload-area');
+    uploadArea.addEventListener('click', ()=> document.getElementById('ce-file-input').click());
+    uploadArea.addEventListener('mouseenter', ()=> uploadArea.style.borderColor='var(--accent2)');
+    uploadArea.addEventListener('mouseleave', ()=> uploadArea.style.borderColor='rgba(79,209,197,.4)');
 
     // Only close when clicking dark backdrop
     overlay.addEventListener('mousedown', e=>{ if(e.target===overlay) popupClose(); });
@@ -979,12 +1256,11 @@ function showCardPopup(card,cardData,sectionIndex,cardId){
     document.getElementById('ce-file-input').addEventListener('change', async function(){
         const file = this.files[0]; if(!file) return;
         if(CLOUDINARY_CLOUD_NAME==='YOUR_CLOUD_NAME'){
-            toast('Please set up Cloudinary first in Host Settings!','warn'); return;
+            toast('Set up Cloudinary in Host Settings first!','warn'); return;
         }
         const progressWrap = document.getElementById('ce-upload-progress');
         const bar = document.getElementById('ce-upload-bar');
         const status = document.getElementById('ce-upload-status');
-        const uploadArea = document.getElementById('ce-upload-area');
         progressWrap.style.display = 'block';
         uploadArea.style.opacity = '0.5';
         status.textContent = 'Uploading '+file.name+'…';
@@ -1007,15 +1283,15 @@ function showCardPopup(card,cardData,sectionIndex,cardId){
                 xhr.open('POST','https://api.cloudinary.com/v1_1/'+CLOUDINARY_CLOUD_NAME+'/auto/upload');
                 xhr.send(fd);
             });
-            const url = result.secure_url;
-            document.getElementById('pp-url').value = url;
+            // Store cloudinary url separately
+            cardData.cloudinaryUrl = result.secure_url;
             bar.style.width = '100%';
             status.textContent = '✓ Uploaded! Press Save Card.';
             status.style.color = 'var(--success)';
-            uploadArea.innerHTML = '<div style="font-size:22px;margin-bottom:4px;">✅</div><div style="font-size:13px;font-weight:600;color:var(--success);">'+file.name+'</div><div style="font-size:11px;color:var(--muted);">Tap to replace</div>';
+            uploadArea.innerHTML = '<div style="font-size:20px;margin-bottom:3px;">✅</div><div style="font-size:12px;font-weight:600;color:var(--success);">'+esc(file.name)+'</div><div style="font-size:10px;color:var(--muted);">Tap to replace</div>';
             uploadArea.style.opacity = '1';
             uploadArea.style.borderColor = 'var(--success)';
-            toast('File uploaded! ✓');
+            toast('Uploaded! ✓');
         }catch(err){
             progressWrap.style.display = 'none';
             uploadArea.style.opacity = '1';
@@ -1023,13 +1299,16 @@ function showCardPopup(card,cardData,sectionIndex,cardId){
         }
     });
 
-    // Save
+    // Save — store both urls
     document.getElementById('pp-save').onclick = async()=>{
         const name = document.getElementById('pp-name').value.trim() || cardData.name || ('Card '+cardId);
         const desc = document.getElementById('pp-desc').value.trim();
-        const url  = document.getElementById('pp-url').value.trim();
-        const m    = detectMediaType(url);
-        const cd   = {name, desc, mediaUrl:url, mediaType:m.type};
+        const driveUrl = document.getElementById('pp-drive-url').value.trim();
+        const cloudUrl = cardData.cloudinaryUrl || '';
+        // Pick primary mediaUrl: cloudinary first, then drive, then empty
+        const primaryUrl = cloudUrl || driveUrl;
+        const m = detectMediaType(primaryUrl);
+        const cd = {name, desc, mediaUrl:primaryUrl, mediaType:m.type, cloudinaryUrl:cloudUrl, driveUrl:driveUrl};
         try{
             await window.dbSet(window.dbRef(window.db,'cards/section'+sectionIndex+'/'+cardId), cd);
             if(!allCards[sectionIndex]) allCards[sectionIndex]={};
@@ -1038,18 +1317,20 @@ function showCardPopup(card,cardData,sectionIndex,cardId){
         }catch(ex){ toast('Save failed: '+(ex.message||ex.code||ex),'danger'); }
     };
 
-    // Remove media
-    const ppRemove = document.getElementById('pp-remove');
-    if(ppRemove) ppRemove.onclick = async()=>{
-        const name = document.getElementById('pp-name').value.trim() || cardData.name || ('Card '+cardId);
-        const desc = document.getElementById('pp-desc').value.trim();
-        const cd   = {name, desc, mediaUrl:'', mediaType:'none'};
-        try{
-            await window.dbSet(window.dbRef(window.db,'cards/section'+sectionIndex+'/'+cardId), cd);
-            if(!allCards[sectionIndex]) allCards[sectionIndex]={};
-            allCards[sectionIndex][cardId] = cd;
-            toast('Media removed','warn'); popupClose(); loadCards(currentSection);
-        }catch(ex){ toast('Failed: '+(ex.message||ex.code||ex),'danger'); }
+    // Remove Cloudinary
+    const ppRemoveCl = document.getElementById('pp-remove-cl');
+    if(ppRemoveCl) ppRemoveCl.onclick = ()=>{
+        cardData.cloudinaryUrl = '';
+        document.getElementById('cl-preview').remove();
+        toast('Cloudinary link removed','warn');
+    };
+
+    // Remove Drive
+    const ppRemoveDr = document.getElementById('pp-remove-dr');
+    if(ppRemoveDr) ppRemoveDr.onclick = ()=>{
+        document.getElementById('pp-drive-url').value = '';
+        document.getElementById('dr-preview').remove();
+        toast('Drive link removed','warn');
     };
 
     // Delete card
@@ -1063,7 +1344,6 @@ function showCardPopup(card,cardData,sectionIndex,cardId){
 
     document.getElementById('pp-cancel').onclick  = popupClose;
     document.getElementById('pp-cancel2').onclick = popupClose;
-
     overlay._keyHandler = e=>{ if(e.key==='Escape') popupClose(); };
     document.addEventListener('keydown', overlay._keyHandler);
 }
@@ -1494,6 +1774,18 @@ function runSearch(query){
     });
 }
 
+// ── Google Drive Lightbox (mobile) ───────────────────────
+function openDriveLightbox(embedUrl){
+    const lb = document.getElementById('driveLightbox');
+    document.getElementById('driveFrame').src = embedUrl;
+    lb.style.display = 'flex';
+}
+function closeDriveLightbox(){
+    const lb = document.getElementById('driveLightbox');
+    document.getElementById('driveFrame').src = '';
+    lb.style.display = 'none';
+}
+
 // ── YouTube Lightbox ─────────────────────────────────────
 function openStreamableLightbox(stId){
     const lb=document.getElementById('ytLightbox');
@@ -1529,6 +1821,12 @@ function joinGoogleMeet(){
 
 // ── Global events ─────────────────────────────────────────
 // Handle image load errors for link-type cards
+// Drive lightbox button delegation (avoids inline onclick quote issues)
+document.getElementById('cardsGrid').addEventListener('click',e=>{
+    const btn = e.target.closest('.drive-lightbox-btn');
+    if(btn){ e.stopPropagation(); openDriveLightbox(btn.dataset.driveurl); }
+});
+
 document.getElementById('cardsGrid').addEventListener('error',e=>{
     if(e.target.classList.contains('link-img-try')){
         e.target.style.display='none';
@@ -1570,13 +1868,9 @@ document.querySelectorAll('.modal').forEach(m=>{
 
 // Step 2: hide sign-in if name already saved, otherwise keep it open
 (function restoreSession(){
-    try{
-        const saved=localStorage.getItem('userName');
-        if(saved){
-            currentUser=saved;
-            document.getElementById('signinOverlay').classList.add('hidden');
-        }
-    }catch(e){}
+    // Always show the sign-in screen — never auto-login
+    // Just pre-populate the saved accounts so they can tap their name
+    renderSignIn();
 })();
 
 // Step 3: load real data from Firebase once ready (replaces placeholders)
@@ -1585,10 +1879,621 @@ waitForFirebase(()=>{
     loadContent();
     loadCommentsCount();
     listenAnnouncements();
+    checkBirthdays();
 });
 
-// ── Expose all functions needed by HTML onclick attributes ───
+// ══════════════════════════════════════════════════════════
+//  MULTI-ACCOUNT LOGIN
+// ══════════════════════════════════════════════════════════
+// (MAX_ACCOUNTS and AVATAR_COLORS declared at top)
+
+function getSavedAccounts(){
+    try{ return JSON.parse(localStorage.getItem('familyAccounts')||'[]'); }
+    catch(e){ return []; }
+}
+function saveAccounts(arr){
+    try{ localStorage.setItem('familyAccounts', JSON.stringify(arr.slice(0,MAX_ACCOUNTS))); }catch(e){}
+}
+
+function renderSignIn(){
+    const accounts = getSavedAccounts();
+    const list = document.getElementById('savedAccountsList');
+    const divider = document.getElementById('signinDivider');
+    const newWrap = document.getElementById('newNameWrap');
+    const sub = document.getElementById('signinSub');
+    list.innerHTML = '';
+
+    const toggleBtn = document.getElementById('showNewNameBtn');
+
+    if(accounts.length > 0){
+        sub.textContent = "Who's using the app?";
+        accounts.forEach((acc, i) => {
+            const initials = acc.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+            const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
+            const btn = document.createElement('button');
+            btn.className = 'saved-btn';
+            btn.innerHTML = `<div class="saved-avatar" style="background:${color}">${initials}</div>
+                <span class="saved-name">${esc(acc.name)}</span>
+                <button class="saved-remove" data-idx="${i}" title="Remove from this device">✕</button>`;
+            btn.addEventListener('click', e => {
+                if(e.target.closest('.saved-remove')) return;
+                doSignIn(acc.name);
+            });
+            btn.querySelector('.saved-remove').addEventListener('click', e => {
+                e.stopPropagation();
+                const arr = getSavedAccounts();
+                arr.splice(parseInt(e.target.dataset.idx), 1);
+                saveAccounts(arr);
+                renderSignIn();
+            });
+            list.appendChild(btn);
+        });
+        // Show toggle button, hide name input by default
+        if(accounts.length < MAX_ACCOUNTS){
+            toggleBtn.style.display = 'block';
+            newWrap.style.display = 'none';
+            document.getElementById('nameInput').value = '';
+        } else {
+            // Max reached — no toggle, no input
+            toggleBtn.style.display = 'none';
+            newWrap.style.display = 'none';
+        }
+    } else {
+        sub.textContent = 'Enter your name to join';
+        toggleBtn.style.display = 'none';
+        newWrap.style.display = 'block';
+    }
+}
+
+function toggleNewName(){
+    const wrap = document.getElementById('newNameWrap');
+    const btn = document.getElementById('showNewNameBtn');
+    const isHidden = wrap.style.display === 'none';
+    wrap.style.display = isHidden ? 'block' : 'none';
+    btn.textContent = isHidden ? '✕ Cancel' : '+ Use a different name';
+    if(isHidden) setTimeout(()=>document.getElementById('nameInput').focus(), 50);
+}
+
+function signIn(){
+    const name = document.getElementById('nameInput').value.trim();
+    if(!name){ toast('Please enter your name!','warn'); return; }
+    doSignIn(name);
+}
+
+function doSignIn(name){
+    // Save to accounts list if not already there
+    const accounts = getSavedAccounts();
+    if(!accounts.find(a => a.name === name)){
+        accounts.unshift({name, addedAt: Date.now()});
+        saveAccounts(accounts);
+    }
+    try{ localStorage.setItem('userName', name); }catch(e){}
+    currentUser = name;
+    document.getElementById('signinOverlay').classList.add('hidden');
+    waitForFirebase(()=>{ registerOnlineUser(); loadContent(); });
+    toast('Welcome, ' + name + '! 👋');
+    // Add to wheel if not already there
+    addWheelNameIfNew(name);
+    checkBirthdays();
+}
+
+// ══════════════════════════════════════════════════════════
+//  FEATURE TAB SWITCHER
+// ══════════════════════════════════════════════════════════
+function switchFeatureTab(panel, btn){
+    document.querySelectorAll('.feature-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.feature-panel').forEach(p => p.classList.remove('active'));
+    if(btn) btn.classList.add('active');
+    const el = document.getElementById('panel-'+panel);
+    if(el) el.classList.add('active');
+    if(panel === 'calendar') renderCalendar();
+    if(panel === 'recipes') renderRecipes();
+    if(panel === 'poll') renderPolls();
+    if(panel === 'wheel') renderWheel();
+}
+
+// ══════════════════════════════════════════════════════════
+//  BIRTHDAY BANNER
+// ══════════════════════════════════════════════════════════
+function checkBirthdays(){
+    waitForFirebase(async ()=>{
+        try{
+            const snap = await window.dbGet(window.dbRef(window.db,'events'));
+            if(!snap.exists()) return;
+            const events = Object.values(snap.val());
+            const today = new Date();
+            const mm = String(today.getMonth()+1).padStart(2,'0');
+            const dd = String(today.getDate()).padStart(2,'0');
+            const todayMD = mm+'-'+dd;
+            const bdays = events.filter(e => e.type==='birthday' && e.date && e.date.slice(5)===todayMD);
+            const banner = document.getElementById('bdayBanner');
+            const bannerText = document.getElementById('bdayBannerText');
+            if(bdays.length){
+                const names = bdays.map(b=>b.title).join(' & ');
+                bannerText.textContent = '🎉 Today is ' + names + '! Wishing them a wonderful birthday!';
+                banner.classList.add('active');
+            } else {
+                banner.classList.remove('active');
+            }
+        }catch(e){}
+    });
+}
+
+// ══════════════════════════════════════════════════════════
+//  CALENDAR
+// ══════════════════════════════════════════════════════════
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+const EVENT_COLORS = {birthday:'#f87171',holiday:'#fbbf24',gathering:'#7c6af7',appointment:'#4fd1c5',other:'#34d399'};
+const EVENT_EMOJIS = {birthday:'🎂',holiday:'🎉',gathering:'👨‍👩‍👧',appointment:'🏥',other:'📌'};
+
+function calNav(dir){
+    calMonth += dir;
+    if(calMonth > 11){ calMonth=0; calYear++; }
+    if(calMonth < 0){ calMonth=11; calYear--; }
+    renderCalendar();
+}
+
+// Get Hebrew date string for a given JS Date
+function getHebrewDate(date){
+    try{
+        const day = new Intl.DateTimeFormat('he-IL-u-ca-hebrew',{day:'numeric'}).format(date);
+        const month = new Intl.DateTimeFormat('he-IL-u-ca-hebrew',{month:'long'}).format(date);
+        return day + ' ' + month;
+    }catch(e){ return ''; }
+}
+
+async function renderCalendar(){
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    document.getElementById('calMonthLabel').textContent = monthNames[calMonth] + ' ' + calYear;
+    const grid = document.getElementById('calGrid');
+    grid.innerHTML = '';
+    // Day name headers — English + Hebrew
+    const dayNames = [
+        {en:'Sun', he:'א׳'},
+        {en:'Mon', he:'ב׳'},
+        {en:'Tue', he:'ג׳'},
+        {en:'Wed', he:'ד׳'},
+        {en:'Thu', he:'ה׳'},
+        {en:'Fri', he:'ש׳'},
+        {en:'Sat', he:'שבת'}
+    ];
+    dayNames.forEach(d => {
+        const el = document.createElement('div');
+        el.className = 'cal-day-name';
+        el.innerHTML = '<span style="display:block;font-size:11px;">' + d.en + '</span>'
+            + '<span style="display:block;font-size:9px;color:var(--accent2);direction:rtl;">' + d.he + '</span>';
+        grid.appendChild(el);
+    });
+    // Load events
+    let eventsMap = {};
+    try{
+        const snap = await window.dbGet(window.dbRef(window.db,'events'));
+        if(snap.exists()) Object.values(snap.val()).forEach(e => {
+            if(e.date){ eventsMap[e.date] = eventsMap[e.date]||[]; eventsMap[e.date].push(e); }
+        });
+    }catch(ex){}
+
+    const firstDay = new Date(calYear, calMonth, 1).getDay();
+    const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+    const daysInPrev = new Date(calYear, calMonth, 0).getDate();
+    const today = new Date();
+
+    // Prev month padding
+    for(let i=firstDay-1; i>=0; i--){
+        const d = document.createElement('div');
+        d.className = 'cal-day other-month';
+        d.innerHTML = '<div class="cal-day-num">'+(daysInPrev-i)+'</div>';
+        grid.appendChild(d);
+    }
+    // Current month days
+    for(let d=1; d<=daysInMonth; d++){
+        const dateStr = calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+        const isToday = d===today.getDate() && calMonth===today.getMonth() && calYear===today.getFullYear();
+        const dayEl = document.createElement('div');
+        dayEl.className = 'cal-day' + (isToday?' today':'') + (eventsMap[dateStr]?' has-event':'');
+        const jsDate = new Date(calYear, calMonth, d);
+        const hebStr = getHebrewDate(jsDate);
+        let dotsHtml = (eventsMap[dateStr]||[]).slice(0,3).map(e=>
+            '<div class="cal-dot" style="background:'+EVENT_COLORS[e.type||'other']+'"></div>').join('');
+        dayEl.innerHTML = '<div class="cal-day-num">'+d+'</div>'
+            + (hebStr ? '<div class="cal-day-heb">'+hebStr+'</div>' : '')
+            + dotsHtml;
+        grid.appendChild(dayEl);
+    }
+    // Next month padding
+    const total = firstDay + daysInMonth;
+    const remaining = total % 7 === 0 ? 0 : 7 - (total % 7);
+    for(let i=1; i<=remaining; i++){
+        const d = document.createElement('div');
+        d.className = 'cal-day other-month';
+        d.innerHTML = '<div class="cal-day-num">'+i+'</div>';
+        grid.appendChild(d);
+    }
+    // Render upcoming events list
+    renderUpcomingEvents(eventsMap);
+}
+
+function renderUpcomingEvents(eventsMap){
+    const list = document.getElementById('calEventsList');
+    list.innerHTML = '';
+    const allEvents = [];
+    Object.entries(eventsMap).forEach(([date, evts]) => evts.forEach(e => allEvents.push({...e, date})));
+    allEvents.sort((a,b) => a.date.localeCompare(b.date));
+    if(!allEvents.length){
+        list.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">No events yet — add one!</div>';
+        return;
+    }
+    allEvents.forEach(e => {
+        const el = document.createElement('div');
+        el.className = 'cal-event-item';
+        const color = EVENT_COLORS[e.type||'other'];
+        const emoji = EVENT_EMOJIS[e.type||'other'];
+        const dateObj = new Date(e.date+'T12:00:00');
+        const dateStr = dateObj.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+        const hebDateStr = getHebrewDate(dateObj);
+        el.innerHTML = `<div class="cal-event-dot" style="background:${color}"></div>
+            <div class="cal-event-info">
+                <div class="cal-event-title">${emoji} ${esc(e.title)}</div>
+                <div class="cal-event-date">${dateStr}${hebDateStr?' · <span style="direction:rtl;color:var(--accent2);">'+hebDateStr+'</span>':''} · added by ${esc(e.author||'Family')}</div>
+            </div>
+            ${isHost ? '<button class="cal-event-del" data-key="'+esc(e._key||'')+'" onclick="deleteEvent(this.dataset.key)">🗑</button>' : ''}`;
+        list.appendChild(el);
+    });
+}
+
+function openAddEvent(){
+    document.getElementById('evtTitle').value='';
+    document.getElementById('evtDate').value='';
+    document.getElementById('evtType').value='birthday';
+    document.getElementById('evtAuthor').value=currentUser||'';
+    document.getElementById('addEventModal').classList.add('active');
+}
+
+async function saveEvent(){
+    const title = document.getElementById('evtTitle').value.trim();
+    const date = document.getElementById('evtDate').value;
+    const type = document.getElementById('evtType').value;
+    if(!title||!date){ toast('Please fill in name and date','warn'); return; }
+    try{
+        const ref = window.dbPush(window.dbRef(window.db,'events'));
+        await window.dbSet(ref,{title,date,type,author:currentUser||'Family',timestamp:Date.now()});
+        toast('Event saved! 📅'); closeModal('addEventModal'); renderCalendar(); checkBirthdays();
+    }catch(e){ toast('Failed: '+e.message,'danger'); }
+}
+
+async function deleteEvent(key){
+    if(!key||!confirm('Delete this event?')) return;
+    try{
+        await window.dbRemove(window.dbRef(window.db,'events/'+key));
+        toast('Event deleted','warn'); renderCalendar();
+    }catch(e){ toast('Failed','danger'); }
+}
+
+// ══════════════════════════════════════════════════════════
+//  RECIPES
+// ══════════════════════════════════════════════════════════
+function openAddRecipe(){
+    ['recTitle','recEmoji','recTime','recServes','recIngredients','recSteps'].forEach(id=>{
+        const el=document.getElementById(id); if(el) el.value='';
+    });
+    document.getElementById('recEmoji').value='🍽️';
+    document.getElementById('recAuthor').value=currentUser||'';
+    document.getElementById('addRecipeModal').classList.add('active');
+}
+
+async function saveRecipe(){
+    const title = document.getElementById('recTitle').value.trim();
+    const emoji = document.getElementById('recEmoji').value.trim()||'🍽️';
+    const time = document.getElementById('recTime').value.trim();
+    const serves = document.getElementById('recServes').value.trim();
+    const ingredients = document.getElementById('recIngredients').value.trim();
+    const steps = document.getElementById('recSteps').value.trim();
+    if(!title||!ingredients||!steps){ toast('Please fill in title, ingredients and steps','warn'); return; }
+    try{
+        const ref = window.dbPush(window.dbRef(window.db,'recipes'));
+        await window.dbSet(ref,{title,emoji,time,serves,ingredients,steps,author:currentUser||'Family',timestamp:Date.now()});
+        toast('Recipe saved! 🍳'); closeModal('addRecipeModal'); renderRecipes();
+    }catch(e){ toast('Failed: '+e.message,'danger'); }
+}
+
+async function renderRecipes(){
+    const grid = document.getElementById('recipeGrid');
+    grid.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:20px;">Loading recipes…</div>';
+    try{
+        const snap = await window.dbGet(window.dbRef(window.db,'recipes'));
+        grid.innerHTML = '';
+        if(!snap.exists()){
+            grid.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:20px;grid-column:1/-1;text-align:center;">No recipes yet — add your first one!</div>';
+            return;
+        }
+        const recipes = snap.val();
+        Object.entries(recipes).forEach(([key,r])=>{
+            const card = document.createElement('div');
+            card.className = 'recipe-card';
+            card.innerHTML = `<div class="recipe-card-thumb">${esc(r.emoji||'🍽️')}</div>
+                <div class="recipe-card-body">
+                    <div class="recipe-card-title">${esc(r.title)}</div>
+                    <div class="recipe-card-meta">${r.time?'⏱ '+esc(r.time)+' · ':''}${r.serves?'👥 '+esc(r.serves)+' · ':''}by ${esc(r.author||'Family')}</div>
+                </div>`;
+            card.addEventListener('click', ()=> openViewRecipe(key, r));
+            grid.appendChild(card);
+        });
+    }catch(e){ grid.innerHTML = '<div style="color:var(--danger);padding:20px;">Error loading recipes</div>'; }
+}
+
+function openViewRecipe(key, r){
+    const steps = (r.steps||'').split('\n').filter(Boolean);
+    const ingredients = (r.ingredients||'').split('\n').filter(Boolean);
+    let stepsHtml = steps.map((s,i)=>`
+        <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">
+            <div style="width:26px;height:26px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;">${i+1}</div>
+            <div style="font-size:13px;color:var(--text);line-height:1.6;">${esc(s)}</div>
+        </div>`).join('');
+    let ingHtml = ingredients.map(ing=>`<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;display:flex;gap:8px;align-items:center;"><span style="color:var(--accent2);">•</span>${esc(ing)}</div>`).join('');
+    document.getElementById('viewRecipeContent').innerHTML = `
+        <div style="text-align:center;font-size:52px;margin-bottom:8px;">${esc(r.emoji||'🍽️')}</div>
+        <h2 style="text-align:center;margin-bottom:4px;">${esc(r.title)}</h2>
+        <div style="text-align:center;color:var(--muted);font-size:12px;margin-bottom:20px;">${r.time?'⏱ '+esc(r.time)+' · ':''}${r.serves?'👥 '+esc(r.serves)+' · ':''}by ${esc(r.author||'Family')}</div>
+        <div style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Ingredients</div>
+        <div style="margin-bottom:20px;">${ingHtml}</div>
+        <div style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Steps</div>
+        ${stepsHtml}`;
+    const delBtn = document.getElementById('deleteRecipeBtn');
+    if(isHost){ delBtn.style.display='flex'; delBtn.onclick=async()=>{ if(!confirm('Delete this recipe?')) return; await window.dbRemove(window.dbRef(window.db,'recipes/'+key)); toast('Recipe deleted','warn'); closeModal('viewRecipeModal'); renderRecipes(); }; }
+    else { delBtn.style.display='none'; }
+    document.getElementById('viewRecipeModal').classList.add('active');
+}
+
+// ══════════════════════════════════════════════════════════
+//  POLL
+// ══════════════════════════════════════════════════════════
+function openCreatePoll(){
+    document.getElementById('pollQuestion').value='';
+    document.getElementById('pollOptions').value='';
+    document.getElementById('createPollModal').classList.add('active');
+}
+
+async function savePoll(){
+    const question = document.getElementById('pollQuestion').value.trim();
+    const options = document.getElementById('pollOptions').value.split('\n').map(s=>s.trim()).filter(Boolean);
+    if(!question){ toast('Please enter a question','warn'); return; }
+    if(options.length < 2){ toast('Please enter at least 2 options','warn'); return; }
+    const pollData = {question, options, votes:{}, createdBy:currentUser||'Host', timestamp:Date.now(), active:true};
+    try{
+        const ref = window.dbPush(window.dbRef(window.db,'polls'));
+        await window.dbSet(ref, pollData);
+        toast('Poll created! 🗳️'); closeModal('createPollModal'); renderPolls();
+    }catch(e){ toast('Failed: '+e.message,'danger'); }
+}
+
+async function renderPolls(){
+    const container = document.getElementById('pollContainer');
+    container.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:20px;">Loading polls…</div>';
+    // Only host can create polls
+    document.getElementById('createPollBtn').style.display = isHost ? 'flex' : 'none';
+    try{
+        const snap = await window.dbGet(window.dbRef(window.db,'polls'));
+        container.innerHTML = '';
+        if(!snap.exists()){
+            container.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:20px;text-align:center;">No polls yet!'+(isHost?' Create one above!':'')+'</div>';
+            return;
+        }
+        const polls = snap.val();
+        Object.entries(polls).reverse().forEach(([key,poll])=>{
+            const votedKey = 'voted_'+key;
+            const myVote = localStorage.getItem(votedKey);
+            const votes = poll.votes||{};
+            const totalVotes = Object.values(votes).reduce((a,b)=>a+b,0);
+            const card = document.createElement('div');
+            card.className = 'poll-card';
+            let optionsHtml = (poll.options||[]).map((opt,i)=>{
+                const voteCount = votes[i]||0;
+                const pct = totalVotes ? Math.round(voteCount/totalVotes*100) : 0;
+                const isMyVote = myVote == i;
+                const colors = ['rgba(124,106,247,.5)','rgba(79,209,197,.5)','rgba(248,113,113,.5)','rgba(251,191,36,.5)','rgba(52,211,153,.5)'];
+                return '<div class="poll-option" data-pollkey="'+esc(key)+'" data-optidx="'+i+'">'
+                    +'<div class="poll-bar-wrap">'
+                    +'<div class="poll-bar-fill" style="width:'+pct+'%;background:'+colors[i%colors.length]+';"></div>'
+                    +'<div class="poll-bar-label">'+(isMyVote?'&#10003; ':'')+'<span>'+esc(opt)+'</span></div>'
+                    +'<div class="poll-bar-pct">'+pct+'%</div>'
+                    +'</div></div>';
+            }).join('');
+            card.innerHTML = '<div class="poll-question">'+esc(poll.question)+'</div>'
+                + optionsHtml
+                + '<div class="poll-voted">'+totalVotes+' vote'+(totalVotes!==1?'s':'')+' &middot; by '+esc(poll.createdBy||'Host')+'</div>'
+                + (isHost ? '<button class="delete-poll-btn" data-key="'+esc(key)+'" style="margin-top:8px;background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;font-family:inherit;">&#128465; Delete poll</button>' : '');
+            container.appendChild(card);
+        });
+    }catch(e){ container.innerHTML = '<div style="color:var(--danger);padding:20px;">Error loading polls</div>'; }
+}
+
+// Poll vote delegation
+document.addEventListener('click', e=>{
+    const opt = e.target.closest('.poll-option');
+    if(opt && opt.dataset.pollkey) castVote(opt.dataset.pollkey, parseInt(opt.dataset.optidx));
+});
+
+async function castVote(pollKey, optionIdx){
+    const votedKey = 'voted_'+pollKey;
+    if(localStorage.getItem(votedKey)!==null){ toast('You already voted!','warn'); return; }
+    try{
+        const ref = window.dbRef(window.db,'polls/'+pollKey+'/votes/'+optionIdx);
+        const snap = await window.dbGet(ref);
+        const current = snap.exists() ? snap.val() : 0;
+        await window.dbSet(ref, current+1);
+        localStorage.setItem(votedKey, optionIdx);
+        toast('Vote cast! 🗳️'); renderPolls();
+    }catch(e){ toast('Failed','danger'); }
+}
+
+// Poll delete delegation
+document.addEventListener('click', e=>{
+    const btn = e.target.closest('.delete-poll-btn');
+    if(btn) deletePoll(btn.dataset.key);
+});
+
+async function deletePoll(key){
+    if(!confirm('Delete this poll?')) return;
+    try{
+        await window.dbRemove(window.dbRef(window.db,'polls/'+key));
+        toast('Poll deleted','warn'); renderPolls();
+    }catch(e){ toast('Failed','danger'); }
+}
+
+// ══════════════════════════════════════════════════════════
+//  SPIN WHEEL
+// ══════════════════════════════════════════════════════════
+// (wheel vars declared at top)
+
+function loadWheelNames(){
+    try{ wheelNames = JSON.parse(localStorage.getItem('wheelNames')||'[]'); }
+    catch(e){ wheelNames = []; }
+}
+function saveWheelNames(){
+    try{ localStorage.setItem('wheelNames', JSON.stringify(wheelNames)); }catch(e){}
+}
+function addWheelNameIfNew(name){
+    loadWheelNames();
+    if(name && !wheelNames.includes(name)){
+        wheelNames.push(name);
+        saveWheelNames();
+    }
+}
+function addWheelName(){
+    const input = document.getElementById('wheelNewName');
+    const name = input.value.trim();
+    if(!name){ toast('Enter a name first','warn'); return; }
+    loadWheelNames();
+    if(wheelNames.includes(name)){ toast('Already on the wheel!','warn'); return; }
+    wheelNames.push(name);
+    saveWheelNames();
+    input.value = '';
+    renderWheel();
+}
+
+function renderWheel(){
+    loadWheelNames();
+    const canvas = document.getElementById('wheelCanvas');
+    if(!canvas) return;
+    drawWheel(canvas, wheelAngle);
+    // Render name tags
+    const tagsEl = document.getElementById('wheelNames');
+    tagsEl.innerHTML = '';
+    wheelNames.forEach((name, i) => {
+        const tag = document.createElement('div');
+        tag.className = 'wheel-name-tag';
+        tag.style.borderColor = WHEEL_COLORS[i % WHEEL_COLORS.length];
+        tag.innerHTML = `<span>${esc(name)}</span><button class="wheel-name-remove" data-name="${esc(name)}">✕</button>`;
+        tag.querySelector('.wheel-name-remove').addEventListener('click', e => {
+            loadWheelNames();
+            wheelNames = wheelNames.filter(n => n !== e.target.dataset.name);
+            saveWheelNames();
+            renderWheel();
+        });
+        tagsEl.appendChild(tag);
+    });
+    if(!wheelNames.length){
+        tagsEl.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px;">No names yet — add some or sign in!</div>';
+    }
+}
+
+function drawWheel(canvas, rotation){
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const cx = W/2, cy = H/2, r = W/2 - 4;
+    ctx.clearRect(0,0,W,H);
+    if(!wheelNames.length){
+        ctx.fillStyle = '#1e2230';
+        ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#6b7280'; ctx.font = '14px DM Sans'; ctx.textAlign='center';
+        ctx.fillText('Add names to spin!', cx, cy);
+        return;
+    }
+    const slice = (Math.PI*2) / wheelNames.length;
+    wheelNames.forEach((name, i) => {
+        const startAngle = rotation + i * slice;
+        const endAngle = startAngle + slice;
+        // Slice
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, r, startAngle, endAngle);
+        ctx.closePath();
+        ctx.fillStyle = WHEEL_COLORS[i % WHEEL_COLORS.length];
+        ctx.fill();
+        ctx.strokeStyle = '#0d0f14';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        // Text
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(startAngle + slice/2);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold '+Math.min(14, Math.floor(200/wheelNames.length)+8)+'px DM Sans';
+        ctx.shadowColor = 'rgba(0,0,0,.4)';
+        ctx.shadowBlur = 3;
+        ctx.fillText(name.length > 10 ? name.slice(0,9)+'…' : name, r - 10, 5);
+        ctx.restore();
+    });
+    // Center circle
+    ctx.beginPath(); ctx.arc(cx,cy,22,0,Math.PI*2);
+    ctx.fillStyle = '#0d0f14'; ctx.fill();
+    ctx.strokeStyle = '#2a2f42'; ctx.lineWidth=2; ctx.stroke();
+}
+
+function spinWheel(){
+    loadWheelNames();
+    if(wheelNames.length < 2){ toast('Add at least 2 names to spin!','warn'); return; }
+    if(wheelSpinning) return;
+    wheelSpinning = true;
+    document.getElementById('wheelSpinBtn').disabled = true;
+    document.getElementById('wheelResult').textContent = '';
+    const canvas = document.getElementById('wheelCanvas');
+    const totalSpins = (Math.random()*5+5) * Math.PI*2;
+    const duration = 4000;
+    const startAngle = wheelAngle;
+    const startTime = performance.now();
+    function animate(now){
+        const elapsed = now - startTime;
+        const t = Math.min(elapsed/duration, 1);
+        // Ease out cubic
+        const eased = 1 - Math.pow(1-t, 3);
+        wheelAngle = startAngle + totalSpins * eased;
+        drawWheel(canvas, wheelAngle);
+        if(t < 1){ requestAnimationFrame(animate); return; }
+        // Find winner — pointer is at top (Math.PI*1.5 from right = -PI/2)
+        const slice = (Math.PI*2) / wheelNames.length;
+        const normalised = (((-wheelAngle % (Math.PI*2)) + Math.PI*2) % (Math.PI*2));
+        const winnerIdx = Math.floor(normalised / slice) % wheelNames.length;
+        const winner = wheelNames[winnerIdx];
+        document.getElementById('wheelResult').textContent = '🎉 ' + winner + '!';
+        toast('🎉 ' + winner + ' was picked!');
+        wheelSpinning = false;
+        document.getElementById('wheelSpinBtn').disabled = false;
+    }
+    requestAnimationFrame(animate);
+}
+
+// ══════════════════════════════════════════════════════════
+//  Expose all functions needed by HTML onclick attributes ───
+
 window.signIn=signIn;
+window.toggleNewName=toggleNewName;
+window.switchFeatureTab=switchFeatureTab;
+window.calNav=calNav;
+window.openAddEvent=openAddEvent;
+window.saveEvent=saveEvent;
+window.deleteEvent=deleteEvent;
+window.openAddRecipe=openAddRecipe;
+window.saveRecipe=saveRecipe;
+window.openCreatePoll=openCreatePoll;
+window.savePoll=savePoll;
+window.castVote=castVote;
+window.deletePoll=deletePoll;
+window.spinWheel=spinWheel;
+window.addWheelName=addWheelName;
+window.renderWheel=renderWheel;
 window.checkHostPin=checkHostPin;
 window.clearAllComments=clearAllComments;
 window.clearAnnouncement=clearAnnouncement;
@@ -1608,6 +2513,8 @@ window.sendAnnouncement=sendAnnouncement;
 window.showHostLogin=showHostLogin;
 window.switchHostTab=switchHostTab;
 window.runSearch=runSearch;
+window.openDriveLightbox=openDriveLightbox;
+window.closeDriveLightbox=closeDriveLightbox;
 window.joinVideoRoom=typeof joinVideoRoom!=='undefined'?joinVideoRoom:undefined;
 </script>
 </body>
