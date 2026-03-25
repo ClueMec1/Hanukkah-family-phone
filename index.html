@@ -8,21 +8,21 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-    --bg:#0d0f14; --surface:#161921; --surface2:#1e2230; --border:#2a2f42;
-    --accent:#7c6af7; --accent2:#4fd1c5; --accent-glow:rgba(124,106,247,.30);
-    --text:#e8eaf0; --muted:#6b7280; --success:#34d399; --danger:#f87171; --warn:#fbbf24;
+    --bg:#f7f8fc; --surface:#ffffff; --surface2:#eef0f7; --border:#dde1ef;
+    --accent:#5c6bc0; --accent2:#26a69a; --accent-glow:rgba(92,107,192,.18);
+    --text:#1a1d2e; --muted:#6b7280; --success:#2e7d5e; --danger:#e53935; --warn:#f57c00;
     --radius:14px; --radius-lg:22px;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;min-height:100vh;}
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-    background:radial-gradient(ellipse 80% 60% at 20% 0%,rgba(124,106,247,.08) 0%,transparent 60%),
-               radial-gradient(ellipse 60% 40% at 80% 100%,rgba(79,209,197,.06) 0%,transparent 60%);}
+    background:radial-gradient(ellipse 80% 60% at 20% 0%,rgba(92,107,192,.05) 0%,transparent 60%),
+               radial-gradient(ellipse 60% 40% at 80% 100%,rgba(38,166,154,.04) 0%,transparent 60%);}
 
 /* SIGN-IN */
-.signin-overlay{position:fixed;inset:0;background:rgba(13,15,20,.97);display:flex;justify-content:center;align-items:center;z-index:10000;backdrop-filter:blur(8px);transition:opacity .4s,visibility .4s;}
+.signin-overlay{position:fixed;inset:0;background:rgba(247,248,252,.97);display:flex;justify-content:center;align-items:center;z-index:10000;backdrop-filter:blur(8px);transition:opacity .4s,visibility .4s;}
 .signin-overlay.hidden{opacity:0;visibility:hidden;pointer-events:none;}
-.signin-box{background:var(--surface);padding:36px 30px;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:0 0 80px var(--accent-glow),0 24px 60px rgba(0,0,0,.5);text-align:center;max-width:420px;width:92%;animation:slideUp .5s cubic-bezier(.22,1,.36,1);}
+.signin-box{background:var(--surface);padding:36px 30px;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:0 0 60px var(--accent-glow),0 24px 60px rgba(92,107,192,.1);text-align:center;max-width:420px;width:92%;animation:slideUp .5s cubic-bezier(.22,1,.36,1);}
 .signin-logo{font-family:'Playfair Display',serif;font-size:38px;color:var(--accent);margin-bottom:6px;}
 .signin-sub{color:var(--muted);margin-bottom:18px;font-size:14px;}
 /* Saved accounts */
@@ -36,7 +36,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .signin-divider{display:flex;align-items:center;gap:10px;margin:12px 0;color:var(--muted);font-size:12px;}
 .signin-divider::before,.signin-divider::after{content:'';flex:1;height:1px;background:var(--border);}
 /* Feature nav tabs */
-.feature-tabs{display:flex;gap:6px;padding:8px 14px;background:rgba(13,15,20,.5);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;}
+.feature-tabs{display:flex;gap:6px;padding:8px 14px;background:rgba(255,255,255,.85);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;}
 .feature-tabs::-webkit-scrollbar{display:none;}
 .feature-tab{flex-shrink:0;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:7px 13px;cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);font-family:inherit;transition:all .2s;display:flex;align-items:center;gap:5px;}
 .feature-tab:hover{border-color:var(--accent);color:var(--text);}
@@ -124,7 +124,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .btn-danger:hover{background:var(--danger);color:#fff;}
 
 /* HEADER */
-.header{background:rgba(13,15,20,.9);backdrop-filter:blur(18px);padding:0 22px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:1000;display:flex;justify-content:space-between;align-items:center;height:62px;}
+.header{background:rgba(255,255,255,.92);backdrop-filter:blur(18px);padding:0 22px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:1000;display:flex;justify-content:space-between;align-items:center;height:62px;box-shadow:0 1px 8px rgba(92,107,192,.07);}
 .logo{font-family:'Playfair Display',serif;font-size:24px;color:var(--accent);}
 .header-icons{display:flex;gap:7px;}
 .header-icon{width:40px;height:40px;background:var(--surface);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;position:relative;color:var(--muted);}
@@ -132,7 +132,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .user-badge{position:absolute;top:-5px;right:-5px;background:var(--accent);color:#fff;min-width:18px;height:18px;padding:0 4px;border-radius:9px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg);}
 
 /* NAV */
-.top-nav{display:flex;gap:8px;padding:11px 18px;background:rgba(13,15,20,.6);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;}
+.top-nav{display:flex;gap:8px;padding:11px 18px;background:rgba(255,255,255,.85);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;}
 .top-nav::-webkit-scrollbar{display:none;}
 .nav-button{flex-shrink:0;background:var(--surface);border:1.5px solid var(--border);border-radius:11px;padding:8px 15px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:7px;color:var(--muted);position:relative;user-select:none;}
 .nav-button:hover{border-color:var(--accent);transform:translateY(-1px);color:var(--text);}
@@ -185,9 +185,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .card-media{width:100%;border-radius:8px;border:1px solid var(--border);margin-top:8px;}
 
 /* Full-screen card editor */
-.card-editor-overlay{position:fixed;inset:0;background:rgba(13,15,20,.96);backdrop-filter:blur(14px);z-index:20000;display:flex;align-items:center;justify-content:center;padding:18px;animation:fadeInOv .2s ease;}
+.card-editor-overlay{position:fixed;inset:0;background:rgba(200,205,225,.80);backdrop-filter:blur(14px);z-index:20000;display:flex;align-items:center;justify-content:center;padding:18px;animation:fadeInOv .2s ease;}
 @keyframes fadeInOv{from{opacity:0}to{opacity:1}}
-.card-editor-box{background:var(--surface);border:1.5px solid var(--accent);border-radius:22px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;box-shadow:0 0 80px var(--accent-glow),0 32px 80px rgba(0,0,0,.7);animation:popIn .22s cubic-bezier(.22,1,.36,1);}
+.card-editor-box{background:var(--surface);border:1.5px solid var(--accent);border-radius:22px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;box-shadow:0 0 60px var(--accent-glow),0 32px 80px rgba(92,107,192,.15);animation:popIn .22s cubic-bezier(.22,1,.36,1);}
 @keyframes popIn{from{opacity:0;transform:scale(.95) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
 .card-editor-header{padding:22px 24px 0;display:flex;align-items:center;justify-content:space-between;}
 .card-editor-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--accent);}
@@ -227,9 +227,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .nav-button-emoji img{width:22px;height:22px;object-fit:cover;border-radius:4px;}
 
 /* MODAL */
-.modal{display:none;position:fixed;inset:0;z-index:9999;background:rgba(13,15,20,.88);backdrop-filter:blur(10px);overflow-y:auto;}
+.modal{display:none;position:fixed;inset:0;z-index:9999;background:rgba(200,205,225,.75);backdrop-filter:blur(10px);overflow-y:auto;}
 .modal.active{display:flex;justify-content:center;align-items:flex-start;padding:32px 14px;}
-.modal-content{background:var(--surface);padding:34px 30px;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:0 0 60px var(--accent-glow),0 24px 60px rgba(0,0,0,.5);max-width:520px;width:100%;animation:slideUp .3s cubic-bezier(.22,1,.36,1);}
+.modal-content{background:var(--surface);padding:34px 30px;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:0 0 40px var(--accent-glow),0 16px 48px rgba(92,107,192,.12);max-width:520px;width:100%;animation:slideUp .3s cubic-bezier(.22,1,.36,1);}
 .modal-content.wide{max-width:740px;}
 .modal-content h2{font-family:'Playfair Display',serif;font-size:23px;margin-bottom:20px;text-align:center;color:var(--text);}
 .modal-content label{display:block;color:var(--muted);font-size:12px;margin:12px 0 4px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
@@ -246,15 +246,47 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .search-result-section{font-size:11px;color:var(--muted);margin-top:2px;}
 .search-empty{text-align:center;color:var(--muted);padding:28px;grid-column:1/-1;font-size:14px;}
 
-/* COMMENTS */
-.comments-list{max-height:300px;overflow-y:auto;margin:12px 0;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
-.comment{background:var(--bg);padding:11px 13px;margin:7px 0;border-radius:10px;border-left:3px solid var(--accent);}
-.comment-header{display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap;}
-.comment-author{color:var(--accent);font-weight:600;font-size:13px;}
-.comment-time{color:var(--muted);font-size:11px;}
-.comment-text{color:var(--text);font-size:13px;line-height:1.55;}
-.comment-del{background:none;border:none;color:var(--danger);cursor:pointer;font-size:11px;padding:2px 6px;border-radius:4px;opacity:.65;transition:opacity .2s;font-family:inherit;margin-top:5px;}
-.comment-del:hover{opacity:1;}
+/* WHATSAPP-STYLE CHAT */
+.wa-chat-modal .modal-content{max-width:600px;padding:0;border-radius:var(--radius-lg);overflow:hidden;display:flex;flex-direction:column;max-height:88vh;}
+.wa-header{background:var(--accent);padding:16px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.wa-header-icon{width:40px;height:40px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.wa-header-info{flex:1;}
+.wa-header-title{color:#fff;font-weight:700;font-size:16px;}
+.wa-header-sub{color:rgba(255,255,255,.75);font-size:12px;}
+.wa-header-close{color:rgba(255,255,255,.8);background:none;border:none;font-size:20px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:background .15s;}
+.wa-header-close:hover{background:rgba(255,255,255,.15);}
+.wa-groups{display:flex;gap:0;background:var(--surface2);border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;scrollbar-width:none;}
+.wa-groups::-webkit-scrollbar{display:none;}
+.wa-group-tab{padding:9px 16px;font-size:13px;font-weight:600;font-family:inherit;border:none;background:transparent;cursor:pointer;color:var(--muted);white-space:nowrap;border-bottom:3px solid transparent;transition:all .2s;}
+.wa-group-tab.active{color:var(--accent);border-bottom-color:var(--accent);background:var(--surface);}
+.wa-group-tab:hover{color:var(--text);}
+.wa-add-group{padding:9px 14px;font-size:13px;font-weight:600;font-family:inherit;border:none;background:transparent;cursor:pointer;color:var(--accent2);white-space:nowrap;}
+.wa-add-group:hover{color:var(--accent);}
+.wa-messages{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:6px;background:#e5ddd5;min-height:200px;max-height:400px;scrollbar-width:thin;}
+.wa-bubble{max-width:78%;padding:8px 12px 4px;border-radius:12px;position:relative;word-break:break-word;}
+.wa-bubble.mine{background:#dcf8c6;align-self:flex-end;border-radius:12px 12px 2px 12px;}
+.wa-bubble.theirs{background:#fff;align-self:flex-start;border-radius:12px 12px 12px 2px;box-shadow:0 1px 2px rgba(0,0,0,.1);}
+.wa-author{font-size:12px;font-weight:700;color:var(--accent);margin-bottom:3px;}
+.wa-text{font-size:14px;color:#1a1a1a;line-height:1.5;}
+.wa-time{font-size:10px;color:rgba(0,0,0,.4);text-align:right;margin-top:2px;}
+.wa-reply-preview{background:rgba(0,0,0,.07);border-left:3px solid var(--accent);border-radius:4px;padding:5px 9px;margin-bottom:6px;font-size:12px;color:#444;cursor:pointer;}
+.wa-reply-preview .rp-author{font-weight:700;color:var(--accent);font-size:11px;}
+.wa-bubble-actions{display:none;position:absolute;right:-6px;top:4px;gap:4px;}
+.wa-bubble:hover .wa-bubble-actions{display:flex;}
+.wa-action-btn{width:26px;height:26px;background:var(--surface);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;box-shadow:0 1px 4px rgba(0,0,0,.15);transition:all .15s;}
+.wa-action-btn:hover{background:var(--accent);color:#fff;}
+.wa-bubble.mine .wa-bubble-actions{right:auto;left:-6px;}
+.wa-reply-bar{background:var(--surface2);border-top:2px solid var(--accent);padding:8px 14px;display:none;flex-shrink:0;align-items:center;gap:8px;}
+.wa-reply-bar.active{display:flex;}
+.wa-reply-bar-content{flex:1;font-size:12px;}
+.wa-reply-bar-author{font-weight:700;color:var(--accent);font-size:12px;}
+.wa-reply-bar-text{color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px;}
+.wa-reply-cancel{background:none;border:none;color:var(--danger);cursor:pointer;font-size:18px;padding:0 4px;}
+.wa-input-area{display:flex;gap:8px;padding:10px 14px;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;align-items:flex-end;}
+.wa-input{flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:22px;padding:10px 16px;font-size:14px;font-family:inherit;color:var(--text);outline:none;resize:none;max-height:100px;transition:border-color .2s;}
+.wa-input:focus{border-color:var(--accent);}
+.wa-send-btn{width:44px;height:44px;background:var(--accent);border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;}
+.wa-send-btn:hover{transform:scale(1.08);filter:brightness(1.1);}
 
 /* USERS */
 .users-panel{background:var(--bg);padding:12px;border-radius:11px;margin-top:12px;max-height:260px;overflow-y:auto;}
@@ -292,7 +324,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 
 /* TOAST */
 .toast-area{position:fixed;bottom:22px;right:22px;z-index:99999;display:flex;flex-direction:column;gap:7px;pointer-events:none;}
-.toast{background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:11px 16px;font-size:13px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.4);pointer-events:auto;animation:toastIn .3s cubic-bezier(.22,1,.36,1);display:flex;align-items:center;gap:9px;max-width:300px;}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:11px 16px;font-size:13px;font-weight:500;box-shadow:0 8px 24px rgba(92,107,192,.15);pointer-events:auto;animation:toastIn .3s cubic-bezier(.22,1,.36,1);display:flex;align-items:center;gap:9px;max-width:300px;}
 @keyframes toastIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .toast.success{border-left:3px solid var(--success);}
 .toast.danger{border-left:3px solid var(--danger);}
@@ -394,7 +426,6 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     <button class="feature-tab" data-panel="calendar" onclick="switchFeatureTab('calendar',this)">📅 Calendar</button>
     <button class="feature-tab" data-panel="recipes" onclick="switchFeatureTab('recipes',this)">🍳 Recipes</button>
     <button class="feature-tab" data-panel="poll" onclick="switchFeatureTab('poll',this)">🗳️ Poll</button>
-    <button class="feature-tab" data-panel="wheel" onclick="switchFeatureTab('wheel',this)">🎡 Spin Wheel</button>
 </div>
 
 <!-- Home Panel -->
@@ -444,29 +475,6 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     <div id="pollContainer"></div>
 </div>
 
-<!-- Spin Wheel Panel -->
-<div class="feature-panel" id="panel-wheel">
-    <div style="font-family:'Playfair Display',serif;font-size:20px;margin-bottom:16px;text-align:center;">Spin the Wheel 🎡</div>
-    <div class="wheel-wrap">
-        <div class="wheel-canvas-wrap">
-            <div class="wheel-pointer"></div>
-            <canvas id="wheelCanvas" width="320" height="320"></canvas>
-        </div>
-        <div class="wheel-result" id="wheelResult"></div>
-        <button class="wheel-spin-btn" id="wheelSpinBtn" onclick="spinWheel()">🎲 Spin!</button>
-        <div style="width:100%;max-width:400px;">
-            <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Names on the wheel</div>
-            <div class="wheel-names" id="wheelNames"></div>
-            <div style="display:flex;gap:8px;margin-top:10px;">
-                <input class="field" id="wheelNewName" type="text" placeholder="Add a name…" maxlength="20"
-                    style="flex:1;padding:9px 12px;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:13px;font-family:inherit;outline:none;">
-                <button class="btn btn-outline" style="padding:9px 16px;font-size:13px;" onclick="addWheelName()">Add</button>
-            </div>
-            <div style="font-size:11px;color:var(--muted);margin-top:6px;">💡 Tip: The wheel auto-adds everyone who is signed in. You can also add custom names or tasks above.</div>
-        </div>
-    </div>
-</div>
-
 <!-- Hidden file inputs -->
 <input type="file" id="globalFileInput" accept="*/*" style="display:none">
 <input type="file" id="sectionImageInput" accept="image/*" style="display:none">
@@ -491,38 +499,54 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     </div>
 </div>
 
-<!-- Comments -->
-<div class="modal" id="commentsModal">
+<!-- WhatsApp-style Chat -->
+<div class="modal wa-chat-modal" id="commentsModal">
     <div class="modal-content">
-        <h2>Comments</h2>
-        <div class="comments-list" id="commentsList"></div>
-        <div class="field" style="margin-top:8px;">
-            <span class="field-icon" style="top:16px;transform:none;"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-            <textarea id="newComment" placeholder="Write a comment… (Ctrl+Enter to post)" rows="2" style="padding-left:44px;resize:vertical;"></textarea>
+        <div class="wa-header">
+            <div class="wa-header-icon">
+                <svg width="22" height="22" fill="white" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.119.553 4.107 1.524 5.835L0 24l6.336-1.506A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.808 9.808 0 01-5.032-1.387l-.36-.214-3.762.893.947-3.645-.235-.374A9.818 9.818 0 012.182 12C2.182 6.575 6.575 2.182 12 2.182c5.424 0 9.818 4.393 9.818 9.818 0 5.424-4.394 9.818-9.818 9.818z"/></svg>
+            </div>
+            <div class="wa-header-info">
+                <div class="wa-header-title">Family Chat</div>
+                <div class="wa-header-sub" id="waChatSub">General</div>
+            </div>
+            <button class="wa-header-close" onclick="closeModal('commentsModal')">✕</button>
         </div>
-        <div class="modal-buttons">
-            <button class="btn btn-ghost" onclick="closeModal('commentsModal')">Close</button>
-            <button class="btn btn-outline" onclick="postComment()">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                Post
+        <div class="wa-groups" id="waGroupTabs"></div>
+        <div class="wa-reply-bar" id="waReplyBar">
+            <div class="wa-reply-bar-content">
+                <div class="wa-reply-bar-author" id="waReplyAuthor"></div>
+                <div class="wa-reply-bar-text" id="waReplyText"></div>
+            </div>
+            <button class="wa-reply-cancel" onclick="cancelReply()">✕</button>
+        </div>
+        <div class="wa-messages" id="waMessages"><p style="color:#888;text-align:center;padding:22px;font-size:13px;">No messages yet. Say hello! 👋</p></div>
+        <div class="wa-input-area">
+            <textarea class="wa-input" id="newComment" placeholder="Type a message…" rows="1" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
+            <button class="wa-send-btn" onclick="postComment()">
+                <svg width="18" height="18" fill="white" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
         </div>
     </div>
 </div>
 
-<!-- Video Chat -->
+<!-- WhatsApp Video Chat -->
 <div class="modal" id="videoChatModal">
     <div class="modal-content">
-        <h2>📹 Family Video Call</h2>
+        <h2>📱 Family Video Call</h2>
         <div style="text-align:center;padding:10px 0 20px;">
             <div style="background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:28px 20px;margin-bottom:20px;">
-                <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="color:var(--accent);margin-bottom:14px;display:block;margin-left:auto;margin-right:auto;"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
-                <div style="color:var(--text);font-size:16px;font-weight:600;margin-bottom:6px;">Join Family Meeting</div>
-                <div style="color:var(--muted);font-size:13px;line-height:1.6;" id="meetRoomHint">The host has set up a meeting room for everyone.</div>
+                <svg width="56" height="56" viewBox="0 0 24 24" style="display:block;margin:0 auto 14px;">
+                    <circle cx="12" cy="12" r="12" fill="#25D366"/>
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" fill="white"/>
+                    <path d="M12 2C6.477 2 2 6.477 2 12c0 1.885.52 3.648 1.427 5.158L2 22l4.986-1.312A9.953 9.953 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18.182a8.163 8.163 0 01-4.194-1.156l-.3-.178-3.133.744.789-3.038-.196-.312A8.172 8.172 0 013.818 12C3.818 7.479 7.479 3.818 12 3.818c4.52 0 8.182 3.661 8.182 8.182 0 4.52-3.662 8.182-8.182 8.182z" fill="white"/>
+                </svg>
+                <div style="color:var(--text);font-size:16px;font-weight:600;margin-bottom:6px;">Join via WhatsApp</div>
+                <div style="color:var(--muted);font-size:13px;line-height:1.6;" id="meetRoomHint">The host has set up a WhatsApp call link for the family.</div>
             </div>
-            <button class="btn btn-outline" onclick="joinGoogleMeet()" style="width:100%;padding:16px;font-size:16px;">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>
-                Join Meeting
+            <button onclick="joinWhatsAppCall()" style="width:100%;padding:16px;font-size:16px;font-weight:700;font-family:inherit;background:#25D366;color:#fff;border:none;border-radius:var(--radius);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .2s;box-shadow:0 4px 16px rgba(37,211,102,.3);" onmouseover="this.style.background='#1ebe5d'" onmouseout="this.style.background='#25D366'">
+                <svg width="20" height="20" fill="white" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.119.553 4.107 1.524 5.835L0 24l6.336-1.506A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.808 9.808 0 01-5.032-1.387l-.36-.214-3.762.893.947-3.645-.235-.374A9.818 9.818 0 012.182 12C2.182 6.575 6.575 2.182 12 2.182c5.424 0 9.818 4.393 9.818 9.818 0 5.424-4.394 9.818-9.818 9.818z"/></svg>
+                Open WhatsApp Call
             </button>
         </div>
         <div class="modal-buttons">
@@ -619,14 +643,18 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
             </div>
             <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
                 <div>
-                    <div class="setting-label">&#x1F4F9; Google Meet Link</div>
-                    <div class="setting-desc">Everyone automatically joins this meeting when they click Video Call</div>
+                    <div class="setting-label">📱 WhatsApp Video Call Link</div>
+                    <div class="setting-desc">Everyone taps this link to join the family WhatsApp call</div>
                 </div>
                 <div style="display:flex;gap:8px;width:100%;flex-wrap:wrap;">
-                    <input type="text" id="meetLinkInput" placeholder="Paste your Google Meet link here… e.g. https://meet.google.com/abc-defg-hij" style="flex:1;min-width:0;padding:8px 10px;font-size:12px;">
-                    <a href="https://meet.google.com/new" target="_blank" rel="noopener" style="padding:8px 12px;background:rgba(26,115,232,.15);border:1px solid rgba(26,115,232,.4);border-radius:var(--radius);color:#4285f4;font-size:12px;font-weight:700;text-decoration:none;display:flex;align-items:center;gap:5px;white-space:nowrap;">+ New Meet</a>
+                    <input type="text" id="meetLinkInput" placeholder="Paste your WhatsApp call link… e.g. https://wa.me/call/…" style="flex:1;min-width:0;padding:8px 10px;font-size:12px;">
                 </div>
-                <div style="font-size:11px;color:var(--muted);">Click <strong style="color:#4285f4;">+ New Meet</strong> &rarr; copy the link from your browser &rarr; paste above &rarr; Save</div>
+                <div style="font-size:11px;color:var(--muted);line-height:1.7;">
+                    <strong style="color:#25D366;">How to get a WhatsApp call link:</strong><br>
+                    1. Open WhatsApp → tap the <strong>Calls</strong> tab<br>
+                    2. Tap <strong>Create call link</strong><br>
+                    3. Copy the link → paste above → Save
+                </div>
             </div>
             <div class="modal-buttons">
                 <button class="btn btn-outline" onclick="saveHubSettings()">
@@ -1656,11 +1684,6 @@ async function kickUser(key,name){
     try{await window.dbRemove(window.dbRef(window.db,'onlineUsers/'+key));toast(name+' removed','warn');}
     catch(e){toast('Failed','danger');}
 }
-async function clearAllComments(){
-    if(!confirm('Delete ALL comments?'))return;
-    try{await window.dbRemove(window.dbRef(window.db,'comments'));toast('All comments cleared','warn');}
-    catch(e){toast('Failed','danger');}
-}
 async function sendAnnouncement(){
     const msg=document.getElementById('announcementInput').value.trim();
     if(!msg){toast('Type a message first','warn');return;}
@@ -1693,51 +1716,159 @@ async function saveHubSettings(){
 }
 
 // ── Comments ──────────────────────────────────────────────
+// ── WhatsApp-style Chat ───────────────────────────────────
+let currentGroup = 'General';
+let replyTo = null;
+let chatGroups = ['General'];
+
 function openComments(){
     document.getElementById('commentsModal').classList.add('active');
-    loadComments();
+    loadChatGroups();
 }
-function loadComments(){
-    window.dbOnValue(window.dbRef(window.db,'comments'),snap=>{
-        const list=document.getElementById('commentsList');
-        list.innerHTML='';
-        if(snap.exists()){
-            Object.keys(snap.val()).forEach(key=>{
-                const c=snap.val()[key];
-                const canDel=isHost||c.author===currentUser;
-                const el=document.createElement('div');
-                el.className='comment';
-                el.innerHTML='<div class="comment-header">'
-                    +'<span class="comment-author">'+esc(c.author)+'</span>'
-                    +'<span class="comment-time">'+esc(new Date(c.timestamp).toLocaleString())+'</span>'
-                    +'</div><div class="comment-text">'+esc(c.text)+'</div>'
-                    +(canDel?'<button class="comment-del" data-key="'+esc(key)+'" onclick="deleteComment(this.dataset.key)">🗑 Delete</button>':'')
-                list.appendChild(el);
-            });
-            list.scrollTop=list.scrollHeight;
-        }else{
-            list.innerHTML='<p style="color:var(--muted);text-align:center;padding:22px;">No comments yet!</p>';
+
+function loadChatGroups(){
+    window.dbOnValue(window.dbRef(window.db,'chatGroups'), snap=>{
+        if(snap.exists()) chatGroups = snap.val();
+        else { chatGroups=['General']; window.dbSet(window.dbRef(window.db,'chatGroups'),chatGroups); }
+        renderGroupTabs();
+    });
+}
+
+function renderGroupTabs(){
+    const tabs = document.getElementById('waGroupTabs');
+    tabs.innerHTML = '';
+    chatGroups.forEach(g => {
+        const btn = document.createElement('button');
+        btn.className = 'wa-group-tab' + (g===currentGroup?' active':'');
+        btn.textContent = g;
+        btn.onclick = () => switchChatGroup(g);
+        tabs.appendChild(btn);
+    });
+    if(isHost){
+        const add = document.createElement('button');
+        add.className = 'wa-add-group';
+        add.textContent = '＋ Group';
+        add.onclick = addChatGroup;
+        tabs.appendChild(add);
+    }
+    document.getElementById('waChatSub').textContent = currentGroup;
+    loadMessages(currentGroup);
+}
+
+function switchChatGroup(name){
+    currentGroup = name;
+    renderGroupTabs();
+    cancelReply();
+}
+
+function addChatGroup(){
+    const name = prompt('New group name (e.g. "Photos", "Plans"):');
+    if(!name||!name.trim()) return;
+    const trimmed = name.trim();
+    if(chatGroups.includes(trimmed)){ toast('Group already exists','warn'); return; }
+    chatGroups.push(trimmed);
+    window.dbSet(window.dbRef(window.db,'chatGroups'), chatGroups)
+        .then(()=>{ switchChatGroup(trimmed); toast('Group "'+trimmed+'" created! 🎉'); })
+        .catch(()=>toast('Failed','danger'));
+}
+
+function msgPath(group){ return 'messages/'+group.replace(/\s+/g,'_'); }
+
+function loadMessages(group){
+    window.dbOnValue(window.dbRef(window.db, msgPath(group)), snap=>{
+        const container = document.getElementById('waMessages');
+        container.innerHTML = '';
+        if(!snap.exists()){
+            container.innerHTML = '<p style="color:#888;text-align:center;padding:22px;font-size:13px;">No messages yet. Say hello! 👋</p>';
+        } else {
+            Object.entries(snap.val()).forEach(([key,msg])=>container.appendChild(buildBubble(key,msg)));
+            container.scrollTop = container.scrollHeight;
         }
+        updateCommentBadge();
     });
 }
+
+function buildBubble(key, msg){
+    const isMine = msg.author === currentUser;
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;flex-direction:column;align-items:'+(isMine?'flex-end':'flex-start');
+    const bubble = document.createElement('div');
+    bubble.className = 'wa-bubble '+(isMine?'mine':'theirs');
+    bubble.id = 'msg-'+key;
+    let inner = '';
+    if(!isMine) inner += '<div class="wa-author">'+esc(msg.author)+'</div>';
+    if(msg.replyTo) inner += '<div class="wa-reply-preview" onclick="scrollToMsg(\''+esc(msg.replyTo.key)+'\')"><div class="rp-author">'+esc(msg.replyTo.author)+'</div><div>'+esc((msg.replyTo.text||'').slice(0,80))+'</div></div>';
+    inner += '<div class="wa-text">'+esc(msg.text)+'</div>';
+    inner += '<div class="wa-time">'+formatMsgTime(msg.timestamp)+'</div>';
+    const canDel = isHost || msg.author === currentUser;
+    inner += '<div class="wa-bubble-actions">'
+        +'<div class="wa-action-btn" title="Reply" onclick="startReply(\''+esc(key)+'\',\''+esc(msg.author)+'\',\''+esc((msg.text||'').slice(0,60).replace(/\\/g,'\\\\').replace(/'/g,"\\'"))+'\')">↩</div>'
+        +(canDel?'<div class="wa-action-btn" title="Delete" onclick="deleteComment(\''+esc(key)+'\')">🗑</div>':'')
+        +'</div>';
+    bubble.innerHTML = inner;
+    wrap.appendChild(bubble);
+    return wrap;
+}
+
+function formatMsgTime(ts){
+    const d = new Date(ts), now = new Date();
+    if(d.toDateString()===now.toDateString()) return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    return d.toLocaleDateString([],{month:'short',day:'numeric'})+' '+d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+}
+
+function startReply(key, author, text){
+    replyTo = {key, author, text};
+    document.getElementById('waReplyAuthor').textContent = author;
+    document.getElementById('waReplyText').textContent = text;
+    document.getElementById('waReplyBar').classList.add('active');
+    document.getElementById('newComment').focus();
+}
+function cancelReply(){
+    replyTo = null;
+    document.getElementById('waReplyBar').classList.remove('active');
+}
+function scrollToMsg(key){
+    const el = document.getElementById('msg-'+key);
+    if(el){ el.scrollIntoView({behavior:'smooth',block:'center'}); el.style.outline='2px solid var(--accent)'; setTimeout(()=>el.style.outline='',1200); }
+}
+
+function updateCommentBadge(){
+    window.dbGet(window.dbRef(window.db, msgPath(currentGroup))).then(snap=>{
+        const n = snap.exists() ? Object.keys(snap.val()).length : 0;
+        document.getElementById('commentCount').textContent = n>99?'99+':n;
+    }).catch(()=>{});
+}
+
 async function deleteComment(key){
-    try{await window.dbRemove(window.dbRef(window.db,'comments/'+key));toast('Comment deleted','warn');}
-    catch(e){toast('Failed','danger');}
+    try{ await window.dbRemove(window.dbRef(window.db, msgPath(currentGroup)+'/'+key)); toast('Message deleted','warn'); }
+    catch(e){ toast('Failed','danger'); }
 }
+
 function loadCommentsCount(){
-    window.dbOnValue(window.dbRef(window.db,'comments'),snap=>{
-        const n=snap.exists()?Object.keys(snap.val()).length:0;
-        document.getElementById('commentCount').textContent=n>99?'99+':n;
+    window.dbOnValue(window.dbRef(window.db,'messages/General'), snap=>{
+        const n = snap.exists() ? Object.keys(snap.val()).length : 0;
+        document.getElementById('commentCount').textContent = n>99?'99+':n;
     });
 }
+
 async function postComment(){
-    const text=document.getElementById('newComment').value.trim();
-    if(!text){toast('Write something first!','warn');return;}
+    const input = document.getElementById('newComment');
+    const text = input.value.trim();
+    if(!text){ toast('Write something first!','warn'); return; }
+    if(!currentUser){ toast('Please sign in first!','warn'); return; }
+    const data = {author:currentUser, text, timestamp:Date.now()};
+    if(replyTo) data.replyTo = replyTo;
     try{
-        await window.dbSet(window.dbPush(window.dbRef(window.db,'comments')),
-            {author:currentUser,text,timestamp:Date.now()});
-        document.getElementById('newComment').value='';
-    }catch(e){toast('Failed: '+e.message,'danger');}
+        await window.dbSet(window.dbPush(window.dbRef(window.db, msgPath(currentGroup))), data);
+        input.value = ''; input.style.height = 'auto';
+        cancelReply();
+    }catch(e){ toast('Failed: '+e.message,'danger'); }
+}
+
+async function clearAllComments(){
+    if(!confirm('Delete ALL messages in ALL groups?')) return;
+    try{ await window.dbRemove(window.dbRef(window.db,'messages')); toast('All messages cleared','warn'); }
+    catch(e){ toast('Failed','danger'); }
 }
 
 // ── Search ────────────────────────────────────────────────
@@ -1807,16 +1938,13 @@ function closeVideoLightbox(){
 }
 
 // ── Video Chat ─────────────────────────────────────────────
-function openVideoChat(){document.getElementById('videoChatModal').classList.add('active');}
+function openVideoChat(){ document.getElementById('videoChatModal').classList.add('active'); }
 
-function joinGoogleMeet(){
-    if(!meetLink||!meetLink.startsWith('https://meet.google.com/')){
-        toast('No meeting set yet! Host: go to ⚙️ Settings → Hub Settings to add a Google Meet link.','warn');
-        return;
-    }
+function joinWhatsAppCall(){
+    if(!meetLink){ toast('No call link yet! Host: go to ⚙️ Settings → Hub Settings to add a WhatsApp call link.','warn'); return; }
     window.open(meetLink,'_blank','noopener');
     closeModal('videoChatModal');
-    toast('Joining family meeting! 📹');
+    toast('Opening WhatsApp call! 📱');
 }
 
 // ── Global events ─────────────────────────────────────────
@@ -1847,7 +1975,7 @@ document.addEventListener('click',e=>{
 // Keyboard shortcuts
 document.getElementById('nameInput').addEventListener('keydown',e=>{if(e.key==='Enter')signIn();});
 document.getElementById('hostPin').addEventListener('keydown',e=>{if(e.key==='Enter')checkHostPin();});
-document.getElementById('newComment').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey))postComment();});
+document.getElementById('newComment').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();postComment();}});
 document.getElementById('searchInput').addEventListener('keydown',e=>{if(e.key==='Escape')closeModal('searchModal');});
 
 // Close modals on backdrop click
@@ -1972,8 +2100,6 @@ function doSignIn(name){
     document.getElementById('signinOverlay').classList.add('hidden');
     waitForFirebase(()=>{ registerOnlineUser(); loadContent(); });
     toast('Welcome, ' + name + '! 👋');
-    // Add to wheel if not already there
-    addWheelNameIfNew(name);
     checkBirthdays();
 }
 
@@ -1989,7 +2115,6 @@ function switchFeatureTab(panel, btn){
     if(panel === 'calendar') renderCalendar();
     if(panel === 'recipes') renderRecipes();
     if(panel === 'poll') renderPolls();
-    if(panel === 'wheel') renderWheel();
 }
 
 // ══════════════════════════════════════════════════════════
@@ -2491,16 +2616,13 @@ window.openCreatePoll=openCreatePoll;
 window.savePoll=savePoll;
 window.castVote=castVote;
 window.deletePoll=deletePoll;
-window.spinWheel=spinWheel;
-window.addWheelName=addWheelName;
-window.renderWheel=renderWheel;
 window.checkHostPin=checkHostPin;
 window.clearAllComments=clearAllComments;
 window.clearAnnouncement=clearAnnouncement;
 window.closeModal=closeModal;
 window.closeVideoLightbox=closeVideoLightbox;
 window.deleteComment=deleteComment;
-window.joinGoogleMeet=joinGoogleMeet;
+window.joinWhatsAppCall=joinWhatsAppCall;
 window.kickUser=kickUser;
 window.openComments=openComments;
 window.openSearch=openSearch;
@@ -2515,6 +2637,10 @@ window.switchHostTab=switchHostTab;
 window.runSearch=runSearch;
 window.openDriveLightbox=openDriveLightbox;
 window.closeDriveLightbox=closeDriveLightbox;
+window.startReply=startReply;
+window.cancelReply=cancelReply;
+window.scrollToMsg=scrollToMsg;
+window.addChatGroup=addChatGroup;
 window.joinVideoRoom=typeof joinVideoRoom!=='undefined'?joinVideoRoom:undefined;
 </script>
 </body>
