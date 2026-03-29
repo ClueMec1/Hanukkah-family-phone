@@ -2,8 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Family Hub</title>
+
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#5c6bc0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Family Hub">
+<link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -3134,6 +3142,50 @@ window.scrollToMsg=scrollToMsg;
 window.addChatGroup=addChatGroup;
 window.joinVideoRoom=typeof joinVideoRoom!=='undefined'?joinVideoRoom:undefined;
 </script>
+<script>
+// Register PWA Service Worker
+if('serviceWorker' in navigator){
+    window.addEventListener('load', ()=>{
+        navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('SW registered:', reg.scope))
+            .catch(err => console.log('SW failed:', err));
+    });
+}
+
+// PWA install prompt — show a subtle banner when available
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    // Show install banner after 3 seconds if not already installed
+    setTimeout(showInstallBanner, 3000);
+});
+
+function showInstallBanner(){
+    if(!deferredPrompt) return;
+    if(localStorage.getItem('pwaInstalled')) return;
+    const banner = document.createElement('div');
+    banner.id = 'pwaInstallBanner';
+    banner.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#5c6bc0;color:#fff;padding:12px 20px;border-radius:14px;font-size:13px;font-weight:600;font-family:DM Sans,sans-serif;box-shadow:0 4px 20px rgba(92,107,192,.4);z-index:99998;display:flex;align-items:center;gap:12px;max-width:320px;width:90%;';
+    banner.innerHTML = '<span style="font-size:20px;">📱</span><span style="flex:1;">Install Family Hub as an app!</span>'
+        +'<button onclick="installPWA()" style="background:#fff;color:#5c6bc0;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Install</button>'
+        +'<button onclick="document.getElementById('pwaInstallBanner').remove()" style="background:transparent;border:none;color:rgba(255,255,255,.7);cursor:pointer;font-size:18px;padding:0;">✕</button>';
+    document.body.appendChild(banner);
+}
+
+function installPWA(){
+    if(!deferredPrompt) return;
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(result => {
+        if(result.outcome === 'accepted'){
+            localStorage.setItem('pwaInstalled','1');
+            toast('App installed! Find Family Hub on your home screen 🎉');
+        }
+        const banner = document.getElementById('pwaInstallBanner');
+        if(banner) banner.remove();
+        deferredPrompt = null;
+    });
+}
 </script>
 </body>
 </html>
