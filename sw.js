@@ -1,74 +1,58 @@
 // Family Hub Service Worker
-// Caches the app shell so it loads instantly and works offline
-
-const CACHE_NAME = 'family-hub-v1';
+const CACHE_NAME = 'family-hub-v2';
+const BASE = '/Hanukkah-family-phone';
 const ASSETS = [
-  '/',
-  '/index.html',
-  'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500;600&display=swap'
+  BASE + '/',
+  BASE + '/index.html',
+  BASE + '/manifest.json',
+  BASE + '/icon-192.png',
+  BASE + '/icon-512.png'
 ];
 
-// Install: cache the app shell
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(ASSETS).catch(() => {
-        // Silently fail if fonts can't be cached (network might be off)
-      });
-    })
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS).catch(()=>{}))
   );
   self.skipWaiting();
 });
 
-// Activate: clean up old caches
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(
-        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
-      )
+      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
     )
   );
   self.clients.claim();
 });
 
-// Fetch: network first, fall back to cache
-// Firebase calls always go to network — only serve cached HTML as fallback
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // Always fetch Firebase requests from network
+  // Always go to network for Firebase, Cloudinary, Google APIs
   if (
     url.hostname.includes('firebase') ||
     url.hostname.includes('googleapis.com') ||
     url.hostname.includes('cloudinary.com') ||
-    url.hostname.includes('gstatic.com')
-  ) {
-    return; // let browser handle it normally
-  }
+    url.hostname.includes('gstatic.com') ||
+    url.hostname.includes('fonts.google')
+  ) return;
 
-  // For navigation requests (loading the page): network first, cache fallback
+  // Navigation: network first, fall back to cached index
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request)
-        .then(response => {
-          // Update cache with fresh version
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-          return response;
+        .then(res => {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
+          return res;
         })
-        .catch(() => {
-          // Offline fallback: serve cached index.html
-          return caches.match('/index.html') || caches.match('/');
-        })
+        .catch(() => caches.match(BASE + '/index.html') || caches.match(BASE + '/'))
     );
     return;
   }
 
-  // For other requests: cache first, then network
+  // Everything else: cache first
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      return cached || fetch(event.request).catch(() => cached);
-    })
+    caches.match(event.request).then(cached => cached || fetch(event.request))
   );
 });
