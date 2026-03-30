@@ -2,41 +2,22 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Family Hub</title>
-
-<!-- PWA Manifest (inline so no separate file needed) -->
-<link rel="manifest" href="data:application/manifest+json,{
-  %22name%22:%22Family%20Hub%22,
-  %22short_name%22:%22Family%20Hub%22,
-  %22description%22:%22Your%20private%20family%20app%22,
-  %22start_url%22:%22./%22,
-  %22scope%22:%22./%22,
-  %22display%22:%22standalone%22,
-  %22background_color%22:%22%23f7f8fc%22,
-  %22theme_color%22:%22%235c6bc0%22,
-  %22icons%22:[{%22src%22:%22icon-192.png%22,%22sizes%22:%22192x192%22,%22type%22:%22image/png%22},{%22src%22:%22icon-512.png%22,%22sizes%22:%22512x512%22,%22type%22:%22image/png%22}]
-}">
-<meta name="theme-color" content="#5c6bc0">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Family Hub">
-<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
 <style>
 :root {
-    --bg:#f7f8fc; --surface:#ffffff; --surface2:#eef0f7; --border:#dde1ef;
-    --accent:#5c6bc0; --accent2:#26a69a; --accent-glow:rgba(92,107,192,.18);
-    --text:#1a1d2e; --muted:#6b7280; --success:#2e7d5e; --danger:#e53935; --warn:#f57c00;
-    --radius:14px; --radius-lg:22px;
+    --bg:#fffaf5; --surface:#ffffff; --surface2:#fff3e8; --border:#f0ddc8;
+    --accent:#e8834a; --accent2:#5bab6f; --accent-glow:rgba(232,131,74,.18);
+    --text:#3d2b1a; --muted:#9b836e; --success:#5bab6f; --danger:#d95e52; --warn:#e8a23a;
+    --radius:16px; --radius-lg:26px;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;min-height:100vh;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;min-height:100vh;}
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-    background:radial-gradient(ellipse 80% 60% at 20% 0%,rgba(92,107,192,.05) 0%,transparent 60%),
-               radial-gradient(ellipse 60% 40% at 80% 100%,rgba(38,166,154,.04) 0%,transparent 60%);}
+    background:radial-gradient(ellipse 80% 60% at 20% 0%,rgba(232,131,74,.07) 0%,transparent 60%),
+               radial-gradient(ellipse 60% 40% at 80% 100%,rgba(91,171,111,.05) 0%,transparent 60%);}
 
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
@@ -52,11 +33,11 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .request-badge{position:absolute;top:-5px;right:-5px;background:var(--danger);color:#fff;min-width:18px;height:18px;padding:0 4px;border-radius:9px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg);animation:pulse 1.5s infinite;}
 
 /* SIGN-IN */
-.signin-overlay{position:fixed;inset:0;background:rgba(247,248,252,.97);display:flex;justify-content:center;align-items:center;z-index:10000;backdrop-filter:blur(8px);transition:opacity .4s,visibility .4s;}
+.signin-overlay{position:fixed;inset:0;background:rgba(255,250,245,.97);display:flex;justify-content:center;align-items:center;z-index:10000;backdrop-filter:blur(8px);transition:opacity .4s,visibility .4s;}
 .signin-overlay.hidden{opacity:0;visibility:hidden;pointer-events:none;}
-.signin-box{background:var(--surface);padding:36px 30px;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:0 0 60px var(--accent-glow),0 24px 60px rgba(92,107,192,.1);text-align:center;max-width:420px;width:92%;animation:slideUp .5s cubic-bezier(.22,1,.36,1);}
-.signin-logo{font-family:'Playfair Display',serif;font-size:38px;color:var(--accent);margin-bottom:6px;}
-.signin-sub{color:var(--muted);margin-bottom:18px;font-size:14px;}
+.signin-box{background:var(--surface);padding:38px 32px;border-radius:var(--radius-lg);border:2px solid var(--border);box-shadow:0 0 60px rgba(232,131,74,.12),0 24px 60px rgba(232,131,74,.08);text-align:center;max-width:420px;width:92%;animation:slideUp .5s cubic-bezier(.22,1,.36,1);}
+.signin-logo{font-family:'Fredoka One',cursive;font-size:42px;color:var(--accent);margin-bottom:6px;letter-spacing:1px;}
+.signin-sub{color:var(--muted);margin-bottom:18px;font-size:14px;font-weight:600;}
 /* Saved accounts */
 .saved-accounts{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;max-height:280px;overflow-y:auto;}
 .saved-btn{display:flex;align-items:center;gap:11px;padding:12px 14px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all .2s;width:100%;font-family:inherit;text-align:left;}
@@ -68,17 +49,17 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .signin-divider{display:flex;align-items:center;gap:10px;margin:12px 0;color:var(--muted);font-size:12px;}
 .signin-divider::before,.signin-divider::after{content:'';flex:1;height:1px;background:var(--border);}
 /* Feature nav tabs */
-.feature-tabs{display:flex;gap:6px;padding:8px 14px;background:rgba(255,255,255,.85);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;}
+.feature-tabs{display:flex;gap:6px;padding:8px 14px;background:rgba(255,255,255,.9);border-bottom:2px solid var(--border);overflow-x:auto;scrollbar-width:none;}
 .feature-tabs::-webkit-scrollbar{display:none;}
-.feature-tab{flex-shrink:0;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:7px 13px;cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);font-family:inherit;transition:all .2s;display:flex;align-items:center;gap:5px;}
+.feature-tab{flex-shrink:0;background:var(--surface);border:2px solid var(--border);border-radius:12px;padding:7px 13px;cursor:pointer;font-size:12px;font-weight:700;color:var(--muted);font-family:'Nunito',sans-serif;transition:all .2s;display:flex;align-items:center;gap:5px;}
 .feature-tab:hover{border-color:var(--accent);color:var(--text);}
-.feature-tab.active{border-color:var(--accent);background:rgba(124,106,247,.15);color:var(--accent);}
+.feature-tab.active{border-color:var(--accent);background:rgba(232,131,74,.12);color:var(--accent);}
 /* Feature panels */
 .feature-panel{display:none;padding:18px 16px;max-width:1400px;margin:0 auto;}
 .feature-panel.active{display:block;}
 /* Calendar */
 .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
-.cal-month{font-family:'Playfair Display',serif;font-size:20px;color:var(--text);}
+.cal-month{font-family:'Fredoka One',cursive;font-size:20px;color:var(--text);}
 .cal-nav{width:34px;height:34px;background:var(--surface);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:16px;transition:all .2s;font-family:inherit;}
 .cal-nav:hover{border-color:var(--accent);color:var(--accent);}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:16px;}
@@ -123,7 +104,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .wheel-spin-btn{padding:14px 36px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;box-shadow:0 4px 20px var(--accent-glow);transition:all .2s;}
 .wheel-spin-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px var(--accent-glow);}
 .wheel-spin-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
-.wheel-result{font-family:'Playfair Display',serif;font-size:22px;color:var(--accent);text-align:center;min-height:34px;}
+.wheel-result{font-family:'Fredoka One',cursive;font-size:22px;color:var(--accent);text-align:center;min-height:34px;}
 .wheel-names{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:8px;}
 .wheel-name-tag{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px;}
 .wheel-name-remove{background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:0;line-height:1;}
@@ -146,8 +127,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 /* BUTTONS */
 .btn{padding:13px 22px;font-size:14px;font-weight:600;font-family:inherit;border:none;border-radius:var(--radius);cursor:pointer;transition:all .18s;display:inline-flex;align-items:center;justify-content:center;gap:7px;}
 .btn:disabled{opacity:.5;cursor:not-allowed;}
-.btn-primary{background:var(--accent);color:#fff;width:100%;box-shadow:0 4px 20px var(--accent-glow);}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px var(--accent-glow);}
+.btn-primary{background:var(--accent);color:#fff;width:100%;box-shadow:0 4px 20px rgba(232,131,74,.3);border-radius:var(--radius);}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(232,131,74,.4);filter:brightness(1.05);}
 .btn-ghost{background:transparent;color:var(--muted);border:1.5px solid var(--border);flex:1;}
 .btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
 .btn-outline{background:transparent;color:var(--accent);border:1.5px solid var(--accent);flex:1;}
@@ -155,22 +136,28 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .btn-danger{background:transparent;color:var(--danger);border:1.5px solid var(--danger);flex:1;}
 .btn-danger:hover{background:var(--danger);color:#fff;}
 
-/* HEADER */
-.header{background:rgba(255,255,255,.92);backdrop-filter:blur(18px);padding:0 22px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:1000;display:flex;justify-content:space-between;align-items:center;height:62px;box-shadow:0 1px 8px rgba(92,107,192,.07);}
-.logo{font-family:'Playfair Display',serif;font-size:24px;color:var(--accent);}
-.header-icons{display:flex;gap:7px;}
-.header-icon{width:40px;height:40px;background:var(--surface);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;position:relative;color:var(--muted);}
-.header-icon:hover{border-color:var(--accent);background:var(--surface2);transform:translateY(-1px);box-shadow:0 4px 16px var(--accent-glow);color:var(--accent);}
+/* HEADER — hidden, replaced by combined nav bar */
+.header{display:none;}
+.logo{font-family:'Fredoka One',cursive;font-size:22px;color:var(--accent);letter-spacing:.5px;white-space:nowrap;}
+.header-icons{display:flex;gap:5px;}
+.header-icon{width:36px;height:36px;background:var(--surface);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;position:relative;color:var(--muted);flex-shrink:0;}
+.header-icon:hover{border-color:var(--accent);background:var(--surface2);color:var(--accent);}
 .user-badge{position:absolute;top:-5px;right:-5px;background:var(--accent);color:#fff;min-width:18px;height:18px;padding:0 4px;border-radius:9px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg);}
 
+/* COMBINED NAV BAR */
+.combined-nav{position:sticky;top:0;z-index:1000;background:rgba(255,255,255,.97);backdrop-filter:blur(18px);border-bottom:2px solid var(--border);box-shadow:0 2px 12px rgba(232,131,74,.08);}
+.combined-nav-top{display:flex;align-items:center;gap:8px;padding:8px 12px 6px;}
+.combined-nav-top .logo{flex-shrink:0;}
+.combined-nav-sections{display:flex;gap:7px;padding:0 12px 8px;overflow-x:auto;scrollbar-width:none;}
+.combined-nav-sections::-webkit-scrollbar{display:none;}
+
 /* NAV */
-.top-nav{display:flex;gap:8px;padding:11px 18px;background:rgba(255,255,255,.85);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;}
-.top-nav::-webkit-scrollbar{display:none;}
-.nav-button{flex-shrink:0;background:var(--surface);border:1.5px solid var(--border);border-radius:11px;padding:8px 15px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:7px;color:var(--muted);position:relative;user-select:none;}
-.nav-button:hover{border-color:var(--accent);transform:translateY(-1px);color:var(--text);}
-.nav-button.active{border-color:var(--accent);background:rgba(124,106,247,.15);box-shadow:0 0 14px var(--accent-glow);color:var(--accent);}
-.nav-button-emoji{font-size:17px;}
-.nav-button-text{font-size:13px;font-weight:500;white-space:nowrap;}
+.top-nav{display:none;}/* original nav hidden — sections moved inside combined-nav */
+.nav-button{flex-shrink:0;background:var(--surface);border:2px solid var(--border);border-radius:12px;padding:7px 12px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px;color:var(--muted);position:relative;user-select:none;font-family:'Nunito',sans-serif;font-weight:700;}
+.nav-button:hover{border-color:var(--accent);color:var(--text);}
+.nav-button.active{border-color:var(--accent);background:rgba(232,131,74,.12);box-shadow:0 0 14px rgba(232,131,74,.15);color:var(--accent);}
+.nav-button-emoji{font-size:16px;}
+.nav-button-text{font-size:12px;font-weight:700;white-space:nowrap;}
 
 /* Host double-click indicator on nav buttons */
 .host-mode .nav-button::after{content:'✎';position:absolute;top:-6px;right:-6px;background:var(--accent);color:#fff;width:16px;height:16px;border-radius:50%;font-size:9px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;pointer-events:none;}
@@ -187,12 +174,12 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 /* CONTENT & CARDS */
 .content{padding:22px 18px;max-width:1400px;margin:0 auto;position:relative;z-index:1;}
 .section-header{margin-bottom:18px;display:flex;align-items:center;gap:10px;}
-.section-title{font-family:'Playfair Display',serif;font-size:21px;color:var(--text);}
+.section-title{font-family:'Fredoka One',cursive;font-size:22px;color:var(--text);letter-spacing:.5px;}
 .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;}
 
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:all .25s;cursor:pointer;animation:cardIn .4s cubic-bezier(.22,1,.36,1) both;position:relative;}
 @keyframes cardIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-.card:hover{border-color:var(--accent);box-shadow:0 8px 28px var(--accent-glow);transform:translateY(-4px);}
+.card:hover{border-color:var(--accent);box-shadow:0 8px 28px rgba(232,131,74,.15);transform:translateY(-4px);}
 
 /* Drag-over state */
 .card.drag-over{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(79,209,197,.35);transform:scale(1.02);background:rgba(79,209,197,.06);}
@@ -222,7 +209,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .card-editor-box{background:var(--surface);border:1.5px solid var(--accent);border-radius:22px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;box-shadow:0 0 60px var(--accent-glow),0 32px 80px rgba(92,107,192,.15);animation:popIn .22s cubic-bezier(.22,1,.36,1);}
 @keyframes popIn{from{opacity:0;transform:scale(.95) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
 .card-editor-header{padding:22px 24px 0;display:flex;align-items:center;justify-content:space-between;}
-.card-editor-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--accent);}
+.card-editor-title{font-family:'Fredoka One',cursive;font-size:22px;color:var(--accent);letter-spacing:.5px;}
 .card-editor-close{width:34px;height:34px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);transition:all .2s;font-size:16px;}
 .card-editor-close:hover{border-color:var(--danger);color:var(--danger);}
 .card-editor-body{padding:20px 24px 24px;}
@@ -261,10 +248,10 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 /* MODAL */
 .modal{display:none;position:fixed;inset:0;z-index:9999;background:rgba(200,205,225,.75);backdrop-filter:blur(10px);overflow-y:auto;}
 .modal.active{display:flex;justify-content:center;align-items:flex-start;padding:32px 14px;}
-.modal-content{background:var(--surface);padding:34px 30px;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:0 0 40px var(--accent-glow),0 16px 48px rgba(92,107,192,.12);max-width:520px;width:100%;animation:slideUp .3s cubic-bezier(.22,1,.36,1);}
+.modal-content{background:var(--surface);padding:34px 30px;border-radius:var(--radius-lg);border:2px solid var(--border);box-shadow:0 0 40px rgba(232,131,74,.1),0 16px 48px rgba(232,131,74,.08);max-width:520px;width:100%;animation:slideUp .3s cubic-bezier(.22,1,.36,1);}
 .modal-content.wide{max-width:740px;}
-.modal-content h2{font-family:'Playfair Display',serif;font-size:23px;margin-bottom:20px;text-align:center;color:var(--text);}
-.modal-content label{display:block;color:var(--muted);font-size:12px;margin:12px 0 4px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+.modal-content h2{font-family:'Fredoka One',cursive;font-size:26px;margin-bottom:20px;text-align:center;color:var(--accent);letter-spacing:.5px;}
+.modal-content label{display:block;color:var(--muted);font-size:12px;margin:12px 0 4px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;}
 .modal-content input,.modal-content textarea,.modal-content select{width:100%;padding:11px 13px;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:14px;font-family:inherit;transition:border-color .25s,box-shadow .25s;}
 .modal-content input:focus,.modal-content textarea:focus,.modal-content select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow);}
 .modal-buttons{display:flex;gap:9px;margin-top:20px;flex-wrap:wrap;}
@@ -294,7 +281,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .wa-group-tab:hover{color:var(--text);}
 .wa-add-group{padding:9px 14px;font-size:13px;font-weight:600;font-family:inherit;border:none;background:transparent;cursor:pointer;color:var(--accent2);white-space:nowrap;}
 .wa-add-group:hover{color:var(--accent);}
-.wa-messages{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:6px;background:#e5ddd5;min-height:200px;max-height:400px;scrollbar-width:thin;}
+.wa-messages{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:6px;background:#fdf0e4;min-height:200px;max-height:400px;scrollbar-width:thin;}
 .wa-bubble{max-width:78%;padding:8px 12px 4px;border-radius:12px;position:relative;word-break:break-word;}
 .wa-bubble.mine{background:#dcf8c6;align-self:flex-end;border-radius:12px 12px 2px 12px;}
 .wa-bubble.theirs{background:#fff;align-self:flex-start;border-radius:12px 12px 12px 2px;box-shadow:0 1px 2px rgba(0,0,0,.1);}
@@ -319,6 +306,14 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .wa-input:focus{border-color:var(--accent);}
 .wa-send-btn{width:44px;height:44px;background:var(--accent);border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;}
 .wa-send-btn:hover{transform:scale(1.08);filter:brightness(1.1);}
+.wa-voice-btn{width:44px;height:44px;background:var(--surface2);border:1.5px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;color:var(--muted);}
+.wa-voice-btn:hover{background:var(--accent);border-color:var(--accent);color:#fff;}
+.wa-voice-btn.recording{background:var(--danger);border-color:var(--danger);color:#fff;animation:pulse 1s infinite;}
+.wa-voice-msg{display:flex;align-items:center;gap:8px;padding:4px 2px;}
+.wa-voice-msg audio{width:180px;height:32px;vertical-align:middle;}
+.wa-voice-play{width:30px;height:30px;background:var(--accent);border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:#fff;}
+.recording-indicator{display:none;align-items:center;gap:8px;padding:6px 14px;background:rgba(229,57,53,.1);border-top:2px solid var(--danger);flex-shrink:0;font-size:13px;font-weight:600;color:var(--danger);}
+.recording-indicator.active{display:flex;}
 
 /* USERS */
 .users-panel{background:var(--bg);padding:12px;border-radius:11px;margin-top:12px;max-height:260px;overflow-y:auto;}
@@ -333,7 +328,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .host-tabs{display:flex;gap:5px;margin-bottom:18px;flex-wrap:wrap;}
 .host-tab{background:transparent;border:1.5px solid var(--border);color:var(--muted);border-radius:8px;padding:7px 14px;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;transition:all .2s;display:flex;align-items:center;gap:5px;white-space:nowrap;}
 .host-tab:hover{border-color:var(--accent);color:var(--text);}
-.host-tab.active{background:rgba(124,106,247,.15);border-color:var(--accent);color:var(--accent);}
+.host-tab.active{background:rgba(232,131,74,.12);border-color:var(--accent);color:var(--accent);}
 .host-panel{display:none;}
 .host-panel.active{display:block;}
 .setting-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border);gap:10px;}
@@ -351,12 +346,30 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .admin-badge.active{display:flex;}
 
 /* Host tip bar below nav */
-.host-tip{display:none;padding:7px 18px;background:rgba(124,106,247,.08);border-bottom:1px solid rgba(124,106,247,.2);font-size:12px;color:var(--accent);text-align:center;gap:16px;flex-wrap:wrap;justify-content:center;}
+.host-tip{display:none;padding:7px 18px;background:rgba(232,131,74,.08);border-bottom:1px solid rgba(232,131,74,.2);font-size:12px;color:var(--accent);text-align:center;gap:16px;flex-wrap:wrap;justify-content:center;font-weight:700;}
 .host-mode .host-tip{display:flex;}
+
+/* IMAGE LIGHTBOX */
+.img-lightbox{position:fixed;inset:0;background:rgba(0,0,0,.96);z-index:99999;display:none;flex-direction:column;align-items:center;justify-content:center;touch-action:pinch-zoom;}
+.img-lightbox.open{display:flex;}
+.img-lightbox-img{max-width:100vw;max-height:calc(100vh - 80px);object-fit:contain;border-radius:4px;user-select:none;}
+.img-lightbox-close{position:absolute;top:14px;right:16px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);color:#fff;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;transition:background .2s;z-index:2;}
+.img-lightbox-close:hover{background:rgba(255,255,255,.3);}
+.img-lightbox-caption{color:rgba(255,255,255,.7);font-size:13px;font-weight:600;margin-top:12px;text-align:center;padding:0 20px;max-width:100%;}
+/* Tap-to-fullscreen hint overlay on image cards */
+.img-fs-hint{position:absolute;bottom:6px;right:7px;background:rgba(0,0,0,.55);color:#fff;border-radius:8px;padding:3px 8px;font-size:10px;font-weight:700;display:flex;align-items:center;gap:4px;pointer-events:none;opacity:0;transition:opacity .2s;}
+.card-thumb:hover .img-fs-hint{opacity:1;}
+
+/* BOTTOM BAR */
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;z-index:1000;background:rgba(255,255,255,.97);backdrop-filter:blur(18px);border-top:2px solid var(--border);display:flex;justify-content:space-around;align-items:center;padding:8px 0 max(8px,env(safe-area-inset-bottom));box-shadow:0 -2px 12px rgba(232,131,74,.08);}
+.bottom-bar-btn{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;padding:6px 18px;color:var(--muted);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;border-radius:12px;transition:all .2s;flex:1;}
+.bottom-bar-btn:hover,.bottom-bar-btn:active{color:var(--accent);background:rgba(232,131,74,.1);}
+/* push page content above bottom bar */
+body{padding-bottom:72px;}
 
 /* TOAST */
 .toast-area{position:fixed;bottom:22px;right:22px;z-index:99999;display:flex;flex-direction:column;gap:7px;pointer-events:none;}
-.toast{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:11px 16px;font-size:13px;font-weight:500;box-shadow:0 8px 24px rgba(92,107,192,.15);pointer-events:auto;animation:toastIn .3s cubic-bezier(.22,1,.36,1);display:flex;align-items:center;gap:9px;max-width:300px;}
+.toast{background:var(--surface);border:2px solid var(--border);border-radius:14px;padding:11px 16px;font-size:13px;font-weight:700;box-shadow:0 8px 24px rgba(232,131,74,.12);pointer-events:auto;animation:toastIn .3s cubic-bezier(.22,1,.36,1);display:flex;align-items:center;gap:9px;max-width:300px;}
 @keyframes toastIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .toast.success{border-left:3px solid var(--success);}
 .toast.danger{border-left:3px solid var(--danger);}
@@ -380,13 +393,13 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 <!-- Sign In -->
 <div class="signin-overlay" id="signinOverlay">
     <div class="signin-box">
-        <div class="signin-logo">Family Hub</div>
-        <p class="signin-sub" id="signinSub">Who's using the app?</p>
+        <div class="signin-logo">🏠 Family Hub</div>
+        <p class="signin-sub" id="signinSub">Who's joining today? 😊</p>
         <!-- Saved accounts list -->
         <div class="saved-accounts" id="savedAccountsList"></div>
         <!-- Toggle to show new name input -->
-        <button id="showNewNameBtn" onclick="toggleNewName()" style="display:none;width:100%;margin-top:4px;padding:11px;background:transparent;border:1.5px dashed var(--border);border-radius:var(--radius);color:var(--muted);font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .2s;">
-            + Use a different name
+        <button id="showNewNameBtn" onclick="toggleNewName()" style="display:none;width:100%;margin-top:4px;padding:11px;background:transparent;border:2px dashed var(--border);border-radius:var(--radius);color:var(--muted);font-size:13px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;transition:all .2s;">
+            + I'm someone new!
         </button>
         <!-- New name input -->
         <div id="newNameWrap" style="margin-top:8px;">
@@ -394,12 +407,11 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
                 <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);display:flex;">
                     <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 </span>
-                <input type="text" id="nameInput" placeholder="Enter your name…" maxlength="30" autocomplete="off"
-                    style="width:100%;padding:13px 16px 13px 44px;font-size:15px;font-family:inherit;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);color:var(--text);transition:border-color .25s,box-shadow .25s;outline:none;">
+                <input type="text" id="nameInput" placeholder="What's your name? 👋" maxlength="30" autocomplete="off"
+                    style="width:100%;padding:13px 16px 13px 44px;font-size:15px;font-family:'Nunito',sans-serif;font-weight:600;background:var(--bg);border:2px solid var(--border);border-radius:var(--radius);color:var(--text);transition:border-color .25s,box-shadow .25s;outline:none;">
             </div>
-            <button onclick="signIn()" class="btn btn-primary">
-                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-                Join Now
+            <button onclick="signIn()" class="btn btn-primary" style="font-family:'Nunito',sans-serif;font-weight:800;font-size:15px;">
+                Come on in! 🎉
             </button>
         </div>
     </div>
@@ -411,45 +423,45 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 
         <!-- STEP 1: Secret question -->
         <div id="verifyStep1">
-            <div class="signin-logo">🔐</div>
-            <p style="font-family:'Playfair Display',serif;font-size:18px;color:var(--text);margin-bottom:8px;">Family Verification</p>
-            <p class="signin-sub">Answer the security question to continue.</p>
-            <div style="background:var(--surface2);border-radius:12px;padding:14px 16px;margin-bottom:16px;text-align:right;direction:rtl;">
-                <p style="font-size:14px;font-weight:600;color:var(--text);">מתי היום הולדת של יעקב משה?</p>
+            <div class="signin-logo">👨‍👩‍👧‍👦</div>
+            <p style="font-family:'Fredoka One',cursive;font-size:22px;color:var(--accent);margin-bottom:8px;letter-spacing:.5px;">Are you family? 🏡</p>
+            <p class="signin-sub">Just a quick little question to make sure you know us!</p>
+            <div style="background:var(--surface2);border-radius:16px;padding:14px 16px;margin-bottom:16px;text-align:right;direction:rtl;border:2px solid var(--border);">
+                <p style="font-size:14px;font-weight:700;color:var(--text);">מתי היום הולדת של יעקב משה?</p>
                 <p style="font-size:12px;color:var(--muted);margin-top:4px;direction:ltr;text-align:left;">When is Yaakov Moshe's birthday?</p>
             </div>
-            <input type="text" id="verifyInput" placeholder="Enter the answer…" maxlength="10" autocomplete="off"
-                style="width:100%;padding:13px 16px;font-size:20px;font-family:inherit;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);color:var(--text);outline:none;text-align:center;letter-spacing:4px;margin-bottom:12px;">
-            <button onclick="submitVerify()" class="btn btn-primary" style="width:100%;margin-bottom:8px;">Next →</button>
-            <div id="verifyError" style="color:var(--danger);font-size:13px;font-weight:600;margin-top:6px;display:none;">❌ Wrong answer. Try again.</div>
+            <input type="text" id="verifyInput" placeholder="Your answer…" maxlength="10" autocomplete="off"
+                style="width:100%;padding:13px 16px;font-size:20px;font-family:'Nunito',sans-serif;font-weight:700;background:var(--bg);border:2px solid var(--border);border-radius:var(--radius);color:var(--text);outline:none;text-align:center;letter-spacing:4px;margin-bottom:12px;transition:border-color .2s;">
+            <button onclick="submitVerify()" class="btn btn-primary" style="width:100%;margin-bottom:8px;font-family:'Nunito',sans-serif;font-weight:800;font-size:15px;">Let me in! 🎉</button>
+            <div id="verifyError" style="color:var(--danger);font-size:13px;font-weight:700;margin-top:6px;display:none;">😅 Hmm, that's not right. Try again!</div>
         </div>
 
         <!-- STEP 2: Enter name + phone to request access -->
         <div id="verifyStep2" style="display:none;">
-            <div style="font-size:36px;margin-bottom:8px;">📋</div>
-            <p style="font-family:'Playfair Display',serif;font-size:18px;color:var(--text);margin-bottom:6px;">Request Access</p>
-            <p class="signin-sub" style="margin-bottom:16px;">The host will verify you are family and approve your device.</p>
-            <input type="text" id="requestName" placeholder="Your full name…" maxlength="30" autocomplete="off"
-                style="width:100%;padding:12px 14px;font-size:14px;font-family:inherit;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);color:var(--text);outline:none;margin-bottom:10px;">
+            <div style="font-size:42px;margin-bottom:8px;">👋</div>
+            <p style="font-family:'Fredoka One',cursive;font-size:22px;color:var(--accent);margin-bottom:6px;letter-spacing:.5px;">Almost there!</p>
+            <p class="signin-sub" style="margin-bottom:16px;">Tell us who you are so the host can welcome you in!</p>
+            <input type="text" id="requestName" placeholder="Your name…" maxlength="30" autocomplete="off"
+                style="width:100%;padding:12px 14px;font-size:14px;font-family:'Nunito',sans-serif;font-weight:600;background:var(--bg);border:2px solid var(--border);border-radius:var(--radius);color:var(--text);outline:none;margin-bottom:10px;">
             <input type="tel" id="requestPhone" placeholder="Your phone number…" maxlength="20" autocomplete="off"
-                style="width:100%;padding:12px 14px;font-size:14px;font-family:inherit;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);color:var(--text);outline:none;margin-bottom:12px;">
-            <button onclick="sendAccessRequest()" class="btn btn-primary" style="width:100%;margin-bottom:8px;">
-                📨 Send Request to Host
+                style="width:100%;padding:12px 14px;font-size:14px;font-family:'Nunito',sans-serif;font-weight:600;background:var(--bg);border:2px solid var(--border);border-radius:var(--radius);color:var(--text);outline:none;margin-bottom:12px;">
+            <button onclick="sendAccessRequest()" class="btn btn-primary" style="width:100%;margin-bottom:8px;font-family:'Nunito',sans-serif;font-weight:800;font-size:15px;">
+                📨 Knock knock — let me in!
             </button>
-            <div id="requestError" style="color:var(--danger);font-size:12px;margin-top:4px;display:none;">Please fill in both fields.</div>
+            <div id="requestError" style="color:var(--danger);font-size:12px;font-weight:700;margin-top:4px;display:none;">Please fill in both fields 😊</div>
         </div>
 
         <!-- STEP 3: Waiting for host approval -->
         <div id="verifyStep3" style="display:none;text-align:center;">
-            <div style="font-size:48px;margin-bottom:12px;animation:pulse 2s infinite;">⏳</div>
-            <p style="font-family:'Playfair Display',serif;font-size:18px;color:var(--text);margin-bottom:8px;">Waiting for Approval</p>
-            <p class="signin-sub" style="margin-bottom:16px;">Your request has been sent to the host. Once approved you will get instant access.</p>
-            <div style="background:var(--surface2);border-radius:10px;padding:12px;margin-bottom:16px;font-size:13px;color:var(--muted);">
-                <div id="waitingName" style="font-weight:600;color:var(--text);margin-bottom:2px;"></div>
+            <div style="font-size:52px;margin-bottom:12px;animation:pulse 2s infinite;">🌟</div>
+            <p style="font-family:'Fredoka One',cursive;font-size:22px;color:var(--accent);margin-bottom:8px;letter-spacing:.5px;">Hang tight!</p>
+            <p class="signin-sub" style="margin-bottom:16px;">The host is being notified. They'll let you in as soon as they see this! 🏠</p>
+            <div style="background:var(--surface2);border-radius:14px;padding:12px;margin-bottom:16px;font-size:13px;color:var(--muted);border:2px solid var(--border);">
+                <div id="waitingName" style="font-weight:800;color:var(--text);margin-bottom:2px;"></div>
                 <div id="waitingPhone"></div>
             </div>
-            <button onclick="checkApprovalStatus()" class="btn btn-outline" style="width:100%;margin-bottom:8px;">🔄 Check Status</button>
-            <p style="font-size:11px;color:var(--muted);">You can close the app and come back — your request stays saved.</p>
+            <button onclick="checkApprovalStatus()" class="btn btn-outline" style="width:100%;margin-bottom:8px;font-family:'Nunito',sans-serif;font-weight:800;">🔄 Check again</button>
+            <p style="font-size:11px;color:var(--muted);font-weight:600;">You can close the app and come back — we'll remember you! 💛</p>
         </div>
 
     </div>
@@ -458,9 +470,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 <!-- Blocked Device Overlay -->
 <div class="signin-overlay" id="blockedOverlay" style="z-index:10002;display:none;">
     <div class="signin-box" style="text-align:center;">
-        <div style="font-size:48px;margin-bottom:12px;">🚫</div>
-        <p style="font-family:'Playfair Display',serif;font-size:22px;color:var(--danger);margin-bottom:8px;">Access Denied</p>
-        <p style="color:var(--muted);font-size:14px;">This device has been blocked by the host. Please contact the family administrator.</p>
+        <div style="font-size:52px;margin-bottom:12px;">😔</div>
+        <p style="font-family:'Fredoka One',cursive;font-size:24px;color:var(--danger);margin-bottom:8px;letter-spacing:.5px;">Oops!</p>
+        <p style="color:var(--muted);font-size:14px;font-weight:600;">This device isn't on the list. Please reach out to the family host to sort it out! 💛</p>
     </div>
 </div>
 
@@ -471,33 +483,33 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     <button onclick="removeHostMemory()" title="Remove host from this device" style="background:rgba(255,255,255,.2);border:none;color:#fff;cursor:pointer;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:11px;margin-left:4px;padding:0;font-family:inherit;">✕</button>
 </div>
 
-<!-- Header -->
-<div class="header">
+<!-- Header (hidden — kept for JS references) -->
+<div class="header" style="display:none;">
     <div class="logo" id="appName">Family Hub</div>
-    <div class="header-icons">
-        <div class="header-icon" onclick="openSearch()" title="Search">
-            <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        </div>
-        <div class="header-icon" onclick="openComments()" title="Comments">
-            <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            <span class="user-badge" id="commentCount">0</span>
-        </div>
-        <div class="header-icon" onclick="openVideoChat()" title="Video Chat">
-            <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-        </div>
-        <div class="header-icon" onclick="showHostLogin()" title="Host / Settings">
-            <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        </div>
-    </div>
+    <div class="header-icons"></div>
 </div>
 
-<!-- Top Nav -->
-<div class="top-nav" id="topNav">
-    <div class="nav-button active" data-section="0"><span class="nav-button-emoji">📁</span><span class="nav-button-text">Section 1</span></div>
-    <div class="nav-button" data-section="1"><span class="nav-button-emoji">📁</span><span class="nav-button-text">Section 2</span></div>
-    <div class="nav-button" data-section="2"><span class="nav-button-emoji">📁</span><span class="nav-button-text">Section 3</span></div>
-    <div class="nav-button" data-section="3"><span class="nav-button-emoji">📁</span><span class="nav-button-text">Section 4</span></div>
-    <div class="nav-button" data-section="4"><span class="nav-button-emoji">📁</span><span class="nav-button-text">Section 5</span></div>
+<!-- Combined Nav Bar -->
+<div class="combined-nav" id="combinedNav">
+    <div class="combined-nav-top">
+        <div class="logo" id="appName2">Family Hub</div>
+    </div>
+    <!-- Section tabs row -->
+    <div class="combined-nav-sections" id="topNav">
+        <div class="nav-button active" data-section="0"><span class="nav-button-emoji">📁</span><span class="nav-button-text">Section 1</span></div>
+        <div class="nav-button" data-section="1"><span class="nav-button-emoji">📁</span><span class="nav-button-text">Section 2</span></div>
+        <div class="nav-button" data-section="2"><span class="nav-button-emoji">📁</span><span class="nav-button-text">Section 3</span></div>
+        <div class="nav-button" data-section="3"><span class="nav-button-emoji">📁</span><span class="nav-button-text">Section 4</span></div>
+        <div class="nav-button" data-section="4"><span class="nav-button-emoji">📁</span><span class="nav-button-text">Section 5</span></div>
+    </div>
+    <!-- Feature tabs row (Home, Calendar, Recipes, Poll) -->
+    <div class="feature-tabs" id="featureTabs">
+        <button class="feature-tab active" data-panel="cards" onclick="switchFeatureTab('cards',this)">🏠 Home</button>
+        <button class="feature-tab" data-panel="calendar" onclick="switchFeatureTab('calendar',this)">📅 Calendar</button>
+        <button class="feature-tab" data-panel="recipes" onclick="switchFeatureTab('recipes',this)">🍳 Recipes</button>
+        <button class="feature-tab" data-panel="poll" onclick="switchFeatureTab('poll',this)">🗳️ Poll</button>
+        <button class="feature-tab" data-panel="updates" onclick="switchFeatureTab('updates',this)" id="updatesTab">📲 Updates</button>
+    </div>
 </div>
 
 <!-- Host tip bar (only visible in host mode) -->
@@ -513,13 +525,6 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     <div class="bday-banner-text" id="bdayBannerText"></div>
 </div>
 
-<!-- Feature Tabs -->
-<div class="feature-tabs" id="featureTabs">
-    <button class="feature-tab active" data-panel="cards" onclick="switchFeatureTab('cards',this)">🏠 Home</button>
-    <button class="feature-tab" data-panel="calendar" onclick="switchFeatureTab('calendar',this)">📅 Calendar</button>
-    <button class="feature-tab" data-panel="recipes" onclick="switchFeatureTab('recipes',this)">🍳 Recipes</button>
-    <button class="feature-tab" data-panel="poll" onclick="switchFeatureTab('poll',this)">🗳️ Poll</button>
-</div>
 
 <!-- Home Panel -->
 <div class="feature-panel active" id="panel-cards">
@@ -553,7 +558,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 <!-- Recipes Panel -->
 <div class="feature-panel" id="panel-recipes">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <div style="font-family:'Playfair Display',serif;font-size:20px;">Family Recipes 🍳</div>
+        <div style="font-family:'Fredoka One',cursive;font-size:20px;">Family Recipes 🍳</div>
         <button class="btn btn-outline" style="padding:7px 14px;font-size:12px;" onclick="openAddRecipe()">+ Add Recipe</button>
     </div>
     <div class="recipe-grid" id="recipeGrid"></div>
@@ -562,10 +567,96 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 <!-- Poll Panel -->
 <div class="feature-panel" id="panel-poll">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <div style="font-family:'Playfair Display',serif;font-size:20px;">Family Poll 🗳️</div>
+        <div style="font-family:'Fredoka One',cursive;font-size:20px;">Family Poll 🗳️</div>
         <button class="btn btn-outline" style="padding:7px 14px;font-size:12px;" id="createPollBtn" onclick="openCreatePoll()">+ New Poll</button>
     </div>
     <div id="pollContainer"></div>
+</div>
+
+<!-- Updates Panel -->
+<div class="feature-panel" id="panel-updates">
+    <div style="padding:18px 16px;max-width:600px;margin:0 auto;">
+
+        <!-- Latest version card -->
+        <div id="latestUpdateCard" style="display:none;background:var(--surface);border:2px solid var(--accent);border-radius:var(--radius-lg);padding:20px;margin-bottom:18px;box-shadow:0 4px 24px var(--accent-glow);">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                <span style="font-size:32px;">📲</span>
+                <div>
+                    <div style="font-family:'Fredoka One',cursive;font-size:20px;color:var(--accent);" id="latestVersionLabel">Latest Version</div>
+                    <div style="font-size:11px;color:var(--muted);font-weight:600;" id="latestVersionDate"></div>
+                </div>
+                <span id="newBadge" style="display:none;margin-left:auto;background:var(--danger);color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;animation:pulse 1.5s infinite;">NEW</span>
+            </div>
+            <div id="latestVersionNotes" style="font-size:14px;color:var(--text);font-weight:600;line-height:1.6;margin-bottom:16px;background:var(--surface2);border-radius:10px;padding:12px;white-space:pre-wrap;"></div>
+            <a id="latestDownloadBtn" href="#" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:14px;background:var(--accent);color:#fff;border-radius:var(--radius);font-size:15px;font-weight:800;font-family:'Nunito',sans-serif;text-decoration:none;box-shadow:0 4px 20px var(--accent-glow);transition:all .2s;">
+                ⬇️ Download & Install APK
+            </a>
+            <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px;font-weight:600;">Tap the button, then open the downloaded file to install</div>
+        </div>
+
+        <div id="noUpdateYet" style="text-align:center;padding:40px 20px;color:var(--muted);">
+            <div style="font-size:48px;margin-bottom:12px;">📦</div>
+            <div style="font-size:15px;font-weight:700;">No updates posted yet</div>
+            <div style="font-size:13px;margin-top:6px;">The host will post new versions here</div>
+        </div>
+
+        <!-- Host: post new update (only visible in host mode) -->
+        <div id="hostUpdateForm" style="display:none;background:var(--surface);border:2px dashed var(--border);border-radius:var(--radius-lg);padding:18px;margin-bottom:18px;">
+            <div style="font-family:'Fredoka One',cursive;font-size:17px;color:var(--accent);margin-bottom:14px;">📤 Post New Update</div>
+
+            <label style="font-size:12px;font-weight:700;color:var(--muted);display:block;margin-bottom:5px;">Version name (e.g. v1.3)</label>
+            <input id="updateVersionInput" type="text" placeholder="v1.0" maxlength="20"
+                style="width:100%;padding:11px 14px;font-size:14px;font-family:'Nunito',sans-serif;font-weight:600;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);color:var(--text);outline:none;margin-bottom:12px;transition:border-color .2s;">
+
+            <label style="font-size:12px;font-weight:700;color:var(--muted);display:block;margin-bottom:5px;">What's new? (optional)</label>
+            <textarea id="updateNotesInput" rows="3" placeholder="e.g. Fixed chat bug, added dark mode…"
+                style="width:100%;padding:11px 14px;font-size:14px;font-family:'Nunito',sans-serif;font-weight:600;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);color:var(--text);outline:none;resize:vertical;margin-bottom:16px;transition:border-color .2s;"></textarea>
+
+            <!-- Option A: Upload APK directly to Firebase -->
+            <label style="font-size:12px;font-weight:700;color:var(--muted);display:block;margin-bottom:8px;">Upload APK file:</label>
+            <div id="apkDropZone" onclick="document.getElementById('apkFileInput').click()"
+                style="border:2px dashed var(--border);border-radius:var(--radius);padding:22px;text-align:center;cursor:pointer;margin-bottom:10px;transition:all .2s;background:var(--bg);"
+                ondragover="event.preventDefault();this.style.borderColor='var(--accent)';this.style.background='rgba(232,131,74,.06)'"
+                ondragleave="this.style.borderColor='var(--border)';this.style.background='var(--bg)'"
+                ondrop="handleApkDrop(event)">
+                <div style="font-size:30px;margin-bottom:6px;">📦</div>
+                <div style="font-size:13px;font-weight:700;color:var(--text);">Tap to pick APK file</div>
+                <div style="font-size:11px;color:var(--muted);margin-top:3px;">or drag &amp; drop it here</div>
+                <div id="apkFileName" style="margin-top:8px;font-size:12px;font-weight:700;color:var(--accent);display:none;"></div>
+            </div>
+            <input type="file" id="apkFileInput" accept=".apk,application/vnd.android.package-archive" style="display:none" onchange="onApkFileSelected(this)">
+
+            <!-- Upload progress -->
+            <div id="apkUploadProgress" style="display:none;margin-bottom:12px;">
+                <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px;">
+                    <span id="apkUploadStatus">Uploading to Firebase…</span>
+                    <span id="apkProgressPct">0%</span>
+                </div>
+                <div style="background:var(--surface2);border-radius:6px;height:10px;overflow:hidden;border:1px solid var(--border);">
+                    <div id="apkProgressBar" style="height:100%;background:var(--accent);border-radius:6px;width:0%;transition:width .3s;"></div>
+                </div>
+            </div>
+
+            <!-- Option B: paste a URL -->
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                <div style="flex:1;height:1px;background:var(--border);"></div>
+                <span style="font-size:11px;font-weight:700;color:var(--muted);">OR paste a link instead</span>
+                <div style="flex:1;height:1px;background:var(--border);"></div>
+            </div>
+            <input id="updateUrlInput" type="url" placeholder="https://… (any direct APK link)"
+                style="width:100%;padding:11px 14px;font-size:14px;font-family:'Nunito',sans-serif;font-weight:600;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);color:var(--text);outline:none;margin-bottom:14px;transition:border-color .2s;">
+
+            <button onclick="postAppUpdate()" id="postUpdateBtn" class="btn btn-primary" style="font-family:'Nunito',sans-serif;font-weight:800;">
+                📲 Post Update for Family
+            </button>
+        </div>
+
+        <!-- Version history -->
+        <div id="updateHistoryWrap" style="display:none;">
+            <div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">Version History</div>
+            <div id="updateHistoryList" style="display:flex;flex-direction:column;gap:8px;"></div>
+        </div>
+    </div>
 </div>
 
 <!-- Hidden file inputs -->
@@ -614,7 +705,18 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
             <button class="wa-reply-cancel" onclick="cancelReply()">✕</button>
         </div>
         <div class="wa-messages" id="waMessages"><p style="color:#888;text-align:center;padding:22px;font-size:13px;">No messages yet. Say hello! 👋</p></div>
-        <div class="wa-input-area">
+        <div class="recording-indicator" id="recordingIndicator">
+            <span style="width:10px;height:10px;background:var(--danger);border-radius:50%;display:inline-block;animation:pulse 1s infinite;"></span>
+            Recording… tap 🎙️ again to send
+        </div>
+        <!-- Read-only notice for announce groups -->
+        <div id="waReadonlyNotice" style="display:none;align-items:center;justify-content:center;gap:8px;padding:12px 16px;background:rgba(232,131,74,.08);border-top:2px solid var(--border);font-size:13px;font-weight:700;color:var(--muted);">
+            📢 This is a broadcast channel — only the host posts here
+        </div>
+        <div class="wa-input-area" id="waInputArea">
+            <button class="wa-voice-btn" id="voiceBtn" onclick="toggleVoiceRecording()" title="Voice message">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            </button>
             <textarea class="wa-input" id="newComment" placeholder="Type a message…" rows="1" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
             <button class="wa-send-btn" onclick="postComment()">
                 <svg width="18" height="18" fill="white" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
@@ -683,6 +785,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
             <button class="host-tab" onclick="switchHostTab('hub',this)">
                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
                 Hub Settings
+            </button>
+            <button class="host-tab" onclick="switchHostTab('popup',this);loadWelcomePopupEditor();">
+                🎯 Welcome Popup
             </button>
         </div>
 
@@ -774,6 +879,27 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
         <div class="modal-buttons" style="margin-top:6px;">
             <button class="btn btn-ghost" onclick="closeModal('settingsModal')">Close</button>
         </div>
+
+        <!-- Welcome Popup Panel -->
+        <div class="host-panel" id="panel-popup">
+            <p style="color:var(--muted);font-size:12px;margin-bottom:14px;">Show a pop-up to everyone when they open the site — great for announcements, photos or ads!</p>
+            <label>Title</label>
+            <input type="text" id="wpEditTitle" placeholder="e.g. Shabbat Shalom! 🕯️" maxlength="60">
+            <label>Message</label>
+            <textarea id="wpEditMessage" rows="3" placeholder="e.g. Dinner at 7pm at Grandma's house 🍽️"></textarea>
+            <label>Image / Photo URL (optional — paste a Cloudinary link)</label>
+            <input type="text" id="wpEditImageUrl" placeholder="https://res.cloudinary.com/…">
+            <label>How long to show it (days) — set 0 to show every visit</label>
+            <input type="number" id="wpEditDays" value="1" min="0" max="30" style="width:80px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-top:12px;">
+                <input type="checkbox" id="wpEditActive" style="width:18px;height:18px;accent-color:var(--accent);">
+                <label style="margin:0;text-transform:none;font-size:14px;font-weight:700;color:var(--text);">Popup is active (visible to everyone)</label>
+            </div>
+            <div class="modal-buttons" style="margin-top:16px;">
+                <button class="btn btn-outline" onclick="saveWelcomePopup()">💾 Save Popup</button>
+                <button class="btn btn-ghost" onclick="clearWelcomePopup()">🗑 Remove Popup</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -833,7 +959,32 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
         <div id="viewRecipeContent"></div>
         <div class="modal-buttons">
             <button class="btn btn-ghost" onclick="closeModal('viewRecipeModal')">Close</button>
+            <button class="btn btn-outline" id="editRecipeBtn" style="display:none;">✏️ Edit</button>
             <button class="btn btn-danger" id="deleteRecipeBtn" style="display:none;">🗑 Delete</button>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Recipe Modal -->
+<div class="modal" id="editRecipeModal">
+    <div class="modal-content wide">
+        <h2>✏️ Edit Recipe</h2>
+        <input type="hidden" id="editRecKey">
+        <label>Recipe Name</label>
+        <input type="text" id="editRecTitle" placeholder="e.g. Grandma's Lasagna" maxlength="60">
+        <label>Emoji / Icon</label>
+        <input type="text" id="editRecEmoji" placeholder="🍕" maxlength="4" style="width:80px;">
+        <label>Prep time</label>
+        <input type="text" id="editRecTime" placeholder="e.g. 45 mins" maxlength="20">
+        <label>Serves</label>
+        <input type="text" id="editRecServes" placeholder="e.g. 4 people" maxlength="20">
+        <label>Ingredients (one per line)</label>
+        <textarea id="editRecIngredients" rows="5" placeholder="2 cups flour&#10;1 egg&#10;..."></textarea>
+        <label>Steps (one per line)</label>
+        <textarea id="editRecSteps" rows="6" placeholder="1. Preheat oven to 375F&#10;2. Mix flour and eggs&#10;..."></textarea>
+        <div class="modal-buttons">
+            <button class="btn btn-ghost" onclick="closeModal('editRecipeModal')">Cancel</button>
+            <button class="btn btn-outline" onclick="updateRecipe()">💾 Save Changes</button>
         </div>
     </div>
 </div>
@@ -987,7 +1138,9 @@ async function registerOnlineUser(){
     if(!currentUser)return;
     const key=currentUser.replace(/[.#$[\]]/g,'_');
     userRef=window.dbRef(window.db,'onlineUsers/'+key);
-    try{await window.dbSet(userRef,{name:currentUser,timestamp:Date.now(),deviceId:getDeviceId()});}catch(e){}
+    try{await window.dbSet(userRef,{name:currentUser,timestamp:Date.now(),deviceId:getDeviceId()});
+    // Also persist to knownUsers so host can find them in group creation later
+    await window.dbSet(window.dbRef(window.db,'knownUsers/'+currentUser.replace(/[^a-zA-Z0-9_]/g,'_')), currentUser).catch(()=>{});}catch(e){}
 }
 window.addEventListener('beforeunload',()=>{
     if(userRef)navigator.sendBeacon(userRef.toString()+'.json',JSON.stringify(null));
@@ -1001,7 +1154,7 @@ async function loadContent(){
     // Then load Firebase data in parallel
     try{
         const n=await window.dbGet(window.dbRef(window.db,'appName'));
-        if(n.exists())document.getElementById('appName').textContent=n.val();
+        if(n.exists()){document.getElementById('appName').textContent=n.val();const a2=document.getElementById('appName2');if(a2)a2.textContent=n.val();}
         const dc=await window.dbGet(window.dbRef(window.db,'defaultCardCount'));
         if(dc.exists())defaultCardCount=Number(dc.val())||20;
         const ml=await window.dbGet(window.dbRef(window.db,'meetLink'));
@@ -1015,6 +1168,7 @@ async function loadContent(){
     loadCards(currentSection); // reload now that we have real defaultCardCount
     loadCommentsCount();
     listenAnnouncements();
+    listenWelcomePopup();
     prefetchAllCards();
 }
 
@@ -1193,8 +1347,9 @@ function buildCard(cardData,sectionIndex,cardId){
             }else{
                 body='<iframe src="'+media.embed+'" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;margin-top:8px;" allowfullscreen></iframe>';
             }
-        }else if(media.type==='image'){
-            thumb='<img src="'+esc(url)+'" loading="lazy" style="width:100%;height:100%;object-fit:cover;">';
+                }else if(media.type==='image'){
+            thumb='<img src="'+esc(url)+'" loading="lazy" style="width:100%;height:100%;object-fit:cover;cursor:pointer;" onclick="openImgLightbox(this.src,event)" title="Tap to view full size">'+
+                   '<div class="img-fs-hint">⛶ Full screen</div>';
         }else if(media.type==='video'){
             thumb='<video src="'+esc(url)+'" muted playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover;"></video>';
             // On mobile always show controls inline so tapping works
@@ -1208,7 +1363,7 @@ function buildCard(cardData,sectionIndex,cardId){
         }else if(media.type==='link'){
             // Try as image, fall back to gradient placeholder
             thumb='<div class="link-img-wrap" style="position:absolute;inset:0;">'
-                 +'<img class="link-img-try" src="'+esc(url)+'" style="width:100%;height:100%;object-fit:cover;display:block;">'
+                 +'<img class="link-img-try" src="'+esc(url)+'" style="width:100%;height:100%;object-fit:cover;display:block;cursor:pointer;" onclick="openImgLightbox(this.src,event)">'
                  +'<div class="link-fallback" style="display:none;position:absolute;inset:0;background:linear-gradient(135deg,'+c1+'33,'+c2+'33);align-items:center;justify-content:center;">'
                  +'<svg width="36" height="36" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.5" viewBox="0 0 24 24">'
                  +'<rect x="2" y="2" width="20" height="20" rx="3"/><path d="M2 9h20M9 21V9"/></svg></div></div>';
@@ -1836,7 +1991,7 @@ async function saveHubSettings(){
         await window.dbSet(window.dbRef(window.db,'meetLink'),link);
         if(cloudName)await window.dbSet(window.dbRef(window.db,'cloudinaryName'),cloudName);
         if(uploadPreset)await window.dbSet(window.dbRef(window.db,'cloudinaryPreset'),uploadPreset);
-        document.getElementById('appName').textContent=name||'Family Hub';
+        document.getElementById('appName').textContent=name||'Family Hub';const _a2=document.getElementById('appName2');if(_a2)_a2.textContent=name||'Family Hub';
         defaultCardCount=count;
         meetLink=link;
         if(cloudName)CLOUDINARY_CLOUD_NAME=cloudName;
@@ -1850,6 +2005,7 @@ async function saveHubSettings(){
 let currentGroup = 'General';
 let replyTo = null;
 let chatGroups = ['General'];
+let chatGroupMeta = {}; // { groupName: { type: 'announce'|'private'|'public', members: [] } }
 
 function openComments(){
     document.getElementById('commentsModal').classList.add('active');
@@ -1863,15 +2019,28 @@ function loadChatGroups(){
         else { chatGroups=['General']; window.dbSet(window.dbRef(window.db,'chatGroups'),chatGroups); }
         renderGroupTabs();
     });
+    window.dbOnValue(window.dbRef(window.db,'chatGroupMeta'), snap=>{
+        chatGroupMeta = snap.exists() ? snap.val() : {};
+        renderGroupTabs();
+    });
 }
 
 function renderGroupTabs(){
     const tabs = document.getElementById('waGroupTabs');
     tabs.innerHTML = '';
     chatGroups.forEach(g => {
+        const meta = chatGroupMeta[g.replace(/\s+/g,'_')] || {};
+        // Hide private groups from non-members (host always sees all)
+        if(meta.type === 'private' && !isHost){
+            const members = meta.members || [];
+            if(!members.includes(currentUser)) return;
+        }
         const btn = document.createElement('button');
         btn.className = 'wa-group-tab' + (g===currentGroup?' active':'');
-        btn.textContent = g;
+        let icon = '';
+        if(meta.type === 'announce') icon = '📢 ';
+        else if(meta.type === 'private') icon = '🔒 ';
+        btn.textContent = icon + g;
         btn.onclick = () => switchChatGroup(g);
         tabs.appendChild(btn);
     });
@@ -1879,11 +2048,27 @@ function renderGroupTabs(){
         const add = document.createElement('button');
         add.className = 'wa-add-group';
         add.textContent = '＋ Group';
-        add.onclick = addChatGroup;
+        add.onclick = openAddGroupModal;
         tabs.appendChild(add);
     }
     document.getElementById('waChatSub').textContent = currentGroup;
+    // Update input area based on current group type
+    updateChatInputForGroup(currentGroup);
     loadMessages(currentGroup);
+}
+
+function updateChatInputForGroup(group){
+    const meta = chatGroupMeta[group.replace(/\s+/g,'_')] || {};
+    const inputArea = document.getElementById('waInputArea');
+    const readonlyNotice = document.getElementById('waReadonlyNotice');
+    if(meta.type === 'announce' && !isHost){
+        // Hide input, show read-only notice
+        inputArea.style.display = 'none';
+        readonlyNotice.style.display = 'flex';
+    } else {
+        inputArea.style.display = 'flex';
+        readonlyNotice.style.display = 'none';
+    }
 }
 
 function switchChatGroup(name){
@@ -1893,15 +2078,81 @@ function switchChatGroup(name){
     cancelReply();
 }
 
-function addChatGroup(){
-    const name = prompt('New group name (e.g. "Photos", "Plans"):');
-    if(!name||!name.trim()) return;
-    const trimmed = name.trim();
-    if(chatGroups.includes(trimmed)){ toast('Group already exists','warn'); return; }
-    chatGroups.push(trimmed);
-    window.dbSet(window.dbRef(window.db,'chatGroups'), chatGroups)
-        .then(()=>{ switchChatGroup(trimmed); toast('Group "'+trimmed+'" created! 🎉'); })
-        .catch(()=>toast('Failed','danger'));
+function openAddGroupModal(){
+    document.getElementById('newGroupModal').classList.add('active');
+    document.getElementById('newGroupName').value = '';
+    document.getElementById('newGroupType').value = 'public';
+    document.getElementById('newGroupMembersWrap').style.display = 'none';
+    renderMemberCheckboxes();
+}
+
+function renderMemberCheckboxes(){
+    const wrap = document.getElementById('newGroupMemberList');
+    wrap.innerHTML = '<p style="color:var(--muted);font-size:12px;padding:6px 0;">Loading members…</p>';
+
+    // Pull from knownUsers (persistent list) AND currently online users, merge them
+    Promise.all([
+        window.dbGet(window.dbRef(window.db,'knownUsers')).catch(()=>null),
+        window.dbGet(window.dbRef(window.db,'onlineUsers')).catch(()=>null)
+    ]).then(([knownSnap, onlineSnap]) => {
+        const names = new Set();
+        if(knownSnap && knownSnap.exists()){
+            const v = knownSnap.val();
+            (Array.isArray(v) ? v : Object.values(v)).forEach(n => { if(n && typeof n==='string') names.add(n); });
+        }
+        if(onlineSnap && onlineSnap.exists()){
+            Object.values(onlineSnap.val()).forEach(u => { if(u.name) names.add(u.name); });
+        }
+        wrap.innerHTML = '';
+        if(names.size === 0){
+            wrap.innerHTML = '<p style="color:var(--muted);font-size:12px;">No members found yet — they appear here once they sign in at least once.</p>';
+            return;
+        }
+        // Sort alphabetically
+        [...names].sort((a,b)=>a.localeCompare(b)).forEach(name => {
+            const label = document.createElement('label');
+            label.style.cssText = 'display:flex;align-items:center;gap:10px;padding:8px 6px;font-size:14px;font-weight:600;cursor:pointer;border-radius:8px;transition:background .15s;';
+            label.onmouseenter = ()=>label.style.background='var(--surface2)';
+            label.onmouseleave = ()=>label.style.background='';
+            const avatar = document.createElement('span');
+            avatar.style.cssText = 'width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;';
+            avatar.textContent = name[0].toUpperCase();
+            label.appendChild(avatar);
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.value = name;
+            cb.style.cssText = 'width:18px;height:18px;accent-color:var(--accent);margin-left:auto;';
+            const span = document.createElement('span');
+            span.textContent = name;
+            span.style.flex = '1';
+            label.appendChild(span);
+            label.appendChild(cb);
+            wrap.appendChild(label);
+        });
+    });
+}
+
+async function saveNewGroup(){
+    const name = document.getElementById('newGroupName').value.trim();
+    const type = document.getElementById('newGroupType').value; // 'public' | 'announce' | 'private'
+    if(!name){ toast('Enter a group name','warn'); return; }
+    if(chatGroups.includes(name)){ toast('Group already exists','warn'); return; }
+
+    let members = [];
+    if(type === 'private'){
+        document.querySelectorAll('#newGroupMemberList input[type=checkbox]:checked').forEach(cb=>members.push(cb.value));
+        if(members.length === 0){ toast('Select at least one member for a private group','warn'); return; }
+    }
+
+    chatGroups.push(name);
+    const metaKey = name.replace(/\s+/g,'_');
+    try{
+        await window.dbSet(window.dbRef(window.db,'chatGroups'), chatGroups);
+        await window.dbSet(window.dbRef(window.db,'chatGroupMeta/'+metaKey), {type, members});
+        closeModal('newGroupModal');
+        switchChatGroup(name);
+        toast('Group "'+name+'" created! 🎉');
+    }catch(e){ toast('Failed: '+e.message,'danger'); }
 }
 
 function msgPath(group){ return 'messages/'+group.replace(/\s+/g,'_'); }
@@ -1923,6 +2174,28 @@ function loadMessages(group){
 function buildBubble(key, msg){
     const isMine = msg.author === currentUser;
     const msgIsFromHost = msg.isHostMsg === true;
+    const meta = chatGroupMeta[currentGroup.replace(/\s+/g,'_')] || {};
+    const isAnnounce = meta.type === 'announce';
+
+    // Announce groups: render as full-width broadcast banner
+    if(isAnnounce){
+        const wrap = document.createElement('div');
+        wrap.style.cssText = 'width:100%;margin-bottom:4px;';
+        wrap.id = 'msg-'+key;
+        wrap.innerHTML = `
+            <div style="background:linear-gradient(135deg,rgba(232,131,74,.12),rgba(91,171,111,.08));border:2px solid rgba(232,131,74,.35);border-radius:14px;padding:14px 16px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                    <span style="font-size:20px;">📢</span>
+                    <span style="font-family:'Fredoka One',cursive;font-size:15px;color:var(--accent);letter-spacing:.3px;">Announcement from Host</span>
+                    <span style="margin-left:auto;font-size:10px;color:var(--muted);font-weight:600;">${formatMsgTime(msg.timestamp)}</span>
+                </div>
+                <div style="font-size:15px;font-weight:700;color:var(--text);line-height:1.6;">${esc(msg.text)}</div>
+                ${msg.audioUrl ? '<div style="margin-top:10px;"><audio controls src="'+esc(msg.audioUrl)+'" style="width:100%;"></audio></div>' : ''}
+                ${isHost ? '<div style="text-align:right;margin-top:8px;"><span style="font-size:11px;color:var(--muted);cursor:pointer;font-weight:600;" onclick="deleteComment(\''+esc(key)+'\')">🗑 Delete</span></div>' : ''}
+            </div>`;
+        return wrap;
+    }
+
     const wrap = document.createElement('div');
     wrap.style.cssText = 'display:flex;flex-direction:column;align-items:'+(isMine?'flex-end':'flex-start');
     const bubble = document.createElement('div');
@@ -1934,6 +2207,9 @@ function buildBubble(key, msg){
     if(!isMine) inner += '<div class="wa-author" style="'+(msgIsFromHost?'color:var(--danger);font-weight:700;':'')+'">'+esc(msg.author)+'</div>';
     if(msg.replyTo) inner += '<div class="wa-reply-preview" onclick="scrollToMsg(\''+esc(msg.replyTo.key)+'\')"><div class="rp-author">'+esc(msg.replyTo.author)+'</div><div>'+esc((msg.replyTo.text||'').slice(0,80))+'</div></div>';
     inner += '<div class="wa-text" style="'+(msgIsFromHost?'font-weight:700;':'')+'">'+esc(msg.text)+'</div>';
+    if(msg.audioUrl){
+        inner += '<div class="wa-voice-msg"><audio controls src="'+esc(msg.audioUrl)+'"></audio></div>';
+    }
     inner += '<div class="wa-time">'+formatMsgTime(msg.timestamp)+'</div>';
     const canDel = isHost || msg.author === currentUser;
     inner += '<div class="wa-bubble-actions">'
@@ -1967,12 +2243,7 @@ function scrollToMsg(key){
     if(el){ el.scrollIntoView({behavior:'smooth',block:'center'}); el.style.outline='2px solid var(--accent)'; setTimeout(()=>el.style.outline='',1200); }
 }
 
-function updateCommentBadge(){
-    window.dbGet(window.dbRef(window.db, msgPath(currentGroup))).then(snap=>{
-        const n = snap.exists() ? Object.keys(snap.val()).length : 0;
-        document.getElementById('commentCount').textContent = n>99?'99+':n;
-    }).catch(()=>{});
-}
+function updateCommentBadge(){ /* badge removed */ }
 
 async function deleteComment(key){
     try{ await window.dbRemove(window.dbRef(window.db, msgPath(currentGroup)+'/'+key)); toast('Message deleted','warn'); }
@@ -2006,10 +2277,76 @@ function loadCommentsCount(){
     });
 }
 
-function updateUnreadBadge(n){
-    const badge = document.getElementById('commentCount');
-    if(n <= 0){ badge.style.display='none'; badge.textContent='0'; }
-    else{ badge.style.display='flex'; badge.textContent=n>99?'99+':String(n); }
+function updateUnreadBadge(n){ /* badge removed */ }
+
+// ── Voice Messages ────────────────────────────────────────
+let mediaRecorder = null;
+let audioChunks = [];
+let isRecording = false;
+
+async function toggleVoiceRecording(){
+    if(!currentUser){ toast('Please sign in first!','warn'); return; }
+    if(isRecording){
+        // Stop and send
+        mediaRecorder.stop();
+    } else {
+        // Start recording
+        try{
+            const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+            audioChunks = [];
+            // Pick best supported format
+            const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+                ? 'audio/webm;codecs=opus'
+                : MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm'
+                : 'audio/ogg';
+            mediaRecorder = new MediaRecorder(stream, {mimeType});
+            mediaRecorder.ondataavailable = e => { if(e.data.size>0) audioChunks.push(e.data); };
+            mediaRecorder.onstop = async () => {
+                stream.getTracks().forEach(t=>t.stop());
+                isRecording = false;
+                document.getElementById('voiceBtn').classList.remove('recording');
+                document.getElementById('recordingIndicator').classList.remove('active');
+                const blob = new Blob(audioChunks, {type: mediaRecorder.mimeType||'audio/webm'});
+                if(blob.size < 1000){ toast('Recording too short','warn'); return; }
+                await uploadAndSendVoice(blob);
+            };
+            mediaRecorder.start();
+            isRecording = true;
+            document.getElementById('voiceBtn').classList.add('recording');
+            document.getElementById('recordingIndicator').classList.add('active');
+        }catch(e){
+            toast('Microphone access denied. Please allow mic access.','danger');
+        }
+    }
+}
+
+async function uploadAndSendVoice(blob){
+    toast('Sending voice message… 🎙️');
+    try{
+        // Upload to Cloudinary if configured, otherwise use Firebase Storage
+        let audioUrl = '';
+        if(CLOUDINARY_CLOUD_NAME && CLOUDINARY_CLOUD_NAME !== 'YOUR_CLOUD_NAME'){
+            const fd = new FormData();
+            fd.append('file', blob, 'voice.webm');
+            fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+            fd.append('resource_type', 'video'); // Cloudinary uses 'video' for audio
+            const res = await fetch('https://api.cloudinary.com/v1_1/'+CLOUDINARY_CLOUD_NAME+'/video/upload', {method:'POST',body:fd});
+            const data = await res.json();
+            audioUrl = data.secure_url;
+        } else if(window.storage){
+            // Firebase Storage fallback
+            const fileRef = window.storageRef(window.storage, 'voiceMessages/'+Date.now()+'_'+currentUser+'.webm');
+            const uploadTask = window.uploadBytesResumable(fileRef, blob);
+            await new Promise((res,rej) => uploadTask.on('state_changed', null, rej, res));
+            audioUrl = await window.getDownloadURL(uploadTask.snapshot.ref);
+        } else {
+            toast('Please set up Cloudinary in Host Settings to send voice messages.','warn');
+            return;
+        }
+        const data = {author:currentUser, text:'🎙️ Voice message', audioUrl, timestamp:Date.now(), isHostMsg: isHost===true};
+        await window.dbSet(window.dbPush(window.dbRef(window.db, msgPath(currentGroup))), data);
+        toast('Voice message sent! 🎙️');
+    }catch(e){ toast('Failed to send voice message: '+(e.message||e),'danger'); }
 }
 
 async function postComment(){
@@ -2017,6 +2354,9 @@ async function postComment(){
     const text = input.value.trim();
     if(!text){ toast('Write something first!','warn'); return; }
     if(!currentUser){ toast('Please sign in first!','warn'); return; }
+    // Block non-host from posting in announce groups
+    const meta = chatGroupMeta[currentGroup.replace(/\s+/g,'_')] || {};
+    if(meta.type === 'announce' && !isHost){ toast('This is a broadcast channel — only the host can post here.','warn'); return; }
     const data = {author:currentUser, text, timestamp:Date.now(), isHostMsg: isHost===true};
     if(replyTo) data.replyTo = replyTo;
     try{
@@ -2024,6 +2364,116 @@ async function postComment(){
         input.value = ''; input.style.height = 'auto';
         cancelReply();
     }catch(e){ toast('Failed: '+e.message,'danger'); }
+}
+
+// ── Welcome Pop-up Ad ─────────────────────────────────────
+function listenWelcomePopup(){
+    window.dbOnValue(window.dbRef(window.db,'welcomePopup'), snap=>{
+        if(!snap.exists()){ document.getElementById('welcomePopupOverlay').style.display='none'; return; }
+        const data = snap.val();
+        if(!data.active) return;
+        // Check if user dismissed this version this session
+        const dismissKey = 'dismissedPopup_'+( data.updatedAt||'0');
+        if(sessionStorage.getItem(dismissKey)) return;
+        showWelcomePopup(data);
+    });
+}
+
+function showWelcomePopup(data){
+    const overlay = document.getElementById('welcomePopupOverlay');
+    document.getElementById('wpTitle').textContent = data.title||'';
+    document.getElementById('wpMessage').textContent = data.message||'';
+    const imgEl = document.getElementById('wpImage');
+    if(data.imageUrl){ imgEl.src=data.imageUrl; imgEl.style.display='block'; }
+    else imgEl.style.display='none';
+    overlay.style.display='flex';
+    // Store what updatedAt we're showing
+    overlay.dataset.updatedAt = data.updatedAt||'0';
+}
+
+function dismissWelcomePopup(){
+    const overlay = document.getElementById('welcomePopupOverlay');
+    sessionStorage.setItem('dismissedPopup_'+overlay.dataset.updatedAt, '1');
+    overlay.style.display='none';
+}
+
+async function saveWelcomePopup(){
+    const title    = document.getElementById('wpEditTitle').value.trim();
+    const message  = document.getElementById('wpEditMessage').value.trim();
+    const imageUrl = document.getElementById('wpEditImageUrl').value.trim();
+    const active   = document.getElementById('wpEditActive').checked;
+    const days     = parseInt(document.getElementById('wpEditDays').value)||0;
+    if(!title && !message){ toast('Add a title or message','warn'); return; }
+    try{
+        await window.dbSet(window.dbRef(window.db,'welcomePopup'),{title,message,imageUrl,active,days,updatedAt:Date.now()});
+        toast('Welcome popup saved! 🎉');
+    }catch(e){ toast('Failed: '+e.message,'danger'); }
+}
+
+async function clearWelcomePopup(){
+    if(!confirm('Remove the welcome popup?')) return;
+    try{
+        await window.dbRemove(window.dbRef(window.db,'welcomePopup'));
+        document.getElementById('welcomePopupOverlay').style.display='none';
+        toast('Popup removed','warn');
+    }catch(e){ toast('Failed','danger'); }
+}
+
+function listenWelcomePopup(){
+    window.dbOnValue(window.dbRef(window.db,'welcomePopup'), snap=>{
+        if(!snap.exists()){ document.getElementById('welcomePopupOverlay').style.display='none'; return; }
+        const data = snap.val();
+        if(!data.active) return;
+        // Check if dismissed within the configured number of days
+        const storageKey = 'dismissedPopup_v'+(data.updatedAt||'0');
+        const days = data.days || 0;
+        if(days > 0){
+            const dismissed = localStorage.getItem(storageKey);
+            if(dismissed){
+                const dismissedAt = parseInt(dismissed);
+                const msToWait = days * 24 * 60 * 60 * 1000;
+                if(Date.now() - dismissedAt < msToWait) return; // still within dismissal window
+            }
+        }
+        // days === 0 means show every visit — check sessionStorage
+        if(days === 0 && sessionStorage.getItem(storageKey)) return;
+        showWelcomePopup(data);
+    });
+}
+
+function showWelcomePopup(data){
+    const overlay = document.getElementById('welcomePopupOverlay');
+    document.getElementById('wpTitle').textContent = data.title||'';
+    document.getElementById('wpMessage').textContent = data.message||'';
+    const imgEl = document.getElementById('wpImage');
+    if(data.imageUrl){ imgEl.src=data.imageUrl; imgEl.style.display='block'; }
+    else imgEl.style.display='none';
+    overlay.style.display='flex';
+    overlay.dataset.updatedAt = data.updatedAt||'0';
+    overlay.dataset.days = data.days||'0';
+}
+
+function dismissWelcomePopup(){
+    const overlay = document.getElementById('welcomePopupOverlay');
+    const key = 'dismissedPopup_v'+overlay.dataset.updatedAt;
+    const days = parseInt(overlay.dataset.days||'0');
+    if(days > 0) localStorage.setItem(key, String(Date.now()));
+    else sessionStorage.setItem(key, '1');
+    overlay.style.display='none';
+}
+
+async function loadWelcomePopupEditor(){
+    try{
+        const snap = await window.dbGet(window.dbRef(window.db,'welcomePopup'));
+        if(snap.exists()){
+            const d = snap.val();
+            document.getElementById('wpEditTitle').value   = d.title||'';
+            document.getElementById('wpEditMessage').value = d.message||'';
+            document.getElementById('wpEditImageUrl').value= d.imageUrl||'';
+            document.getElementById('wpEditActive').checked= !!d.active;
+            document.getElementById('wpEditDays').value    = d.days||0;
+        }
+    }catch(e){}
 }
 
 async function clearAllComments(){
@@ -2616,6 +3066,7 @@ function switchFeatureTab(panel, btn){
     if(panel === 'calendar') renderCalendar();
     if(panel === 'recipes') renderRecipes();
     if(panel === 'poll') renderPolls();
+    if(panel === 'updates') initUpdatesPanel();
 }
 
 // ══════════════════════════════════════════════════════════
@@ -2866,9 +3317,47 @@ function openViewRecipe(key, r){
         <div style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Steps</div>
         ${stepsHtml}`;
     const delBtn = document.getElementById('deleteRecipeBtn');
+    const editBtn = document.getElementById('editRecipeBtn');
+    // Only host can delete
     if(isHost){ delBtn.style.display='flex'; delBtn.onclick=async()=>{ if(!confirm('Delete this recipe?')) return; await window.dbRemove(window.dbRef(window.db,'recipes/'+key)); toast('Recipe deleted','warn'); closeModal('viewRecipeModal'); renderRecipes(); }; }
     else { delBtn.style.display='none'; }
+    // Author OR host can edit
+    if(isHost || r.author === currentUser){ editBtn.style.display='flex'; editBtn.onclick=()=>openEditRecipe(key,r); }
+    else { editBtn.style.display='none'; }
     document.getElementById('viewRecipeModal').classList.add('active');
+}
+
+function openEditRecipe(key, r){
+    document.getElementById('editRecKey').value = key;
+    document.getElementById('editRecTitle').value = r.title||'';
+    document.getElementById('editRecEmoji').value = r.emoji||'🍽️';
+    document.getElementById('editRecTime').value = r.time||'';
+    document.getElementById('editRecServes').value = r.serves||'';
+    document.getElementById('editRecIngredients').value = r.ingredients||'';
+    document.getElementById('editRecSteps').value = r.steps||'';
+    closeModal('viewRecipeModal');
+    document.getElementById('editRecipeModal').classList.add('active');
+}
+
+async function updateRecipe(){
+    const key = document.getElementById('editRecKey').value;
+    const title = document.getElementById('editRecTitle').value.trim();
+    const emoji = document.getElementById('editRecEmoji').value.trim()||'🍽️';
+    const time = document.getElementById('editRecTime').value.trim();
+    const serves = document.getElementById('editRecServes').value.trim();
+    const ingredients = document.getElementById('editRecIngredients').value.trim();
+    const steps = document.getElementById('editRecSteps').value.trim();
+    if(!title||!ingredients||!steps){ toast('Please fill in title, ingredients and steps','warn'); return; }
+    try{
+        // Get existing record to preserve author & timestamp
+        const snap = await window.dbGet(window.dbRef(window.db,'recipes/'+key));
+        const existing = snap.exists() ? snap.val() : {};
+        await window.dbSet(window.dbRef(window.db,'recipes/'+key), {
+            ...existing, title, emoji, time, serves, ingredients, steps,
+            editedBy: currentUser, editedAt: Date.now()
+        });
+        toast('Recipe updated! ✓'); closeModal('editRecipeModal'); renderRecipes();
+    }catch(e){ toast('Failed: '+e.message,'danger'); }
 }
 
 // ══════════════════════════════════════════════════════════
@@ -2909,34 +3398,49 @@ async function renderPolls(){
         Object.entries(polls).reverse().forEach(([key,poll])=>{
             const votedKey = 'voted_'+key;
             const myVote = localStorage.getItem(votedKey);
+            const hasVoted = myVote !== null;
             const votes = poll.votes||{};
             const totalVotes = Object.values(votes).reduce((a,b)=>a+b,0);
             const card = document.createElement('div');
             card.className = 'poll-card';
+            const colors = [
+                {bar:'rgba(232,131,74,.55)',border:'rgba(232,131,74,.8)'},
+                {bar:'rgba(91,171,111,.55)',border:'rgba(91,171,111,.8)'},
+                {bar:'rgba(92,107,192,.45)',border:'rgba(92,107,192,.7)'},
+                {bar:'rgba(251,191,36,.55)',border:'rgba(251,191,36,.8)'},
+                {bar:'rgba(217,94,82,.45)',border:'rgba(217,94,82,.7)'},
+            ];
             let optionsHtml = (poll.options||[]).map((opt,i)=>{
                 const voteCount = votes[i]||0;
                 const pct = totalVotes ? Math.round(voteCount/totalVotes*100) : 0;
-                const isMyVote = myVote == i;
-                const colors = ['rgba(124,106,247,.5)','rgba(79,209,197,.5)','rgba(248,113,113,.5)','rgba(251,191,36,.5)','rgba(52,211,153,.5)'];
-                return '<div class="poll-option" data-pollkey="'+esc(key)+'" data-optidx="'+i+'">'
+                const isMyVote = String(myVote) === String(i);
+                const c = colors[i % colors.length];
+                // Clicking only works if not yet voted
+                const clickAttr = !hasVoted ? 'data-pollkey="'+esc(key)+'" data-optidx="'+i+'" style="cursor:pointer;"' : 'style="cursor:default;"';
+                return '<div class="poll-option" '+clickAttr+'>'
                     +'<div class="poll-bar-wrap">'
-                    +'<div class="poll-bar-fill" style="width:'+pct+'%;background:'+colors[i%colors.length]+';"></div>'
-                    +'<div class="poll-bar-label">'+(isMyVote?'&#10003; ':'')+'<span>'+esc(opt)+'</span></div>'
-                    +'<div class="poll-bar-pct">'+pct+'%</div>'
-                    +'</div></div>';
+                    +'<div class="poll-bar-fill" style="width:'+pct+'%;background:'+c.bar+';transition:width .5s cubic-bezier(.22,1,.36,1);"></div>'
+                    +'<div class="poll-bar-label">'
+                    +(isMyVote?'<span style="color:var(--accent2);font-weight:900;margin-right:4px;">✓</span>':'')
+                    +'<span style="font-weight:'+(isMyVote?'800':'600')+';">'+esc(opt)+'</span></div>'
+                    +'<div class="poll-bar-pct" style="font-weight:700;color:'+(pct>0?'var(--text)':'var(--muted)')+';">'+pct+'%</div>'
+                    +'</div>'
+                    +'<div style="font-size:11px;color:var(--muted);margin-top:2px;padding-left:2px;">'+voteCount+' vote'+(voteCount!==1?'s':'')+'</div>'
+                    +'</div>';
             }).join('');
             card.innerHTML = '<div class="poll-question">'+esc(poll.question)+'</div>'
+                + (!hasVoted ? '<div style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:10px;">👆 Tap an option to vote!</div>' : '')
                 + optionsHtml
-                + '<div class="poll-voted">'+totalVotes+' vote'+(totalVotes!==1?'s':'')+' &middot; by '+esc(poll.createdBy||'Host')+'</div>'
-                + (isHost ? '<button class="delete-poll-btn" data-key="'+esc(key)+'" style="margin-top:8px;background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;font-family:inherit;">&#128465; Delete poll</button>' : '');
+                + '<div class="poll-voted">'+totalVotes+' vote'+(totalVotes!==1?'s':'')+' total &middot; by '+esc(poll.createdBy||'Host')+'</div>'
+                + (isHost ? '<button class="delete-poll-btn" data-key="'+esc(key)+'" style="margin-top:8px;background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;font-family:inherit;">🗑 Delete poll</button>' : '');
             container.appendChild(card);
         });
     }catch(e){ container.innerHTML = '<div style="color:var(--danger);padding:20px;">Error loading polls</div>'; }
 }
 
-// Poll vote delegation
+// Poll vote delegation — only fires on options that have data-pollkey (i.e. not yet voted)
 document.addEventListener('click', e=>{
-    const opt = e.target.closest('.poll-option');
+    const opt = e.target.closest('.poll-option[data-pollkey]');
     if(opt && opt.dataset.pollkey) castVote(opt.dataset.pollkey, parseInt(opt.dataset.optidx));
 });
 
@@ -3102,6 +3606,198 @@ function spinWheel(){
 }
 
 // ══════════════════════════════════════════════════════════
+//  Image Fullscreen Lightbox ─────────────────────────────
+
+function openImgLightbox(url, event){
+    if(event){ event.stopPropagation(); event.preventDefault(); }
+    const lb = document.getElementById('imgLightbox');
+    const img = document.getElementById('imgLightboxImg');
+    img.src = url;
+    lb.classList.add('open');
+    // Prevent body scroll while lightbox is open
+    document.body.style.overflow = 'hidden';
+}
+
+function closeImgLightbox(event){
+    // Only close if clicking the backdrop (not the image itself)
+    if(event && event.target === document.getElementById('imgLightboxImg')) return;
+    const lb = document.getElementById('imgLightbox');
+    lb.classList.remove('open');
+    document.getElementById('imgLightboxImg').src = '';
+    document.body.style.overflow = '';
+}
+
+// Close lightbox on Escape key
+document.addEventListener('keydown', e => {
+    if(e.key === 'Escape') closeImgLightbox();
+});
+
+// ══════════════════════════════════════════════════════════
+//  App Updates ───────────────────────────────────────────
+
+function initUpdatesPanel(){
+    // Show host form if host
+    document.getElementById('hostUpdateForm').style.display = isHost ? 'block' : 'none';
+    // Listen for updates from Firebase
+    window.dbOnValue(window.dbRef(window.db,'appUpdates'), snap=>{
+        const latestCard = document.getElementById('latestUpdateCard');
+        const noUpdate   = document.getElementById('noUpdateYet');
+        const historyWrap= document.getElementById('updateHistoryWrap');
+        const historyList= document.getElementById('updateHistoryList');
+
+        if(!snap.exists()){
+            latestCard.style.display='none';
+            noUpdate.style.display='block';
+            historyWrap.style.display='none';
+            return;
+        }
+
+        const raw = snap.val();
+        const entries = Object.values(raw).sort((a,b)=>b.timestamp-a.timestamp);
+        const latest  = entries[0];
+
+        // Show latest card
+        noUpdate.style.display='none';
+        latestCard.style.display='block';
+        document.getElementById('latestVersionLabel').textContent = latest.version || 'Latest Update';
+        document.getElementById('latestVersionDate').textContent  = '📅 ' + new Date(latest.timestamp).toLocaleString();
+        document.getElementById('latestVersionNotes').textContent = latest.notes || 'No notes provided.';
+        document.getElementById('latestDownloadBtn').href = latest.url || '#';
+
+        // NEW badge — if posted in last 48h
+        const isNew = (Date.now() - latest.timestamp) < 48*60*60*1000;
+        document.getElementById('newBadge').style.display = isNew ? 'inline-flex' : 'none';
+
+        // Also show red dot on the Updates tab
+        const tab = document.getElementById('updatesTab');
+        if(isNew && tab && !tab.classList.contains('active')){
+            tab.style.position='relative';
+            if(!tab.querySelector('.update-dot')){
+                const dot=document.createElement('span');
+                dot.className='update-dot';
+                dot.style.cssText='position:absolute;top:-4px;right:-4px;width:9px;height:9px;background:var(--danger);border-radius:50%;border:2px solid var(--bg);';
+                tab.appendChild(dot);
+            }
+        } else {
+            const dot=tab&&tab.querySelector('.update-dot');
+            if(dot) dot.remove();
+        }
+
+        // Version history (all except latest)
+        if(entries.length > 1){
+            historyWrap.style.display='block';
+            historyList.innerHTML = entries.slice(1).map(e=>`
+                <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;display:flex;align-items:center;gap:12px;">
+                    <div style="flex:1;">
+                        <div style="font-size:13px;font-weight:700;color:var(--text);">${esc(e.version||'Update')}</div>
+                        <div style="font-size:11px;color:var(--muted);margin-top:2px;">${new Date(e.timestamp).toLocaleDateString()}</div>
+                        ${e.notes?`<div style="font-size:12px;color:var(--muted);margin-top:4px;">${esc(e.notes)}</div>`:''}
+                    </div>
+                    <a href="${esc(e.url||'#')}" target="_blank" style="flex-shrink:0;padding:7px 13px;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;font-size:12px;font-weight:700;color:var(--accent);text-decoration:none;">⬇ Get</a>
+                </div>
+            `).join('');
+        } else {
+            historyWrap.style.display='none';
+        }
+    });
+}
+
+// Track selected APK file
+let _selectedApkFile = null;
+
+function onApkFileSelected(input){
+    const file = input.files[0];
+    if(!file) return;
+    _selectedApkFile = file;
+    const nameEl = document.getElementById('apkFileName');
+    nameEl.textContent = '📦 ' + file.name + ' (' + (file.size/1024/1024).toFixed(1) + ' MB)';
+    nameEl.style.display = 'block';
+    // Clear URL field since file takes priority
+    document.getElementById('updateUrlInput').value = '';
+}
+
+function handleApkDrop(event){
+    event.preventDefault();
+    const file = event.dataTransfer.files[0];
+    if(!file) return;
+    if(!file.name.endsWith('.apk') && file.type !== 'application/vnd.android.package-archive'){
+        toast('Please drop an APK file (.apk)','danger'); return;
+    }
+    _selectedApkFile = file;
+    const nameEl = document.getElementById('apkFileName');
+    nameEl.textContent = '📦 ' + file.name + ' (' + (file.size/1024/1024).toFixed(1) + ' MB)';
+    nameEl.style.display = 'block';
+    document.getElementById('apkDropZone').style.borderColor = 'var(--accent)';
+    document.getElementById('updateUrlInput').value = '';
+}
+
+async function postAppUpdate(){
+    const version = document.getElementById('updateVersionInput').value.trim();
+    const notes   = document.getElementById('updateNotesInput').value.trim();
+    const pastedUrl = document.getElementById('updateUrlInput').value.trim();
+
+    if(!version){ toast('Please enter a version name','danger'); return; }
+    if(!_selectedApkFile && !pastedUrl){ toast('Please upload an APK file or paste a link','danger'); return; }
+
+    const btn = document.getElementById('postUpdateBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Working…';
+
+    try{
+        let finalUrl = pastedUrl;
+
+        // Upload to Firebase Storage if a file was picked
+        if(_selectedApkFile){
+            const safeVersion = version.replace(/[^a-zA-Z0-9._-]/g,'_');
+            const fileName = 'apk_updates/' + safeVersion + '_' + Date.now() + '.apk';
+            const fRef = window.storageRef(window.storage, fileName);
+            const task = window.uploadBytesResumable(fRef, _selectedApkFile);
+
+            // Show progress bar
+            document.getElementById('apkUploadProgress').style.display = 'block';
+
+            finalUrl = await new Promise((resolve, reject) => {
+                task.on('state_changed',
+                    snap => {
+                        const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
+                        document.getElementById('apkProgressBar').style.width = pct + '%';
+                        document.getElementById('apkProgressPct').textContent = pct + '%';
+                        document.getElementById('apkUploadStatus').textContent = pct < 100 ? 'Uploading to Firebase…' : 'Finalising…';
+                    },
+                    err => reject(err),
+                    async () => {
+                        const url = await window.getDownloadURL(task.snapshot.ref);
+                        resolve(url);
+                    }
+                );
+            });
+            document.getElementById('apkUploadProgress').style.display = 'none';
+        }
+
+        const entry = { version, url: finalUrl, notes, timestamp: Date.now(), postedBy: currentUser||'Host',
+                        uploadedToFirebase: !!_selectedApkFile };
+        await window.dbPush(window.dbRef(window.db,'appUpdates'), entry);
+
+        // Reset form
+        document.getElementById('updateVersionInput').value = '';
+        document.getElementById('updateNotesInput').value   = '';
+        document.getElementById('updateUrlInput').value     = '';
+        document.getElementById('apkFileName').style.display = 'none';
+        document.getElementById('apkFileName').textContent  = '';
+        document.getElementById('apkDropZone').style.borderColor = 'var(--border)';
+        _selectedApkFile = null;
+
+        toast('✅ Update posted! Family will see it now.','success');
+    } catch(e){
+        console.error(e);
+        toast('Upload failed: ' + (e.message||e.code||e), 'danger');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '📲 Post Update for Family';
+    }
+}
+
+// ══════════════════════════════════════════════════════════
 //  Expose all functions needed by HTML onclick attributes ───
 
 window.signIn=signIn;
@@ -3113,6 +3809,9 @@ window.saveEvent=saveEvent;
 window.deleteEvent=deleteEvent;
 window.openAddRecipe=openAddRecipe;
 window.saveRecipe=saveRecipe;
+window.openEditRecipe=openEditRecipe;
+window.updateRecipe=updateRecipe;
+window.toggleVoiceRecording=toggleVoiceRecording;
 window.openCreatePoll=openCreatePoll;
 window.savePoll=savePoll;
 window.castVote=castVote;
@@ -3131,6 +3830,11 @@ window.openStreamableLightbox=openStreamableLightbox;
 window.openVideoChat=openVideoChat;
 window.openVideoLightbox=openVideoLightbox;
 window.postComment=postComment;
+window.postAppUpdate=postAppUpdate;
+window.openImgLightbox=openImgLightbox;
+window.closeImgLightbox=closeImgLightbox;
+window.onApkFileSelected=onApkFileSelected;
+window.handleApkDrop=handleApkDrop;
 window.removeHostMemory=removeHostMemory;
 window.submitVerify=submitVerify;
 window.sendAccessRequest=sendAccessRequest;
@@ -3150,80 +3854,83 @@ window.closeDriveLightbox=closeDriveLightbox;
 window.startReply=startReply;
 window.cancelReply=cancelReply;
 window.scrollToMsg=scrollToMsg;
-window.addChatGroup=addChatGroup;
+window.addChatGroup=openAddGroupModal;
+window.openAddGroupModal=openAddGroupModal;
+window.saveNewGroup=saveNewGroup;
+window.renderMemberCheckboxes=renderMemberCheckboxes;
+window.saveWelcomePopup=saveWelcomePopup;
+window.clearWelcomePopup=clearWelcomePopup;
+window.dismissWelcomePopup=dismissWelcomePopup;
+window.loadWelcomePopupEditor=loadWelcomePopupEditor;
 window.joinVideoRoom=typeof joinVideoRoom!=='undefined'?joinVideoRoom:undefined;
 </script>
+<!-- New Group Modal -->
+<div class="modal" id="newGroupModal">
+    <div class="modal-content">
+        <h2>➕ New Chat Group</h2>
+        <label>Group Name</label>
+        <input type="text" id="newGroupName" placeholder="e.g. Women's Circle, Kids, Plans…" maxlength="30">
+        <label>Group Type</label>
+        <select id="newGroupType" onchange="document.getElementById('newGroupMembersWrap').style.display=this.value==='private'?'block':'none';if(this.value==='private')renderMemberCheckboxes();">
+            <option value="public">💬 Public — everyone can chat</option>
+            <option value="announce">📢 Announcements — only host can post</option>
+            <option value="private">🔒 Private — selected members only</option>
+        </select>
+        <div id="newGroupMembersWrap" style="display:none;margin-top:14px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                <label style="margin:0;font-size:13px;font-weight:700;">Who can see this group?</label>
+                <div style="display:flex;gap:6px;">
+                    <button type="button" onclick="document.querySelectorAll('#newGroupMemberList input').forEach(c=>c.checked=true)" style="background:transparent;border:1px solid var(--border);border-radius:7px;padding:3px 9px;font-size:11px;font-weight:700;color:var(--accent);cursor:pointer;font-family:inherit;">All</button>
+                    <button type="button" onclick="document.querySelectorAll('#newGroupMemberList input').forEach(c=>c.checked=false)" style="background:transparent;border:1px solid var(--border);border-radius:7px;padding:3px 9px;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit;">None</button>
+                </div>
+            </div>
+            <div id="newGroupMemberList" style="background:var(--bg);border:2px solid var(--border);border-radius:var(--radius);padding:8px 10px;max-height:240px;overflow-y:auto;"></div>
+            <p style="font-size:11px;color:var(--muted);margin-top:6px;">Only people you select will see this group in their chat.</p>
+        </div>
+        <div class="modal-buttons">
+            <button class="btn btn-ghost" onclick="closeModal('newGroupModal')">Cancel</button>
+            <button class="btn btn-outline" onclick="saveNewGroup()">Create Group 🎉</button>
+        </div>
+    </div>
+</div>
 
-<script>
-// ── PWA Service Worker Registration ──────────────────────
-if('serviceWorker' in navigator){
-    window.addEventListener('load', ()=>{
-        // Inline service worker as a blob — no separate sw.js file needed!
-        const swCode = `
-const CACHE = 'family-hub-v3';
-self.addEventListener('install', e=>{
-  self.skipWaiting();
-  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./']).catch(()=>{})));
-});
-self.addEventListener('activate', e=>{
-  e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
-  self.clients.claim();
-});
-self.addEventListener('fetch', e=>{
-  const u = new URL(e.request.url);
-  if(u.hostname.includes('firebase')||u.hostname.includes('googleapis')||u.hostname.includes('cloudinary')||u.hostname.includes('gstatic')) return;
-  if(e.request.mode==='navigate'){
-    e.respondWith(fetch(e.request).then(r=>{caches.open(CACHE).then(c=>c.put(e.request,r.clone()));return r;}).catch(()=>caches.match('./')));
-    return;
-  }
-  e.respondWith(caches.match(e.request).then(c=>c||fetch(e.request)));
-});
-`;
-        const blob = new Blob([swCode], {type:'application/javascript'});
-        const swUrl = URL.createObjectURL(blob);
-        navigator.serviceWorker.register(swUrl, {scope:'./'})
-            .then(()=>console.log('Family Hub PWA ready!'))
-            .catch(e=>console.log('SW note:',e));
-    });
-}
+<!-- Welcome Popup Overlay -->
+<div id="welcomePopupOverlay" style="display:none;position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px;">
+    <div style="background:var(--surface);border-radius:var(--radius-lg);border:2px solid var(--border);max-width:480px;width:100%;box-shadow:0 0 60px rgba(232,131,74,.2),0 24px 60px rgba(0,0,0,.3);animation:slideUp .4s cubic-bezier(.22,1,.36,1);overflow:hidden;">
+        <img id="wpImage" src="" alt="" style="display:none;width:100%;max-height:240px;object-fit:cover;">
+        <div style="padding:28px 26px 24px;">
+            <div style="font-family:'Fredoka One',cursive;font-size:26px;color:var(--accent);margin-bottom:8px;letter-spacing:.5px;" id="wpTitle"></div>
+            <div style="font-size:15px;color:var(--text);font-weight:600;line-height:1.6;margin-bottom:22px;" id="wpMessage"></div>
+            <button onclick="dismissWelcomePopup()" style="width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:15px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;transition:all .2s;box-shadow:0 4px 20px rgba(232,131,74,.3);">Got it! 👍</button>
+        </div>
+    </div>
+</div>
+<!-- Image Fullscreen Lightbox -->
+<div class="img-lightbox" id="imgLightbox" onclick="closeImgLightbox(event)">
+    <button class="img-lightbox-close" onclick="closeImgLightbox()">✕</button>
+    <img class="img-lightbox-img" id="imgLightboxImg" src="" alt="">
+    <div class="img-lightbox-caption" id="imgLightboxCaption"></div>
+</div>
 
-// ── Install Banner ────────────────────────────────────────
-let _installPrompt = null;
-window.addEventListener('beforeinstallprompt', e=>{
-    e.preventDefault();
-    _installPrompt = e;
-    if(!localStorage.getItem('pwaInstalled')){
-        setTimeout(showPWABanner, 2000);
-    }
-});
-window.addEventListener('appinstalled', ()=>{
-    localStorage.setItem('pwaInstalled','1');
-    const b = document.getElementById('pwaBanner');
-    if(b) b.remove();
-    if(typeof toast === 'function') toast('Family Hub installed on your home screen! 🎉');
-});
-function showPWABanner(){
-    if(document.getElementById('pwaBanner')) return;
-    const b = document.createElement('div');
-    b.id = 'pwaBanner';
-    b.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#5c6bc0;color:#fff;border-radius:16px;padding:14px 18px;display:flex;align-items:center;gap:12px;z-index:999999;box-shadow:0 8px 32px rgba(92,107,192,.5);max-width:340px;width:90%;font-family:DM Sans,sans-serif;animation:slideUp .4s cubic-bezier(.22,1,.36,1);';
-    b.innerHTML = '<span style="font-size:28px;">📱</span>'
-        +'<div style="flex:1;"><div style="font-weight:700;font-size:14px;">Install Family Hub</div><div style="font-size:12px;opacity:.85;margin-top:2px;">Add to your home screen as an app</div></div>'
-        +'<button id="pwaBannerInstall" style="background:#fff;color:#5c6bc0;border:none;border-radius:10px;padding:8px 14px;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;font-family:inherit;">Install</button>'
-        +'<button onclick="document.getElementById('pwaBanner').remove()" style="background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>';
-    document.body.appendChild(b);
-    document.getElementById('pwaBannerInstall').onclick = async ()=>{
-        if(!_installPrompt){ 
-            alert('To install:\n\nAndroid: Tap the 3 dots menu in Chrome → "Add to Home Screen"\n\niPhone: Tap the Share button in Safari → "Add to Home Screen"');
-            return; 
-        }
-        _installPrompt.prompt();
-        const result = await _installPrompt.userChoice;
-        if(result.outcome === 'accepted') localStorage.setItem('pwaInstalled','1');
-        b.remove();
-        _installPrompt = null;
-    };
-}
-</script>
+<!-- Bottom Action Bar -->
+<div class="bottom-bar" id="bottomBar">
+    <button class="bottom-bar-btn" onclick="openSearch()" title="Search">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span>Search</span>
+    </button>
+    <button class="bottom-bar-btn" onclick="openComments()" title="Chat" id="chatNavIcon">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span>Chat</span>
+    </button>
+    <button class="bottom-bar-btn" onclick="openVideoChat()" title="Video Chat">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+        <span>Video</span>
+    </button>
+    <button class="bottom-bar-btn" onclick="showHostLogin()" title="Host / Settings" id="hostNavIcon">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span>Host</span>
+    </button>
+</div>
+
 </body>
 </html>
