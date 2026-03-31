@@ -21,50 +21,6 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
-/* USER NAME PILL — bottom right, above section nav on mobile */
-.user-name-pill{position:fixed;bottom:env(safe-area-inset-bottom,0px);right:12px;z-index:900;
-    background:var(--surface);border:1.5px solid var(--border);border-radius:20px;
-    padding:6px 13px 6px 8px;display:flex;align-items:center;gap:7px;
-    box-shadow:0 2px 12px rgba(0,0,0,.12);cursor:pointer;transition:all .2s;
-    font-size:13px;font-weight:700;color:var(--text);max-width:160px;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-    /* push up above iPhone home indicator */
-    margin-bottom:calc(env(safe-area-inset-bottom,0px) + 8px);}
-.user-name-pill:hover{border-color:var(--accent);box-shadow:0 4px 16px var(--accent-glow);}
-.user-name-pill-avatar{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;
-    justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;}
-.user-name-pill.hidden{display:none;}
-
-/* TYPING INDICATOR DOTS */
-.typing-dots{display:inline-flex;align-items:center;gap:3px;margin-left:2px;}
-.typing-dots span{width:5px;height:5px;border-radius:50%;background:var(--muted);display:inline-block;animation:typingBounce 1.2s infinite ease-in-out;}
-.typing-dots span:nth-child(1){animation-delay:0s;}
-.typing-dots span:nth-child(2){animation-delay:0.2s;}
-.typing-dots span:nth-child(3){animation-delay:0.4s;}
-@keyframes typingBounce{0%,60%,100%{transform:translateY(0);opacity:.4;}30%{transform:translateY(-4px);opacity:1;}}
-
-/* NOTIFICATION PERMISSION BANNER */
-.notif-banner{display:none;position:fixed;bottom:0;left:0;right:0;z-index:99997;background:linear-gradient(135deg,var(--accent),#d4703a);color:#fff;padding:14px 20px;align-items:center;gap:12px;box-shadow:0 -4px 24px rgba(232,131,74,.35);animation:slideUp .4s cubic-bezier(.22,1,.36,1);}
-.notif-banner.show{display:flex;}
-.notif-banner-text{flex:1;font-size:14px;font-weight:700;line-height:1.4;}
-.notif-banner-btn{background:#fff;color:var(--accent);border:none;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;flex-shrink:0;transition:all .2s;}
-.notif-banner-btn:hover{transform:scale(1.04);}
-.notif-banner-dismiss{background:none;border:none;color:rgba(255,255,255,.7);font-size:20px;cursor:pointer;padding:0 4px;line-height:1;}
-
-/* HOST NOTIFY TAB */
-.notif-host-panel{padding:4px 0;}
-.notif-type-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;}
-.notif-type-label{flex:1;font-size:13px;font-weight:600;color:var(--text);}
-.notif-toggle{position:relative;width:40px;height:22px;flex-shrink:0;}
-.notif-toggle input{opacity:0;width:0;height:0;}
-.notif-toggle-slider{position:absolute;inset:0;background:var(--border);border-radius:11px;cursor:pointer;transition:.3s;}
-.notif-toggle-slider:before{content:'';position:absolute;height:16px;width:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.3s;box-shadow:0 1px 4px rgba(0,0,0,.2);}
-.notif-toggle input:checked+.notif-toggle-slider{background:var(--accent2);}
-.notif-toggle input:checked+.notif-toggle-slider:before{transform:translateX(18px);}
-.notif-stats{font-size:11px;color:var(--muted);margin:6px 0 14px;font-weight:600;}
-.notif-send-area{background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:14px;}
-.notif-send-area textarea{width:100%;background:none;border:none;color:var(--text);font-size:14px;font-family:inherit;resize:none;outline:none;min-height:70px;}
-
 /* HOST REMEMBERED BADGE */
 .host-remembered-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(229,57,53,.12);border:1.5px solid var(--danger);border-radius:20px;padding:4px 10px;font-size:12px;font-weight:700;color:var(--danger);margin-top:6px;}
 .host-remembered-badge .remove-host{background:none;border:none;color:var(--danger);cursor:pointer;font-size:13px;padding:0 2px;line-height:1;font-family:inherit;}
@@ -180,22 +136,28 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .btn-danger{background:transparent;color:var(--danger);border:1.5px solid var(--danger);flex:1;}
 .btn-danger:hover{background:var(--danger);color:#fff;}
 
-/* HEADER */
-.header{background:rgba(255,255,255,.95);backdrop-filter:blur(18px);padding:0 22px;border-bottom:2px solid var(--border);position:sticky;top:0;z-index:1000;display:flex;justify-content:space-between;align-items:center;height:62px;box-shadow:0 2px 12px rgba(232,131,74,.08);}
-.logo{font-family:'Fredoka One',cursive;font-size:26px;color:var(--accent);letter-spacing:.5px;}
-.header-icons{display:flex;gap:7px;}
-.header-icon{width:40px;height:40px;background:var(--surface);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;position:relative;color:var(--muted);}
-.header-icon:hover{border-color:var(--accent);background:var(--surface2);transform:translateY(-1px);box-shadow:0 4px 16px var(--accent-glow);color:var(--accent);}
+/* HEADER — hidden, replaced by combined nav bar */
+.header{display:none;}
+.logo{font-family:'Fredoka One',cursive;font-size:22px;color:var(--accent);letter-spacing:.5px;white-space:nowrap;}
+.header-icons{display:flex;gap:5px;}
+.header-icon{width:36px;height:36px;background:var(--surface);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;position:relative;color:var(--muted);flex-shrink:0;}
+.header-icon:hover{border-color:var(--accent);background:var(--surface2);color:var(--accent);}
 .user-badge{position:absolute;top:-5px;right:-5px;background:var(--accent);color:#fff;min-width:18px;height:18px;padding:0 4px;border-radius:9px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg);}
 
+/* COMBINED NAV BAR */
+.combined-nav{position:sticky;top:0;z-index:1000;background:rgba(255,255,255,.97);backdrop-filter:blur(18px);border-bottom:2px solid var(--border);box-shadow:0 2px 12px rgba(232,131,74,.08);}
+.combined-nav-top{display:flex;align-items:center;gap:8px;padding:8px 12px 6px;}
+.combined-nav-top .logo{flex-shrink:0;}
+.combined-nav-sections{display:flex;gap:7px;padding:0 12px 8px;overflow-x:auto;scrollbar-width:none;}
+.combined-nav-sections::-webkit-scrollbar{display:none;}
+
 /* NAV */
-.top-nav{display:flex;gap:8px;padding:11px 18px;background:rgba(255,255,255,.9);border-bottom:2px solid var(--border);overflow-x:auto;scrollbar-width:none;}
-.top-nav::-webkit-scrollbar{display:none;}
-.nav-button{flex-shrink:0;background:var(--surface);border:2px solid var(--border);border-radius:14px;padding:8px 15px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:7px;color:var(--muted);position:relative;user-select:none;font-family:'Nunito',sans-serif;font-weight:700;}
-.nav-button:hover{border-color:var(--accent);transform:translateY(-2px);color:var(--text);box-shadow:0 4px 12px rgba(232,131,74,.12);}
+.top-nav{display:none;}/* original nav hidden — sections moved inside combined-nav */
+.nav-button{flex-shrink:0;background:var(--surface);border:2px solid var(--border);border-radius:12px;padding:7px 12px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px;color:var(--muted);position:relative;user-select:none;font-family:'Nunito',sans-serif;font-weight:700;}
+.nav-button:hover{border-color:var(--accent);color:var(--text);}
 .nav-button.active{border-color:var(--accent);background:rgba(232,131,74,.12);box-shadow:0 0 14px rgba(232,131,74,.15);color:var(--accent);}
-.nav-button-emoji{font-size:17px;}
-.nav-button-text{font-size:13px;font-weight:700;white-space:nowrap;}
+.nav-button-emoji{font-size:16px;}
+.nav-button-text{font-size:12px;font-weight:700;white-space:nowrap;}
 
 /* Host double-click indicator on nav buttons */
 .host-mode .nav-button::after{content:'✎';position:absolute;top:-6px;right:-6px;background:var(--accent);color:#fff;width:16px;height:16px;border-radius:50%;font-size:9px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;pointer-events:none;}
@@ -387,6 +349,24 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .host-tip{display:none;padding:7px 18px;background:rgba(232,131,74,.08);border-bottom:1px solid rgba(232,131,74,.2);font-size:12px;color:var(--accent);text-align:center;gap:16px;flex-wrap:wrap;justify-content:center;font-weight:700;}
 .host-mode .host-tip{display:flex;}
 
+/* IMAGE LIGHTBOX */
+.img-lightbox{position:fixed;inset:0;background:rgba(0,0,0,.96);z-index:99999;display:none;flex-direction:column;align-items:center;justify-content:center;touch-action:pinch-zoom;}
+.img-lightbox.open{display:flex;}
+.img-lightbox-img{max-width:100vw;max-height:calc(100vh - 80px);object-fit:contain;border-radius:4px;user-select:none;}
+.img-lightbox-close{position:absolute;top:14px;right:16px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);color:#fff;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;transition:background .2s;z-index:2;}
+.img-lightbox-close:hover{background:rgba(255,255,255,.3);}
+.img-lightbox-caption{color:rgba(255,255,255,.7);font-size:13px;font-weight:600;margin-top:12px;text-align:center;padding:0 20px;max-width:100%;}
+/* Tap-to-fullscreen hint overlay on image cards */
+.img-fs-hint{position:absolute;bottom:6px;right:7px;background:rgba(0,0,0,.55);color:#fff;border-radius:8px;padding:3px 8px;font-size:10px;font-weight:700;display:flex;align-items:center;gap:4px;pointer-events:none;opacity:0;transition:opacity .2s;}
+.card-thumb:hover .img-fs-hint{opacity:1;}
+
+/* BOTTOM BAR */
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;z-index:1000;background:rgba(255,255,255,.97);backdrop-filter:blur(18px);border-top:2px solid var(--border);display:flex;justify-content:space-around;align-items:center;padding:8px 0 max(8px,env(safe-area-inset-bottom));box-shadow:0 -2px 12px rgba(232,131,74,.08);}
+.bottom-bar-btn{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;padding:6px 18px;color:var(--muted);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;border-radius:12px;transition:all .2s;flex:1;}
+.bottom-bar-btn:hover,.bottom-bar-btn:active{color:var(--accent);background:rgba(232,131,74,.1);}
+/* push page content above bottom bar */
+body{padding-bottom:72px;}
+
 /* TOAST */
 .toast-area{position:fixed;bottom:22px;right:22px;z-index:99999;display:flex;flex-direction:column;gap:7px;pointer-events:none;}
 .toast{background:var(--surface);border:2px solid var(--border);border-radius:14px;padding:11px 16px;font-size:13px;font-weight:700;box-shadow:0 8px 24px rgba(232,131,74,.12);pointer-events:auto;animation:toastIn .3s cubic-bezier(.22,1,.36,1);display:flex;align-items:center;gap:9px;max-width:300px;}
@@ -503,33 +483,33 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     <button onclick="removeHostMemory()" title="Remove host from this device" style="background:rgba(255,255,255,.2);border:none;color:#fff;cursor:pointer;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:11px;margin-left:4px;padding:0;font-family:inherit;">✕</button>
 </div>
 
-<!-- Header -->
-<div class="header">
+<!-- Header (hidden — kept for JS references) -->
+<div class="header" style="display:none;">
     <div class="logo" id="appName">Family Hub</div>
-    <div class="header-icons">
-        <div class="header-icon" onclick="openSearch()" title="Search">
-            <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        </div>
-        <div class="header-icon" onclick="openComments()" title="Comments">
-            <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-
-        </div>
-        <div class="header-icon" onclick="openVideoChat()" title="Video Chat">
-            <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-        </div>
-        <div class="header-icon" onclick="showHostLogin()" title="Host / Settings">
-            <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        </div>
-    </div>
+    <div class="header-icons"></div>
 </div>
 
-<!-- Top Nav -->
-<div class="top-nav" id="topNav">
-    <div class="nav-button active" data-section="0"><span class="nav-button-emoji">📁</span><span class="nav-button-text">Section 1</span></div>
-    <div class="nav-button" data-section="1"><span class="nav-button-emoji">📁</span><span class="nav-button-text">Section 2</span></div>
-    <div class="nav-button" data-section="2"><span class="nav-button-emoji">📁</span><span class="nav-button-text">Section 3</span></div>
-    <div class="nav-button" data-section="3"><span class="nav-button-emoji">📁</span><span class="nav-button-text">Section 4</span></div>
-    <div class="nav-button" data-section="4"><span class="nav-button-emoji">📁</span><span class="nav-button-text">Section 5</span></div>
+<!-- Combined Nav Bar -->
+<div class="combined-nav" id="combinedNav">
+    <div class="combined-nav-top">
+        <div class="logo" id="appName2">Family Hub</div>
+    </div>
+    <!-- Section tabs row -->
+    <div class="combined-nav-sections" id="topNav">
+        <div class="nav-button active" data-section="0"><span class="nav-button-emoji">📁</span><span class="nav-button-text">Section 1</span></div>
+        <div class="nav-button" data-section="1"><span class="nav-button-emoji">📁</span><span class="nav-button-text">Section 2</span></div>
+        <div class="nav-button" data-section="2"><span class="nav-button-emoji">📁</span><span class="nav-button-text">Section 3</span></div>
+        <div class="nav-button" data-section="3"><span class="nav-button-emoji">📁</span><span class="nav-button-text">Section 4</span></div>
+        <div class="nav-button" data-section="4"><span class="nav-button-emoji">📁</span><span class="nav-button-text">Section 5</span></div>
+    </div>
+    <!-- Feature tabs row (Home, Calendar, Recipes, Poll) -->
+    <div class="feature-tabs" id="featureTabs">
+        <button class="feature-tab active" data-panel="cards" onclick="switchFeatureTab('cards',this)">🏠 Home</button>
+        <button class="feature-tab" data-panel="calendar" onclick="switchFeatureTab('calendar',this)">📅 Calendar</button>
+        <button class="feature-tab" data-panel="recipes" onclick="switchFeatureTab('recipes',this)">🍳 Recipes</button>
+        <button class="feature-tab" data-panel="poll" onclick="switchFeatureTab('poll',this)">🗳️ Poll</button>
+        <button class="feature-tab" data-panel="updates" onclick="switchFeatureTab('updates',this)" id="updatesTab">📲 Updates</button>
+    </div>
 </div>
 
 <!-- Host tip bar (only visible in host mode) -->
@@ -545,13 +525,6 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     <div class="bday-banner-text" id="bdayBannerText"></div>
 </div>
 
-<!-- Feature Tabs -->
-<div class="feature-tabs" id="featureTabs">
-    <button class="feature-tab active" data-panel="cards" onclick="switchFeatureTab('cards',this)">🏠 Home</button>
-    <button class="feature-tab" data-panel="calendar" onclick="switchFeatureTab('calendar',this)">📅 Calendar</button>
-    <button class="feature-tab" data-panel="recipes" onclick="switchFeatureTab('recipes',this)">🍳 Recipes</button>
-    <button class="feature-tab" data-panel="poll" onclick="switchFeatureTab('poll',this)">🗳️ Poll</button>
-</div>
 
 <!-- Home Panel -->
 <div class="feature-panel active" id="panel-cards">
@@ -600,6 +573,92 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     <div id="pollContainer"></div>
 </div>
 
+<!-- Updates Panel -->
+<div class="feature-panel" id="panel-updates">
+    <div style="padding:18px 16px;max-width:600px;margin:0 auto;">
+
+        <!-- Latest version card -->
+        <div id="latestUpdateCard" style="display:none;background:var(--surface);border:2px solid var(--accent);border-radius:var(--radius-lg);padding:20px;margin-bottom:18px;box-shadow:0 4px 24px var(--accent-glow);">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                <span style="font-size:32px;">📲</span>
+                <div>
+                    <div style="font-family:'Fredoka One',cursive;font-size:20px;color:var(--accent);" id="latestVersionLabel">Latest Version</div>
+                    <div style="font-size:11px;color:var(--muted);font-weight:600;" id="latestVersionDate"></div>
+                </div>
+                <span id="newBadge" style="display:none;margin-left:auto;background:var(--danger);color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;animation:pulse 1.5s infinite;">NEW</span>
+            </div>
+            <div id="latestVersionNotes" style="font-size:14px;color:var(--text);font-weight:600;line-height:1.6;margin-bottom:16px;background:var(--surface2);border-radius:10px;padding:12px;white-space:pre-wrap;"></div>
+            <a id="latestDownloadBtn" href="#" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:14px;background:var(--accent);color:#fff;border-radius:var(--radius);font-size:15px;font-weight:800;font-family:'Nunito',sans-serif;text-decoration:none;box-shadow:0 4px 20px var(--accent-glow);transition:all .2s;">
+                ⬇️ Download & Install APK
+            </a>
+            <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px;font-weight:600;">Tap the button, then open the downloaded file to install</div>
+        </div>
+
+        <div id="noUpdateYet" style="text-align:center;padding:40px 20px;color:var(--muted);">
+            <div style="font-size:48px;margin-bottom:12px;">📦</div>
+            <div style="font-size:15px;font-weight:700;">No updates posted yet</div>
+            <div style="font-size:13px;margin-top:6px;">The host will post new versions here</div>
+        </div>
+
+        <!-- Host: post new update (only visible in host mode) -->
+        <div id="hostUpdateForm" style="display:none;background:var(--surface);border:2px dashed var(--border);border-radius:var(--radius-lg);padding:18px;margin-bottom:18px;">
+            <div style="font-family:'Fredoka One',cursive;font-size:17px;color:var(--accent);margin-bottom:14px;">📤 Post New Update</div>
+
+            <label style="font-size:12px;font-weight:700;color:var(--muted);display:block;margin-bottom:5px;">Version name (e.g. v1.3)</label>
+            <input id="updateVersionInput" type="text" placeholder="v1.0" maxlength="20"
+                style="width:100%;padding:11px 14px;font-size:14px;font-family:'Nunito',sans-serif;font-weight:600;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);color:var(--text);outline:none;margin-bottom:12px;transition:border-color .2s;">
+
+            <label style="font-size:12px;font-weight:700;color:var(--muted);display:block;margin-bottom:5px;">What's new? (optional)</label>
+            <textarea id="updateNotesInput" rows="3" placeholder="e.g. Fixed chat bug, added dark mode…"
+                style="width:100%;padding:11px 14px;font-size:14px;font-family:'Nunito',sans-serif;font-weight:600;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);color:var(--text);outline:none;resize:vertical;margin-bottom:16px;transition:border-color .2s;"></textarea>
+
+            <!-- Option A: Upload APK directly to Firebase -->
+            <label style="font-size:12px;font-weight:700;color:var(--muted);display:block;margin-bottom:8px;">Upload APK file:</label>
+            <div id="apkDropZone" onclick="document.getElementById('apkFileInput').click()"
+                style="border:2px dashed var(--border);border-radius:var(--radius);padding:22px;text-align:center;cursor:pointer;margin-bottom:10px;transition:all .2s;background:var(--bg);"
+                ondragover="event.preventDefault();this.style.borderColor='var(--accent)';this.style.background='rgba(232,131,74,.06)'"
+                ondragleave="this.style.borderColor='var(--border)';this.style.background='var(--bg)'"
+                ondrop="handleApkDrop(event)">
+                <div style="font-size:30px;margin-bottom:6px;">📦</div>
+                <div style="font-size:13px;font-weight:700;color:var(--text);">Tap to pick APK file</div>
+                <div style="font-size:11px;color:var(--muted);margin-top:3px;">or drag &amp; drop it here</div>
+                <div id="apkFileName" style="margin-top:8px;font-size:12px;font-weight:700;color:var(--accent);display:none;"></div>
+            </div>
+            <input type="file" id="apkFileInput" accept=".apk,application/vnd.android.package-archive" style="display:none" onchange="onApkFileSelected(this)">
+
+            <!-- Upload progress -->
+            <div id="apkUploadProgress" style="display:none;margin-bottom:12px;">
+                <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px;">
+                    <span id="apkUploadStatus">Uploading to Firebase…</span>
+                    <span id="apkProgressPct">0%</span>
+                </div>
+                <div style="background:var(--surface2);border-radius:6px;height:10px;overflow:hidden;border:1px solid var(--border);">
+                    <div id="apkProgressBar" style="height:100%;background:var(--accent);border-radius:6px;width:0%;transition:width .3s;"></div>
+                </div>
+            </div>
+
+            <!-- Option B: paste a URL -->
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                <div style="flex:1;height:1px;background:var(--border);"></div>
+                <span style="font-size:11px;font-weight:700;color:var(--muted);">OR paste a link instead</span>
+                <div style="flex:1;height:1px;background:var(--border);"></div>
+            </div>
+            <input id="updateUrlInput" type="url" placeholder="https://… (any direct APK link)"
+                style="width:100%;padding:11px 14px;font-size:14px;font-family:'Nunito',sans-serif;font-weight:600;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);color:var(--text);outline:none;margin-bottom:14px;transition:border-color .2s;">
+
+            <button onclick="postAppUpdate()" id="postUpdateBtn" class="btn btn-primary" style="font-family:'Nunito',sans-serif;font-weight:800;">
+                📲 Post Update for Family
+            </button>
+        </div>
+
+        <!-- Version history -->
+        <div id="updateHistoryWrap" style="display:none;">
+            <div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">Version History</div>
+            <div id="updateHistoryList" style="display:flex;flex-direction:column;gap:8px;"></div>
+        </div>
+    </div>
+</div>
+
 <!-- Hidden file inputs -->
 <input type="file" id="globalFileInput" accept="*/*" style="display:none">
 <input type="file" id="sectionImageInput" accept="image/*" style="display:none">
@@ -646,15 +705,6 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
             <button class="wa-reply-cancel" onclick="cancelReply()">✕</button>
         </div>
         <div class="wa-messages" id="waMessages"><p style="color:#888;text-align:center;padding:22px;font-size:13px;">No messages yet. Say hello! 👋</p></div>
-        <!-- Typing indicator -->
-        <div id="typingIndicator" style="display:none;align-items:center;gap:8px;padding:6px 14px 2px;min-height:28px;">
-            <div style="display:flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border);border-radius:18px;padding:7px 13px;max-width:fit-content;">
-                <span id="typingNames" style="font-size:12px;font-weight:600;color:var(--muted);"></span>
-                <div class="typing-dots">
-                    <span></span><span></span><span></span>
-                </div>
-            </div>
-        </div>
         <div class="recording-indicator" id="recordingIndicator">
             <span style="width:10px;height:10px;background:var(--danger);border-radius:50%;display:inline-block;animation:pulse 1s infinite;"></span>
             Recording… tap 🎙️ again to send
@@ -667,7 +717,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
             <button class="wa-voice-btn" id="voiceBtn" onclick="toggleVoiceRecording()" title="Voice message">
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
             </button>
-            <textarea class="wa-input" id="newComment" placeholder="Type a message…" rows="1" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px';onTypingInput()"></textarea>
+            <textarea class="wa-input" id="newComment" placeholder="Type a message…" rows="1" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
             <button class="wa-send-btn" onclick="postComment()">
                 <svg width="18" height="18" fill="white" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
@@ -738,9 +788,6 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
             </button>
             <button class="host-tab" onclick="switchHostTab('popup',this);loadWelcomePopupEditor();">
                 🎯 Welcome Popup
-            </button>
-            <button class="host-tab" onclick="switchHostTab('notify',this);loadNotifyPanel();">
-                🔔 Notify
             </button>
         </div>
 
@@ -840,8 +887,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
             <input type="text" id="wpEditTitle" placeholder="e.g. Shabbat Shalom! 🕯️" maxlength="60">
             <label>Message</label>
             <textarea id="wpEditMessage" rows="3" placeholder="e.g. Dinner at 7pm at Grandma's house 🍽️"></textarea>
-            <label>Image / Video URL — paste a Cloudinary, YouTube, Google Drive, or Streamable link</label>
-            <input type="text" id="wpEditImageUrl" placeholder="https://… (image, YouTube, Drive, or Streamable)">
+            <label>Image / Photo URL (optional — paste a Cloudinary link)</label>
+            <input type="text" id="wpEditImageUrl" placeholder="https://res.cloudinary.com/…">
             <label>How long to show it (days) — set 0 to show every visit</label>
             <input type="number" id="wpEditDays" value="1" min="0" max="30" style="width:80px;">
             <div style="display:flex;align-items:center;gap:10px;margin-top:12px;">
@@ -851,47 +898,6 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
             <div class="modal-buttons" style="margin-top:16px;">
                 <button class="btn btn-outline" onclick="saveWelcomePopup()">💾 Save Popup</button>
                 <button class="btn btn-ghost" onclick="clearWelcomePopup()">🗑 Remove Popup</button>
-            </div>
-        </div>
-
-        <!-- Notify Panel -->
-        <div class="host-panel" id="panel-notify">
-            <div class="notif-host-panel">
-                <p style="color:var(--muted);font-size:12px;margin-bottom:12px;">Send push notifications to all family members. They will hear a sound and see a pop-up on their phone — even when the app is in the background.</p>
-                <div id="notifSubscriberStats" class="notif-stats">📱 Loading subscriber count…</div>
-
-                <!-- Auto-notification toggles -->
-                <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Auto-notify family when:</div>
-                <div class="notif-type-row">
-                    <span style="font-size:18px;">💬</span>
-                    <span class="notif-type-label">Someone sends a chat message</span>
-                    <label class="notif-toggle"><input type="checkbox" id="notifToggleChat" onchange="saveNotifSettings()"><span class="notif-toggle-slider"></span></label>
-                </div>
-                <div class="notif-type-row">
-                    <span style="font-size:18px;">📢</span>
-                    <span class="notif-type-label">Host sends an announcement</span>
-                    <label class="notif-toggle"><input type="checkbox" id="notifToggleAnnounce" checked onchange="saveNotifSettings()"><span class="notif-toggle-slider"></span></label>
-                </div>
-                <div class="notif-type-row">
-                    <span style="font-size:18px;">🆕</span>
-                    <span class="notif-type-label">New content is added to a card</span>
-                    <label class="notif-toggle"><input type="checkbox" id="notifToggleContent" checked onchange="saveNotifSettings()"><span class="notif-toggle-slider"></span></label>
-                </div>
-
-                <div style="height:1px;background:var(--border);margin:16px 0;"></div>
-
-                <!-- Manual push -->
-                <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Send a custom notification now:</div>
-                <div class="notif-send-area">
-                    <input type="text" id="notifTitle" placeholder="Title  (e.g. Shabbat starts soon! 🕯️)" style="width:100%;background:none;border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:14px;font-family:inherit;padding:0 0 8px;outline:none;margin-bottom:10px;font-weight:700;">
-                    <textarea id="notifBody" placeholder="Message… (e.g. Everyone come downstairs, dinner is ready! 🍽️)" style="width:100%;background:none;border:none;color:var(--text);font-size:13px;font-family:inherit;resize:none;outline:none;min-height:60px;"></textarea>
-                </div>
-                <div class="modal-buttons" style="margin-top:12px;">
-                    <button class="btn btn-outline" onclick="sendHostPushNotification()" style="gap:8px;">
-                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                        Send Notification to All
-                    </button>
-                </div>
             </div>
         </div>
     </div>
@@ -1102,10 +1108,7 @@ function toast(msg,type='success'){
         setTimeout(()=>t.remove(),400);},3200);
 }
 
-function closeModal(id){
-    document.getElementById(id).classList.remove('active');
-    if(id === 'commentsModal') clearTypingOnLeave();
-}
+function closeModal(id){document.getElementById(id).classList.remove('active');}
 
 function closeAllPickers(){
     document.querySelectorAll('.emoji-picker').forEach(p=>p.remove());
@@ -1135,17 +1138,12 @@ async function registerOnlineUser(){
     if(!currentUser)return;
     const key=currentUser.replace(/[.#$[\]]/g,'_');
     userRef=window.dbRef(window.db,'onlineUsers/'+key);
-    try{await window.dbSet(userRef,{name:currentUser,timestamp:Date.now(),deviceId:getDeviceId()});}catch(e){}
+    try{await window.dbSet(userRef,{name:currentUser,timestamp:Date.now(),deviceId:getDeviceId()});
+    // Also persist to knownUsers so host can find them in group creation later
+    await window.dbSet(window.dbRef(window.db,'knownUsers/'+currentUser.replace(/[^a-zA-Z0-9_]/g,'_')), currentUser).catch(()=>{});}catch(e){}
 }
 window.addEventListener('beforeunload',()=>{
     if(userRef)navigator.sendBeacon(userRef.toString()+'.json',JSON.stringify(null));
-    // Remove typing indicator on page close
-    if(currentUser && window.db){
-        try{
-            const tPath = 'typing/' + (typeof currentGroup !== 'undefined' ? currentGroup : 'General').replace(/\s+/g,'_') + '/' + currentUser.replace(/[.#$[\]]/g,'_');
-            navigator.sendBeacon(window.dbRef(window.db, tPath).toString()+'.json', JSON.stringify(null));
-        }catch(e){}
-    }
 });
 
 // ── Load everything after login ───────────────────────────
@@ -1156,7 +1154,7 @@ async function loadContent(){
     // Then load Firebase data in parallel
     try{
         const n=await window.dbGet(window.dbRef(window.db,'appName'));
-        if(n.exists())document.getElementById('appName').textContent=n.val();
+        if(n.exists()){document.getElementById('appName').textContent=n.val();const a2=document.getElementById('appName2');if(a2)a2.textContent=n.val();}
         const dc=await window.dbGet(window.dbRef(window.db,'defaultCardCount'));
         if(dc.exists())defaultCardCount=Number(dc.val())||20;
         const ml=await window.dbGet(window.dbRef(window.db,'meetLink'));
@@ -1349,26 +1347,23 @@ function buildCard(cardData,sectionIndex,cardId){
             }else{
                 body='<iframe src="'+media.embed+'" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;margin-top:8px;" allowfullscreen></iframe>';
             }
-        }else if(media.type==='image'){
-            thumb='<img src="'+esc(url)+'" loading="lazy" style="width:100%;height:100%;object-fit:cover;">';
+                }else if(media.type==='image'){
+            thumb='<img src="'+esc(url)+'" loading="lazy" style="width:100%;height:100%;object-fit:cover;cursor:pointer;" onclick="openImgLightbox(this.src,event)" title="Tap to view full size">'+
+                   '<div class="img-fs-hint">⛶ Full screen</div>';
         }else if(media.type==='video'){
             thumb='<video src="'+esc(url)+'" muted playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover;"></video>';
-            // Full controls with playsinline for iOS, preload for seek scrubbing on Android
-            body='<video controls playsinline preload="metadata" class="card-media" style="max-width:100%;border-radius:8px;margin-top:8px;" controlsList="nodownload">'
-                +'<source src="'+esc(url)+'">'
-                +'</video>';
+            // On mobile always show controls inline so tapping works
+            body='<video controls playsinline class="card-media" style="max-width:100%;"><source src="'+esc(url)+'"></video>';
         }else if(media.type==='audio'){
             thumb='<div style="position:absolute;inset:0;background:linear-gradient(135deg,'+c1+'33,'+c2+'33);"></div>'
                  +'<div style="position:relative;z-index:1;color:rgba(255,255,255,.3);">'
                  +'<svg width="38" height="38" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">'
                  +'<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>';
-            body='<audio controls preload="metadata" class="card-media" style="width:100%;margin-top:8px;">'
-                +'<source src="'+esc(url)+'">'
-                +'</audio>';
+            body='<audio controls class="card-media" style="width:100%;"><source src="'+esc(url)+'"></audio>';
         }else if(media.type==='link'){
             // Try as image, fall back to gradient placeholder
             thumb='<div class="link-img-wrap" style="position:absolute;inset:0;">'
-                 +'<img class="link-img-try" src="'+esc(url)+'" style="width:100%;height:100%;object-fit:cover;display:block;">'
+                 +'<img class="link-img-try" src="'+esc(url)+'" style="width:100%;height:100%;object-fit:cover;display:block;cursor:pointer;" onclick="openImgLightbox(this.src,event)">'
                  +'<div class="link-fallback" style="display:none;position:absolute;inset:0;background:linear-gradient(135deg,'+c1+'33,'+c2+'33);align-items:center;justify-content:center;">'
                  +'<svg width="36" height="36" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.5" viewBox="0 0 24 24">'
                  +'<rect x="2" y="2" width="20" height="20" rx="3"/><path d="M2 9h20M9 21V9"/></svg></div></div>';
@@ -1603,21 +1598,11 @@ function showCardPopup(card,cardData,sectionIndex,cardId){
         // Pick primary mediaUrl: cloudinary first, then drive, then empty
         const primaryUrl = cloudUrl || driveUrl;
         const m = detectMediaType(primaryUrl);
-        const cd = {name, desc, mediaUrl:primaryUrl, mediaType:m.type, cloudinaryUrl:cloudUrl, driveUrl:driveUrl, updatedAt:Date.now()};
+        const cd = {name, desc, mediaUrl:primaryUrl, mediaType:m.type, cloudinaryUrl:cloudUrl, driveUrl:driveUrl};
         try{
             await window.dbSet(window.dbRef(window.db,'cards/section'+sectionIndex+'/'+cardId), cd);
             if(!allCards[sectionIndex]) allCards[sectionIndex]={};
             allCards[sectionIndex][cardId] = cd;
-            // Trigger content notification for all subscribers
-            if(typeof notifSettings !== 'undefined' && notifSettings.content !== false){
-                window.dbSet(window.dbRef(window.db,'pushNotif'),{
-                    title:'🆕 New content added!',
-                    body: (name || 'A card') + ' was updated.',
-                    sentBy: currentUser||'Host',
-                    timestamp: Date.now(),
-                    type:'content'
-                }).catch(()=>{});
-            }
             toast('Card saved! ✓'); popupClose(); loadCards(currentSection);
         }catch(ex){ toast('Save failed: '+(ex.message||ex.code||ex),'danger'); }
     };
@@ -1708,8 +1693,7 @@ async function uploadToCard(file,sectionIndex,cardId,cardEl,existingData,bar,fil
             name:existingName,
             desc:existingData?.desc||'',
             mediaUrl:url,
-            mediaType:mediaType,
-            updatedAt:Date.now()
+            mediaType:mediaType
         };
 
         await window.dbSet(window.dbRef(window.db,'cards/section'+sectionIndex+'/'+cardId),cd);
@@ -1717,17 +1701,6 @@ async function uploadToCard(file,sectionIndex,cardId,cardEl,existingData,bar,fil
         // Update local cache
         if(!allCards[sectionIndex])allCards[sectionIndex]={};
         allCards[sectionIndex][cardId]=cd;
-
-        // Trigger content notification for all subscribers
-        if(typeof notifSettings !== 'undefined' && notifSettings.content !== false){
-            window.dbSet(window.dbRef(window.db,'pushNotif'),{
-                title:'🆕 New content added!',
-                body:(existingName||'A card')+' was updated.',
-                sentBy:currentUser||'Host',
-                timestamp:Date.now(),
-                type:'content'
-            }).catch(()=>{});
-        }
 
         if(bar)bar.style.display='none';
         popupClose();
@@ -1901,7 +1874,14 @@ async function saveSectionData(index,name,icon,iconType){
     }catch(e){toast('Save failed: '+(e.message||e.code||e),'danger');console.error('saveSectionData failed:',e);}
 }
 
-// listenAnnouncements is defined in the notification system below (listenAnnouncementsWithNotif)
+// ── Announcements ─────────────────────────────────────────
+function listenAnnouncements(){
+    window.dbOnValue(window.dbRef(window.db,'announcement'),snap=>{
+        const b=document.getElementById('announcementBanner');
+        if(snap.exists()){document.getElementById('announcementText').textContent=snap.val().text;b.classList.add('active');}
+        else b.classList.remove('active');
+    });
+}
 
 // ── Host login ────────────────────────────────────────────
 function showHostLogin(){
@@ -1989,7 +1969,12 @@ async function kickUser(key,name){
     try{await window.dbRemove(window.dbRef(window.db,'onlineUsers/'+key));toast(name+' removed','warn');}
     catch(e){toast('Failed','danger');}
 }
-// sendAnnouncement is defined in the notification system below (fires push + sets banner)
+async function sendAnnouncement(){
+    const msg=document.getElementById('announcementInput').value.trim();
+    if(!msg){toast('Type a message first','warn');return;}
+    try{await window.dbSet(window.dbRef(window.db,'announcement'),{text:msg,timestamp:Date.now()});toast('Sent!');}
+    catch(e){toast('Failed','danger');}
+}
 async function clearAnnouncement(){
     try{await window.dbRemove(window.dbRef(window.db,'announcement'));toast('Banner cleared','warn');}
     catch(e){toast('Failed','danger');}
@@ -2006,7 +1991,7 @@ async function saveHubSettings(){
         await window.dbSet(window.dbRef(window.db,'meetLink'),link);
         if(cloudName)await window.dbSet(window.dbRef(window.db,'cloudinaryName'),cloudName);
         if(uploadPreset)await window.dbSet(window.dbRef(window.db,'cloudinaryPreset'),uploadPreset);
-        document.getElementById('appName').textContent=name||'Family Hub';
+        document.getElementById('appName').textContent=name||'Family Hub';const _a2=document.getElementById('appName2');if(_a2)_a2.textContent=name||'Family Hub';
         defaultCardCount=count;
         meetLink=link;
         if(cloudName)CLOUDINARY_CLOUD_NAME=cloudName;
@@ -2050,34 +2035,14 @@ function renderGroupTabs(){
             const members = meta.members || [];
             if(!members.includes(currentUser)) return;
         }
-        const wrap = document.createElement('div');
-        wrap.style.cssText = 'position:relative;display:inline-flex;align-items:center;flex-shrink:0;';
-
         const btn = document.createElement('button');
         btn.className = 'wa-group-tab' + (g===currentGroup?' active':'');
         let icon = '';
         if(meta.type === 'announce') icon = '📢 ';
         else if(meta.type === 'private') icon = '🔒 ';
         btn.textContent = icon + g;
-        btn.style.paddingRight = isHost ? '26px' : '';
         btn.onclick = () => switchChatGroup(g);
-        wrap.appendChild(btn);
-
-        // Host gets a tiny ✕ delete button on each group tab
-        if(isHost){
-            const del = document.createElement('button');
-            del.textContent = '✕';
-            del.title = 'Delete "' + g + '" group';
-            del.style.cssText = 'position:absolute;right:4px;top:50%;transform:translateY(-50%);'
-                + 'background:none;border:none;color:rgba(255,255,255,.55);font-size:11px;cursor:pointer;'
-                + 'line-height:1;padding:2px 3px;border-radius:4px;transition:color .15s;z-index:2;';
-            del.onmouseenter = () => del.style.color = '#f87171';
-            del.onmouseleave = () => del.style.color = 'rgba(255,255,255,.55)';
-            del.onclick = (e) => { e.stopPropagation(); deleteChatGroup(g); };
-            wrap.appendChild(del);
-        }
-
-        tabs.appendChild(wrap);
+        tabs.appendChild(btn);
     });
     if(isHost){
         const add = document.createElement('button');
@@ -2090,26 +2055,6 @@ function renderGroupTabs(){
     // Update input area based on current group type
     updateChatInputForGroup(currentGroup);
     loadMessages(currentGroup);
-}
-
-async function deleteChatGroup(groupName){
-    if(groupName === 'General'){ toast('Cannot delete the General group', 'warn'); return; }
-    if(!confirm('Delete the "' + groupName + '" group and ALL its messages? This cannot be undone.')){ return; }
-    try{
-        // Remove from groups list
-        const newGroups = chatGroups.filter(g => g !== groupName);
-        await window.dbSet(window.dbRef(window.db,'chatGroups'), newGroups);
-        // Remove metadata
-        const metaKey = groupName.replace(/\s+/g,'_');
-        await window.dbRemove(window.dbRef(window.db,'chatGroupMeta/'+metaKey));
-        // Remove all messages in the group
-        await window.dbRemove(window.dbRef(window.db,'messages/'+metaKey));
-        // Remove typing data
-        await window.dbRemove(window.dbRef(window.db,'typing/'+metaKey));
-        // Switch back to General if we were in this group
-        if(currentGroup === groupName) switchChatGroup('General');
-        toast('Group "' + groupName + '" deleted 🗑', 'warn');
-    }catch(e){ toast('Failed: ' + e.message, 'danger'); }
 }
 
 function updateChatInputForGroup(group){
@@ -2127,7 +2072,6 @@ function updateChatInputForGroup(group){
 }
 
 function switchChatGroup(name){
-    clearTypingOnLeave();   // stop typing in old group
     currentGroup = name;
     setLastRead(name);  // mark newly opened group as read
     renderGroupTabs();
@@ -2143,17 +2087,49 @@ function openAddGroupModal(){
 }
 
 function renderMemberCheckboxes(){
-    window.dbGet(window.dbRef(window.db,'onlineUsers')).then(snap=>{
-        const wrap = document.getElementById('newGroupMemberList');
+    const wrap = document.getElementById('newGroupMemberList');
+    wrap.innerHTML = '<p style="color:var(--muted);font-size:12px;padding:6px 0;">Loading members…</p>';
+
+    // Pull from knownUsers (persistent list) AND currently online users, merge them
+    Promise.all([
+        window.dbGet(window.dbRef(window.db,'knownUsers')).catch(()=>null),
+        window.dbGet(window.dbRef(window.db,'onlineUsers')).catch(()=>null)
+    ]).then(([knownSnap, onlineSnap]) => {
+        const names = new Set();
+        if(knownSnap && knownSnap.exists()){
+            const v = knownSnap.val();
+            (Array.isArray(v) ? v : Object.values(v)).forEach(n => { if(n && typeof n==='string') names.add(n); });
+        }
+        if(onlineSnap && onlineSnap.exists()){
+            Object.values(onlineSnap.val()).forEach(u => { if(u.name) names.add(u.name); });
+        }
         wrap.innerHTML = '';
-        if(!snap.exists()){ wrap.innerHTML = '<p style="color:var(--muted);font-size:12px;">No users online right now — you can still create the group and add members later via Firebase.</p>'; return; }
-        Object.values(snap.val()).forEach(u=>{
+        if(names.size === 0){
+            wrap.innerHTML = '<p style="color:var(--muted);font-size:12px;">No members found yet — they appear here once they sign in at least once.</p>';
+            return;
+        }
+        // Sort alphabetically
+        [...names].sort((a,b)=>a.localeCompare(b)).forEach(name => {
             const label = document.createElement('label');
-            label.style.cssText = 'display:flex;align-items:center;gap:8px;padding:7px 0;font-size:14px;font-weight:600;cursor:pointer;';
-            label.innerHTML = '<input type="checkbox" value="'+esc(u.name)+'" style="width:16px;height:16px;accent-color:var(--accent);"> '+esc(u.name);
+            label.style.cssText = 'display:flex;align-items:center;gap:10px;padding:8px 6px;font-size:14px;font-weight:600;cursor:pointer;border-radius:8px;transition:background .15s;';
+            label.onmouseenter = ()=>label.style.background='var(--surface2)';
+            label.onmouseleave = ()=>label.style.background='';
+            const avatar = document.createElement('span');
+            avatar.style.cssText = 'width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;';
+            avatar.textContent = name[0].toUpperCase();
+            label.appendChild(avatar);
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.value = name;
+            cb.style.cssText = 'width:18px;height:18px;accent-color:var(--accent);margin-left:auto;';
+            const span = document.createElement('span');
+            span.textContent = name;
+            span.style.flex = '1';
+            label.appendChild(span);
+            label.appendChild(cb);
             wrap.appendChild(label);
         });
-    }).catch(()=>{});
+    });
 }
 
 async function saveNewGroup(){
@@ -2182,7 +2158,6 @@ async function saveNewGroup(){
 function msgPath(group){ return 'messages/'+group.replace(/\s+/g,'_'); }
 
 function loadMessages(group){
-    listenTyping(group);
     window.dbOnValue(window.dbRef(window.db, msgPath(group)), snap=>{
         const container = document.getElementById('waMessages');
         container.innerHTML = '';
@@ -2215,7 +2190,7 @@ function buildBubble(key, msg){
                     <span style="margin-left:auto;font-size:10px;color:var(--muted);font-weight:600;">${formatMsgTime(msg.timestamp)}</span>
                 </div>
                 <div style="font-size:15px;font-weight:700;color:var(--text);line-height:1.6;">${esc(msg.text)}</div>
-                ${msg.audioUrl ? '<div style="margin-top:10px;"><audio controls preload="metadata" style="width:100%;border-radius:8px;"><source src="'+esc(msg.audioUrl)+'"></audio></div>' : ''}
+                ${msg.audioUrl ? '<div style="margin-top:10px;"><audio controls src="'+esc(msg.audioUrl)+'" style="width:100%;"></audio></div>' : ''}
                 ${isHost ? '<div style="text-align:right;margin-top:8px;"><span style="font-size:11px;color:var(--muted);cursor:pointer;font-weight:600;" onclick="deleteComment(\''+esc(key)+'\')">🗑 Delete</span></div>' : ''}
             </div>`;
         return wrap;
@@ -2233,12 +2208,7 @@ function buildBubble(key, msg){
     if(msg.replyTo) inner += '<div class="wa-reply-preview" onclick="scrollToMsg(\''+esc(msg.replyTo.key)+'\')"><div class="rp-author">'+esc(msg.replyTo.author)+'</div><div>'+esc((msg.replyTo.text||'').slice(0,80))+'</div></div>';
     inner += '<div class="wa-text" style="'+(msgIsFromHost?'font-weight:700;':'')+'">'+esc(msg.text)+'</div>';
     if(msg.audioUrl){
-        // preload=metadata enables timeline scrubbing on iOS & Android
-        const isDataUrl = msg.audioUrl.startsWith('data:');
-        inner += '<div class="wa-voice-msg"><audio controls preload="metadata" style="width:100%;max-width:260px;border-radius:8px;">'
-            + '<source src="'+esc(msg.audioUrl)+'">'
-            + (isDataUrl ? '' : '<source src="'+esc(msg.audioUrl)+'">')
-            + '</audio></div>';
+        inner += '<div class="wa-voice-msg"><audio controls src="'+esc(msg.audioUrl)+'"></audio></div>';
     }
     inner += '<div class="wa-time">'+formatMsgTime(msg.timestamp)+'</div>';
     const canDel = isHost || msg.author === currentUser;
@@ -2271,81 +2241,6 @@ function cancelReply(){
 function scrollToMsg(key){
     const el = document.getElementById('msg-'+key);
     if(el){ el.scrollIntoView({behavior:'smooth',block:'center'}); el.style.outline='2px solid var(--accent)'; setTimeout(()=>el.style.outline='',1200); }
-}
-
-// ── Typing Indicator ──────────────────────────────────────
-let typingTimer = null;
-let isTypingActive = false;
-let typingListener = null;
-
-function typingPath(group){
-    return 'typing/' + group.replace(/\s+/g,'_');
-}
-
-function onTypingInput(){
-    if(!currentUser || !window.db) return;
-    // Set typing flag in Firebase
-    if(!isTypingActive){
-        isTypingActive = true;
-        try{
-            window.dbSet(window.dbRef(window.db, typingPath(currentGroup) + '/' + currentUser.replace(/[.#$[\]]/g,'_')), {
-                name: currentUser,
-                ts: Date.now()
-            });
-        }catch(e){}
-    }
-    // Reset the stop-typing timer (clears after 2.5s of no keystrokes)
-    clearTimeout(typingTimer);
-    typingTimer = setTimeout(stopTyping, 2500);
-}
-
-function stopTyping(){
-    if(!currentUser || !window.db) return;
-    isTypingActive = false;
-    try{
-        window.dbRemove(window.dbRef(window.db, typingPath(currentGroup) + '/' + currentUser.replace(/[.#$[\]]/g,'_')));
-    }catch(e){}
-}
-
-function listenTyping(group){
-    // Detach previous listener
-    if(typingListener){ try{ typingListener(); }catch(e){} typingListener = null; }
-    const ref = window.dbRef(window.db, typingPath(group));
-    const unsub = window.dbOnValue(ref, snap => {
-        const indicator = document.getElementById('typingIndicator');
-        const namesEl   = document.getElementById('typingNames');
-        if(!snap.exists()){
-            indicator.style.display = 'none';
-            return;
-        }
-        const entries = Object.values(snap.val()).filter(e => e.name && e.name !== currentUser);
-        // Auto-remove stale entries (older than 5s — in case tab closed without cleanup)
-        const now = Date.now();
-        const fresh = entries.filter(e => !e.ts || now - e.ts < 5000);
-        if(!fresh.length){
-            indicator.style.display = 'none';
-            return;
-        }
-        const names = fresh.map(e => e.name);
-        const label = names.length === 1
-            ? names[0] + ' is typing'
-            : names.slice(0,-1).join(', ') + ' & ' + names[names.length-1] + ' are typing';
-        namesEl.textContent = label;
-        indicator.style.display = 'flex';
-        // Scroll messages down so the indicator is visible
-        const msgs = document.getElementById('waMessages');
-        if(msgs) msgs.scrollTop = msgs.scrollHeight;
-    });
-    typingListener = unsub;
-}
-
-// Clean up typing when chat closes or user switches group
-function clearTypingOnLeave(){
-    clearTimeout(typingTimer);
-    stopTyping();
-    if(typingListener){ try{ typingListener(); }catch(e){} typingListener = null; }
-    const indicator = document.getElementById('typingIndicator');
-    if(indicator) indicator.style.display = 'none';
 }
 
 function updateCommentBadge(){ /* badge removed */ }
@@ -2399,13 +2294,12 @@ async function toggleVoiceRecording(){
         try{
             const stream = await navigator.mediaDevices.getUserMedia({audio:true});
             audioChunks = [];
-            // iOS Safari only supports audio/mp4. Android/Chrome prefer webm.
-            let mimeType = '';
-            if(MediaRecorder.isTypeSupported('audio/mp4')){ mimeType = 'audio/mp4'; }
-            else if(MediaRecorder.isTypeSupported('audio/webm;codecs=opus')){ mimeType = 'audio/webm;codecs=opus'; }
-            else if(MediaRecorder.isTypeSupported('audio/webm')){ mimeType = 'audio/webm'; }
-            else if(MediaRecorder.isTypeSupported('audio/ogg')){ mimeType = 'audio/ogg'; }
-            mediaRecorder = mimeType ? new MediaRecorder(stream, {mimeType}) : new MediaRecorder(stream);
+            // Pick best supported format
+            const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+                ? 'audio/webm;codecs=opus'
+                : MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm'
+                : 'audio/ogg';
+            mediaRecorder = new MediaRecorder(stream, {mimeType});
             mediaRecorder.ondataavailable = e => { if(e.data.size>0) audioChunks.push(e.data); };
             mediaRecorder.onstop = async () => {
                 stream.getTracks().forEach(t=>t.stop());
@@ -2429,40 +2323,26 @@ async function toggleVoiceRecording(){
 async function uploadAndSendVoice(blob){
     toast('Sending voice message… 🎙️');
     try{
+        // Upload to Cloudinary if configured, otherwise use Firebase Storage
         let audioUrl = '';
-
-        // Strategy 1: Cloudinary (free, no Firebase Storage needed)
-        if(CLOUDINARY_CLOUD_NAME && CLOUDINARY_CLOUD_NAME !== 'YOUR_CLOUD_NAME' &&
-           CLOUDINARY_UPLOAD_PRESET && CLOUDINARY_UPLOAD_PRESET !== 'YOUR_UPLOAD_PRESET'){
+        if(CLOUDINARY_CLOUD_NAME && CLOUDINARY_CLOUD_NAME !== 'YOUR_CLOUD_NAME'){
             const fd = new FormData();
-            // iOS records as mp4/aac — name the file accordingly so Cloudinary accepts it
-            const ext = blob.type.includes('mp4') || blob.type.includes('aac') ? 'mp4'
-                      : blob.type.includes('ogg') ? 'ogg' : 'webm';
-            fd.append('file', blob, 'voice.' + ext);
+            fd.append('file', blob, 'voice.webm');
             fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-            fd.append('resource_type', 'video'); // Cloudinary uses 'video' for all audio
-            const res = await fetch('https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD_NAME + '/video/upload', {method:'POST', body:fd});
-            if(!res.ok) throw new Error('Cloudinary error ' + res.status);
-            const cData = await res.json();
-            if(cData.error) throw new Error(cData.error.message);
-            audioUrl = cData.secure_url;
-
-        // Strategy 2: Base64 in Firebase RTDB (free plan — works for short clips up to ~1MB)
+            fd.append('resource_type', 'video'); // Cloudinary uses 'video' for audio
+            const res = await fetch('https://api.cloudinary.com/v1_1/'+CLOUDINARY_CLOUD_NAME+'/video/upload', {method:'POST',body:fd});
+            const data = await res.json();
+            audioUrl = data.secure_url;
+        } else if(window.storage){
+            // Firebase Storage fallback
+            const fileRef = window.storageRef(window.storage, 'voiceMessages/'+Date.now()+'_'+currentUser+'.webm');
+            const uploadTask = window.uploadBytesResumable(fileRef, blob);
+            await new Promise((res,rej) => uploadTask.on('state_changed', null, rej, res));
+            audioUrl = await window.getDownloadURL(uploadTask.snapshot.ref);
         } else {
-            toast('No Cloudinary set up — storing voice note in database (keep clips under 30s)', 'warn');
-            const reader = new FileReader();
-            audioUrl = await new Promise((res, rej) => {
-                reader.onload = () => res(reader.result); // data:audio/... base64 URI
-                reader.onerror = rej;
-                reader.readAsDataURL(blob);
-            });
-            // Warn if too big for RTDB (>900KB base64 ≈ ~675KB binary)
-            if(audioUrl.length > 900000){
-                toast('Voice clip too long for free plan — please set up Cloudinary or keep clips under 20s', 'warn');
-                return;
-            }
+            toast('Please set up Cloudinary in Host Settings to send voice messages.','warn');
+            return;
         }
-
         const data = {author:currentUser, text:'🎙️ Voice message', audioUrl, timestamp:Date.now(), isHostMsg: isHost===true};
         await window.dbSet(window.dbPush(window.dbRef(window.db, msgPath(currentGroup))), data);
         toast('Voice message sent! 🎙️');
@@ -2477,9 +2357,6 @@ async function postComment(){
     // Block non-host from posting in announce groups
     const meta = chatGroupMeta[currentGroup.replace(/\s+/g,'_')] || {};
     if(meta.type === 'announce' && !isHost){ toast('This is a broadcast channel — only the host can post here.','warn'); return; }
-    // Clear typing indicator immediately
-    clearTimeout(typingTimer);
-    stopTyping();
     const data = {author:currentUser, text, timestamp:Date.now(), isHostMsg: isHost===true};
     if(replyTo) data.replyTo = replyTo;
     try{
@@ -2566,64 +2443,14 @@ function listenWelcomePopup(){
 
 function showWelcomePopup(data){
     const overlay = document.getElementById('welcomePopupOverlay');
-    document.getElementById('wpTitle').textContent   = data.title   || '';
-    document.getElementById('wpMessage').textContent = data.message || '';
-
-    const imgEl   = document.getElementById('wpImage');
-    const vidEl   = document.getElementById('wpVideo');
-    const mediaWrap = document.getElementById('wpMediaWrap');
-    const textStrip = document.getElementById('wpTextStrip');
-
-    // Reset
-    imgEl.style.display = 'none';
-    vidEl.style.display = 'none';
-    imgEl.src = '';
-    vidEl.src = '';
-
-    if(data.imageUrl){
-        const url = data.imageUrl.trim();
-        // Detect YouTube
-        const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-        // Detect Streamable
-        const st = url.match(/streamable\.com\/([a-zA-Z0-9]+)/);
-        // Detect Google Drive
-        const gd = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
-
-        if(yt){
-            vidEl.src = 'https://www.youtube-nocookie.com/embed/' + yt[1] + '?autoplay=1&rel=0';
-            vidEl.style.display = 'block';
-            mediaWrap.style.display = 'flex';
-        } else if(st){
-            vidEl.src = 'https://streamable.com/e/' + st[1] + '?autoplay=1';
-            vidEl.style.display = 'block';
-            mediaWrap.style.display = 'flex';
-        } else if(gd){
-            vidEl.src = 'https://drive.google.com/file/d/' + gd[1] + '/preview';
-            vidEl.style.display = 'block';
-            mediaWrap.style.display = 'flex';
-        } else {
-            // Plain image / Cloudinary / anything else
-            imgEl.src = url;
-            imgEl.style.display = 'block';
-            mediaWrap.style.display = 'flex';
-        }
-    } else {
-        // No media — collapse media area, centre text strip
-        mediaWrap.style.display = 'none';
-        textStrip.style.paddingTop = '48px';
-    }
-
-    // If there's no title and no message, collapse the text strip
-    if(!data.title && !data.message){
-        textStrip.style.display = 'none';
-    } else {
-        textStrip.style.display = '';
-        textStrip.style.paddingTop = '';
-    }
-
-    overlay.style.display = 'flex';
-    overlay.dataset.updatedAt = data.updatedAt || '0';
-    overlay.dataset.days = data.days || '0';
+    document.getElementById('wpTitle').textContent = data.title||'';
+    document.getElementById('wpMessage').textContent = data.message||'';
+    const imgEl = document.getElementById('wpImage');
+    if(data.imageUrl){ imgEl.src=data.imageUrl; imgEl.style.display='block'; }
+    else imgEl.style.display='none';
+    overlay.style.display='flex';
+    overlay.dataset.updatedAt = data.updatedAt||'0';
+    overlay.dataset.days = data.days||'0';
 }
 
 function dismissWelcomePopup(){
@@ -2632,9 +2459,6 @@ function dismissWelcomePopup(){
     const days = parseInt(overlay.dataset.days||'0');
     if(days > 0) localStorage.setItem(key, String(Date.now()));
     else sessionStorage.setItem(key, '1');
-    // Stop any playing video
-    const vidEl = document.getElementById('wpVideo');
-    if(vidEl) vidEl.src = '';
     overlay.style.display='none';
 }
 
@@ -3225,20 +3049,6 @@ function doSignIn(name){
     }
     waitForFirebase(()=>{ registerOnlineUser(); loadContent(); });
     checkBirthdays();
-    updateUserNamePill(name);
-}
-
-function updateUserNamePill(name){
-    const pill = document.getElementById('userNamePill');
-    const pillText = document.getElementById('userNamePillText');
-    const pillAvatar = document.getElementById('userNamePillAvatar');
-    if(!pill || !name) return;
-    const initials = name.split(' ').map(w=>w[0]||'').join('').toUpperCase().slice(0,2) || name[0].toUpperCase();
-    const colorIdx = name.split('').reduce((a,c)=>a+c.charCodeAt(0),0) % AVATAR_COLORS.length;
-    pillAvatar.style.background = AVATAR_COLORS[colorIdx];
-    pillAvatar.textContent = initials;
-    pillText.textContent = name;
-    pill.classList.remove('hidden');
 }
 
 // ══════════════════════════════════════════════════════════
@@ -3256,6 +3066,7 @@ function switchFeatureTab(panel, btn){
     if(panel === 'calendar') renderCalendar();
     if(panel === 'recipes') renderRecipes();
     if(panel === 'poll') renderPolls();
+    if(panel === 'updates') initUpdatesPanel();
 }
 
 // ══════════════════════════════════════════════════════════
@@ -3795,383 +3606,195 @@ function spinWheel(){
 }
 
 // ══════════════════════════════════════════════════════════
-//  PUSH NOTIFICATION SYSTEM
+//  Image Fullscreen Lightbox ─────────────────────────────
+
+function openImgLightbox(url, event){
+    if(event){ event.stopPropagation(); event.preventDefault(); }
+    const lb = document.getElementById('imgLightbox');
+    const img = document.getElementById('imgLightboxImg');
+    img.src = url;
+    lb.classList.add('open');
+    // Prevent body scroll while lightbox is open
+    document.body.style.overflow = 'hidden';
+}
+
+function closeImgLightbox(event){
+    // Only close if clicking the backdrop (not the image itself)
+    if(event && event.target === document.getElementById('imgLightboxImg')) return;
+    const lb = document.getElementById('imgLightbox');
+    lb.classList.remove('open');
+    document.getElementById('imgLightboxImg').src = '';
+    document.body.style.overflow = '';
+}
+
+// Close lightbox on Escape key
+document.addEventListener('keydown', e => {
+    if(e.key === 'Escape') closeImgLightbox();
+});
+
 // ══════════════════════════════════════════════════════════
+//  App Updates ───────────────────────────────────────────
 
-// ── Service Worker (inline blob) ──────────────────────────
-const SW_CODE = `
-self.addEventListener('push', e => {
-    const data = e.data ? e.data.json() : {};
-    e.waitUntil(self.registration.showNotification(data.title || 'Family Hub 🏠', {
-        body: data.body || '',
-        icon: data.icon || '',
-        badge: '',
-        tag: data.tag || 'family-hub',
-        renotify: true,
-        vibrate: [200, 100, 200],
-        data: { url: data.url || self.location.origin }
-    }));
-});
-self.addEventListener('notificationclick', e => {
-    e.notification.close();
-    e.waitUntil(clients.openWindow(e.notification.data.url || self.location.origin));
-});
-self.addEventListener('message', e => {
-    if(e.data && e.data.type === 'SHOW_NOTIF'){
-        const d = e.data;
-        self.registration.showNotification(d.title, {
-            body: d.body,
-            icon: d.icon || '',
-            tag: d.tag || 'fh-' + Date.now(),
-            renotify: true,
-            vibrate: [180, 80, 180],
-            data: { url: d.url || self.location.origin }
-        });
-    }
-});
-`;
+function initUpdatesPanel(){
+    // Show host form if host
+    document.getElementById('hostUpdateForm').style.display = isHost ? 'block' : 'none';
+    // Listen for updates from Firebase
+    window.dbOnValue(window.dbRef(window.db,'appUpdates'), snap=>{
+        const latestCard = document.getElementById('latestUpdateCard');
+        const noUpdate   = document.getElementById('noUpdateYet');
+        const historyWrap= document.getElementById('updateHistoryWrap');
+        const historyList= document.getElementById('updateHistoryList');
 
-let swRegistration = null;
-
-async function registerServiceWorker() {
-    if (!('serviceWorker' in navigator)) return null;
-    try {
-        const blob = new Blob([SW_CODE], { type: 'application/javascript' });
-        const swUrl = URL.createObjectURL(blob);
-        swRegistration = await navigator.serviceWorker.register(swUrl, { scope: './' });
-        return swRegistration;
-    } catch(e) {
-        console.warn('SW registration failed:', e);
-        return null;
-    }
-}
-
-// ── Notification permission & subscription ────────────────
-let notifPermission = Notification.permission || 'default';
-
-function showNotifBanner() {
-    // Don't show if already granted, denied, or dismissed this session
-    if (notifPermission === 'granted') return;
-    if (notifPermission === 'denied') return;
-    if (sessionStorage.getItem('notifBannerDismissed')) return;
-    // Show after 8 seconds so it's not the first thing users see
-    setTimeout(() => {
-        const banner = document.getElementById('notifBanner');
-        if (banner) banner.classList.add('show');
-    }, 8000);
-}
-
-async function requestNotifPermission() {
-    const banner = document.getElementById('notifBanner');
-    if (banner) banner.classList.remove('show');
-    try {
-        const result = await Notification.requestPermission();
-        notifPermission = result;
-        if (result === 'granted') {
-            toast('🔔 Notifications enabled! You\'ll hear about new messages & content.');
-            await registerServiceWorker();
-            await saveNotifToken();
-            playNotifSound(); // play a preview sound
-        } else {
-            toast('Notifications blocked — you can enable them in your browser settings.', 'warn');
+        if(!snap.exists()){
+            latestCard.style.display='none';
+            noUpdate.style.display='block';
+            historyWrap.style.display='none';
+            return;
         }
-    } catch(e) {
-        toast('Could not request notification permission.', 'warn');
-    }
-}
 
-function dismissNotifBanner() {
-    const banner = document.getElementById('notifBanner');
-    if (banner) banner.classList.remove('show');
-    sessionStorage.setItem('notifBannerDismissed', '1');
-}
+        const raw = snap.val();
+        const entries = Object.values(raw).sort((a,b)=>b.timestamp-a.timestamp);
+        const latest  = entries[0];
 
-// Save device token to Firebase so host can count subscribers
-async function saveNotifToken() {
-    if (!window.db || !window.dbRef || !window.dbSet) return;
-    const deviceId = getDeviceId();
-    const name = currentUser || localStorage.getItem('userName') || 'Unknown';
-    try {
-        await window.dbSet(window.dbRef(window.db, 'notifTokens/' + deviceId), {
-            name,
-            deviceId,
-            permission: 'granted',
-            updatedAt: Date.now(),
-            ua: navigator.userAgent.slice(0, 100)
-        });
-    } catch(e) {}
-}
+        // Show latest card
+        noUpdate.style.display='none';
+        latestCard.style.display='block';
+        document.getElementById('latestVersionLabel').textContent = latest.version || 'Latest Update';
+        document.getElementById('latestVersionDate').textContent  = '📅 ' + new Date(latest.timestamp).toLocaleString();
+        document.getElementById('latestVersionNotes').textContent = latest.notes || 'No notes provided.';
+        document.getElementById('latestDownloadBtn').href = latest.url || '#';
 
-async function removeNotifToken() {
-    if (!window.db) return;
-    const deviceId = getDeviceId();
-    try { await window.dbRemove(window.dbRef(window.db, 'notifTokens/' + deviceId)); } catch(e) {}
-}
+        // NEW badge — if posted in last 48h
+        const isNew = (Date.now() - latest.timestamp) < 48*60*60*1000;
+        document.getElementById('newBadge').style.display = isNew ? 'inline-flex' : 'none';
 
-// ── Notification Sound (Web Audio API) ───────────────────
-function playNotifSound() {
-    try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        // Two-tone chime: higher then lower
-        [[880, 0, 0.12], [660, 0.15, 0.18]].forEach(([freq, start, dur]) => {
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain); gain.connect(ctx.destination);
-            osc.type = 'sine';
-            osc.frequency.value = freq;
-            gain.gain.setValueAtTime(0, ctx.currentTime + start);
-            gain.gain.linearRampToValueAtTime(0.35, ctx.currentTime + start + 0.02);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
-            osc.start(ctx.currentTime + start);
-            osc.stop(ctx.currentTime + start + dur + 0.05);
-        });
-    } catch(e) {}
-}
-
-// ── Show an in-app + native notification ─────────────────
-function showNotification(title, body, tag) {
-    // Always play sound
-    playNotifSound();
-
-    // In-app toast (always visible regardless of permission)
-    toast('🔔 ' + title + (body ? ': ' + body : ''));
-
-    // Native notification via Service Worker (if granted + SW ready)
-    if (notifPermission === 'granted') {
-        if (swRegistration && swRegistration.active) {
-            swRegistration.active.postMessage({ type: 'SHOW_NOTIF', title, body, tag: tag || 'fh' });
-        } else {
-            // Fallback: direct Notification API
-            try {
-                new Notification(title, { body, tag: tag || 'fh', icon: '' });
-            } catch(e) {}
-        }
-    }
-}
-
-// ── Notification settings (host-controlled, stored in Firebase) ──
-let notifSettings = { chat: false, announce: true, content: true };
-
-async function loadNotifSettings() {
-    if (!window.db) return;
-    try {
-        const snap = await window.dbGet(window.dbRef(window.db, 'notifSettings'));
-        if (snap.exists()) notifSettings = { ...notifSettings, ...snap.val() };
-    } catch(e) {}
-}
-
-async function saveNotifSettings() {
-    if (!isHost || !window.db) return;
-    notifSettings.chat    = document.getElementById('notifToggleChat')?.checked    ?? false;
-    notifSettings.announce= document.getElementById('notifToggleAnnounce')?.checked?? true;
-    notifSettings.content = document.getElementById('notifToggleContent')?.checked ?? true;
-    try {
-        await window.dbSet(window.dbRef(window.db, 'notifSettings'), notifSettings);
-        toast('Notification settings saved ✓');
-    } catch(e) { toast('Failed to save', 'danger'); }
-}
-
-// ── Load Notify panel (called when host opens Notify tab) ─
-async function loadNotifyPanel() {
-    // Sync toggles from Firebase
-    await loadNotifSettings();
-    const tc = document.getElementById('notifToggleChat');
-    const ta = document.getElementById('notifToggleAnnounce');
-    const tn = document.getElementById('notifToggleContent');
-    if (tc) tc.checked = !!notifSettings.chat;
-    if (ta) ta.checked = notifSettings.announce !== false;
-    if (tn) tn.checked = notifSettings.content !== false;
-
-    // Count subscribers
-    const statsEl = document.getElementById('notifSubscriberStats');
-    if (statsEl && window.db) {
-        try {
-            const snap = await window.dbGet(window.dbRef(window.db, 'notifTokens'));
-            const count = snap.exists() ? Object.keys(snap.val()).length : 0;
-            statsEl.textContent = '📱 ' + count + ' device' + (count !== 1 ? 's' : '') + ' have notifications enabled';
-        } catch(e) { statsEl.textContent = '📱 Unable to load subscriber count'; }
-    }
-}
-
-// ── Host: send a custom push notification to all ──────────
-async function sendHostPushNotification() {
-    const title = (document.getElementById('notifTitle')?.value || '').trim() || 'Message from Host 👑';
-    const body  = (document.getElementById('notifBody')?.value  || '').trim();
-    if (!body) { toast('Write a message first', 'warn'); return; }
-
-    try {
-        // Write to Firebase — all open clients listen and show notification
-        await window.dbSet(window.dbRef(window.db, 'pushNotif'), {
-            title,
-            body,
-            sentBy: currentUser || 'Host',
-            timestamp: Date.now(),
-            type: 'manual'
-        });
-        document.getElementById('notifTitle').value = '';
-        document.getElementById('notifBody').value = '';
-        toast('Notification sent to all family members! 🔔');
-    } catch(e) { toast('Failed to send: ' + e.message, 'danger'); }
-}
-
-// ── Listen for push notifications written to Firebase ─────
-let lastNotifTimestamp = Date.now(); // ignore old ones on boot
-
-function listenPushNotifications() {
-    if (!window.db) return;
-    window.dbOnValue(window.dbRef(window.db, 'pushNotif'), snap => {
-        if (!snap.exists()) return;
-        const d = snap.val();
-        if (!d.timestamp || d.timestamp <= lastNotifTimestamp) return;
-        lastNotifTimestamp = d.timestamp;
-        // Don't notify the host who sent it
-        if (isHost && d.type === 'manual') return;
-        showNotification(d.title || 'Family Hub 🏠', d.body || '', 'push-manual');
-    });
-}
-
-// ── Listen for announcements → notify if setting on ───────
-let lastAnnouncementTs = Date.now();
-function listenAnnouncementsWithNotif() {
-    if (!window.db) return;
-    window.dbOnValue(window.dbRef(window.db, 'announcement'), snap => {
-        const b = document.getElementById('announcementBanner');
-        if (snap.exists()) {
-            const d = snap.val();
-            document.getElementById('announcementText').textContent = d.text;
-            b.classList.add('active');
-            // Notify if new and setting is on
-            if (d.timestamp && d.timestamp > lastAnnouncementTs && notifSettings.announce !== false && !isHost) {
-                lastAnnouncementTs = d.timestamp;
-                showNotification('📢 Announcement', d.text, 'announcement');
-            } else if (d.timestamp) {
-                lastAnnouncementTs = d.timestamp;
+        // Also show red dot on the Updates tab
+        const tab = document.getElementById('updatesTab');
+        if(isNew && tab && !tab.classList.contains('active')){
+            tab.style.position='relative';
+            if(!tab.querySelector('.update-dot')){
+                const dot=document.createElement('span');
+                dot.className='update-dot';
+                dot.style.cssText='position:absolute;top:-4px;right:-4px;width:9px;height:9px;background:var(--danger);border-radius:50%;border:2px solid var(--bg);';
+                tab.appendChild(dot);
             }
         } else {
-            b.classList.remove('active');
+            const dot=tab&&tab.querySelector('.update-dot');
+            if(dot) dot.remove();
+        }
+
+        // Version history (all except latest)
+        if(entries.length > 1){
+            historyWrap.style.display='block';
+            historyList.innerHTML = entries.slice(1).map(e=>`
+                <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;display:flex;align-items:center;gap:12px;">
+                    <div style="flex:1;">
+                        <div style="font-size:13px;font-weight:700;color:var(--text);">${esc(e.version||'Update')}</div>
+                        <div style="font-size:11px;color:var(--muted);margin-top:2px;">${new Date(e.timestamp).toLocaleDateString()}</div>
+                        ${e.notes?`<div style="font-size:12px;color:var(--muted);margin-top:4px;">${esc(e.notes)}</div>`:''}
+                    </div>
+                    <a href="${esc(e.url||'#')}" target="_blank" style="flex-shrink:0;padding:7px 13px;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;font-size:12px;font-weight:700;color:var(--accent);text-decoration:none;">⬇ Get</a>
+                </div>
+            `).join('');
+        } else {
+            historyWrap.style.display='none';
         }
     });
 }
 
-// ── Listen for new chat messages → notify if setting on ───
-let listenedChatGroups = new Set();
-let lastChatTs = {};
+// Track selected APK file
+let _selectedApkFile = null;
 
-function listenChatGroupForNotif(group) {
-    const key = group.replace(/\s+/g, '_');
-    if (listenedChatGroups.has(key)) return;
-    listenedChatGroups.add(key);
-    lastChatTs[key] = Date.now();
+function onApkFileSelected(input){
+    const file = input.files[0];
+    if(!file) return;
+    _selectedApkFile = file;
+    const nameEl = document.getElementById('apkFileName');
+    nameEl.textContent = '📦 ' + file.name + ' (' + (file.size/1024/1024).toFixed(1) + ' MB)';
+    nameEl.style.display = 'block';
+    // Clear URL field since file takes priority
+    document.getElementById('updateUrlInput').value = '';
+}
 
-    window.dbOnValue(window.dbRef(window.db, 'messages/' + key), snap => {
-        if (!snap.exists() || !notifSettings.chat || isHost) return;
-        const msgs = snap.val();
-        const entries = Object.values(msgs);
-        entries.forEach(msg => {
-            if (msg.timestamp > (lastChatTs[key] || 0) && msg.author !== currentUser) {
-                lastChatTs[key] = msg.timestamp;
-                showNotification(
-                    '💬 ' + (msg.author || 'Someone') + ' in ' + group,
-                    (msg.text || '🎙️ Voice message').slice(0, 80),
-                    'chat-' + key
+function handleApkDrop(event){
+    event.preventDefault();
+    const file = event.dataTransfer.files[0];
+    if(!file) return;
+    if(!file.name.endsWith('.apk') && file.type !== 'application/vnd.android.package-archive'){
+        toast('Please drop an APK file (.apk)','danger'); return;
+    }
+    _selectedApkFile = file;
+    const nameEl = document.getElementById('apkFileName');
+    nameEl.textContent = '📦 ' + file.name + ' (' + (file.size/1024/1024).toFixed(1) + ' MB)';
+    nameEl.style.display = 'block';
+    document.getElementById('apkDropZone').style.borderColor = 'var(--accent)';
+    document.getElementById('updateUrlInput').value = '';
+}
+
+async function postAppUpdate(){
+    const version = document.getElementById('updateVersionInput').value.trim();
+    const notes   = document.getElementById('updateNotesInput').value.trim();
+    const pastedUrl = document.getElementById('updateUrlInput').value.trim();
+
+    if(!version){ toast('Please enter a version name','danger'); return; }
+    if(!_selectedApkFile && !pastedUrl){ toast('Please upload an APK file or paste a link','danger'); return; }
+
+    const btn = document.getElementById('postUpdateBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Working…';
+
+    try{
+        let finalUrl = pastedUrl;
+
+        // Upload to Firebase Storage if a file was picked
+        if(_selectedApkFile){
+            const safeVersion = version.replace(/[^a-zA-Z0-9._-]/g,'_');
+            const fileName = 'apk_updates/' + safeVersion + '_' + Date.now() + '.apk';
+            const fRef = window.storageRef(window.storage, fileName);
+            const task = window.uploadBytesResumable(fRef, _selectedApkFile);
+
+            // Show progress bar
+            document.getElementById('apkUploadProgress').style.display = 'block';
+
+            finalUrl = await new Promise((resolve, reject) => {
+                task.on('state_changed',
+                    snap => {
+                        const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
+                        document.getElementById('apkProgressBar').style.width = pct + '%';
+                        document.getElementById('apkProgressPct').textContent = pct + '%';
+                        document.getElementById('apkUploadStatus').textContent = pct < 100 ? 'Uploading to Firebase…' : 'Finalising…';
+                    },
+                    err => reject(err),
+                    async () => {
+                        const url = await window.getDownloadURL(task.snapshot.ref);
+                        resolve(url);
+                    }
                 );
-            }
-        });
-    });
-}
-
-// ── Listen for new card content → notify if setting on ────
-let lastCardUpdateTs = Date.now();
-
-function listenCardsForNotif() {
-    if (!window.db) return;
-    for (let s = 0; s < 5; s++) {
-        window.dbOnValue(window.dbRef(window.db, 'cards/section' + s), snap => {
-            if (!snap.exists() || !notifSettings.content || isHost) return;
-            const cards = snap.val();
-            Object.values(cards).forEach(c => {
-                if (c.updatedAt && c.updatedAt > lastCardUpdateTs) {
-                    lastCardUpdateTs = c.updatedAt;
-                    showNotification(
-                        '🆕 New content added!',
-                        (c.name || 'A card') + ' was updated by the host.',
-                        'content-update'
-                    );
-                }
             });
-        });
-    }
-}
-
-// ── Boot: initialise the notification system ───────────────
-async function initNotifications() {
-    // Register SW early
-    await registerServiceWorker();
-    // Load host's settings from Firebase
-    await loadNotifSettings();
-    // If already granted, save token and start listeners
-    if (Notification.permission === 'granted') {
-        notifPermission = 'granted';
-        await saveNotifToken();
-        listenPushNotifications();
-        listenAnnouncementsWithNotif();
-        listenCardsForNotif();
-        // Listen on all known chat groups
-        if (Array.isArray(chatGroups)) chatGroups.forEach(g => listenChatGroupForNotif(g));
-    } else {
-        // Show banner for users who haven't decided
-        showNotifBanner();
-        // Still listen for announcements (they show as toasts)
-        listenAnnouncementsWithNotif();
-    }
-}
-
-// Patch listenAnnouncements to use the new version
-function listenAnnouncements() {
-    listenAnnouncementsWithNotif();
-}
-
-// Patch loadChatGroups to also wire notif listeners per group
-const _origLoadChatGroups = loadChatGroups;
-function loadChatGroupsAndNotif() {
-    _origLoadChatGroups();
-    if (notifPermission === 'granted') {
-        setTimeout(() => {
-            if (Array.isArray(chatGroups)) chatGroups.forEach(g => listenChatGroupForNotif(g));
-        }, 2000);
-    }
-}
-
-// Patch sendAnnouncement so it also fires a push notification
-async function sendAnnouncement() {
-    const msg = document.getElementById('announcementInput').value.trim();
-    if (!msg) { toast('Type a message first', 'warn'); return; }
-    try {
-        await window.dbSet(window.dbRef(window.db, 'announcement'), { text: msg, timestamp: Date.now() });
-        // Also write to pushNotif so all devices get a push
-        if (notifSettings.announce !== false) {
-            await window.dbSet(window.dbRef(window.db, 'pushNotif'), {
-                title: '📢 Announcement from Host',
-                body: msg,
-                sentBy: currentUser || 'Host',
-                timestamp: Date.now(),
-                type: 'announcement'
-            });
+            document.getElementById('apkUploadProgress').style.display = 'none';
         }
-        toast('Sent!');
-    } catch(e) { toast('Failed', 'danger'); }
-}
 
-// Patch saveCard to stamp updatedAt for content-change notifications — done inline above
+        const entry = { version, url: finalUrl, notes, timestamp: Date.now(), postedBy: currentUser||'Host',
+                        uploadedToFirebase: !!_selectedApkFile };
+        await window.dbPush(window.dbRef(window.db,'appUpdates'), entry);
 
-// ── Kick off after Firebase is ready ──────────────────────
-// We hook initNotifications into the existing boot flow via a flag.
-// doSignIn already exists — we patch it after definition (see below).
-let _notifBootDone = false;
-function _bootNotificationsOnce(){
-    if(_notifBootDone) return;
-    _notifBootDone = true;
-    setTimeout(() => initNotifications(), 2500);
+        // Reset form
+        document.getElementById('updateVersionInput').value = '';
+        document.getElementById('updateNotesInput').value   = '';
+        document.getElementById('updateUrlInput').value     = '';
+        document.getElementById('apkFileName').style.display = 'none';
+        document.getElementById('apkFileName').textContent  = '';
+        document.getElementById('apkDropZone').style.borderColor = 'var(--border)';
+        _selectedApkFile = null;
+
+        toast('✅ Update posted! Family will see it now.','success');
+    } catch(e){
+        console.error(e);
+        toast('Upload failed: ' + (e.message||e.code||e), 'danger');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '📲 Post Update for Family';
+    }
 }
 
 // ══════════════════════════════════════════════════════════
@@ -4207,6 +3830,11 @@ window.openStreamableLightbox=openStreamableLightbox;
 window.openVideoChat=openVideoChat;
 window.openVideoLightbox=openVideoLightbox;
 window.postComment=postComment;
+window.postAppUpdate=postAppUpdate;
+window.openImgLightbox=openImgLightbox;
+window.closeImgLightbox=closeImgLightbox;
+window.onApkFileSelected=onApkFileSelected;
+window.handleApkDrop=handleApkDrop;
 window.removeHostMemory=removeHostMemory;
 window.submitVerify=submitVerify;
 window.sendAccessRequest=sendAccessRequest;
@@ -4235,51 +3863,29 @@ window.clearWelcomePopup=clearWelcomePopup;
 window.dismissWelcomePopup=dismissWelcomePopup;
 window.loadWelcomePopupEditor=loadWelcomePopupEditor;
 window.joinVideoRoom=typeof joinVideoRoom!=='undefined'?joinVideoRoom:undefined;
-
-// Notification system
-window.requestNotifPermission=requestNotifPermission;
-window.dismissNotifBanner=dismissNotifBanner;
-window.sendHostPushNotification=sendHostPushNotification;
-window.saveNotifSettings=saveNotifSettings;
-window.loadNotifyPanel=loadNotifyPanel;
-window.sendAnnouncement=sendAnnouncement;
-
-// Typing indicator
-window.onTypingInput=onTypingInput;
-window.deleteChatGroup=deleteChatGroup;
-window.updateUserNamePill=updateUserNamePill;
-
-// Restore name pill if user was already logged in
-(function(){
-    const savedName = localStorage.getItem('userName');
-    if(savedName) setTimeout(()=>updateUserNamePill(savedName), 300);
-})();
-
-// Patch doSignIn to boot notifications after login
-(function(){
-    const _orig = doSignIn;
-    doSignIn = function(name){
-        _orig(name);
-        _bootNotificationsOnce();
-    };
-    window.signIn = signIn; // re-expose since signIn calls doSignIn
-})();
 </script>
 <!-- New Group Modal -->
 <div class="modal" id="newGroupModal">
     <div class="modal-content">
         <h2>➕ New Chat Group</h2>
         <label>Group Name</label>
-        <input type="text" id="newGroupName" placeholder="e.g. Women's Circle, Plans, Photos…" maxlength="30">
+        <input type="text" id="newGroupName" placeholder="e.g. Women's Circle, Kids, Plans…" maxlength="30">
         <label>Group Type</label>
         <select id="newGroupType" onchange="document.getElementById('newGroupMembersWrap').style.display=this.value==='private'?'block':'none';if(this.value==='private')renderMemberCheckboxes();">
             <option value="public">💬 Public — everyone can chat</option>
             <option value="announce">📢 Announcements — only host can post</option>
             <option value="private">🔒 Private — selected members only</option>
         </select>
-        <div id="newGroupMembersWrap" style="display:none;margin-top:12px;">
-            <label style="margin-bottom:8px;">Select members who can see &amp; chat in this group</label>
-            <div id="newGroupMemberList" style="background:var(--bg);border:2px solid var(--border);border-radius:var(--radius);padding:10px;max-height:200px;overflow-y:auto;"></div>
+        <div id="newGroupMembersWrap" style="display:none;margin-top:14px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                <label style="margin:0;font-size:13px;font-weight:700;">Who can see this group?</label>
+                <div style="display:flex;gap:6px;">
+                    <button type="button" onclick="document.querySelectorAll('#newGroupMemberList input').forEach(c=>c.checked=true)" style="background:transparent;border:1px solid var(--border);border-radius:7px;padding:3px 9px;font-size:11px;font-weight:700;color:var(--accent);cursor:pointer;font-family:inherit;">All</button>
+                    <button type="button" onclick="document.querySelectorAll('#newGroupMemberList input').forEach(c=>c.checked=false)" style="background:transparent;border:1px solid var(--border);border-radius:7px;padding:3px 9px;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit;">None</button>
+                </div>
+            </div>
+            <div id="newGroupMemberList" style="background:var(--bg);border:2px solid var(--border);border-radius:var(--radius);padding:8px 10px;max-height:240px;overflow-y:auto;"></div>
+            <p style="font-size:11px;color:var(--muted);margin-top:6px;">Only people you select will see this group in their chat.</p>
         </div>
         <div class="modal-buttons">
             <button class="btn btn-ghost" onclick="closeModal('newGroupModal')">Cancel</button>
@@ -4288,34 +3894,42 @@ window.updateUserNamePill=updateUserNamePill;
     </div>
 </div>
 
-<!-- Push Notification Permission Banner -->
-<div class="notif-banner" id="notifBanner">
-    <span style="font-size:24px;">🔔</span>
-    <div class="notif-banner-text">Enable notifications to get alerts from the host — messages, announcements & new content!</div>
-    <button class="notif-banner-btn" onclick="requestNotifPermission()">Enable 🔔</button>
-    <button class="notif-banner-dismiss" onclick="dismissNotifBanner()">✕</button>
-</div>
-
-<!-- Welcome Popup Overlay — full screen -->
-<div id="welcomePopupOverlay" style="display:none;position:fixed;inset:0;z-index:99998;background:#000;flex-direction:column;">
-    <!-- Media area — fills all available space above the text strip -->
-    <div id="wpMediaWrap" style="flex:1;min-height:0;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#000;">
-        <img id="wpImage" src="" alt="" style="display:none;width:100%;height:100%;object-fit:contain;">
-        <iframe id="wpVideo" src="" frameborder="0" allowfullscreen allow="autoplay;encrypted-media"
-            style="display:none;width:100%;height:100%;border:none;"></iframe>
-    </div>
-    <!-- Text + dismiss strip pinned to bottom -->
-    <div id="wpTextStrip" style="flex-shrink:0;background:var(--surface);padding:20px 22px 28px;box-shadow:0 -4px 24px rgba(0,0,0,.18);">
-        <div id="wpTitle" style="font-family:'Fredoka One',cursive;font-size:22px;color:var(--accent);margin-bottom:6px;letter-spacing:.5px;"></div>
-        <div id="wpMessage" style="font-size:14px;color:var(--text);font-weight:600;line-height:1.55;margin-bottom:18px;"></div>
-        <button onclick="dismissWelcomePopup()" style="width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:15px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;transition:all .2s;box-shadow:0 4px 20px rgba(232,131,74,.3);">Got it! 👍</button>
+<!-- Welcome Popup Overlay -->
+<div id="welcomePopupOverlay" style="display:none;position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px;">
+    <div style="background:var(--surface);border-radius:var(--radius-lg);border:2px solid var(--border);max-width:480px;width:100%;box-shadow:0 0 60px rgba(232,131,74,.2),0 24px 60px rgba(0,0,0,.3);animation:slideUp .4s cubic-bezier(.22,1,.36,1);overflow:hidden;">
+        <img id="wpImage" src="" alt="" style="display:none;width:100%;max-height:240px;object-fit:cover;">
+        <div style="padding:28px 26px 24px;">
+            <div style="font-family:'Fredoka One',cursive;font-size:26px;color:var(--accent);margin-bottom:8px;letter-spacing:.5px;" id="wpTitle"></div>
+            <div style="font-size:15px;color:var(--text);font-weight:600;line-height:1.6;margin-bottom:22px;" id="wpMessage"></div>
+            <button onclick="dismissWelcomePopup()" style="width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:15px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;transition:all .2s;box-shadow:0 4px 20px rgba(232,131,74,.3);">Got it! 👍</button>
+        </div>
     </div>
 </div>
+<!-- Image Fullscreen Lightbox -->
+<div class="img-lightbox" id="imgLightbox" onclick="closeImgLightbox(event)">
+    <button class="img-lightbox-close" onclick="closeImgLightbox()">✕</button>
+    <img class="img-lightbox-img" id="imgLightboxImg" src="" alt="">
+    <div class="img-lightbox-caption" id="imgLightboxCaption"></div>
+</div>
 
-<!-- User name pill — bottom right -->
-<div class="user-name-pill hidden" id="userNamePill" onclick="openComments()" title="You are signed in as this name">
-    <div class="user-name-pill-avatar" id="userNamePillAvatar">?</div>
-    <span id="userNamePillText">You</span>
+<!-- Bottom Action Bar -->
+<div class="bottom-bar" id="bottomBar">
+    <button class="bottom-bar-btn" onclick="openSearch()" title="Search">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span>Search</span>
+    </button>
+    <button class="bottom-bar-btn" onclick="openComments()" title="Chat" id="chatNavIcon">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span>Chat</span>
+    </button>
+    <button class="bottom-bar-btn" onclick="openVideoChat()" title="Video Chat">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+        <span>Video</span>
+    </button>
+    <button class="bottom-bar-btn" onclick="showHostLogin()" title="Host / Settings" id="hostNavIcon">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span>Host</span>
+    </button>
 </div>
 
 </body>
