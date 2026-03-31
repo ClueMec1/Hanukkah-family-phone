@@ -2119,11 +2119,14 @@ function openSettings(){
     document.getElementById('settingsModal').classList.add('active');
     loadOnlineUsers();
     loadBlockedDevices();
-    // Load access requests if host
+    // Load access requests if host (from Firebase)
     if(isHost){
         window.dbGet(window.dbRef(window.db,'accessRequests')).then(snap=>{
             renderAccessRequests(snap.exists()?snap.val():{});
-        }).catch(()=>{});
+        }).catch(()=>{
+            // Fallback to localStorage
+            renderAccessRequests(JSON.parse(localStorage.getItem('accessRequests')||'{}'));
+        });
     }
     document.getElementById('hubNameInput').value=document.getElementById('appName').textContent;
     document.getElementById('meetLinkInput').value=meetLink||'';
@@ -3071,11 +3074,17 @@ async function sendAccessRequest(){
         requestedAt: Date.now(),
         status: 'pending'
     };
-    // Store request in localStorage (shared across tabs)
-    const requests = JSON.parse(localStorage.getItem('accessRequests') || '{}');
-    requests[deviceId] = requestData;
-    localStorage.setItem('accessRequests', JSON.stringify(requests));
-    
+
+    // Store request in Firebase so the host sees it on their device
+    try {
+        await window.dbSet(window.dbRef(window.db, 'accessRequests/' + deviceId), requestData);
+    } catch(e) {
+        // Fallback to localStorage if Firebase not ready
+        const requests = JSON.parse(localStorage.getItem('accessRequests') || '{}');
+        requests[deviceId] = requestData;
+        localStorage.setItem('accessRequests', JSON.stringify(requests));
+    }
+
     localStorage.setItem('pendingName', name);
     localStorage.setItem('pendingPhone', phone);
     showWaitingScreen(name, phone);
@@ -3099,6 +3108,36 @@ function startApprovalPolling(){
 
 async function checkApprovalStatus(){
     const deviceId = getDeviceId();
+    try {
+        // Check Firebase for approval status (works across devices)
+        const snap = await window.dbGet(window.dbRef(window.db, 'accessRequests/' + deviceId));
+        if(snap.exists()){
+            const data = snap.val();
+            if(data.status === 'approved'){
+                clearInterval(approvalPollInterval);
+                localStorage.setItem(DEVICE_KEY, 'yes');
+                localStorage.removeItem('pendingName');
+                localStorage.removeItem('pendingPhone');
+                document.getElementById('verifyOverlay').classList.add('hidden');
+                toast('Access approved! Welcome to Family Hub 🎉');
+                renderSignIn();
+                loadContent(); loadCommentsCount(); listenAnnouncements(); checkBirthdays();
+                return;
+            }
+            if(data.status === 'denied'){
+                clearInterval(approvalPollInterval);
+                localStorage.removeItem('pendingName');
+                localStorage.removeItem('pendingPhone');
+                document.getElementById('verifyStep3').style.display = 'none';
+                document.getElementById('verifyStep1').style.display = 'block';
+                toast('Your request was not approved. Please contact the host.','warn');
+                return;
+            }
+        }
+    } catch(e) {
+        console.log('Firebase check failed, falling back to localStorage', e);
+    }
+    // Fallback: also check localStorage (same-device approvals)
     const approved = JSON.parse(localStorage.getItem('approvedDevices') || '{}');
     if(approved[deviceId]){
         clearInterval(approvalPollInterval);
@@ -3126,17 +3165,17 @@ let requestsPollInterval = null;
 
 function listenAccessRequests(){
     if(!isHost) return;
-    // Poll localStorage every 2 seconds for new requests
+    // Use Firebase real-time listener so requests from ANY device show up instantly
     if(requestsPollInterval) clearInterval(requestsPollInterval);
-    requestsPollInterval = setInterval(()=>{
-        const requests = JSON.parse(localStorage.getItem('accessRequests') || '{}');
+    window.dbOnValue(window.dbRef(window.db, 'accessRequests'), snap=>{
+        const requests = snap.exists() ? snap.val() : {};
         const pending = Object.values(requests).filter(r => r.status === 'pending');
         updateRequestBadge(pending.length);
         // If settings panel is open, refresh the list
         if(document.getElementById('settingsModal').classList.contains('active')){
             renderAccessRequests(requests);
         }
-    }, 2000);
+    });
 }
 
 function updateRequestBadge(count){
@@ -3216,11 +3255,15 @@ function renderAccessRequests(allRequests){
 }
 
 async function approveDevice(deviceId, name){
-    const requests = JSON.parse(localStorage.getItem('accessRequests') || '{}');
-    if(requests[deviceId]){
-        requests[deviceId].status = 'approved';
-        localStorage.setItem('accessRequests', JSON.stringify(requests));
+    try {
+        // Write approval to Firebase so the user's device sees it
+        await window.dbSet(window.dbRef(window.db, 'accessRequests/' + deviceId), {
+            name, deviceId, status: 'approved', approvedAt: Date.now()
+        });
+    } catch(e) {
+        console.error('Firebase approve failed', e);
     }
+    // Also keep localStorage for same-device fallback
     const approved = JSON.parse(localStorage.getItem('approvedDevices') || '{}');
     approved[deviceId] = {name, approvedAt: Date.now()};
     localStorage.setItem('approvedDevices', JSON.stringify(approved));
@@ -3228,10 +3271,13 @@ async function approveDevice(deviceId, name){
 }
 
 async function denyDevice(deviceId, name){
-    const requests = JSON.parse(localStorage.getItem('accessRequests') || '{}');
-    if(requests[deviceId]){
-        requests[deviceId].status = 'denied';
-        localStorage.setItem('accessRequests', JSON.stringify(requests));
+    try {
+        // Write denial to Firebase so the user's device sees it
+        await window.dbSet(window.dbRef(window.db, 'accessRequests/' + deviceId), {
+            name, deviceId, status: 'denied', deniedAt: Date.now()
+        });
+    } catch(e) {
+        console.error('Firebase deny failed', e);
     }
     toast(name + ' denied','warn');
 }
@@ -4087,7 +4133,7 @@ async function saveNotifToken() {
     const deviceId = getDeviceId();
     const name = currentUser || localStorage.getItem('userName') || 'Unknown';
     try {
-        const token = await getToken(window.messaging, { vapidKey: 'YOUR_VAPID_KEY_HERE' }); // You'll need to generate a VAPID key
+        const token = await getToken(window.messaging, { vapidKey: 'BHAwixWkbrYNcSibsgBIqc5KsSkiQtxZOAKId43bBC3EnYeRQtGn5n_P7E5I6vvkTGJuOBceLOES_mKaAzI1FtE' }); // You'll need to generate a VAPID key
         if (token) {
             await window.dbSet(window.dbRef(window.db, 'notifTokens/' + deviceId), {
                 name,
@@ -4601,34 +4647,39 @@ if ('serviceWorker' in navigator) {
 
 // ── Notification Permission Request ──────────────────────
 function requestNotificationPermission() {
-    if ('Notification' in window && 'serviceWorker' in navigator && window.messaging) {
-        Notification.requestPermission().then(permission => {
-            if (permission === 'granted') {
-                console.log('Notification permission granted.');
-                // Subscribe to push notifications
-                getToken(messaging, { vapidKey: 'YOUR_VAPID_KEY_HERE' }).then(currentToken => {
+    if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
+    const msgInstance = window.firebaseMessaging || window.messaging;
+    if (!msgInstance) { console.log('Messaging not ready'); return; }
+
+    Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
+            console.log('Notification permission granted.');
+            navigator.serviceWorker.ready.then(swReg => {
+                window.firebaseGetToken(msgInstance, {
+                    vapidKey: 'BHAwixWkbrYNcSibsgBIqc5KsSkiQtxZOAKId43bBC3EnYeRQtGn5n_P7E5I6vvkTGJuOBceLOES_mKaAzI1FtE',
+                    serviceWorkerRegistration: swReg
+                }).then(currentToken => {
                     if (currentToken) {
                         console.log('FCM token:', currentToken);
-                        // Send token to your server or store in Firebase
-                        // For example, save to user's data in Firebase
-                        if (currentUser && userRef) {
-                            set(ref(db, `users/${currentUser.id}/fcmToken`), currentToken);
+                        // Save token to Firebase so host can send pushes
+                        if (currentUser) {
+                            window.dbSet(window.dbRef(window.db, 'fcmTokens/' + currentUser), currentToken)
+                                .catch(e => console.log('Token save failed', e));
                         }
                     } else {
-                        console.log('No registration token available.');
+                        console.log('No registration token available. Check VAPID key & SW.');
                     }
                 }).catch(err => {
-                    console.log('An error occurred while retrieving token. ', err);
+                    console.log('FCM getToken error:', err);
                 });
-            } else {
-                console.log('Notification permission denied.');
-            }
-        });
-    }
+            });
+        } else {
+            console.log('Notification permission denied.');
+        }
+    });
 }
 
 // Call this when user signs in or at appropriate time
-// For example, after signIn:
 // requestNotificationPermission();
 
 </script>
