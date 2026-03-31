@@ -2594,43 +2594,65 @@ async function toggleVoiceRecording(){
         return;
     }
 
-    // Check browser support
-    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-        toast('Voice recording not supported in this browser. Try Chrome or Safari.','danger');
-        return;
-    }
-    if(typeof MediaRecorder === 'undefined'){
-        toast('Voice recording not supported in this browser.','danger');
-        return;
-    }
+    // ── Detect Median/GoNative APK environment ──────────────
+    const isMedianApp = typeof window.gonative !== 'undefined' || /GoNative|Median/i.test(navigator.userAgent);
 
-    // ── Median (GoNative) APK: request mic permission via native bridge first ──
-    const isMedianApp = typeof window.gonative !== 'undefined' || /GoNative|Median/.test(navigator.userAgent);
-    if(isMedianApp){
-        try{
-            await new Promise((resolve, reject) => {
-                // Median bridge: request microphone permission
-                if(window.gonative && window.gonative.permissions && window.gonative.permissions.requestAudio){
-                    window.gonative.permissions.requestAudio(function(result){
-                        if(result && result.status === 'granted') resolve();
-                        else reject(new Error('Microphone permission denied by user'));
-                    });
-                } else if(window.gonative && window.gonative.statusbar){
-                    // Older Median builds — just resolve and let getUserMedia handle it
-                    resolve();
-                } else {
-                    resolve(); // Unknown bridge version — proceed anyway
-                }
-            });
-        }catch(permErr){
-            toast('Microphone access denied. Please allow microphone access in your device Settings → Apps → Family Hub → Permissions → Microphone.','danger');
+    // ── In Median WebView, mediaDevices may be undefined even if mic
+    //    is available — attempt to polyfill it via the legacy API ──
+    if(!navigator.mediaDevices){
+        navigator.mediaDevices = {};
+    }
+    if(!navigator.mediaDevices.getUserMedia){
+        // Try the older vendor-prefixed versions
+        const legacyGUM = navigator.getUserMedia
+            || navigator.webkitGetUserMedia
+            || navigator.mozGetUserMedia
+            || navigator.msGetUserMedia;
+        if(legacyGUM){
+            navigator.mediaDevices.getUserMedia = function(constraints){
+                return new Promise((resolve, reject) => {
+                    legacyGUM.call(navigator, constraints, resolve, reject);
+                });
+            };
+        } else {
+            // Truly not available — show diagnostic info
+            const ua = navigator.userAgent.slice(0,80);
+            toast('🎙️ Microphone API not available in this app. Please contact support. UA: ' + ua, 'danger');
             return;
         }
     }
 
+    if(typeof MediaRecorder === 'undefined'){
+        toast('Voice recording not supported in this WebView version.','danger');
+        return;
+    }
+
+    // ── Median APK: use native bridge to trigger Android permission dialog ──
+    if(isMedianApp){
+        await new Promise((resolve) => {
+            // Try the Median JS bridge for permissions
+            if(window.gonative && window.gonative.permissions){
+                const p = window.gonative.permissions;
+                // Different Median SDK versions use different method names
+                const requestFn = p.requestMicrophone || p.requestAudio || p.request;
+                if(typeof requestFn === 'function'){
+                    requestFn.call(p, function(result){
+                        // Regardless of result, proceed — getUserMedia will
+                        // give us the definitive answer below
+                        console.log('[mic] Median permission result:', JSON.stringify(result));
+                        resolve();
+                    });
+                    return;
+                }
+            }
+            // No bridge method found — proceed and let getUserMedia handle it
+            resolve();
+        });
+    }
+
     // Start recording
     try{
-        const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+        const stream = await navigator.mediaDevices.getUserMedia({audio:true, video:false});
         activeStream = stream;
         audioChunks = [];
 
@@ -2673,17 +2695,27 @@ async function toggleVoiceRecording(){
 
     }catch(e){
         resetRecordingState();
+        console.error('[mic] getUserMedia error:', e.name, e.message);
         if(e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError'){
-            const isMedianApp2 = typeof window.gonative !== 'undefined' || /GoNative|Median/.test(navigator.userAgent);
-            if(isMedianApp2){
-                toast('Microphone blocked. Go to device Settings → Apps → Family Hub → Permissions → Microphone → Allow.','danger');
+            if(isMedianApp){
+                toast('Microphone blocked by Android. Open device Settings → Apps → [your app name] → Permissions → enable Microphone, then try again.','danger');
             } else {
                 toast('Microphone access denied. Allow mic access in your browser settings.','danger');
             }
-        } else if(e.name === 'NotFoundError'){
+        } else if(e.name === 'NotFoundError' || e.name === 'DevicesNotFoundError'){
             toast('No microphone found on this device.','danger');
+        } else if(e.name === 'NotReadableError' || e.name === 'TrackStartError'){
+            toast('Microphone is in use by another app. Close other apps and try again.','danger');
+        } else if(e.name === 'OverconstrainedError'){
+            // Retry with looser constraints
+            try{
+                const streamRetry = await navigator.mediaDevices.getUserMedia({audio:{}});
+                activeStream = streamRetry;
+                toast('🔴 Recording… tap again to send');
+                return;
+            }catch(e2){ toast('Could not start recording: '+e2.name,'danger'); }
         } else {
-            toast('Could not start recording: ' + (e.message || e),'danger');
+            toast('Recording failed ('+e.name+'): '+(e.message||'unknown error')+'. Try reinstalling the app.','danger');
         }
     }
 }
