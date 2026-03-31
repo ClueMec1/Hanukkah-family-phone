@@ -2587,70 +2587,57 @@ async function toggleVoiceRecording(){
         if(mediaRecorder && mediaRecorder.state === 'recording'){
             mediaRecorder.stop();
         } else {
-            // Stuck state — reset
             resetRecordingState();
             toast('Recording stopped.','warn');
         }
         return;
     }
 
-    // ── Detect Median/GoNative APK environment ──────────────
-    const isMedianApp = typeof window.gonative !== 'undefined' || /GoNative|Median/i.test(navigator.userAgent);
+    // ── Detect Median APK (their bridge uses window.median, not window.gonative) ──
+    const isMedianApp = typeof window.median !== 'undefined' || typeof window.gonative !== 'undefined';
 
-    // ── In Median WebView, mediaDevices may be undefined even if mic
-    //    is available — attempt to polyfill it via the legacy API ──
-    if(!navigator.mediaDevices){
-        navigator.mediaDevices = {};
+    // ── Median APK: check mic permission status via their official bridge ──
+    if(isMedianApp && typeof window.median !== 'undefined' && window.median.permissions){
+        try{
+            const status = await window.median.permissions.status(['Microphone']);
+            console.log('[mic] Median permission status:', JSON.stringify(status));
+
+            if(status && status.Microphone === 'denied'){
+                // Already denied — send user directly to app settings
+                toast('Microphone is blocked. Opening app settings so you can enable it…','warn');
+                setTimeout(() => { window.median.open.appSettings(); }, 1200);
+                return;
+            }
+            // If 'undetermined' or 'granted', fall through — getUserMedia will trigger
+            // the native dialog if needed, or start recording if already granted
+        }catch(err){
+            console.warn('[mic] median.permissions.status error:', err);
+            // Don't block — fall through and let getUserMedia try anyway
+        }
     }
+
+    // ── Polyfill mediaDevices for older WebView builds ──
+    if(!navigator.mediaDevices){ navigator.mediaDevices = {}; }
     if(!navigator.mediaDevices.getUserMedia){
-        // Try the older vendor-prefixed versions
-        const legacyGUM = navigator.getUserMedia
-            || navigator.webkitGetUserMedia
-            || navigator.mozGetUserMedia
-            || navigator.msGetUserMedia;
+        const legacyGUM = navigator.getUserMedia || navigator.webkitGetUserMedia
+            || navigator.mozGetUserMedia || navigator.msGetUserMedia;
         if(legacyGUM){
-            navigator.mediaDevices.getUserMedia = function(constraints){
-                return new Promise((resolve, reject) => {
-                    legacyGUM.call(navigator, constraints, resolve, reject);
-                });
-            };
+            navigator.mediaDevices.getUserMedia = constraints => new Promise(
+                (res, rej) => legacyGUM.call(navigator, constraints, res, rej)
+            );
         } else {
-            // Truly not available — show diagnostic info
-            const ua = navigator.userAgent.slice(0,80);
-            toast('🎙️ Microphone API not available in this app. Please contact support. UA: ' + ua, 'danger');
+            toast('🎙️ Microphone not available. Please rebuild the app with Microphone permission enabled in the Median dashboard.','danger');
             return;
         }
     }
 
     if(typeof MediaRecorder === 'undefined'){
-        toast('Voice recording not supported in this WebView version.','danger');
+        toast('Voice recording not supported in this app version.','danger');
         return;
     }
 
-    // ── Median APK: use native bridge to trigger Android permission dialog ──
-    if(isMedianApp){
-        await new Promise((resolve) => {
-            // Try the Median JS bridge for permissions
-            if(window.gonative && window.gonative.permissions){
-                const p = window.gonative.permissions;
-                // Different Median SDK versions use different method names
-                const requestFn = p.requestMicrophone || p.requestAudio || p.request;
-                if(typeof requestFn === 'function'){
-                    requestFn.call(p, function(result){
-                        // Regardless of result, proceed — getUserMedia will
-                        // give us the definitive answer below
-                        console.log('[mic] Median permission result:', JSON.stringify(result));
-                        resolve();
-                    });
-                    return;
-                }
-            }
-            // No bridge method found — proceed and let getUserMedia handle it
-            resolve();
-        });
-    }
-
-    // Start recording
+    // Start recording — getUserMedia triggers the native Android permission dialog
+    // if permission hasn't been granted yet
     try{
         const stream = await navigator.mediaDevices.getUserMedia({audio:true, video:false});
         activeStream = stream;
@@ -2696,9 +2683,13 @@ async function toggleVoiceRecording(){
     }catch(e){
         resetRecordingState();
         console.error('[mic] getUserMedia error:', e.name, e.message);
+        const isMedianApp2 = typeof window.median !== 'undefined' || typeof window.gonative !== 'undefined';
         if(e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError'){
-            if(isMedianApp){
-                toast('Microphone blocked by Android. Open device Settings → Apps → [your app name] → Permissions → enable Microphone, then try again.','danger');
+            if(isMedianApp2){
+                toast('Microphone blocked. Opening app settings…','warn');
+                setTimeout(() => {
+                    if(window.median && window.median.open) window.median.open.appSettings();
+                }, 1200);
             } else {
                 toast('Microphone access denied. Allow mic access in your browser settings.','danger');
             }
@@ -2707,7 +2698,6 @@ async function toggleVoiceRecording(){
         } else if(e.name === 'NotReadableError' || e.name === 'TrackStartError'){
             toast('Microphone is in use by another app. Close other apps and try again.','danger');
         } else if(e.name === 'OverconstrainedError'){
-            // Retry with looser constraints
             try{
                 const streamRetry = await navigator.mediaDevices.getUserMedia({audio:{}});
                 activeStream = streamRetry;
@@ -2715,7 +2705,7 @@ async function toggleVoiceRecording(){
                 return;
             }catch(e2){ toast('Could not start recording: '+e2.name,'danger'); }
         } else {
-            toast('Recording failed ('+e.name+'): '+(e.message||'unknown error')+'. Try reinstalling the app.','danger');
+            toast('Recording failed ('+e.name+'): '+(e.message||'unknown error'),'danger');
         }
     }
 }
@@ -4225,62 +4215,83 @@ async function requestNotifPermission() {
     const banner = document.getElementById('notifBanner');
     if (banner) banner.classList.remove('show');
 
-    // ── Detect Median (GoNative) APK environment ──
-    const isMedianApp = typeof window.gonative !== 'undefined' || /GoNative|Median/.test(navigator.userAgent);
+    // ── Detect Median APK ──
+    const isMedianApp = typeof window.median !== 'undefined' || typeof window.gonative !== 'undefined';
 
-    if (isMedianApp) {
-        // In Median APK, push notifications are handled via OneSignal through Median's config.
-        // The standard Notification API does not exist here — use Median's bridge.
-        if (window.gonative && window.gonative.onesignal && window.gonative.onesignal.register) {
-            window.gonative.onesignal.register(function(result) {
-                console.log('Median OneSignal result:', result);
-            });
-        }
-        if (window.gonative && window.gonative.permissions && window.gonative.permissions.requestPushNotifications) {
-            window.gonative.permissions.requestPushNotifications(function(result) {
-                if (result && result.status === 'granted') {
-                    notifPermission = 'granted';
-                    toast('🔔 Notifications enabled!');
-                    playNotifSound();
-                } else {
-                    toast('Notifications denied. Go to device Settings → Apps → Family Hub → Notifications → Allow.', 'warn');
+    if (isMedianApp && typeof window.median !== 'undefined' && window.median.permissions) {
+        try {
+            const status = await window.median.permissions.status(['Notifications']);
+            console.log('[notif] Median permission status:', JSON.stringify(status));
+
+            if (status && status.Notifications === 'denied') {
+                // Already denied — open app settings so user can flip the toggle
+                toast('Notifications are blocked. Opening app settings so you can enable them…', 'warn');
+                setTimeout(() => { window.median.open.appSettings(); }, 1200);
+                return;
+            }
+
+            if (status && status.Notifications === 'granted') {
+                notifPermission = 'granted';
+                toast('🔔 Notifications are already enabled!');
+                playNotifSound();
+                return;
+            }
+
+            // 'undetermined' — trigger the native permission dialog via OneSignal
+            // (Median's push notification system handles the actual prompt)
+            if (window.median.onesignal && window.median.onesignal.promptNotification) {
+                window.median.onesignal.promptNotification({
+                    callback: function(result) {
+                        console.log('[notif] OneSignal prompt result:', JSON.stringify(result));
+                        if (result && result.accepted) {
+                            notifPermission = 'granted';
+                            toast('🔔 Notifications enabled!');
+                            playNotifSound();
+                        } else {
+                            toast('Notifications not enabled. You can turn them on in app settings anytime.', 'warn');
+                        }
+                    }
+                });
+            } else {
+                // No OneSignal — try registering device directly
+                if (window.median.onesignal && window.median.onesignal.registerDevice) {
+                    window.median.onesignal.registerDevice();
                 }
-            });
-        } else {
-            // Older Median or bridge not yet loaded — show device settings guidance
-            toast('To enable notifications, go to device Settings → Apps → Family Hub → Notifications → Allow.', 'warn');
+                toast('Notification prompt triggered. If nothing appeared, please enable notifications in device Settings → Apps → your app → Notifications.', 'warn');
+            }
+
+        } catch(err) {
+            console.warn('[notif] median.permissions.status error:', err);
+            toast('Could not check notification permission. Try enabling notifications in device Settings.', 'warn');
         }
         return;
     }
 
-    // Browser doesn't support notifications at all
+    // ── Standard browser fallback (non-Median) ──
     if (!('Notification' in window)) {
-        toast('This browser does not support notifications. Try Chrome or Safari.', 'warn');
+        toast('This browser does not support notifications.', 'warn');
         return;
     }
-
-    // Already denied — browser won't show the popup again, guide user manually
     if (Notification.permission === 'denied') {
-        toast('Notifications are blocked. Tap your browser address bar → Site Settings → Notifications → Allow.', 'warn');
+        toast('Notifications are blocked. Go to browser Settings → Site Settings → Notifications → Allow.', 'warn');
         return;
     }
-
     try {
         const result = await Notification.requestPermission();
         notifPermission = result;
         if (result === 'granted') {
-            toast('🔔 Notifications enabled! You\'ll get alerts for messages & updates.');
+            toast('🔔 Notifications enabled!');
             await registerServiceWorker();
             await saveNotifToken();
             playNotifSound();
         } else if (result === 'denied') {
-            toast('Notifications blocked. Enable them in browser Settings → Site Settings → Notifications.', 'warn');
+            toast('Notifications blocked. Enable in browser Settings → Site Settings → Notifications.', 'warn');
         } else {
             toast('Notification permission dismissed.', 'warn');
         }
     } catch(e) {
         console.warn('Notification permission error:', e);
-        toast('Could not open notification prompt. Try browser Settings → Site Settings → Notifications.', 'warn');
+        toast('Could not open notification prompt.', 'warn');
     }
 }
 
@@ -4515,11 +4526,32 @@ function listenCardsForNotif() {
 
 // ── Boot: initialise the notification system ───────────────
 async function initNotifications() {
-    // Register SW early
     await registerServiceWorker();
-    // Load host's settings from Firebase
     await loadNotifSettings();
-    // If already granted, save token and start listeners
+
+    // ── Median APK: check notification status via their official bridge ──
+    const isMedianApp = typeof window.median !== 'undefined';
+    if (isMedianApp && window.median.permissions) {
+        try {
+            const status = await window.median.permissions.status(['Notifications']);
+            if (status && status.Notifications === 'granted') {
+                notifPermission = 'granted';
+                listenPushNotifications();
+                listenAnnouncementsWithNotif();
+                listenCardsForNotif();
+                if (Array.isArray(chatGroups)) chatGroups.forEach(g => listenChatGroupForNotif(g));
+            } else {
+                showNotifBanner();
+                listenAnnouncementsWithNotif();
+            }
+        } catch(e) {
+            showNotifBanner();
+            listenAnnouncementsWithNotif();
+        }
+        return;
+    }
+
+    // ── Standard browser fallback ──
     if ((typeof Notification !== 'undefined' && Notification.permission === 'granted') || notifPermission === 'granted') {
         notifPermission = 'granted';
         await saveNotifToken();
