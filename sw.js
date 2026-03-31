@@ -1,58 +1,79 @@
-// Family Hub Service Worker
-const CACHE_NAME = 'family-hub-v2';
-const BASE = '/Hanukkah-family-phone';
-const ASSETS = [
-  BASE + '/',
-  BASE + '/index.html',
-  BASE + '/manifest.json',
-  BASE + '/icon-192.png',
-  BASE + '/icon-512.png'
+// Service Worker for Family Hub PWA
+importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js');
+
+// Initialize Firebase (use your config)
+firebase.initializeApp({
+    apiKey: "AIzaSyByh09evolR8lCvwWZ160zLUJdGXIzPXIk",
+    authDomain: "family-phone-game.firebaseapp.com",
+    projectId: "family-phone-game",
+    storageBucket: "family-phone-game.firebasestorage.app",
+    messagingSenderId: "933908338610",
+    appId: "1:933908338610:web:ca5ce26b24118b833bb6ab"
+});
+
+const messaging = firebase.messaging();
+
+const CACHE_NAME = 'family-hub-v1';
+const urlsToCache = [
+  './family_hub (3).html',
+  './manifest.json'
+  // Add other assets as needed
 ];
 
+// Install event
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS).catch(()=>{}))
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(urlsToCache))
   );
-  self.skipWaiting();
 });
 
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    )
-  );
-  self.clients.claim();
-});
-
+// Fetch event
 self.addEventListener('fetch', event => {
-  const url = new URL(event.request.url);
-
-  // Always go to network for Firebase, Cloudinary, Google APIs
-  if (
-    url.hostname.includes('firebase') ||
-    url.hostname.includes('googleapis.com') ||
-    url.hostname.includes('cloudinary.com') ||
-    url.hostname.includes('gstatic.com') ||
-    url.hostname.includes('fonts.google')
-  ) return;
-
-  // Navigation: network first, fall back to cached index
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request)
-        .then(res => {
-          const clone = res.clone();
-          caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
-          return res;
-        })
-        .catch(() => caches.match(BASE + '/index.html') || caches.match(BASE + '/'))
-    );
-    return;
-  }
-
-  // Everything else: cache first
   event.respondWith(
-    caches.match(event.request).then(cached => cached || fetch(event.request))
+    caches.match(event.request)
+      .then(response => response || fetch(event.request))
   );
 });
+
+// Push event for notifications
+self.addEventListener('push', event => {
+  const options = {
+    body: event.data ? event.data.text() : 'New notification from Family Hub',
+    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🏠</text></svg>',
+    badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🏠</text></svg>',
+    vibrate: [200, 100, 200],
+    data: {
+      dateOfArrival: Date.now(),
+      primaryKey: 1
+    }
+  };
+
+  event.waitUntil(
+    self.registration.showNotification('Family Hub', options)
+  );
+});
+
+// Background message handler for FCM
+messaging.onBackgroundMessage((payload) => {
+  console.log('Received background message ', payload);
+  const notificationTitle = payload.notification.title;
+  const notificationOptions = {
+    body: payload.notification.body,
+    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🏠</text></svg>',
+    badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🏠</text></svg>',
+    data: payload.data
+  };
+
+  self.registration.showNotification(notificationTitle, notificationOptions);
+});
+
+// Notification click event
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil(
+    clients.openWindow('./family_hub (3).html')
+  );
+});</content>
+<parameter name="filePath">c:\Users\Reizl\Desktop\sw.js
