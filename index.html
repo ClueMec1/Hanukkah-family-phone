@@ -209,11 +209,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .emoji-opt{width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:18px;border-radius:6px;cursor:pointer;transition:background .15s;}
 .emoji-opt:hover{background:var(--surface2);}
 
-/* CONTENT & CARDS */
-.content{padding:22px 18px;max-width:1400px;margin:0 auto;position:relative;z-index:1;}
-.section-header{margin-bottom:18px;display:flex;align-items:center;gap:10px;}
-.section-title{font-family:'Fredoka One',cursive;font-size:22px;color:var(--text);letter-spacing:.5px;}
-.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;}
+c
 
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:all .25s;cursor:pointer;animation:cardIn .4s cubic-bezier(.22,1,.36,1) both;position:relative;}
 @keyframes cardIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
@@ -443,6 +439,51 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     font-size:13px;font-weight:600;padding:0 24px;
 }
 
+/* CARD FULLSCREEN LIGHTBOX */
+.card-lightbox{
+    display:none;position:fixed;inset:0;z-index:99991;
+    background:rgba(0,0,0,.96);
+    align-items:center;justify-content:center;
+    flex-direction:column;
+}
+.card-lightbox.open{display:flex;}
+.card-lightbox-close{
+    position:absolute;top:16px;right:16px;
+    width:44px;height:44px;background:rgba(255,255,255,.15);
+    border:none;border-radius:50%;color:#fff;font-size:24px;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;z-index:2;transition:background .2s;
+}
+.card-lightbox-close:hover{background:rgba(255,255,255,.3);}
+.card-lightbox-content{
+    max-width:min(560px, 90vw);
+    max-height:90vh;
+    background:var(--surface);border-radius:16px;
+    overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.6);
+    position:relative;
+}
+.card-lightbox-thumb{
+    width:100%;aspect-ratio:16/9;background:var(--surface2);
+    display:flex;align-items:center;justify-content:center;
+    position:relative;overflow:hidden;
+}
+.card-lightbox-thumb img,.card-lightbox-thumb video{
+    width:100%;height:100%;object-fit:cover;
+}
+.card-lightbox-body{
+    padding:20px;
+}
+.card-lightbox-name{
+    color:var(--text);font-size:18px;font-weight:600;margin-bottom:6px;
+}
+.card-lightbox-meta{
+    color:var(--muted);font-size:14px;margin-bottom:12px;
+}
+.card-lightbox-media{
+    width:100%;border-radius:8px;border:1px solid var(--border);
+    margin-top:8px;
+}
+
 /* BOTTOM NAV BAR */
 .bottom-nav{
     position:fixed;bottom:0;left:0;right:0;z-index:1100;
@@ -628,6 +669,7 @@ function removeHostMemory() {
     <div class="nav-button" data-section="2"><span class="nav-button-emoji">📁</span><span class="nav-button-text">Section 3</span></div>
     <div class="nav-button" data-section="3"><span class="nav-button-emoji">📁</span><span class="nav-button-text">Section 4</span></div>
     <div class="nav-button" data-section="4"><span class="nav-button-emoji">📁</span><span class="nav-button-text">Section 5</span></div>
+    <div class="nav-button" onclick="requestNotifPermission()" title="Enable notifications" style="margin-left:auto;"><span class="nav-button-emoji">🔔</span><span class="nav-button-text">Notify</span></div>
 </div>
 
 <!-- Host tip bar (only visible in host mode) -->
@@ -1121,6 +1163,7 @@ function removeHostMemory() {
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, set, get, onValue, push, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 
 const cfg = {
     apiKey:"AIzaSyByh09evolR8lCvwWZ160zLUJdGXIzPXIk",
@@ -1134,6 +1177,7 @@ const cfg = {
 const app = initializeApp(cfg);
 window.db = getDatabase(app);
 window.storage = getStorage(app);
+window.messaging = getMessaging(app);
 window.dbRef = ref; window.dbSet = set; window.dbGet = get;
 window.dbOnValue = onValue; window.dbPush = push; window.dbRemove = remove;
 window.storageRef = storageRef;
@@ -1496,6 +1540,7 @@ function buildCard(cardData,sectionIndex,cardId){
         // Double-click → popup
         card.addEventListener('dblclick',e=>{
             e.preventDefault(); e.stopPropagation();
+            clearTimeout(clickTimer);
             showCardPopup(card,cardData,sectionIndex,cardId);
         });
         // Drag & drop any file
@@ -1509,6 +1554,12 @@ function buildCard(cardData,sectionIndex,cardId){
     }
 
     grid.appendChild(card);
+
+    // Add click to open full screen for all users
+    let clickTimer;
+    card.addEventListener('click', () => {
+        clickTimer = setTimeout(() => openCardLightbox(cardData), 200);
+    });
 }
 
 // ── Card popup ────────────────────────────────────────────
@@ -4003,18 +4054,24 @@ function dismissNotifBanner() {
 
 // Save device token to Firebase so host can count subscribers
 async function saveNotifToken() {
-    if (!window.db || !window.dbRef || !window.dbSet) return;
+    if (!window.db || !window.messaging) return;
     const deviceId = getDeviceId();
     const name = currentUser || localStorage.getItem('userName') || 'Unknown';
     try {
-        await window.dbSet(window.dbRef(window.db, 'notifTokens/' + deviceId), {
-            name,
-            deviceId,
-            permission: 'granted',
-            updatedAt: Date.now(),
-            ua: navigator.userAgent.slice(0, 100)
-        });
-    } catch(e) {}
+        const token = await getToken(window.messaging, { vapidKey: 'YOUR_VAPID_KEY_HERE' }); // You'll need to generate a VAPID key
+        if (token) {
+            await window.dbSet(window.dbRef(window.db, 'notifTokens/' + deviceId), {
+                name,
+                deviceId,
+                token,
+                permission: 'granted',
+                updatedAt: Date.now(),
+                ua: navigator.userAgent.slice(0, 100)
+            });
+        }
+    } catch(e) {
+        console.warn('Failed to get FCM token:', e);
+    }
 }
 
 async function removeNotifToken() {
@@ -4233,6 +4290,12 @@ async function initNotifications() {
         listenCardsForNotif();
         // Listen on all known chat groups
         if (Array.isArray(chatGroups)) chatGroups.forEach(g => listenChatGroupForNotif(g));
+        // Listen for FCM messages when page is open
+        if (window.messaging) {
+            onMessage(window.messaging, (payload) => {
+                showNotification(payload.notification.title, payload.notification.body, 'fcm');
+            });
+        }
     } else {
         // Show banner for users who haven't decided
         showNotifBanner();
@@ -4352,8 +4415,84 @@ function closeMediaLightbox(e){
     lb.classList.remove('open');
     document.body.style.overflow = '';
 }
+
+function openCardLightbox(cardData){
+    const lb = document.getElementById('cardLightbox');
+    const content = document.getElementById('cardLightboxContent');
+    
+    // Build the full card content
+    let thumb = '';
+    let body = '';
+    
+    if(cardData.mediaUrl){
+        const url = isMobile()
+            ? (cardData.cloudinaryUrl || cardData.mediaUrl || '')
+            : (cardData.mediaUrl || cardData.cloudinaryUrl || '');
+        if(!url){ }  // no media
+        const media = detectMediaType(url);
+        if(media.type === 'youtube'){
+            const ytId = media.embed.split('/embed/')[1];
+            thumb = '<img src="https://img.youtube.com/vi/' + ytId + '/hqdefault.jpg" style="width:100%;height:100%;object-fit:cover;">'
+                 + '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="openVideoLightbox(\'' + ytId + '\')">'
+                 + '<div style="width:56px;height:56px;background:rgba(255,0,0,.9);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,.5);">'
+                 + '<svg width="22" height="22" fill="white" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></div></div>';
+        } else if(media.type === 'streamable'){
+            const stId = media.embed.split('/e/')[1];
+            thumb = '<img src="https://cdn-cf-east.streamable.com/image/' + stId + '.jpg" style="width:100%;height:100%;object-fit:cover;">'
+                 + '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="openStreamableLightbox(\'' + stId + '\')">'
+                 + '<div style="width:56px;height:56px;background:rgba(30,136,229,.9);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,.5);">'
+                 + '<svg width="22" height="22" fill="white" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></div></div>';
+        } else if(media.type === 'gdrive'){
+            const driveIcon = '<svg width="44" height="44" viewBox="0 0 87.3 78" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:.8;">'
+                + '<path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3L27.5 53H0c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>'
+                + '<path d="M43.65 25L29.9 1.2C28.55.4 27 0 25.45 0c-1.55 0-3.1.4-4.45 1.2L6.6 25H43.65z" fill="#00ac47"/>'
+                + '<path d="M73.55 25L59.8 1.2C58.45.4 56.9 0 55.35 0H25.45L43.65 25H73.55z" fill="#ea4335"/>'
+                + '<path d="M43.65 25L25.45 53H62.35L43.65 25z" fill="#00832d"/>'
+                + '<path d="M62.35 53L25.45 53l-11.7 20.8c1.35.8 2.9 1.2 4.45 1.2H68.9c1.55 0 3.1-.4 4.45-1.2L62.35 53z" fill="#ffba00"/>'
+                + '</svg>';
+            thumb = '<div style="position:absolute;inset:0;background:linear-gradient(135deg,#7c6af733,#4fd1c533);display:flex;align-items:center;justify-content:center;">' + driveIcon + '</div>';
+            if(isMobile()){
+                body = '<button onclick="openDriveLightbox(\'' + esc(media.embed) + '\')" style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px;padding:13px 16px;width:100%;background:rgba(26,115,232,.12);border:1.5px solid rgba(26,115,232,.5);border-radius:10px;color:#4285f4;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">'
+                    + driveIcon.replace('width="44" height="44"','width="22" height="22"')
+                    + '&#9654; View in Full Screen</button>';
+            } else {
+                body = '<iframe src="' + media.embed + '" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;margin-top:8px;" allowfullscreen></iframe>';
+            }
+        } else if(media.type === 'image'){
+            thumb = '<img src="' + esc(url) + '" style="width:100%;height:100%;object-fit:cover;cursor:pointer;" onclick="event.stopPropagation();openMediaLightbox(\'' + esc(url) + '\',\'image\',\'' + esc(cardData.name || '') + '\');">';
+        } else if(media.type === 'video'){
+            thumb = '<div style="position:absolute;inset:0;cursor:pointer;" onclick="event.stopPropagation();openMediaLightbox(\'' + esc(url) + '\',\'video\',\'' + esc(cardData.name || '') + '\');">'
+                + '<video src="' + esc(url) + '" muted playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover;pointer-events:none;"></video>'
+                + '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">'
+                + '<div style="width:56px;height:56px;background:rgba(0,0,0,.7);border-radius:50%;display:flex;align-items:center;justify-content:center;">'
+                + '<svg width="22" height="22" fill="white" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></div></div></div>';
+        }
+    }
+    
+    content.innerHTML = `
+        <div class="card-lightbox-thumb">${thumb}</div>
+        <div class="card-lightbox-body">
+            <div class="card-lightbox-name">${esc(cardData.name || 'Untitled')}</div>
+            <div class="card-lightbox-meta">${esc(cardData.desc || '')}</div>
+            ${body}
+        </div>
+    `;
+    
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeCardLightbox(e){
+    if(e && e.target !== document.getElementById('cardLightbox') && !e.target.classList.contains('card-lightbox-close')) return;
+    const lb = document.getElementById('cardLightbox');
+    lb.classList.remove('open');
+    document.body.style.overflow = '';
+}
+
 window.openMediaLightbox = openMediaLightbox;
 window.closeMediaLightbox = closeMediaLightbox;
+window.openCardLightbox = openCardLightbox;
+window.closeCardLightbox = closeCardLightbox;
 
 window.openSearch=openSearch;
 window.openStreamableLightbox=openStreamableLightbox;
@@ -4471,6 +4610,12 @@ window.updateUserNamePill=updateUserNamePill;
     <button class="media-lightbox-close" onclick="closeMediaLightbox()">✕</button>
     <div class="media-lightbox-inner" id="mediaLightboxInner"></div>
     <div class="media-lightbox-caption" id="mediaLightboxCaption"></div>
+</div>
+
+<!-- Card Fullscreen Lightbox -->
+<div class="card-lightbox" id="cardLightbox" onclick="closeCardLightbox(event)">
+    <button class="card-lightbox-close" onclick="closeCardLightbox()">✕</button>
+    <div class="card-lightbox-content" id="cardLightboxContent"></div>
 </div>
 
 <!-- Bottom Navigation Bar -->
