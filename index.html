@@ -2566,40 +2566,95 @@ function updateUnreadBadge(n){ /* badge removed */ }
 let mediaRecorder = null;
 let audioChunks = [];
 let isRecording = false;
+let activeStream = null;
+
+function resetRecordingState(){
+    isRecording = false;
+    mediaRecorder = null;
+    audioChunks = [];
+    if(activeStream){ activeStream.getTracks().forEach(t=>t.stop()); activeStream = null; }
+    const btn = document.getElementById('voiceBtn');
+    const ind = document.getElementById('recordingIndicator');
+    if(btn) btn.classList.remove('recording');
+    if(ind) ind.classList.remove('active');
+}
 
 async function toggleVoiceRecording(){
     if(!currentUser){ toast('Please sign in first!','warn'); return; }
+
+    // If already recording — stop it
     if(isRecording){
-        // Stop and send
-        mediaRecorder.stop();
-    } else {
-        // Start recording
-        try{
-            const stream = await navigator.mediaDevices.getUserMedia({audio:true});
-            audioChunks = [];
-            // iOS Safari only supports audio/mp4. Android/Chrome prefer webm.
-            let mimeType = '';
-            if(MediaRecorder.isTypeSupported('audio/mp4')){ mimeType = 'audio/mp4'; }
-            else if(MediaRecorder.isTypeSupported('audio/webm;codecs=opus')){ mimeType = 'audio/webm;codecs=opus'; }
-            else if(MediaRecorder.isTypeSupported('audio/webm')){ mimeType = 'audio/webm'; }
-            else if(MediaRecorder.isTypeSupported('audio/ogg')){ mimeType = 'audio/ogg'; }
-            mediaRecorder = mimeType ? new MediaRecorder(stream, {mimeType}) : new MediaRecorder(stream);
-            mediaRecorder.ondataavailable = e => { if(e.data.size>0) audioChunks.push(e.data); };
-            mediaRecorder.onstop = async () => {
-                stream.getTracks().forEach(t=>t.stop());
-                isRecording = false;
-                document.getElementById('voiceBtn').classList.remove('recording');
-                document.getElementById('recordingIndicator').classList.remove('active');
-                const blob = new Blob(audioChunks, {type: mediaRecorder.mimeType||'audio/webm'});
-                if(blob.size < 1000){ toast('Recording too short','warn'); return; }
-                await uploadAndSendVoice(blob);
-            };
-            mediaRecorder.start();
-            isRecording = true;
-            document.getElementById('voiceBtn').classList.add('recording');
-            document.getElementById('recordingIndicator').classList.add('active');
-        }catch(e){
-            toast('Microphone access denied. Please allow mic access.','danger');
+        if(mediaRecorder && mediaRecorder.state === 'recording'){
+            mediaRecorder.stop();
+        } else {
+            // Stuck state — reset
+            resetRecordingState();
+            toast('Recording stopped.','warn');
+        }
+        return;
+    }
+
+    // Check browser support
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+        toast('Voice recording not supported in this browser. Try Chrome or Safari.','danger');
+        return;
+    }
+    if(typeof MediaRecorder === 'undefined'){
+        toast('Voice recording not supported in this browser.','danger');
+        return;
+    }
+
+    // Start recording
+    try{
+        const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+        activeStream = stream;
+        audioChunks = [];
+
+        // Pick best supported format
+        let mimeType = '';
+        if(MediaRecorder.isTypeSupported('audio/mp4')){ mimeType = 'audio/mp4'; }
+        else if(MediaRecorder.isTypeSupported('audio/webm;codecs=opus')){ mimeType = 'audio/webm;codecs=opus'; }
+        else if(MediaRecorder.isTypeSupported('audio/webm')){ mimeType = 'audio/webm'; }
+        else if(MediaRecorder.isTypeSupported('audio/ogg')){ mimeType = 'audio/ogg'; }
+
+        mediaRecorder = mimeType
+            ? new MediaRecorder(stream, {mimeType})
+            : new MediaRecorder(stream);
+
+        mediaRecorder.ondataavailable = e => {
+            if(e.data && e.data.size > 0) audioChunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = async () => {
+            const chunks = [...audioChunks];
+            const finalMime = (mediaRecorder && mediaRecorder.mimeType) || mimeType || 'audio/webm';
+            resetRecordingState();
+            const blob = new Blob(chunks, {type: finalMime});
+            if(blob.size < 500){ toast('Recording too short — try again','warn'); return; }
+            await uploadAndSendVoice(blob);
+        };
+
+        mediaRecorder.onerror = (e) => {
+            console.error('MediaRecorder error:', e);
+            resetRecordingState();
+            toast('Recording error — please try again','danger');
+        };
+
+        // Start with 250ms timeslice so we get data chunks regularly
+        mediaRecorder.start(250);
+        isRecording = true;
+        document.getElementById('voiceBtn').classList.add('recording');
+        document.getElementById('recordingIndicator').classList.add('active');
+        toast('🔴 Recording… tap again to send');
+
+    }catch(e){
+        resetRecordingState();
+        if(e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError'){
+            toast('Microphone access denied. Allow mic access in your browser settings.','danger');
+        } else if(e.name === 'NotFoundError'){
+            toast('No microphone found on this device.','danger');
+        } else {
+            toast('Could not start recording: ' + (e.message || e),'danger');
         }
     }
 }
@@ -4077,12 +4132,14 @@ let swRegistration = null;
 async function registerServiceWorker() {
     if (!('serviceWorker' in navigator)) return null;
     try {
-        const blob = new Blob([SW_CODE], { type: 'application/javascript' });
-        const swUrl = URL.createObjectURL(blob);
-        swRegistration = await navigator.serviceWorker.register(swUrl, { scope: './' });
+        // First try the real sw.js file (works when properly hosted)
+        swRegistration = await navigator.serviceWorker.register('./sw.js');
+        console.log('SW registered from sw.js');
         return swRegistration;
     } catch(e) {
-        console.warn('SW registration failed:', e);
+        // sw.js not found (e.g. on preview/localhost) — SW not available,
+        // but notifications still work via direct Notification API
+        console.log('sw.js not found, using direct notifications:', e.message);
         return null;
     }
 }
@@ -4105,19 +4162,35 @@ function showNotifBanner() {
 async function requestNotifPermission() {
     const banner = document.getElementById('notifBanner');
     if (banner) banner.classList.remove('show');
+
+    // Browser doesn't support notifications at all
+    if (!('Notification' in window)) {
+        toast('This browser does not support notifications. Try Chrome or Safari.', 'warn');
+        return;
+    }
+
+    // Already denied — browser won't show the popup again, guide user manually
+    if (Notification.permission === 'denied') {
+        toast('Notifications are blocked. Tap your browser address bar → Site Settings → Notifications → Allow.', 'warn');
+        return;
+    }
+
     try {
         const result = await Notification.requestPermission();
         notifPermission = result;
         if (result === 'granted') {
-            toast('🔔 Notifications enabled! You\'ll hear about new messages & content.');
+            toast('🔔 Notifications enabled! You\'ll get alerts for messages & updates.');
             await registerServiceWorker();
             await saveNotifToken();
-            playNotifSound(); // play a preview sound
+            playNotifSound();
+        } else if (result === 'denied') {
+            toast('Notifications blocked. Enable them in browser Settings → Site Settings → Notifications.', 'warn');
         } else {
-            toast('Notifications blocked — you can enable them in your browser settings.', 'warn');
+            toast('Notification permission dismissed.', 'warn');
         }
     } catch(e) {
-        toast('Could not request notification permission.', 'warn');
+        console.warn('Notification permission error:', e);
+        toast('Could not open notification prompt. Try browser Settings → Site Settings → Notifications.', 'warn');
     }
 }
 
