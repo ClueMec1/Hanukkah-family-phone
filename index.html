@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Family Hub</title>
+<link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
 <style>
@@ -1558,7 +1559,31 @@ function buildCard(cardData,sectionIndex,cardId){
     // Add click to open full screen for all users
     let clickTimer;
     card.addEventListener('click', () => {
-        clickTimer = setTimeout(() => openCardLightbox(cardData), 200);
+        clickTimer = setTimeout(() => {
+            if (cardData.mediaUrl) {
+                const url = isMobile()
+                    ? (cardData.cloudinaryUrl || cardData.mediaUrl || '')
+                    : (cardData.mediaUrl || cardData.cloudinaryUrl || '');
+                const media = detectMediaType(url);
+                if (media.type === 'image') {
+                    openMediaLightbox(url, 'image', cardData.name || '');
+                } else if (media.type === 'video') {
+                    openMediaLightbox(url, 'video', cardData.name || '');
+                } else if (media.type === 'youtube') {
+                    const ytId = media.embed.split('/embed/')[1];
+                    openVideoLightbox(ytId);
+                } else if (media.type === 'streamable') {
+                    const stId = media.embed.split('/e/')[1];
+                    openStreamableLightbox(stId);
+                } else if (media.type === 'gdrive') {
+                    openDriveLightbox(media.embed);
+                } else {
+                    openCardLightbox(cardData);
+                }
+            } else {
+                openCardLightbox(cardData);
+            }
+        }, 200);
     });
 }
 
@@ -2590,11 +2615,11 @@ async function uploadAndSendVoice(blob){
                       : blob.type.includes('ogg') ? 'ogg' : 'webm';
             fd.append('file', blob, 'voice.' + ext);
             fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-            fd.append('resource_type', 'video'); // Cloudinary uses 'video' for all audio
-            const res = await fetch('https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD_NAME + '/video/upload', {method:'POST', body:fd});
-            if(!res.ok) throw new Error('Cloudinary error ' + res.status);
+            fd.append('resource_type', 'auto'); // Use 'auto' to handle audio properly
+            const res = await fetch('https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD_NAME + '/auto/upload', {method:'POST', body:fd});
+            if(!res.ok) throw new Error('Cloudinary upload failed: ' + res.status + ' ' + res.statusText);
             const cData = await res.json();
-            if(cData.error) throw new Error(cData.error.message);
+            if(cData.error) throw new Error('Cloudinary error: ' + cData.error.message);
             audioUrl = cData.secure_url;
 
         // Strategy 2: Base64 in Firebase RTDB (free plan — works for short clips up to ~1MB)
@@ -2603,20 +2628,24 @@ async function uploadAndSendVoice(blob){
             const reader = new FileReader();
             audioUrl = await new Promise((res, rej) => {
                 reader.onload = () => res(reader.result); // data:audio/... base64 URI
-                reader.onerror = rej;
+                reader.onerror = () => rej(new Error('FileReader failed'));
                 reader.readAsDataURL(blob);
             });
-            // Warn if too big for RTDB (>900KB base64 ≈ ~675KB binary)
+            // Check size for RTDB (>900KB base64 ≈ ~675KB binary)
             if(audioUrl.length > 900000){
                 toast('Voice clip too long for free plan — please set up Cloudinary or keep clips under 20s', 'warn');
                 return;
             }
         }
 
+        // Send the message
         const data = {author:currentUser, text:'🎙️ Voice message', audioUrl, timestamp:Date.now(), isHostMsg: isHost===true};
         await window.dbSet(window.dbPush(window.dbRef(window.db, msgPath(currentGroup))), data);
         toast('Voice message sent! 🎙️');
-    }catch(e){ toast('Failed to send voice message: '+(e.message||e),'danger'); }
+    }catch(e){ 
+        console.error('Voice message error:', e);
+        toast('Failed to send voice message: '+(e.message||e),'danger'); 
+    }
 }
 
 async function postComment(){
@@ -4556,6 +4585,52 @@ window.updateUserNamePill=updateUserNamePill;
     };
     window.signIn = signIn; // re-expose since signIn calls doSignIn
 })();
+
+// ── PWA Service Worker Registration ──────────────────────
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+            .then(registration => {
+                console.log('SW registered: ', registration);
+            })
+            .catch(registrationError => {
+                console.log('SW registration failed: ', registrationError);
+            });
+    });
+}
+
+// ── Notification Permission Request ──────────────────────
+function requestNotificationPermission() {
+    if ('Notification' in window && 'serviceWorker' in navigator && window.messaging) {
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                console.log('Notification permission granted.');
+                // Subscribe to push notifications
+                getToken(messaging, { vapidKey: 'YOUR_VAPID_KEY_HERE' }).then(currentToken => {
+                    if (currentToken) {
+                        console.log('FCM token:', currentToken);
+                        // Send token to your server or store in Firebase
+                        // For example, save to user's data in Firebase
+                        if (currentUser && userRef) {
+                            set(ref(db, `users/${currentUser.id}/fcmToken`), currentToken);
+                        }
+                    } else {
+                        console.log('No registration token available.');
+                    }
+                }).catch(err => {
+                    console.log('An error occurred while retrieving token. ', err);
+                });
+            } else {
+                console.log('Notification permission denied.');
+            }
+        });
+    }
+}
+
+// Call this when user signs in or at appropriate time
+// For example, after signIn:
+// requestNotificationPermission();
+
 </script>
 <!-- New Group Modal -->
 <div class="modal" id="newGroupModal">
