@@ -77,6 +77,19 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 /* ACCESS REQUEST BADGE */
 .request-badge{position:absolute;top:-5px;right:-5px;background:var(--danger);color:#fff;min-width:18px;height:18px;padding:0 4px;border-radius:9px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg);animation:pulse 1.5s infinite;}
 
+/* CHROME PROMPT OVERLAY */
+.chrome-prompt-overlay{position:fixed;inset:0;background:rgba(255,250,245,.97);display:flex;justify-content:center;align-items:center;z-index:10001;backdrop-filter:blur(8px);transition:opacity .4s,visibility .4s;}
+.chrome-prompt-overlay.hidden{opacity:0;visibility:hidden;pointer-events:none;}
+.chrome-prompt-box{background:var(--surface);padding:36px 30px;border-radius:var(--radius-lg);border:2px solid var(--border);box-shadow:0 0 60px rgba(232,131,74,.12),0 24px 60px rgba(232,131,74,.08);text-align:center;max-width:420px;width:92%;animation:slideUp .5s cubic-bezier(.22,1,.36,1);}
+.chrome-prompt-icon{font-size:52px;margin-bottom:10px;}
+.chrome-prompt-title{font-family:'Fredoka One',cursive;font-size:26px;color:var(--accent);margin-bottom:8px;letter-spacing:.5px;}
+.chrome-prompt-text{color:var(--text);font-size:15px;font-weight:600;line-height:1.55;margin-bottom:8px;}
+.chrome-prompt-sub{color:var(--muted);font-size:13px;font-weight:600;margin-bottom:22px;line-height:1.5;}
+.chrome-prompt-link{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px 20px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;text-decoration:none;box-shadow:0 4px 20px rgba(232,131,74,.3);transition:all .2s;margin-bottom:10px;}
+.chrome-prompt-link:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(232,131,74,.4);}
+.chrome-prompt-skip{background:transparent;color:var(--muted);border:1.5px solid var(--border);border-radius:var(--radius);padding:11px 20px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;width:100%;transition:all .2s;}
+.chrome-prompt-skip:hover{border-color:var(--accent);color:var(--accent);}
+
 /* SIGN-IN */
 .signin-overlay{position:fixed;inset:0;background:rgba(255,250,245,.97);display:flex;justify-content:center;align-items:center;z-index:10000;backdrop-filter:blur(8px);transition:opacity .4s,visibility .4s;}
 .signin-overlay.hidden{opacity:0;visibility:hidden;pointer-events:none;}
@@ -128,7 +141,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .recipe-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;}
 .recipe-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:all .25s;}
 .recipe-card:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 8px 24px var(--accent-glow);}
-.recipe-card-thumb{height:130px;background:linear-gradient(135deg,var(--accent)22,var(--accent2)18);display:flex;align-items:center;justify-content:center;font-size:44px;}
+.recipe-card-thumb{height:130px;background:linear-gradient(135deg,rgba(232,131,74,0.13),rgba(91,171,111,0.09));display:flex;align-items:center;justify-content:center;font-size:44px;}
 .recipe-card-body{padding:12px 14px;}
 .recipe-card-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;}
 .recipe-card-meta{font-size:11px;color:var(--muted);}
@@ -392,6 +405,56 @@ c
 .toast.danger{border-left:3px solid var(--danger);}
 .toast.warn{border-left:3px solid var(--warn);}
 
+/* GAMES */
+.game-pick-card{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);padding:20px 14px;text-align:center;cursor:pointer;transition:all .22s;}
+.game-pick-card:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 8px 24px var(--accent-glow);}
+.game-pick-icon{font-size:38px;margin-bottom:8px;}
+.game-pick-name{font-family:'Fredoka One',cursive;font-size:17px;color:var(--text);margin-bottom:4px;}
+.game-pick-desc{font-size:11px;color:var(--muted);font-weight:600;}
+/* Player select modal */
+.game-player-card{display:flex;align-items:center;gap:11px;padding:11px 13px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all .2s;width:100%;font-family:inherit;text-align:left;margin-bottom:8px;}
+.game-player-card:hover{border-color:var(--accent);background:rgba(232,131,74,.08);}
+.game-player-card.offline{opacity:.55;}
+.game-player-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0;}
+.game-player-name{font-size:14px;font-weight:700;color:var(--text);flex:1;}
+.game-player-status{font-size:11px;font-weight:600;}
+/* Invite card */
+.game-invite-card{background:var(--surface);border:2px solid var(--accent);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;animation:slideUp .3s cubic-bezier(.22,1,.36,1);}
+.game-invite-info{flex:1;}
+.game-invite-title{font-size:14px;font-weight:800;color:var(--text);}
+.game-invite-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+.game-invite-btns{display:flex;gap:7px;}
+/* Active game listing */
+.my-game-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:13px 16px;margin-bottom:9px;display:flex;align-items:center;gap:11px;cursor:pointer;transition:all .2s;}
+.my-game-card:hover{border-color:var(--accent);}
+/* TTT board */
+.ttt-board{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-width:280px;margin:0 auto 18px;}
+.ttt-cell{aspect-ratio:1;background:var(--surface2);border:2px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:36px;cursor:pointer;transition:all .2s;}
+.ttt-cell:hover:not(.filled){background:rgba(232,131,74,.12);border-color:var(--accent);}
+.ttt-cell.filled{cursor:default;}
+/* Battleship */
+.bs-wrap{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;}
+.bs-grid-wrap{text-align:center;}
+.bs-label{font-size:12px;font-weight:800;color:var(--muted);margin-bottom:6px;}
+.bs-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:2px;max-width:300px;}
+.bs-cell{aspect-ratio:1;background:var(--surface2);border:1px solid var(--border);border-radius:3px;cursor:pointer;transition:all .15s;font-size:11px;display:flex;align-items:center;justify-content:center;}
+.bs-cell:hover:not(.shot){background:rgba(91,171,111,.2);border-color:var(--accent2);}
+.bs-cell.ship{background:rgba(232,131,74,.3);border-color:var(--accent);}
+.bs-cell.hit{background:var(--danger);border-color:var(--danger);color:#fff;}
+.bs-cell.miss{background:rgba(91,171,111,.15);border-color:var(--accent2);color:var(--accent2);}
+.bs-cell.shot{cursor:default;}
+/* Chess */
+.chess-board{display:grid;grid-template-columns:repeat(8,1fr);max-width:320px;margin:0 auto;border:2px solid var(--border);border-radius:6px;overflow:hidden;}
+.chess-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;transition:background .15s;position:relative;}
+.chess-cell.light{background:#f0d9b5;}
+.chess-cell.dark{background:#b58863;}
+.chess-cell.selected{background:rgba(232,131,74,.6)!important;}
+.chess-cell.valid-move::after{content:'';position:absolute;width:30%;height:30%;background:rgba(0,0,0,.25);border-radius:50%;}
+.chess-cell:hover{filter:brightness(1.12);}
+/* Game status bar */
+.game-status-bar{background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;}
+.game-turn-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+
 /* RESPONSIVE */
 @media(max-width:600px){
     .cards-grid{grid-template-columns:1fr 1fr;gap:10px;}
@@ -579,6 +642,13 @@ function removeHostMemory() {
                 <input type="text" id="nameInput" placeholder="What's your name? 👋" maxlength="30" autocomplete="off"
                     style="width:100%;padding:13px 16px 13px 44px;font-size:15px;font-family:'Nunito',sans-serif;font-weight:600;background:var(--bg);border:2px solid var(--border);border-radius:var(--radius);color:var(--text);transition:border-color .25s,box-shadow .25s;outline:none;">
             </div>
+            <div style="position:relative;margin-bottom:10px;">
+                <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);display:flex;">
+                    <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.01 1.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.9v2.02z"/></svg>
+                </span>
+                <input type="tel" id="phoneInput" placeholder="Your phone number (for SMS alerts) 📱" maxlength="20" autocomplete="off"
+                    style="width:100%;padding:13px 16px 13px 44px;font-size:15px;font-family:'Nunito',sans-serif;font-weight:600;background:var(--bg);border:2px solid var(--border);border-radius:var(--radius);color:var(--text);transition:border-color .25s,box-shadow .25s;outline:none;">
+            </div>
             <button onclick="signIn()" class="btn btn-primary" style="font-family:'Nunito',sans-serif;font-weight:800;font-size:15px;">
                 Come on in! 🎉
             </button>
@@ -692,6 +762,7 @@ function removeHostMemory() {
     <button class="feature-tab" data-panel="calendar" onclick="switchFeatureTab('calendar',this)">📅 Calendar</button>
     <button class="feature-tab" data-panel="recipes" onclick="switchFeatureTab('recipes',this)">🍳 Recipes</button>
     <button class="feature-tab" data-panel="poll" onclick="switchFeatureTab('poll',this)">🗳️ Poll</button>
+    <button class="feature-tab" data-panel="games" onclick="switchFeatureTab('games',this)" id="gamesTab">🎮 Games <span id="gameInviteBadge" style="display:none;background:var(--danger);color:#fff;border-radius:8px;padding:1px 6px;font-size:10px;margin-left:2px;">!</span></button>
 </div>
 
 <!-- Home Panel -->
@@ -739,6 +810,47 @@ function removeHostMemory() {
         <button class="btn btn-outline" style="padding:7px 14px;font-size:12px;" id="createPollBtn" onclick="openCreatePoll()">+ New Poll</button>
     </div>
     <div id="pollContainer"></div>
+</div>
+
+<!-- Games Panel -->
+<div class="feature-panel" id="panel-games">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <div style="font-family:'Fredoka One',cursive;font-size:22px;">Family Games 🎮</div>
+        <button onclick="testSmsSignIn()" style="background:var(--accent2);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;display:flex;align-items:center;gap:6px;" title="Send yourself a test SMS">📱 Test SMS</button>
+    </div>
+    <p style="color:var(--muted);font-size:13px;font-weight:600;margin-bottom:20px;">Challenge a family member to a game!</p>
+    <!-- Active game board (hidden until in game) -->
+    <div id="gameBoardWrap" style="display:none;"></div>
+    <!-- Game picker (shown when not in a game) -->
+    <div id="gamePickerWrap">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;margin-bottom:24px;">
+            <div class="game-pick-card" onclick="selectGame('tictactoe')">
+                <div class="game-pick-icon">⭕</div>
+                <div class="game-pick-name">Tic Tac Toe</div>
+                <div class="game-pick-desc">2 players · Quick rounds</div>
+            </div>
+            <div class="game-pick-card" onclick="selectGame('battleship')">
+                <div class="game-pick-icon">🚢</div>
+                <div class="game-pick-name">Battleship</div>
+                <div class="game-pick-desc">2 players · Strategy</div>
+            </div>
+            <div class="game-pick-card" onclick="selectGame('chess')">
+                <div class="game-pick-icon">♟️</div>
+                <div class="game-pick-name">Chess</div>
+                <div class="game-pick-desc">2 players · Classic</div>
+            </div>
+        </div>
+        <!-- Pending invites received -->
+        <div id="gameInvitesSection" style="display:none;">
+            <div style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:10px;">📬 Game Invites</div>
+            <div id="gameInvitesList"></div>
+        </div>
+        <!-- Active game history -->
+        <div id="myGamesSection" style="display:none;margin-top:20px;">
+            <div style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:10px;">🕹️ My Active Games</div>
+            <div id="myGamesList"></div>
+        </div>
+    </div>
 </div>
 
 <!-- Hidden file inputs -->
@@ -1162,7 +1274,7 @@ function removeHostMemory() {
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, set, get, onValue, push, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, set, get, onValue, push, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 
@@ -1180,7 +1292,7 @@ window.db = getDatabase(app);
 window.storage = getStorage(app);
 window.messaging = getMessaging(app);
 window.dbRef = ref; window.dbSet = set; window.dbGet = get;
-window.dbOnValue = onValue; window.dbPush = push; window.dbRemove = remove;
+window.dbOnValue = onValue; window.dbPush = push; window.dbRemove = remove; window.dbUpdate = update;
 window.storageRef = storageRef;
 window.uploadBytesResumable = uploadBytesResumable;
 window.getDownloadURL = getDownloadURL;
@@ -2587,59 +2699,26 @@ async function toggleVoiceRecording(){
         if(mediaRecorder && mediaRecorder.state === 'recording'){
             mediaRecorder.stop();
         } else {
+            // Stuck state — reset
             resetRecordingState();
             toast('Recording stopped.','warn');
         }
         return;
     }
 
-    // ── Detect Median APK (their bridge uses window.median, not window.gonative) ──
-    const isMedianApp = typeof window.median !== 'undefined' || typeof window.gonative !== 'undefined';
-
-    // ── Median APK: check mic permission status via their official bridge ──
-    if(isMedianApp && typeof window.median !== 'undefined' && window.median.permissions){
-        try{
-            const status = await window.median.permissions.status(['Microphone']);
-            console.log('[mic] Median permission status:', JSON.stringify(status));
-
-            if(status && status.Microphone === 'denied'){
-                // Already denied — send user directly to app settings
-                toast('Microphone is blocked. Opening app settings so you can enable it…','warn');
-                setTimeout(() => { window.median.open.appSettings(); }, 1200);
-                return;
-            }
-            // If 'undetermined' or 'granted', fall through — getUserMedia will trigger
-            // the native dialog if needed, or start recording if already granted
-        }catch(err){
-            console.warn('[mic] median.permissions.status error:', err);
-            // Don't block — fall through and let getUserMedia try anyway
-        }
+    // Check browser support
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+        toast('Voice recording not supported in this browser. Try Chrome or Safari.','danger');
+        return;
     }
-
-    // ── Polyfill mediaDevices for older WebView builds ──
-    if(!navigator.mediaDevices){ navigator.mediaDevices = {}; }
-    if(!navigator.mediaDevices.getUserMedia){
-        const legacyGUM = navigator.getUserMedia || navigator.webkitGetUserMedia
-            || navigator.mozGetUserMedia || navigator.msGetUserMedia;
-        if(legacyGUM){
-            navigator.mediaDevices.getUserMedia = constraints => new Promise(
-                (res, rej) => legacyGUM.call(navigator, constraints, res, rej)
-            );
-        } else {
-            toast('🎙️ Microphone not available. Please rebuild the app with Microphone permission enabled in the Median dashboard.','danger');
-            return;
-        }
-    }
-
     if(typeof MediaRecorder === 'undefined'){
-        toast('Voice recording not supported in this app version.','danger');
+        toast('Voice recording not supported in this browser.','danger');
         return;
     }
 
-    // Start recording — getUserMedia triggers the native Android permission dialog
-    // if permission hasn't been granted yet
+    // Start recording
     try{
-        const stream = await navigator.mediaDevices.getUserMedia({audio:true, video:false});
+        const stream = await navigator.mediaDevices.getUserMedia({audio:true});
         activeStream = stream;
         audioChunks = [];
 
@@ -2682,30 +2761,12 @@ async function toggleVoiceRecording(){
 
     }catch(e){
         resetRecordingState();
-        console.error('[mic] getUserMedia error:', e.name, e.message);
-        const isMedianApp2 = typeof window.median !== 'undefined' || typeof window.gonative !== 'undefined';
         if(e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError'){
-            if(isMedianApp2){
-                toast('Microphone blocked. Opening app settings…','warn');
-                setTimeout(() => {
-                    if(window.median && window.median.open) window.median.open.appSettings();
-                }, 1200);
-            } else {
-                toast('Microphone access denied. Allow mic access in your browser settings.','danger');
-            }
-        } else if(e.name === 'NotFoundError' || e.name === 'DevicesNotFoundError'){
+            toast('Microphone access denied. Allow mic access in your browser settings.','danger');
+        } else if(e.name === 'NotFoundError'){
             toast('No microphone found on this device.','danger');
-        } else if(e.name === 'NotReadableError' || e.name === 'TrackStartError'){
-            toast('Microphone is in use by another app. Close other apps and try again.','danger');
-        } else if(e.name === 'OverconstrainedError'){
-            try{
-                const streamRetry = await navigator.mediaDevices.getUserMedia({audio:{}});
-                activeStream = streamRetry;
-                toast('🔴 Recording… tap again to send');
-                return;
-            }catch(e2){ toast('Could not start recording: '+e2.name,'danger'); }
         } else {
-            toast('Recording failed ('+e.name+'): '+(e.message||'unknown error'),'danger');
+            toast('Could not start recording: ' + (e.message || e),'danger');
         }
     }
 }
@@ -3545,15 +3606,38 @@ function toggleNewName(){
 function signIn(){
     const name = document.getElementById('nameInput').value.trim();
     if(!name){ toast('Please enter your name!','warn'); return; }
-    doSignIn(name);
+    const phone = (document.getElementById('phoneInput')?.value || '').trim();
+    doSignIn(name, phone);
 }
 
-function doSignIn(name){
-    // Save to accounts list if not already there
+function showChromePrompt(){
+    const overlay = document.getElementById('chromePromptOverlay');
+    if(overlay) overlay.classList.remove('hidden');
+}
+
+function dismissChromePrompt(){
+    const overlay = document.getElementById('chromePromptOverlay');
+    if(overlay) overlay.classList.add('hidden');
+}
+
+function doSignIn(name, phone){
+    // Save to accounts list, storing phone if provided
     const accounts = getSavedAccounts();
-    if(!accounts.find(a => a.name === name)){
-        accounts.unshift({name, addedAt: Date.now()});
+    const existing = accounts.find(a => a.name === name);
+    if(!existing){
+        accounts.unshift({name, phone: phone||'', addedAt: Date.now()});
         saveAccounts(accounts);
+    } else if(phone && !existing.phone) {
+        existing.phone = phone;
+        saveAccounts(accounts);
+    }
+    // Also save phone to Firebase so all devices know this user's number
+    if(phone || (existing && existing.phone)){
+        const userPhone = phone || existing.phone;
+        try{ localStorage.setItem('userPhone', userPhone); }catch(e){}
+        if(window.db){
+            window.dbSet(window.dbRef(window.db,'userPhones/'+name.replace(/\s+/g,'_')), {name, phone:userPhone, updatedAt:Date.now()}).catch(()=>{});
+        }
     }
     try{ localStorage.setItem('userName', name); }catch(e){}
     currentUser = name;
@@ -3570,9 +3654,11 @@ function doSignIn(name){
     } else {
         toast('Welcome, ' + name + '! 👋');
     }
-    waitForFirebase(()=>{ registerOnlineUser(); loadContent(); });
+    waitForFirebase(()=>{ registerOnlineUser(); loadContent(); listenGameInvites(); });
     checkBirthdays();
     updateUserNamePill(name);
+    // Show Chrome prompt for voice messaging
+    showChromePrompt();
 }
 
 function updateUserNamePill(name){
@@ -4196,13 +4282,11 @@ async function registerServiceWorker() {
 }
 
 // ── Notification permission & subscription ────────────────
-let notifPermission = (typeof Notification !== 'undefined' ? Notification.permission : 'default') || 'default';
+let notifPermission = Notification.permission || 'default';
 
 function showNotifBanner() {
-    // Don't show if already granted, denied, or dismissed this session
-    if (notifPermission === 'granted') return;
-    if (notifPermission === 'denied') return;
-    if (typeof Notification !== 'undefined' && Notification.permission === 'denied') return;
+    // Don't show if user already has a phone saved
+    if (localStorage.getItem('userPhone')) return;
     if (sessionStorage.getItem('notifBannerDismissed')) return;
     // Show after 8 seconds so it's not the first thing users see
     setTimeout(() => {
@@ -4214,84 +4298,32 @@ function showNotifBanner() {
 async function requestNotifPermission() {
     const banner = document.getElementById('notifBanner');
     if (banner) banner.classList.remove('show');
-
-    // ── Detect Median APK ──
-    const isMedianApp = typeof window.median !== 'undefined' || typeof window.gonative !== 'undefined';
-
-    if (isMedianApp && typeof window.median !== 'undefined' && window.median.permissions) {
-        try {
-            const status = await window.median.permissions.status(['Notifications']);
-            console.log('[notif] Median permission status:', JSON.stringify(status));
-
-            if (status && status.Notifications === 'denied') {
-                // Already denied — open app settings so user can flip the toggle
-                toast('Notifications are blocked. Opening app settings so you can enable them…', 'warn');
-                setTimeout(() => { window.median.open.appSettings(); }, 1200);
-                return;
-            }
-
-            if (status && status.Notifications === 'granted') {
-                notifPermission = 'granted';
-                toast('🔔 Notifications are already enabled!');
-                playNotifSound();
-                return;
-            }
-
-            // 'undetermined' — trigger the native permission dialog via OneSignal
-            // (Median's push notification system handles the actual prompt)
-            if (window.median.onesignal && window.median.onesignal.promptNotification) {
-                window.median.onesignal.promptNotification({
-                    callback: function(result) {
-                        console.log('[notif] OneSignal prompt result:', JSON.stringify(result));
-                        if (result && result.accepted) {
-                            notifPermission = 'granted';
-                            toast('🔔 Notifications enabled!');
-                            playNotifSound();
-                        } else {
-                            toast('Notifications not enabled. You can turn them on in app settings anytime.', 'warn');
-                        }
-                    }
-                });
-            } else {
-                // No OneSignal — try registering device directly
-                if (window.median.onesignal && window.median.onesignal.registerDevice) {
-                    window.median.onesignal.registerDevice();
-                }
-                toast('Notification prompt triggered. If nothing appeared, please enable notifications in device Settings → Apps → your app → Notifications.', 'warn');
-            }
-
-        } catch(err) {
-            console.warn('[notif] median.permissions.status error:', err);
-            toast('Could not check notification permission. Try enabling notifications in device Settings.', 'warn');
-        }
+    // Check if user already has a phone saved
+    const myPhone = localStorage.getItem('userPhone') || '';
+    if(myPhone){
+        toast('📱 SMS alerts already set up for ' + myPhone);
         return;
     }
-
-    // ── Standard browser fallback (non-Median) ──
-    if (!('Notification' in window)) {
-        toast('This browser does not support notifications.', 'warn');
-        return;
+    // Prompt for phone number
+    const phone = prompt('Enter your phone number to receive SMS alerts:\n(e.g. 555-867-5309)');
+    if(!phone || !phone.trim()){ return; }
+    const num = phone.trim();
+    try{ localStorage.setItem('userPhone', num); }catch(e){}
+    // Save to Firebase under this user's name
+    const name = currentUser || localStorage.getItem('userName') || 'Unknown';
+    if(window.db){
+        await window.dbSet(window.dbRef(window.db,'userPhones/'+name.replace(/\s+/g,'_')), {name, phone:num, updatedAt:Date.now()});
     }
-    if (Notification.permission === 'denied') {
-        toast('Notifications are blocked. Go to browser Settings → Site Settings → Notifications → Allow.', 'warn');
-        return;
-    }
-    try {
-        const result = await Notification.requestPermission();
-        notifPermission = result;
-        if (result === 'granted') {
-            toast('🔔 Notifications enabled!');
-            await registerServiceWorker();
-            await saveNotifToken();
-            playNotifSound();
-        } else if (result === 'denied') {
-            toast('Notifications blocked. Enable in browser Settings → Site Settings → Notifications.', 'warn');
-        } else {
-            toast('Notification permission dismissed.', 'warn');
-        }
-    } catch(e) {
-        console.warn('Notification permission error:', e);
-        toast('Could not open notification prompt.', 'warn');
+    // Update accounts list too
+    const accounts = getSavedAccounts();
+    const acc = accounts.find(a => a.name === name);
+    if(acc){ acc.phone = num; saveAccounts(accounts); }
+    // Send a test SMS
+    const ok = await sendTextBeltSms(num, '🏠 Family Hub: SMS alerts are now set up! You\'ll get notified here.');
+    if(ok){
+        toast('✅ SMS alerts enabled! Test message sent to ' + num);
+    } else {
+        toast('📱 Phone saved. SMS delivery depends on your carrier (free tier: 1/day).', 'warn');
     }
 }
 
@@ -4349,25 +4381,65 @@ function playNotifSound() {
     } catch(e) {}
 }
 
-// ── Show an in-app + native notification ─────────────────
+// ── TextBelt SMS notification system ─────────────────────
+// Replaces browser push notifications with SMS via TextBelt
+
+async function sendTextBeltSms(phone, message) {
+    if (!phone) return false;
+    // Normalize phone: strip non-digits, ensure it has country code
+    let num = phone.replace(/\D/g,'');
+    if(num.length === 10) num = '1' + num; // assume US
+    try {
+        const resp = await fetch('https://textbelt.com/text', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({
+                phone: num,
+                message: message,
+                key: 'textbelt' // free tier: 1 text/day. Replace with paid key for more.
+            })
+        });
+        const data = await resp.json();
+        return data.success === true;
+    } catch(e) {
+        console.warn('TextBelt error:', e);
+        return false;
+    }
+}
+
+// Get all stored user phones from Firebase
+async function getAllUserPhones() {
+    if (!window.db) return {};
+    try {
+        const snap = await window.dbGet(window.dbRef(window.db, 'userPhones'));
+        return snap.exists() ? snap.val() : {};
+    } catch(e) { return {}; }
+}
+
+// Send SMS to all users who have registered a phone number
+async function broadcastSms(message) {
+    const phones = await getAllUserPhones();
+    const myPhone = localStorage.getItem('userPhone') || '';
+    const results = [];
+    for(const key of Object.keys(phones)){
+        const entry = phones[key];
+        if(entry.phone && entry.phone !== myPhone){
+            const ok = await sendTextBeltSms(entry.phone, message);
+            results.push({name: entry.name, ok});
+        }
+    }
+    return results;
+}
+
+// ── Show an in-app toast + send SMS ─────────────────────
 function showNotification(title, body, tag) {
     // Always play sound
     playNotifSound();
-
-    // In-app toast (always visible regardless of permission)
+    // In-app toast (always visible)
     toast('🔔 ' + title + (body ? ': ' + body : ''));
-
-    // Native notification via Service Worker (if granted + SW ready)
-    if (notifPermission === 'granted') {
-        if (swRegistration && swRegistration.active) {
-            swRegistration.active.postMessage({ type: 'SHOW_NOTIF', title, body, tag: tag || 'fh' });
-        } else {
-            // Fallback: direct Notification API
-            try {
-                new Notification(title, { body, tag: tag || 'fh', icon: '' });
-            } catch(e) {}
-        }
-    }
+    // Send SMS to all users with registered phones
+    const msg = '🏠 Family Hub: ' + title + (body ? '\n' + body : '');
+    broadcastSms(msg).catch(()=>{});
 }
 
 // ── Notification settings (host-controlled, stored in Firebase) ──
@@ -4403,36 +4475,41 @@ async function loadNotifyPanel() {
     if (ta) ta.checked = notifSettings.announce !== false;
     if (tn) tn.checked = notifSettings.content !== false;
 
-    // Count subscribers
+    // Count SMS subscribers (users with registered phones)
     const statsEl = document.getElementById('notifSubscriberStats');
     if (statsEl && window.db) {
         try {
-            const snap = await window.dbGet(window.dbRef(window.db, 'notifTokens'));
-            const count = snap.exists() ? Object.keys(snap.val()).length : 0;
-            statsEl.textContent = '📱 ' + count + ' device' + (count !== 1 ? 's' : '') + ' have notifications enabled';
+            const phones = await getAllUserPhones();
+            const count = Object.keys(phones).length;
+            statsEl.textContent = '📱 ' + count + ' family member' + (count !== 1 ? 's' : '') + ' registered for SMS alerts';
         } catch(e) { statsEl.textContent = '📱 Unable to load subscriber count'; }
     }
 }
 
-// ── Host: send a custom push notification to all ──────────
+// ── Host: send a custom SMS notification to all ──────────
 async function sendHostPushNotification() {
     const title = (document.getElementById('notifTitle')?.value || '').trim() || 'Message from Host 👑';
     const body  = (document.getElementById('notifBody')?.value  || '').trim();
     if (!body) { toast('Write a message first', 'warn'); return; }
 
+    // Also write to Firebase so online users get an in-app toast
     try {
-        // Write to Firebase — all open clients listen and show notification
         await window.dbSet(window.dbRef(window.db, 'pushNotif'), {
-            title,
-            body,
+            title, body,
             sentBy: currentUser || 'Host',
             timestamp: Date.now(),
             type: 'manual'
         });
-        document.getElementById('notifTitle').value = '';
-        document.getElementById('notifBody').value = '';
-        toast('Notification sent to all family members! 🔔');
-    } catch(e) { toast('Failed to send: ' + e.message, 'danger'); }
+    } catch(e) {}
+
+    // Send SMS to all registered phones
+    const msg = '🏠 ' + title + '\n' + body;
+    const results = await broadcastSms(msg);
+    const sent = results.filter(r=>r.ok).length;
+
+    document.getElementById('notifTitle').value = '';
+    document.getElementById('notifBody').value = '';
+    toast(`📱 Message sent! ${sent > 0 ? sent + ' SMS delivered.' : 'In-app only (add phones to enable SMS).'}`);
 }
 
 // ── Listen for push notifications written to Firebase ─────
@@ -4524,53 +4601,45 @@ function listenCardsForNotif() {
     }
 }
 
+// ── Test SMS from Games panel ─────────────────────────────
+async function testSmsSignIn() {
+    const myPhone = localStorage.getItem('userPhone') || '';
+    if(!myPhone){
+        const phone = prompt('Enter your phone number to receive SMS alerts:\n(e.g. 555-867-5309)');
+        if(!phone || !phone.trim()){ return; }
+        const num = phone.trim();
+        try{ localStorage.setItem('userPhone', num); }catch(e){}
+        const name = currentUser || localStorage.getItem('userName') || 'Unknown';
+        if(window.db){
+            await window.dbSet(window.dbRef(window.db,'userPhones/'+name.replace(/\s+/g,'_')), {name, phone:num, updatedAt:Date.now()});
+        }
+        const accounts = getSavedAccounts();
+        const acc = accounts.find(a => a.name === name);
+        if(acc){ acc.phone = num; saveAccounts(accounts); }
+        const ok = await sendTextBeltSms(num, '🏠 Family Hub: SMS alerts are now set up!');
+        toast(ok ? '✅ Test SMS sent to ' + num : '📱 Phone saved! (Free tier: 1 SMS/day per number)', ok ? '' : 'warn');
+    } else {
+        const ok = await sendTextBeltSms(myPhone, '🏠 Family Hub: This is your test SMS! 🎮');
+        toast(ok ? '✅ Test SMS sent to ' + myPhone : '⚠️ SMS failed (free tier: 1/day). Try again tomorrow.', ok ? '' : 'warn');
+    }
+}
+window.testSmsSignIn = testSmsSignIn;
+
 // ── Boot: initialise the notification system ───────────────
 async function initNotifications() {
-    await registerServiceWorker();
+    // Load host's settings from Firebase
     await loadNotifSettings();
-
-    // ── Median APK: check notification status via their official bridge ──
-    const isMedianApp = typeof window.median !== 'undefined';
-    if (isMedianApp && window.median.permissions) {
-        try {
-            const status = await window.median.permissions.status(['Notifications']);
-            if (status && status.Notifications === 'granted') {
-                notifPermission = 'granted';
-                listenPushNotifications();
-                listenAnnouncementsWithNotif();
-                listenCardsForNotif();
-                if (Array.isArray(chatGroups)) chatGroups.forEach(g => listenChatGroupForNotif(g));
-            } else {
-                showNotifBanner();
-                listenAnnouncementsWithNotif();
-            }
-        } catch(e) {
-            showNotifBanner();
-            listenAnnouncementsWithNotif();
-        }
-        return;
-    }
-
-    // ── Standard browser fallback ──
-    if ((typeof Notification !== 'undefined' && Notification.permission === 'granted') || notifPermission === 'granted') {
-        notifPermission = 'granted';
-        await saveNotifToken();
-        listenPushNotifications();
-        listenAnnouncementsWithNotif();
-        listenCardsForNotif();
-        // Listen on all known chat groups
-        if (Array.isArray(chatGroups)) chatGroups.forEach(g => listenChatGroupForNotif(g));
-        // Listen for FCM messages when page is open
-        if (window.messaging) {
-            onMessage(window.messaging, (payload) => {
-                showNotification(payload.notification.title, payload.notification.body, 'fcm');
-            });
-        }
-    } else {
-        // Show banner for users who haven't decided
-        showNotifBanner();
-        // Still listen for announcements (they show as toasts)
-        listenAnnouncementsWithNotif();
+    // Start listeners (in-app toasts + SMS on trigger)
+    listenPushNotifications();
+    listenAnnouncementsWithNotif();
+    listenCardsForNotif();
+    if (Array.isArray(chatGroups)) chatGroups.forEach(g => listenChatGroupForNotif(g));
+    // Restore saved phone for this user
+    const savedPhone = localStorage.getItem('userPhone');
+    if(savedPhone && currentUser && window.db){
+        window.dbSet(window.dbRef(window.db,'userPhones/'+currentUser.replace(/\s+/g,'_')), {
+            name: currentUser, phone: savedPhone, updatedAt: Date.now()
+        }).catch(()=>{});
     }
 }
 
@@ -4874,8 +4943,747 @@ function requestNotificationPermission() {
     });
 }
 
-// Call this when user signs in or at appropriate time
-// requestNotificationPermission();
+// ══════════════════════════════════════════════════════════
+//  GAMES SYSTEM
+// ══════════════════════════════════════════════════════════
+const GAME_NAMES = {tictactoe:'Tic Tac Toe ⭕', battleship:'Battleship 🚢', chess:'Chess ♟️'};
+const AVATAR_COLORS_G = ['#e8834a','#5bab6f','#4a90d9','#9b59b6','#e67e22','#1abc9c','#e74c3c','#3498db'];
+let pendingGameType = null;
+let currentGameId = null;
+let currentGameData = null;
+let gameInviteListener = null;
+let gameStateListener = null;
+
+// ── Game tab opened ──────────────────────────────────────
+function onGamesTabOpen(){
+    if(!currentUser || !window.db) return;
+    listenGameInvites();
+    listenMyGames();
+}
+
+// ── Step 1: User picks a game type ──────────────────────
+function selectGame(type){
+    if(!currentUser){ toast('Sign in first!','warn'); return; }
+    pendingGameType = type;
+    openGamePlayerPicker(type);
+}
+
+function openGamePlayerPicker(type){
+    document.getElementById('gamePlayerModalTitle').textContent = 'Who to challenge at ' + GAME_NAMES[type] + '?';
+    const list = document.getElementById('gamePlayerList');
+    list.innerHTML = '<p style="color:var(--muted);text-align:center;padding:12px;">Loading family members…</p>';
+    openModal('gamePlayerModal');
+    // Get online users from Firebase
+    if(!window.db){ list.innerHTML = '<p style="color:var(--muted);text-align:center;">No connection</p>'; return; }
+    window.dbGet(window.dbRef(window.db,'onlineUsers')).then(snap => {
+        const onlineMap = snap.exists() ? snap.val() : {};
+        // Also get all-time users from userName list if possible — just use online for now
+        const others = Object.values(onlineMap).filter(u => u.name && u.name !== currentUser);
+        list.innerHTML = '';
+        if(others.length === 0){
+            list.innerHTML = '<p style="color:var(--muted);text-align:center;padding:12px;">No other family members are online right now.<br><span style="font-size:12px;">You can still send an invite — they\'ll see it when they join!</span></p>';
+        }
+        others.forEach(u => {
+            const ci = u.name.split('').reduce((a,c)=>a+c.charCodeAt(0),0) % AVATAR_COLORS_G.length;
+            const initials = u.name.split(' ').map(w=>w[0]||'').join('').toUpperCase().slice(0,2)||u.name[0].toUpperCase();
+            const btn = document.createElement('button');
+            btn.className = 'game-player-card';
+            btn.innerHTML = `<div class="game-player-avatar" style="background:${AVATAR_COLORS_G[ci]}">${initials}</div>
+                <div class="game-player-name">${u.name}</div>
+                <div class="game-player-status" style="color:var(--accent2)">🟢 Online</div>`;
+            btn.onclick = () => sendGameInvite(type, u.name);
+            list.appendChild(btn);
+        });
+        // Also allow inviting offline (typed name)
+        const divider = document.createElement('div');
+        divider.style = 'margin:14px 0 8px;color:var(--muted);font-size:12px;font-weight:700;text-align:center;';
+        divider.textContent = '— or invite by name —';
+        list.appendChild(divider);
+        const row = document.createElement('div');
+        row.style = 'display:flex;gap:8px;';
+        row.innerHTML = `<input id="gameInviteNameInput" type="text" placeholder="Family member's name…" maxlength="30"
+            style="flex:1;padding:10px 13px;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:14px;font-family:inherit;outline:none;">
+            <button onclick="sendGameInviteByInput('${type}')" class="btn btn-outline" style="padding:10px 16px;font-size:13px;">Invite</button>`;
+        list.appendChild(row);
+    }).catch(()=>{
+        list.innerHTML = '<p style="color:var(--muted);text-align:center;">Could not load members</p>';
+    });
+}
+
+function sendGameInviteByInput(type){
+    const name = (document.getElementById('gameInviteNameInput')||{}).value?.trim();
+    if(!name){ toast('Enter a name!','warn'); return; }
+    sendGameInvite(type, name);
+}
+
+// ── Step 2: Send invite — check if opponent is online ───
+async function sendGameInvite(type, opponentName){
+    closeModal('gamePlayerModal');
+    if(!window.db){ toast('No connection','warn'); return; }
+    // Check if opponent is currently online
+    const oppKey = opponentName.replace(/[.#$[\]]/g,'_');
+    let opponentOnline = false;
+    try{
+        const onlineSnap = await window.dbGet(window.dbRef(window.db,'onlineUsers/'+oppKey));
+        opponentOnline = onlineSnap.exists();
+    }catch(e){}
+
+    const gameId = 'game_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+    const inviteData = {
+        gameId, type,
+        from: currentUser,
+        to: opponentName,
+        status: 'pending',
+        createdAt: Date.now()
+    };
+    // Initial game state — if offline, immediately start vs computer
+    const vsComputer = !opponentOnline;
+    const initState = buildInitialGameState(type, currentUser, opponentName, vsComputer);
+    try{
+        await window.dbSet(window.dbRef(window.db, 'gameInvites/' + oppKey + '/' + gameId), inviteData);
+        await window.dbSet(window.dbRef(window.db, 'games/' + gameId), initState);
+        if(opponentOnline){
+            toast('Invite sent to ' + opponentName + '! 🎮');
+        } else {
+            toast(opponentName + ' is offline — playing vs computer! 🤖');
+            // Start vs-computer game right away
+            openGameBoard(gameId, type);
+        }
+        listenMyGames();
+    }catch(e){ toast('Could not send invite','warn'); }
+}
+
+// ── Step 3: Opponent signs in → sees "switch from computer" popup ──
+function listenGameInvites(){
+    if(!currentUser || !window.db) return;
+    const key = currentUser.replace(/[.#$[\]]/g,'_');
+    const ref = window.dbRef(window.db, 'gameInvites/' + key);
+    window.dbOnValue(ref, snap => {
+        const section = document.getElementById('gameInvitesSection');
+        const list = document.getElementById('gameInvitesList');
+        const badge = document.getElementById('gameInviteBadge');
+        if(!section||!list) return;
+        if(!snap.exists()){ section.style.display='none'; if(badge) badge.style.display='none'; return; }
+        const allInvites = Object.entries(snap.val());
+        const pending = allInvites.filter(([,v])=>v.status==='pending');
+        // Show "switch from computer" popup for any pending invite
+        pending.forEach(([gid, inv]) => {
+            showSwitchFromComputerPopup(gid, inv);
+        });
+        if(pending.length===0){ section.style.display='none'; if(badge) badge.style.display='none'; return; }
+        section.style.display='block';
+        if(badge){ badge.style.display='inline'; badge.textContent=pending.length; }
+        list.innerHTML = '';
+        pending.forEach(([gameId, inv]) => {
+            const card = document.createElement('div');
+            card.className = 'game-invite-card';
+            card.innerHTML = `
+                <div style="font-size:30px">🎮</div>
+                <div class="game-invite-info">
+                    <div class="game-invite-title">${inv.from} wants to play!</div>
+                    <div class="game-invite-sub">${GAME_NAMES[inv.type]||inv.type}</div>
+                </div>
+                <div class="game-invite-btns">
+                    <button class="btn btn-outline" style="padding:8px 14px;font-size:12px;" onclick="acceptGameInvite('${gameId}','${inv.from}','${inv.type}')">Join! ✅</button>
+                    <button class="btn btn-danger" style="padding:8px 12px;font-size:12px;" onclick="declineGameInvite('${gameId}','${inv.from}')">Decline</button>
+                </div>`;
+            list.appendChild(card);
+        });
+    });
+}
+
+// ── "Switch from Computer" popup shown to offline user when they log in ──
+let switchPopupShownFor = {};
+function showSwitchFromComputerPopup(gameId, inv){
+    // Only show once per session per invite
+    if(switchPopupShownFor[gameId]) return;
+    switchPopupShownFor[gameId] = true;
+    // Check that the other player actually started vs computer (game exists and vsComputer=true)
+    if(!window.db) return;
+    window.dbGet(window.dbRef(window.db,'games/'+gameId)).then(snap=>{
+        if(!snap.exists()) return;
+        const g = snap.val();
+        if(!g.vsComputer) return; // they're just waiting, normal flow
+        if(g.status==='done') return;
+        // Show the popup
+        const overlay = document.createElement('div');
+        overlay.id = 'switchComputerPopup_'+gameId;
+        overlay.style = `position:fixed;inset:0;background:rgba(255,250,245,.96);display:flex;justify-content:center;align-items:center;z-index:10002;backdrop-filter:blur(8px);animation:slideUp .4s cubic-bezier(.22,1,.36,1);`;
+        overlay.innerHTML = `<div style="background:var(--surface);padding:34px 28px;border-radius:var(--radius-lg);border:2px solid var(--accent);box-shadow:0 0 60px var(--accent-glow);text-align:center;max-width:380px;width:92%;">
+            <div style="font-size:48px;margin-bottom:10px;">🎮</div>
+            <div style="font-family:'Fredoka One',cursive;font-size:24px;color:var(--accent);margin-bottom:8px;">You've got a challenge!</div>
+            <p style="color:var(--text);font-size:15px;font-weight:600;line-height:1.55;margin-bottom:6px;">
+                <b>${inv.from}</b> invited you to play <b>${GAME_NAMES[inv.type]||inv.type}</b>!
+            </p>
+            <p style="color:var(--muted);font-size:13px;font-weight:600;margin-bottom:22px;">
+                They started playing against the computer while waiting for you.<br>
+                Want to take over and play them instead? 🤝
+            </p>
+            <button onclick="switchToHumanGame('${gameId}','${inv.from}','${inv.type}')" style="width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:15px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;box-shadow:0 4px 20px var(--accent-glow);margin-bottom:10px;">
+                Yes! Switch to playing ${inv.from} 🙌
+            </button>
+            <button onclick="document.getElementById('switchComputerPopup_${gameId}').remove()" style="width:100%;padding:11px;background:transparent;border:1.5px solid var(--border);border-radius:var(--radius);font-size:13px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;color:var(--muted);">
+                No thanks, I'll watch
+            </button>
+        </div>`;
+        document.body.appendChild(overlay);
+    }).catch(()=>{});
+}
+
+async function switchToHumanGame(gameId, fromName, type){
+    // Remove the popup
+    const pop = document.getElementById('switchComputerPopup_'+gameId);
+    if(pop) pop.remove();
+    if(!window.db) return;
+    const key = currentUser.replace(/[.#$[\]]/g,'_');
+    try{
+        // Accept invite + disable computer mode on the game
+        await window.dbSet(window.dbRef(window.db,'gameInvites/'+key+'/'+gameId+'/status'),'accepted');
+        await window.dbUpdate(window.dbRef(window.db,'games/'+gameId),{vsComputer:false, status:'active'});
+        toast('Switched to playing '+fromName+'! 🎮');
+        openGameBoard(gameId, type);
+    }catch(e){ toast('Error switching','warn'); }
+}
+
+async function acceptGameInvite(gameId, fromName, type){
+    if(!window.db) return;
+    const key = currentUser.replace(/[.#$[\]]/g,'_');
+    try{
+        await window.dbSet(window.dbRef(window.db, 'gameInvites/' + key + '/' + gameId + '/status'), 'accepted');
+        await window.dbUpdate(window.dbRef(window.db,'games/'+gameId),{vsComputer:false, status:'active'});
+        toast('Game on! 🎮');
+        openGameBoard(gameId, type);
+    }catch(e){ toast('Error accepting invite','warn'); }
+}
+
+async function declineGameInvite(gameId, fromName){
+    if(!window.db) return;
+    const key = currentUser.replace(/[.#$[\]]/g,'_');
+    try{
+        await window.dbSet(window.dbRef(window.db, 'gameInvites/' + key + '/' + gameId + '/status'), 'declined');
+        toast('Invite declined');
+    }catch(e){}
+}
+
+// ── My active games ─────────────────────────────────────
+function listenMyGames(){
+    if(!currentUser || !window.db) return;
+    window.dbGet(window.dbRef(window.db, 'games')).then(snap => {
+        const section = document.getElementById('myGamesSection');
+        const list = document.getElementById('myGamesList');
+        if(!section||!list) return;
+        if(!snap.exists()){ section.style.display='none'; return; }
+        const all = snap.val();
+        const mine = Object.entries(all).filter(([,g]) =>
+            (g.player1===currentUser||g.player2===currentUser) && g.status!=='done'
+        );
+        if(mine.length===0){ section.style.display='none'; return; }
+        section.style.display='block';
+        list.innerHTML='';
+        mine.forEach(([gameId,g]) => {
+            const opp = g.player1===currentUser ? g.player2 : g.player1;
+            const myTurn = g.turn === currentUser;
+            const card = document.createElement('div');
+            card.className = 'my-game-card';
+            card.innerHTML = `<div style="font-size:26px">${g.type==='chess'?'♟️':g.type==='battleship'?'🚢':'⭕'}</div>
+                <div style="flex:1"><div style="font-size:14px;font-weight:700">${GAME_NAMES[g.type]||g.type}</div>
+                <div style="font-size:12px;color:var(--muted)">vs ${opp}</div></div>
+                <div style="font-size:12px;font-weight:700;color:${myTurn?'var(--accent2)':'var(--muted)'}">${myTurn?'Your turn!':'Waiting…'}</div>`;
+            card.onclick = () => openGameBoard(gameId, g.type);
+            list.appendChild(card);
+        });
+    });
+}
+
+// ── Build initial game state ─────────────────────────────
+function buildInitialGameState(type, p1, p2, vsComputer=false){
+    const status = vsComputer ? 'active' : (type==='battleship'?'placing':'waiting');
+    const base = {type, player1:p1, player2:p2, turn:p1, status, vsComputer:vsComputer||false, createdAt:Date.now()};
+    if(type==='tictactoe') return {...base, board:Array(9).fill(null)};
+    if(type==='battleship') return {...base, status:vsComputer?'placing':'placing',
+        ships1:{placed:false}, ships2:{placed:vsComputer}, // computer auto-places
+        shots1:[], shots2:[], board1:[], board2: vsComputer?generateComputerBSBoard():[]};
+    if(type==='chess') return {...base, board:buildInitialChessBoard(), status:'active',
+        lastMove:null, captured1:[], captured2:[]};
+    return base;
+}
+
+// ── Open game board ─────────────────────────────────────
+function openGameBoard(gameId, type){
+    currentGameId = gameId;
+    switchFeatureTab('games', document.querySelector('[data-panel="games"]'));
+    document.getElementById('gamePickerWrap').style.display='none';
+    const wrap = document.getElementById('gameBoardWrap');
+    wrap.style.display='block';
+    wrap.innerHTML = '<p style="text-align:center;color:var(--muted);padding:24px">Loading game…</p>';
+    // Listen for live game state
+    if(gameStateListener) try{gameStateListener();}catch(e){}
+    gameStateListener = window.dbOnValue(window.dbRef(window.db,'games/'+gameId), snap => {
+        if(!snap.exists()){ wrap.innerHTML='<p style="color:var(--muted);text-align:center;padding:24px">Game not found.</p>'; return; }
+        currentGameData = snap.val();
+        renderGameBoard(gameId, currentGameData, wrap);
+    });
+}
+
+function leaveGameBoard(){
+    if(gameStateListener) try{gameStateListener();}catch(e){}
+    gameStateListener = null;
+    currentGameId = null;
+    currentGameData = null;
+    document.getElementById('gameBoardWrap').style.display='none';
+    document.getElementById('gamePickerWrap').style.display='block';
+    listenMyGames();
+}
+
+// ── Render the right board ───────────────────────────────
+function renderGameBoard(gameId, g, wrap){
+    const opp = g.player1===currentUser ? g.player2 : g.player1;
+    const isMyTurn = g.turn === currentUser;
+    const amP1 = g.player1 === currentUser;
+    const vsComp = g.vsComputer;
+    const compLabel = vsComp ? ' <span style="font-size:11px;background:rgba(91,171,111,.15);color:var(--accent2);border-radius:6px;padding:2px 7px;font-weight:700;">vs 🤖 Computer</span>' : '';
+    let html = `<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <button onclick="leaveGameBoard()" style="background:none;border:1.5px solid var(--border);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;color:var(--muted);font-family:inherit;">← Back</button>
+        <div style="font-family:'Fredoka One',cursive;font-size:18px;flex:1">${GAME_NAMES[g.type]}${compLabel}</div>
+    </div>`;
+    if(g.status==='waiting'){
+        html+=`<div style="text-align:center;padding:30px;color:var(--muted);font-size:14px;font-weight:600;">⏳ Waiting for ${opp} to accept…</div>`;
+        wrap.innerHTML=html; return;
+    }
+    if(g.status==='done'){
+        const winMsg = g.winner==='computer' ? '🤖 Computer won!' : g.winner ? (g.winner===currentUser?'🎉 You won!':'😔 '+g.winner+' won!') : "🤝 It's a draw!";
+        html+=`<div style="text-align:center;padding:24px;background:var(--surface2);border-radius:var(--radius);margin-bottom:14px;">
+            <div style="font-family:'Fredoka One',cursive;font-size:26px;color:var(--accent);margin-bottom:6px">${winMsg}</div>
+            <button onclick="leaveGameBoard()" class="btn btn-outline" style="margin-top:10px;padding:10px 22px;">Play Again 🎮</button></div>`;
+        if(g.type==='tictactoe') html+=renderTTTBoard(g, gameId, false);
+        wrap.innerHTML=html; return;
+    }
+    // Computer's turn — trigger AI after render
+    const isComputerTurn = vsComp && g.turn !== currentUser;
+    // Status bar
+    html+=`<div class="game-status-bar">
+        <div class="game-turn-dot" style="background:${isMyTurn?'var(--accent2)':isComputerTurn?'#9b59b6':'var(--warn)'}"></div>
+        ${isMyTurn ? '<span style="color:var(--accent2)">Your turn!</span>' : isComputerTurn ? '<span style="color:#9b59b6">🤖 Computer thinking…</span>' : '<span style="color:var(--muted)">'+g.turn+'\'s turn…</span>'}
+        <span style="margin-left:auto;font-size:12px;color:var(--muted)">${currentUser} vs ${vsComp?'🤖 Computer':opp}</span>
+    </div>`;
+    if(g.type==='tictactoe') html+=renderTTTBoard(g, gameId, isMyTurn);
+    else if(g.type==='battleship') html+=renderBattleshipBoard(g, gameId, isMyTurn, amP1);
+    else if(g.type==='chess') html+=renderChessBoard(g, gameId, isMyTurn, amP1);
+    wrap.innerHTML=html;
+    // Trigger computer move after a short delay
+    if(isComputerTurn) setTimeout(()=>doComputerMove(gameId, g, amP1), 900);
+}
+
+// ════════════════════════════════════════════════════════
+//  COMPUTER AI
+// ════════════════════════════════════════════════════════
+async function doComputerMove(gameId, g, humanIsP1){
+    if(!window.db || !currentGameId || currentGameId!==gameId) return;
+    if(g.status==='done') return;
+    if(g.type==='tictactoe') await doComputerTTT(gameId, g, humanIsP1);
+    else if(g.type==='battleship') await doComputerBS(gameId, g, humanIsP1);
+    else if(g.type==='chess') await doComputerChess(gameId, g, humanIsP1);
+}
+
+// ── Computer TTT (minimax) ───────────────────────────────
+async function doComputerTTT(gameId, g, humanIsP1){
+    const board=[...(g.board||Array(9).fill(null))];
+    const compSymbol = humanIsP1?'O':'X';
+    const humanSymbol = humanIsP1?'X':'O';
+    // minimax
+    function score(b, depth, isMax){
+        const w=checkTTTWinner(b);
+        if(w===compSymbol) return 10-depth;
+        if(w===humanSymbol) return depth-10;
+        if(b.every(c=>c)) return 0;
+        const moves=b.map((c,i)=>c?null:i).filter(i=>i!==null);
+        if(isMax){let best=-Infinity;for(const m of moves){b[m]=compSymbol;best=Math.max(best,score(b,depth+1,false));b[m]=null;}return best;}
+        else{let best=Infinity;for(const m of moves){b[m]=humanSymbol;best=Math.min(best,score(b,depth+1,true));b[m]=null;}return best;}
+    }
+    let best=-Infinity, bestMove=null;
+    board.forEach((c,i)=>{if(!c){board[i]=compSymbol;const s=score(board,0,false);board[i]=null;if(s>best){best=s;bestMove=i;}}});
+    if(bestMove===null) return;
+    board[bestMove]=compSymbol;
+    const winner=checkTTTWinner(board);
+    const isDraw=!winner&&board.every(c=>c);
+    const nextTurn = humanIsP1 ? g.player1 : g.player2;
+    const update={board, turn:nextTurn};
+    if(winner){update.status='done';update.winner='computer';}
+    else if(isDraw){update.status='done';update.winner=null;}
+    try{await window.dbUpdate(window.dbRef(window.db,'games/'+gameId),update);}catch(e){}
+}
+
+// ── Computer Battleship ──────────────────────────────────
+function generateComputerBSBoard(){
+    const cells=[];
+    for(const ship of BS_SHIPS){
+        let placed=false, tries=0;
+        while(!placed&&tries<300){
+            tries++;
+            const horiz=Math.random()>.5;
+            const r=Math.floor(Math.random()*(horiz?10:10-ship.size+1));
+            const c=Math.floor(Math.random()*(horiz?10-ship.size+1:10));
+            const sc=[];let ok=true;
+            for(let i=0;i<ship.size;i++){const idx=horiz?r*10+(c+i):(r+i)*10+c;if(cells.includes(idx)){ok=false;break;}sc.push(idx);}
+            if(ok){cells.push(...sc);placed=true;}
+        }
+    }
+    return cells;
+}
+
+async function doComputerBS(gameId, g, humanIsP1){
+    // Computer fires a shot at the human's board
+    const humanBoard = humanIsP1 ? (g.board1||[]) : (g.board2||[]);
+    const compShots = humanIsP1 ? (g.shots2||[]) : (g.shots1||[]);
+    const shotsKey = humanIsP1 ? 'shots2' : 'shots1';
+    // Target any known hit for hunting, else random
+    const hits = compShots.filter(s=>humanBoard.includes(s));
+    let target = -1;
+    if(hits.length>0){
+        // Try adjacent to last hit
+        const last = hits[hits.length-1];
+        const adj=[last-1,last+1,last-10,last+10].filter(i=>i>=0&&i<100&&!compShots.includes(i));
+        target = adj.length>0 ? adj[Math.floor(Math.random()*adj.length)] : -1;
+    }
+    if(target===-1){
+        const remaining=[...Array(100).keys()].filter(i=>!compShots.includes(i));
+        if(remaining.length===0) return;
+        target=remaining[Math.floor(Math.random()*remaining.length)];
+    }
+    const newShots=[...compShots,target];
+    const allHits=humanBoard.filter(c=>newShots.includes(c));
+    const nextTurn = humanIsP1 ? g.player1 : g.player2;
+    const update={[shotsKey]:newShots, turn:nextTurn};
+    if(allHits.length>=humanBoard.length){update.status='done';update.winner='computer';}
+    try{await window.dbUpdate(window.dbRef(window.db,'games/'+gameId),update);}catch(e){}
+}
+
+// ── Computer Chess (random legal move) ──────────────────
+async function doComputerChess(gameId, g, humanIsP1){
+    const board=[...(g.board||buildInitialChessBoard())];
+    const compColor = humanIsP1?'b':'w';
+    const allMoves=[];
+    board.forEach((p,i)=>{
+        if(p&&p[0]===compColor){
+            const moves=getChessMoves(board,i,compColor);
+            moves.forEach(to=>allMoves.push({from:i,to}));
+        }
+    });
+    if(allMoves.length===0) return;
+    // Prefer captures
+    const captures=allMoves.filter(m=>board[m.to]&&board[m.to][0]!==(humanIsP1?'b':'w'));
+    const chosen=captures.length>0?captures[Math.floor(Math.random()*captures.length)]:allMoves[Math.floor(Math.random()*allMoves.length)];
+    let piece=board[chosen.from];
+    if(piece==='wP'&&Math.floor(chosen.to/8)===0)piece='wQ';
+    if(piece==='bP'&&Math.floor(chosen.to/8)===7)piece='bQ';
+    const newBoard=[...board];
+    newBoard[chosen.to]=piece;newBoard[chosen.from]=null;
+    const humanKing=(humanIsP1?'w':'b')+'K';
+    const kingGone=!newBoard.includes(humanKing);
+    const nextTurn = humanIsP1 ? g.player1 : g.player2;
+    const update={board:newBoard,turn:nextTurn,lastMove:chosen};
+    if(kingGone){update.status='done';update.winner='computer';}
+    try{await window.dbUpdate(window.dbRef(window.db,'games/'+gameId),update);}catch(e){}
+}
+
+// ════════════════════════════════════════════════════════
+//  TIC TAC TOE
+// ════════════════════════════════════════════════════════
+function renderTTTBoard(g, gameId, isMyTurn){
+    const amP1 = g.player1 === currentUser;
+    const mySymbol = amP1 ? 'X' : 'O';
+    const emojis = {X:'❌',O:'⭕'};
+    let html = '<div class="ttt-board">';
+    (g.board||Array(9).fill(null)).forEach((cell,i) => {
+        const canClick = isMyTurn && !cell && g.status==='active';
+        html+=`<div class="ttt-cell${cell?' filled':''}" ${canClick?`onclick="tttMove('${gameId}',${i})"`:''}>
+            ${cell?emojis[cell]||cell:''}</div>`;
+    });
+    html+='</div>';
+    return html;
+}
+
+async function tttMove(gameId, idx){
+    if(!window.db||!currentGameData) return;
+    const g = currentGameData;
+    if(g.turn!==currentUser||g.status!=='active') return;
+    const board = [...(g.board||Array(9).fill(null))];
+    if(board[idx]) return;
+    const amP1 = g.player1===currentUser;
+    board[idx] = amP1?'X':'O';
+    const winner = checkTTTWinner(board);
+    const isDraw = !winner && board.every(c=>c);
+    const nextTurn = amP1 ? g.player2 : g.player1;
+    const update = {board, turn:nextTurn};
+    if(winner){ update.status='done'; update.winner=currentUser; }
+    else if(isDraw){ update.status='done'; update.winner=null; }
+    try{ await window.dbUpdate(window.dbRef(window.db,'games/'+gameId), update); }catch(e){}
+}
+
+function checkTTTWinner(board){
+    const lines=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+    for(const [a,b,c] of lines) if(board[a]&&board[a]===board[b]&&board[a]===board[c]) return board[a];
+    return null;
+}
+
+// ════════════════════════════════════════════════════════
+//  BATTLESHIP
+// ════════════════════════════════════════════════════════
+const BS_SHIPS = [{size:5,name:'Carrier'},{size:4,name:'Battleship'},{size:3,name:'Cruiser'},{size:3,name:'Submarine'},{size:2,name:'Destroyer'}];
+
+function renderBattleshipBoard(g, gameId, isMyTurn, amP1){
+    const myBoard = amP1 ? (g.board1||[]) : (g.board2||[]);
+    const oppBoard = amP1 ? (g.board2||[]) : (g.board1||[]);
+    const myShots = amP1 ? (g.shots1||[]) : (g.shots2||[]);
+    const oppShots = amP1 ? (g.shots2||[]) : (g.shots1||[]);
+    const myPlaced = amP1 ? g.ships1?.placed : g.ships2?.placed;
+
+    if(!myPlaced){
+        return `<div style="text-align:center;padding:20px;background:var(--surface2);border-radius:var(--radius)">
+            <div style="font-family:'Fredoka One',cursive;font-size:18px;margin-bottom:8px">Place your ships! 🚢</div>
+            <p style="color:var(--muted);font-size:13px;margin-bottom:14px">Click squares to place your 5 ships (sizes: 5,4,3,3,2)</p>
+            <div id="bsPlaceGrid" class="bs-grid" style="max-width:300px;margin:0 auto 14px">${buildBSPlaceGrid(gameId, amP1)}</div>
+            <button onclick="bsAutoPlace('${gameId}',${amP1})" class="btn btn-outline" style="margin-right:8px;padding:9px 16px;font-size:13px;">Auto-place 🎲</button>
+        </div>`;
+    }
+    const oppPlaced = amP1 ? g.ships2?.placed : g.ships1?.placed;
+    if(!oppPlaced) return `<div style="text-align:center;padding:24px;color:var(--muted);font-weight:700;">⏳ Waiting for opponent to place their ships…</div>`;
+
+    let html = '<div class="bs-wrap">';
+    // My grid (showing my ships + opponent's shots)
+    html += '<div class="bs-grid-wrap"><div class="bs-label">Your Fleet</div><div class="bs-grid">';
+    for(let r=0;r<10;r++) for(let c=0;c<10;c++){
+        const idx=r*10+c;
+        const isShip = myBoard.includes(idx);
+        const wasShot = oppShots.includes(idx);
+        let cls='bs-cell';
+        if(isShip&&wasShot) cls+=' hit shot';
+        else if(!isShip&&wasShot) cls+=' miss shot';
+        else if(isShip) cls+=' ship';
+        html+=`<div class="${cls}"></div>`;
+    }
+    html+='</div></div>';
+    // Opponent grid (fire shots)
+    html += '<div class="bs-grid-wrap"><div class="bs-label">Enemy Waters</div><div class="bs-grid">';
+    for(let r=0;r<10;r++) for(let c=0;c<10;c++){
+        const idx=r*10+c;
+        const isHit = oppBoard.includes(idx) && myShots.includes(idx);
+        const isMiss = !oppBoard.includes(idx) && myShots.includes(idx);
+        const canShoot = isMyTurn && !myShots.includes(idx);
+        let cls='bs-cell';
+        if(isHit) cls+=' hit shot';
+        else if(isMiss) cls+=' miss shot';
+        const clickAttr = canShoot ? `onclick="bsShoot('${gameId}',${idx},${amP1})"` : '';
+        html+=`<div class="${cls}" ${clickAttr}>${isHit?'💥':isMiss?'🌊':''}</div>`;
+    }
+    html+='</div></div></div>';
+    return html;
+}
+
+function buildBSPlaceGrid(gameId, amP1){
+    let html='';
+    for(let i=0;i<100;i++) html+=`<div class="bs-cell" id="bsplace_${i}" onclick="bsPlaceClick(${i},'${gameId}',${amP1})"></div>`;
+    return html;
+}
+
+let bsPlacing = {cells:[], shipIdx:0};
+function bsPlaceClick(idx, gameId, amP1){
+    if(bsPlacing.shipIdx >= BS_SHIPS.length) return;
+    bsPlacing.cells.push(idx);
+    document.getElementById('bsplace_'+idx).classList.add('ship');
+    if(bsPlacing.cells.length >= BS_SHIPS[bsPlacing.shipIdx].size){
+        // Save this ship and move to next
+        bsPlacing.shipIdx++;
+        if(bsPlacing.shipIdx >= BS_SHIPS.length){
+            bsConfirmPlacement(gameId, amP1, [...bsPlacing.cells]);
+            bsPlacing = {cells:[], shipIdx:0};
+        } else {
+            toast('Place your ' + BS_SHIPS[bsPlacing.shipIdx].name + ' (' + BS_SHIPS[bsPlacing.shipIdx].size + ' cells)');
+            bsPlacing.cells = [];
+        }
+    }
+}
+
+async function bsAutoPlace(gameId, amP1){
+    const cells = [];
+    // place ships randomly
+    for(const ship of BS_SHIPS){
+        let placed=false;
+        let tries=0;
+        while(!placed && tries<200){
+            tries++;
+            const horiz = Math.random()>.5;
+            const r = Math.floor(Math.random()*(horiz?10:10-ship.size+1));
+            const c = Math.floor(Math.random()*(horiz?10-ship.size+1:10));
+            const shipCells = [];
+            let ok=true;
+            for(let i=0;i<ship.size;i++){
+                const idx = horiz ? r*10+(c+i) : (r+i)*10+c;
+                if(cells.includes(idx)){ok=false;break;}
+                shipCells.push(idx);
+            }
+            if(ok){ cells.push(...shipCells); placed=true; }
+        }
+    }
+    await bsConfirmPlacement(gameId, amP1, cells);
+}
+
+async function bsConfirmPlacement(gameId, amP1, cells){
+    if(!window.db) return;
+    const update = {};
+    if(amP1){ update['board1']=cells; update['ships1/placed']=true; }
+    else { update['board2']=cells; update['ships2/placed']=true; }
+    // Check if both placed — set active
+    const snap = await window.dbGet(window.dbRef(window.db,'games/'+gameId));
+    if(snap.exists()){
+        const g = snap.val();
+        const otherPlaced = amP1 ? g.ships2?.placed : g.ships1?.placed;
+        if(otherPlaced) update['status']='active';
+    }
+    try{ await window.dbUpdate(window.dbRef(window.db,'games/'+gameId), update); toast('Ships placed! ⚓'); }catch(e){}
+}
+
+async function bsShoot(gameId, idx, amP1){
+    if(!window.db||!currentGameData) return;
+    const g = currentGameData;
+    if(g.turn!==currentUser) return;
+    const shotsKey = amP1 ? 'shots1' : 'shots2';
+    const oppBoardKey = amP1 ? 'board2' : 'board1';
+    const shots = [...(amP1?g.shots1||[]:g.shots2||[])];
+    if(shots.includes(idx)) return;
+    shots.push(idx);
+    const oppBoard = amP1 ? (g.board2||[]) : (g.board1||[]);
+    const allHits = oppBoard.filter(c=>shots.includes(c));
+    const update = {[shotsKey]:shots, turn: amP1?g.player2:g.player1};
+    if(allHits.length >= oppBoard.length){ update.status='done'; update.winner=currentUser; }
+    try{ await window.dbUpdate(window.dbRef(window.db,'games/'+gameId), update); }catch(e){}
+}
+
+// ════════════════════════════════════════════════════════
+//  CHESS
+// ════════════════════════════════════════════════════════
+let chessSelected = null;
+
+function buildInitialChessBoard(){
+    const b=Array(64).fill(null);
+    const backRow=['R','N','B','Q','K','B','N','R'];
+    backRow.forEach((p,i)=>{b[i]='b'+p;b[56+i]='w'+p;});
+    for(let i=0;i<8;i++){b[8+i]='bP';b[48+i]='wP';}
+    return b;
+}
+
+const CHESS_EMOJI = {wK:'♔',wQ:'♕',wR:'♖',wB:'♗',wN:'♘',wP:'♙',bK:'♚',bQ:'♛',bR:'♜',bB:'♝',bN:'♞',bP:'♟'};
+
+function renderChessBoard(g, gameId, isMyTurn, amP1){
+    const board = g.board || buildInitialChessBoard();
+    const myColor = amP1 ? 'w' : 'b';
+    const validMoves = chessSelected !== null ? getChessMoves(board, chessSelected, myColor) : [];
+    let html = '<div class="chess-board">';
+    for(let r=0;r<8;r++){
+        const displayR = amP1 ? r : 7-r;
+        for(let c=0;c<8;c++){
+            const displayC = amP1 ? c : 7-c;
+            const idx = displayR*8+displayC;
+            const piece = board[idx];
+            const isLight = (displayR+displayC)%2===0;
+            const isSel = chessSelected===idx;
+            const isValid = validMoves.includes(idx);
+            let cls=`chess-cell ${isLight?'light':'dark'}${isSel?' selected':''}${isValid?' valid-move':''}`;
+            const canAct = isMyTurn && (isSel || isValid || (piece&&piece[0]===myColor));
+            html+=`<div class="${cls}" ${canAct?`onclick="chessClick(${idx},'${gameId}',${amP1})"`:''}>
+                ${piece?CHESS_EMOJI[piece]||piece:''}</div>`;
+        }
+    }
+    html+=`</div><div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px;">You play as ${amP1?'White ♔':'Black ♚'}</div>`;
+    return html;
+}
+
+function chessClick(idx, gameId, amP1){
+    if(!currentGameData) return;
+    const g = currentGameData;
+    const board = g.board || buildInitialChessBoard();
+    const myColor = amP1?'w':'b';
+    const piece = board[idx];
+    if(chessSelected === null){
+        // Select a piece
+        if(piece && piece[0]===myColor){ chessSelected=idx; renderGameBoard(gameId, g, document.getElementById('gameBoardWrap')); }
+    } else {
+        const moves = getChessMoves(board, chessSelected, myColor);
+        if(moves.includes(idx)){
+            // Execute move
+            chessMakeMove(gameId, chessSelected, idx, amP1, board);
+            chessSelected=null;
+        } else if(piece&&piece[0]===myColor){
+            chessSelected=idx;
+            renderGameBoard(gameId, g, document.getElementById('gameBoardWrap'));
+        } else {
+            chessSelected=null;
+            renderGameBoard(gameId, g, document.getElementById('gameBoardWrap'));
+        }
+    }
+}
+
+function getChessMoves(board, from, color){
+    const piece = board[from];
+    if(!piece||piece[0]!==color) return [];
+    const type = piece[1];
+    const opp = color==='w'?'b':'w';
+    const moves=[];
+    const r=Math.floor(from/8), c=from%8;
+    const add=(nr,nc)=>{ if(nr>=0&&nr<8&&nc>=0&&nc<8){ const t=board[nr*8+nc]; if(!t||t[0]===opp) moves.push(nr*8+nc); return !t; } return false; };
+    const slide=(dr,dc)=>{ let nr=r+dr,nc=c+dc; while(nr>=0&&nr<8&&nc>=0&&nc<8){ const t=board[nr*8+nc]; if(t){ if(t[0]===opp) moves.push(nr*8+nc); break; } moves.push(nr*8+nc); nr+=dr; nc+=dc; } };
+    if(type==='P'){
+        const dir=color==='w'?-1:1;
+        const nr=r+dir;
+        if(nr>=0&&nr<8&&!board[nr*8+c]) moves.push(nr*8+c);
+        if((color==='w'&&r===6)||(color==='b'&&r===1)){const nr2=r+dir*2;if(!board[nr*8+c]&&!board[nr2*8+c])moves.push(nr2*8+c);}
+        [-1,1].forEach(dc=>{const nc=c+dc;if(nc>=0&&nc<8&&nr>=0&&nr<8&&board[nr*8+nc]&&board[nr*8+nc][0]===opp)moves.push(nr*8+nc);});
+    }
+    if(type==='R'||type==='Q'){slide(-1,0);slide(1,0);slide(0,-1);slide(0,1);}
+    if(type==='B'||type==='Q'){slide(-1,-1);slide(-1,1);slide(1,-1);slide(1,1);}
+    if(type==='N'){[[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]].forEach(([dr,dc])=>add(r+dr,c+dc));}
+    if(type==='K'){[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]].forEach(([dr,dc])=>add(r+dr,c+dc));}
+    return moves;
+}
+
+async function chessMakeMove(gameId, from, to, amP1, board){
+    if(!window.db) return;
+    const newBoard=[...board];
+    const piece=newBoard[from];
+    // Pawn promotion
+    let finalPiece=piece;
+    if(piece==='wP'&&Math.floor(to/8)===0) finalPiece='wQ';
+    if(piece==='bP'&&Math.floor(to/8)===7) finalPiece='bQ';
+    newBoard[to]=finalPiece; newBoard[from]=null;
+    const g=currentGameData;
+    // Check if king captured (simplified win)
+    const oppKing=(amP1?'b':'w')+'K';
+    const kingGone=!newBoard.includes(oppKing);
+    const update={board:newBoard, turn:amP1?g.player2:g.player1, lastMove:{from,to}};
+    if(kingGone){update.status='done';update.winner=currentUser;}
+    try{await window.dbUpdate(window.dbRef(window.db,'games/'+gameId),update);}catch(e){}
+}
+
+// ── Hook into switchFeatureTab ───────────────────────────
+const _origSwitchTab = switchFeatureTab;
+window.switchFeatureTab = function(panel, btn){
+    _origSwitchTab(panel, btn);
+    if(panel==='games') onGamesTabOpen();
+};
+window.selectGame=selectGame;
+window.tttMove=tttMove;
+window.bsShoot=bsShoot;
+window.bsPlaceClick=bsPlaceClick;
+window.bsAutoPlace=bsAutoPlace;
+window.bsConfirmPlacement=bsConfirmPlacement;
+window.chessClick=chessClick;
+window.openGameBoard=openGameBoard;
+window.leaveGameBoard=leaveGameBoard;
+window.acceptGameInvite=acceptGameInvite;
+window.declineGameInvite=declineGameInvite;
+window.sendGameInviteByInput=sendGameInviteByInput;
+window.switchToHumanGame=switchToHumanGame;
+
 
 </script>
 <!-- New Group Modal -->
@@ -4903,9 +5711,9 @@ function requestNotificationPermission() {
 
 <!-- Push Notification Permission Banner -->
 <div class="notif-banner" id="notifBanner">
-    <span style="font-size:24px;">🔔</span>
-    <div class="notif-banner-text">Enable notifications to get alerts from the host — messages, announcements & new content!</div>
-    <button class="notif-banner-btn" onclick="requestNotifPermission()">Enable 🔔</button>
+    <span style="font-size:24px;">📱</span>
+    <div class="notif-banner-text">Get SMS alerts when the host posts new content or sends a message!</div>
+    <button class="notif-banner-btn" onclick="requestNotifPermission()">Enable SMS 📱</button>
     <button class="notif-banner-dismiss" onclick="dismissNotifBanner()">✕</button>
 </div>
 
@@ -4925,6 +5733,32 @@ function requestNotificationPermission() {
     </div>
 </div>
 
+
+<!-- Game: Pick Player Modal -->
+<div class="modal" id="gamePlayerModal">
+    <div class="modal-content">
+        <h2 id="gamePlayerModalTitle">Choose your opponent</h2>
+        <p style="color:var(--muted);font-size:13px;font-weight:600;margin-bottom:14px;text-align:center;">Pick a family member to challenge!</p>
+        <div id="gamePlayerList"></div>
+        <div class="modal-buttons">
+            <button class="btn btn-ghost" onclick="closeModal('gamePlayerModal')">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Chrome Prompt Overlay -->
+<div class="chrome-prompt-overlay hidden" id="chromePromptOverlay">
+    <div class="chrome-prompt-box">
+        <div class="chrome-prompt-icon">🎙️</div>
+        <div class="chrome-prompt-title">One quick thing!</div>
+        <div class="chrome-prompt-text">This app has <strong>voice messaging</strong> — but it only works in <strong>Google Chrome</strong>.</div>
+        <div class="chrome-prompt-sub">Want the best experience? Open this app in Chrome to use voice messages!</div>
+        <button class="chrome-prompt-skip" onclick="dismissChromePrompt()" style="background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:14px 20px;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;width:100%;box-shadow:0 4px 20px rgba(232,131,74,.3);transition:all .2s;margin-bottom:10px;">Let's go! 👋</button>
+        <a class="chrome-prompt-link" href="https://cluemec1.github.io/Hanukkah-family-phone/" target="_blank" rel="noopener" style="background:transparent;color:var(--muted);border:1.5px solid var(--border);border-radius:var(--radius);padding:9px 16px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;width:auto;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;box-shadow:none;margin-bottom:0;transition:all .2s;">
+            🌐 Open in Chrome instead
+        </a>
+    </div>
+</div>
 
 <!-- Media Fullscreen Lightbox -->
 <div class="media-lightbox" id="mediaLightbox" onclick="closeMediaLightbox(event)">
