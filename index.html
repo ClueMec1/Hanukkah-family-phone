@@ -2,9 +2,20 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Family Hub</title>
-<link rel="manifest" href="manifest.json">
+
+<!-- PWA -->
+<meta name="theme-color" content="#e8834a">
+<meta name="background-color" content="#fffaf5">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Family Hub">
+<meta name="application-name" content="Family Hub">
+<meta name="msapplication-TileColor" content="#e8834a">
+
+<!-- Icons for home screen -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
 <style>
@@ -5032,11 +5043,23 @@ function listenAnnouncementsWithNotif() {
             const d = snap.val();
             document.getElementById('announcementText').textContent = d.text;
             b.classList.add('active');
-            // Notify if new and setting is on
             if (d.timestamp && d.timestamp > lastAnnouncementTs && notifSettings.announce !== false && !isHost) {
                 lastAnnouncementTs = d.timestamp;
-                // Show as in-app toast for users; browser push only if host opted in
+                // In-app toast always
                 toast('📢 ' + (d.text || 'New announcement'), 'info');
+                // Real browser push notification if permission granted (PWA)
+                if(notifPermission === 'granted' && 'serviceWorker' in navigator){
+                    navigator.serviceWorker.ready.then(sw => {
+                        sw.showNotification('📢 Family Announcement', {
+                            body: d.text || 'New announcement from host',
+                            icon: './icon-192.png',
+                            badge: './icon-192.png',
+                            tag: 'announcement',
+                            renotify: true,
+                            vibrate: [200, 100, 200],
+                        });
+                    });
+                }
             } else if (d.timestamp) {
                 lastAnnouncementTs = d.timestamp;
             }
@@ -5075,9 +5098,24 @@ function listenChatGroupForNotif(group) {
         entries.forEach(msg => {
             if (msg.timestamp > (lastChatTs[key] || 0) && msg.author !== currentUser) {
                 lastChatTs[key] = msg.timestamp;
-                // In-app toast only — no browser push for regular users
                 if(notifSettings.chat !== false && !isHost){
-                    toast('💬 ' + (msg.author||'Someone') + ': ' + (msg.text||'🎙️ Voice message').slice(0,50));
+                    const body = (msg.text || '🎙️ Voice message').slice(0,80);
+                    // In-app toast
+                    toast('💬 ' + (msg.author||'Someone') + ': ' + body.slice(0,50));
+                    // Real push notification if permission granted (PWA)
+                    if(notifPermission === 'granted' && 'serviceWorker' in navigator){
+                        navigator.serviceWorker.ready.then(sw => {
+                            sw.showNotification('💬 ' + (msg.author||'Someone'), {
+                                body,
+                                icon: './icon-192.png',
+                                badge: './icon-192.png',
+                                tag: 'chat-' + key,
+                                renotify: true,
+                                vibrate: [100, 50, 100],
+                                data: { url: './' }
+                            });
+                        });
+                    }
                 }
             }
         });
@@ -5367,34 +5405,106 @@ window.updateUserNamePill=updateUserNamePill;
     if(savedName) setTimeout(()=>updateUserNamePill(savedName), 300);
 })();
 
-// Notification boot: host-only — regular users just listen for announcements as toasts
+
+// ── PWA Push Notifications — works for ALL users ─────────────────────────────
+// When running as PWA on Android via Chrome, push notifications work exactly
+// like a native app — shows in the notification bar even when app is closed.
+
 (function(){
     const _orig = doSignIn;
     doSignIn = function(name){
         _orig(name);
-        // Load notif settings so announcement toasts respect host toggles
-        setTimeout(()=>{ loadNotifSettings(); listenAnnouncementsWithNotif(); }, 2500);
+        setTimeout(async ()=>{
+            await loadNotifSettings();
+            listenAnnouncementsWithNotif();
+            // Ask ALL users for push permission when they sign in
+            // (PWA shows a native Android permission dialog)
+            await _bootPushForUser();
+        }, 2500);
     };
     window.signIn = signIn;
 })();
+
+async function _bootPushForUser(){
+    // Only works in PWA / Chrome — skip if no service worker support
+    if(!('serviceWorker' in navigator) || !('Notification' in window)) return;
+    if(!window.messaging) return;
+
+    // If already granted — just save token silently
+    if(Notification.permission === 'granted'){
+        notifPermission = 'granted';
+        await saveNotifToken();
+        listenPushNotifications();
+        return;
+    }
+
+    // If denied — don't ask again
+    if(Notification.permission === 'denied') return;
+
+    // First time — show a friendly in-app prompt before the browser dialog
+    _showNotifPrompt();
+}
+
+function _showNotifPrompt(){
+    // Don't show if already shown this session
+    if(sessionStorage.getItem('notifPromptShown')) return;
+    sessionStorage.setItem('notifPromptShown','1');
+
+    const banner = document.createElement('div');
+    banner.id = 'notifPromptBanner';
+    banner.style.cssText = `
+        position:fixed;bottom:80px;left:12px;right:12px;z-index:9999;
+        background:linear-gradient(135deg,#6366f1,#a855f7);
+        color:#fff;border-radius:16px;padding:16px 16px 14px;
+        box-shadow:0 8px 32px rgba(99,102,241,.4);
+        animation:slideUp .3s cubic-bezier(.22,1,.36,1);
+        display:flex;gap:12px;align-items:flex-start;
+    `;
+    banner.innerHTML = `
+        <div style="font-size:28px;flex-shrink:0;">🔔</div>
+        <div style="flex:1;">
+            <div style="font-weight:800;font-size:15px;margin-bottom:4px;">Enable Notifications</div>
+            <div style="font-size:12px;opacity:.9;line-height:1.5;">Get notified when family members send messages or the host makes announcements — even when the app is closed.</div>
+            <div style="display:flex;gap:8px;margin-top:12px;">
+                <button onclick="_askNotifPermission()" style="background:#fff;color:#6366f1;border:none;border-radius:20px;padding:8px 18px;font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;flex:1;">Yes, notify me!</button>
+                <button onclick="document.getElementById('notifPromptBanner').remove()" style="background:rgba(255,255,255,.2);color:#fff;border:none;border-radius:20px;padding:8px 14px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;">Later</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(banner);
+    // Auto-remove after 12 seconds if ignored
+    setTimeout(()=>banner.remove?.(), 12000);
+}
+
+async function _askNotifPermission(){
+    const banner = document.getElementById('notifPromptBanner');
+    if(banner) banner.remove();
+    if(!('Notification' in window)) return;
+
+    const permission = await Notification.requestPermission();
+    if(permission === 'granted'){
+        notifPermission = 'granted';
+        toast('🔔 Notifications enabled!');
+        await saveNotifToken();
+        listenPushNotifications();
+    } else {
+        toast('Notifications blocked — you can enable them in Chrome settings','warn');
+    }
+}
+
+window._askNotifPermission = _askNotifPermission;
 
 // ── PWA Service Worker Registration ──────────────────────
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
-            .then(registration => {
-                console.log('SW registered: ', registration);
-            })
-            .catch(registrationError => {
-                console.log('SW registration failed: ', registrationError);
-            });
+            .then(r => console.log('SW registered'))
+            .catch(e => console.log('SW failed:', e.message));
     });
 }
 
-// ── Notification Permission Request ──────────────────────
-// requestNotificationPermission — host-only, not called for regular users
+// ── Notification Permission Request (host settings panel) ─────────────────────
 function requestNotificationPermission() {
-    if(!isHost) return; // regular users never prompted
     if (!('Notification' in window)) return;
     Notification.requestPermission().then(permission => {
         if(permission === 'granted'){
@@ -5403,6 +5513,7 @@ function requestNotificationPermission() {
         }
     });
 }
+
 
 
 // ══════════════════════════════════════════════════════════
