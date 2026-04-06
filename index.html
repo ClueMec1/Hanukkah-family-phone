@@ -629,8 +629,6 @@ function removeHostMemory() {
     }
 }
 </script>
-<!-- Puter.js — free AI (no API key, no signup) -->
-<script src="https://js.puter.com/v2/"></script>
 </head>
 <body>
 
@@ -829,119 +827,79 @@ function removeHostMemory() {
 <div class="feature-panel" id="panel-browse">
 <div style="display:flex;flex-direction:column;height:calc(100vh - 180px);">
 
-  <!-- Browser chrome bar -->
+  <!-- Search bar -->
   <div style="display:flex;gap:6px;padding:10px 12px 8px;align-items:center;background:var(--surface);border-bottom:1.5px solid var(--border);">
-    <button onclick="browseBack()" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 8px;border-radius:8px;line-height:1;" title="Back">‹</button>
-    <button onclick="browseForward()" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 8px;border-radius:8px;line-height:1;" title="Forward">›</button>
-    <button onclick="browseRefresh()" style="background:none;border:none;color:var(--muted);font-size:15px;cursor:pointer;padding:4px 8px;border-radius:8px;line-height:1;" title="Refresh">↻</button>
     <div style="flex:1;display:flex;align-items:center;gap:6px;background:var(--bg);border:1.5px solid var(--border);border-radius:20px;padding:7px 12px;">
-      <span id="browseSiteIcon" style="font-size:13px;">🔒</span>
-      <input id="browseUrl" type="text" placeholder="Search or type a web address"
+      <span style="font-size:13px;">🔍</span>
+      <input id="browseUrl" type="text" placeholder="Search Google or type a web address"
         style="flex:1;background:none;border:none;outline:none;color:var(--text);font-size:13px;font-family:'Nunito',sans-serif;font-weight:600;"
         onkeydown="if(event.key==='Enter') browseGo()"
         autocomplete="off" autocapitalize="none" spellcheck="false">
     </div>
-    <button onclick="browseOpenExternal()" style="background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;padding:4px 8px;border-radius:8px;" title="Open in real browser">↗</button>
+    <button onclick="browseGo()" style="background:var(--accent);color:#fff;border:none;border-radius:12px;padding:8px 14px;font-size:13px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;">Go ↗</button>
   </div>
 
-  <!-- Frame area — takes all remaining space -->
-  <div style="flex:1;position:relative;overflow:hidden;">
-
-    <!-- Google-style home page (shown by default) -->
-    <div id="browseHome" style="position:absolute;inset:0;overflow-y:auto;background:var(--bg);z-index:2;display:flex;flex-direction:column;align-items:center;">
-
-      <!-- Top spacer -->
-      <div style="flex:1;min-height:40px;"></div>
-
-      <!-- Google logo replica -->
-      <div style="margin-bottom:28px;text-align:center;">
-        <span style="font-size:52px;font-weight:700;letter-spacing:-2px;font-family:Arial,sans-serif;">
-          <span style="color:#4285F4;">G</span><span style="color:#EA4335;">o</span><span style="color:#FBBC05;">o</span><span style="color:#4285F4;">g</span><span style="color:#34A853;">l</span><span style="color:#EA4335;">e</span>
-        </span>
+  <!-- Google-style home -->
+  <div id="browseHome" style="flex:1;overflow-y:auto;background:var(--bg);display:flex;flex-direction:column;align-items:center;">
+    <div style="flex:1;min-height:40px;"></div>
+    <div style="margin-bottom:28px;text-align:center;">
+      <span style="font-size:52px;font-weight:700;letter-spacing:-2px;font-family:Arial,sans-serif;">
+        <span style="color:#4285F4;">G</span><span style="color:#EA4335;">o</span><span style="color:#FBBC05;">o</span><span style="color:#4285F4;">g</span><span style="color:#34A853;">l</span><span style="color:#EA4335;">e</span>
+      </span>
+    </div>
+    <div style="width:100%;max-width:480px;padding:0 16px;">
+      <div style="display:flex;align-items:center;background:#fff;border:1px solid #dfe1e5;border-radius:24px;padding:10px 16px;gap:10px;box-shadow:0 1px 6px rgba(32,33,36,.28);margin-bottom:16px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" stroke="#9aa0a6" stroke-width="2" stroke-linecap="round"/></svg>
+        <input id="googleSearchInput" type="text" placeholder="Search Google or type a URL"
+          style="flex:1;border:none;outline:none;font-size:16px;font-family:Arial,sans-serif;color:#202124;background:transparent;"
+          onkeydown="if(event.key==='Enter') googleSearch()" autocomplete="off">
       </div>
-
-      <!-- Search box -->
-      <div style="width:100%;max-width:480px;padding:0 16px;">
-        <div style="display:flex;align-items:center;background:#fff;border:1px solid #dfe1e5;border-radius:24px;padding:10px 16px;gap:10px;box-shadow:0 1px 6px rgba(32,33,36,.28);margin-bottom:16px;"
-          onfocusin="this.style.boxShadow='0 1px 6px rgba(32,33,36,.4)'" onfocusout="this.style.boxShadow='0 1px 6px rgba(32,33,36,.28)'">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" stroke="#9aa0a6" stroke-width="2" stroke-linecap="round"/></svg>
-          <input id="googleSearchInput" type="text" placeholder="Search Google or type a URL"
-            style="flex:1;border:none;outline:none;font-size:16px;font-family:Arial,sans-serif;color:#202124;background:transparent;"
-            onkeydown="if(event.key==='Enter') googleSearch()"
-            autocomplete="off">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="cursor:pointer;" onclick="startVoiceSearch()"><path d="M12 1a4 4 0 0 1 4 4v6a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4z" stroke="#4285F4" stroke-width="1.5"/><path d="M19 10a7 7 0 0 1-14 0M12 19v4M9 23h6" stroke="#4285F4" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <div style="display:flex;justify-content:center;gap:10px;margin-bottom:20px;">
+        <button onclick="googleSearch()" style="background:#f8f9fa;border:1px solid #f8f9fa;border-radius:4px;padding:9px 16px;font-size:14px;font-family:Arial,sans-serif;color:#3c4043;cursor:pointer;" onmouseover="this.style.borderColor='#dadce0'" onmouseout="this.style.borderColor='#f8f9fa'">Google Search ↗</button>
+        <button onclick="googleLucky()" style="background:#f8f9fa;border:1px solid #f8f9fa;border-radius:4px;padding:9px 16px;font-size:14px;font-family:Arial,sans-serif;color:#3c4043;cursor:pointer;" onmouseover="this.style.borderColor='#dadce0'" onmouseout="this.style.borderColor='#f8f9fa'">I'm Feeling Lucky ↗</button>
+      </div>
+      <div style="text-align:center;margin-bottom:20px;padding:10px 14px;background:rgba(66,133,244,.07);border:1px solid rgba(66,133,244,.2);border-radius:12px;">
+        <div style="font-size:12px;font-weight:700;color:#4285F4;margin-bottom:2px;">🌐 Opens in your browser</div>
+        <div style="font-size:11px;color:var(--muted);font-weight:600;">Links open in Chrome or Safari — tap back to return here</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;">
+        <div onclick="browseOpenExternal('https://www.youtube.com')" style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:10px 6px;border-radius:12px;" onmouseover="this.style.background='rgba(0,0,0,.05)'" onmouseout="this.style.background='transparent'">
+          <div style="width:44px;height:44px;background:#FF0000;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;">▶️</div>
+          <span style="font-size:11px;font-family:Arial,sans-serif;color:#3c4043;font-weight:500;">YouTube</span>
         </div>
-
-        <!-- Search buttons -->
-        <div style="display:flex;justify-content:center;gap:10px;margin-bottom:28px;">
-          <button onclick="googleSearch()" style="background:#f8f9fa;border:1px solid #f8f9fa;border-radius:4px;padding:9px 16px;font-size:14px;font-family:Arial,sans-serif;color:#3c4043;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='#dadce0';this.style.boxShadow='0 1px 1px rgba(0,0,0,.1)'" onmouseout="this.style.borderColor='#f8f9fa';this.style.boxShadow='none'">Google Search</button>
-          <button onclick="googleLucky()" style="background:#f8f9fa;border:1px solid #f8f9fa;border-radius:4px;padding:9px 16px;font-size:14px;font-family:Arial,sans-serif;color:#3c4043;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='#dadce0';this.style.boxShadow='0 1px 1px rgba(0,0,0,.1)'" onmouseout="this.style.borderColor='#f8f9fa';this.style.boxShadow='none'">I'm Feeling Lucky</button>
+        <div onclick="browseOpenExternal('https://www.wikipedia.org')" style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:10px 6px;border-radius:12px;" onmouseover="this.style.background='rgba(0,0,0,.05)'" onmouseout="this.style.background='transparent'">
+          <div style="width:44px;height:44px;background:#fff;border:1px solid #dfe1e5;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">📚</div>
+          <span style="font-size:11px;font-family:Arial,sans-serif;color:#3c4043;font-weight:500;">Wikipedia</span>
         </div>
-
-        <!-- Quick access icons -->
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;">
-          <div onclick="browseLoad('https://www.youtube.com')" style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:10px 6px;border-radius:12px;transition:background .2s;" onmouseover="this.style.background='rgba(0,0,0,.05)'" onmouseout="this.style.background='transparent'">
-            <div style="width:44px;height:44px;background:#FF0000;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;">▶️</div>
-            <span style="font-size:11px;font-family:Arial,sans-serif;color:#3c4043;font-weight:500;">YouTube</span>
-          </div>
-          <div onclick="browseLoad('https://www.wikipedia.org')" style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:10px 6px;border-radius:12px;transition:background .2s;" onmouseover="this.style.background='rgba(0,0,0,.05)'" onmouseout="this.style.background='transparent'">
-            <div style="width:44px;height:44px;background:#fff;border:1px solid #dfe1e5;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">📚</div>
-            <span style="font-size:11px;font-family:Arial,sans-serif;color:#3c4043;font-weight:500;">Wikipedia</span>
-          </div>
-          <div onclick="browseLoad('https://www.weather.com')" style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:10px 6px;border-radius:12px;transition:background .2s;" onmouseover="this.style.background='rgba(0,0,0,.05)'" onmouseout="this.style.background='transparent'">
-            <div style="width:44px;height:44px;background:#4285F4;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">🌤️</div>
-            <span style="font-size:11px;font-family:Arial,sans-serif;color:#3c4043;font-weight:500;">Weather</span>
-          </div>
-          <div onclick="browseLoad('https://maps.google.com/maps?output=embed')" style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:10px 6px;border-radius:12px;transition:background .2s;" onmouseover="this.style.background='rgba(0,0,0,.05)'" onmouseout="this.style.background='transparent'">
-            <div style="width:44px;height:44px;background:#34A853;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">🗺️</div>
-            <span style="font-size:11px;font-family:Arial,sans-serif;color:#3c4043;font-weight:500;">Maps</span>
-          </div>
-          <div onclick="browseLoad('https://www.chabad.org')" style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:10px 6px;border-radius:12px;transition:background .2s;" onmouseover="this.style.background='rgba(0,0,0,.05)'" onmouseout="this.style.background='transparent'">
-            <div style="width:44px;height:44px;background:#003087;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">🕍</div>
-            <span style="font-size:11px;font-family:Arial,sans-serif;color:#3c4043;font-weight:500;">Chabad</span>
-          </div>
-          <div onclick="browseLoad('https://www.allrecipes.com')" style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:10px 6px;border-radius:12px;transition:background .2s;" onmouseover="this.style.background='rgba(0,0,0,.05)'" onmouseout="this.style.background='transparent'">
-            <div style="width:44px;height:44px;background:#E07000;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">🍳</div>
-            <span style="font-size:11px;font-family:Arial,sans-serif;color:#3c4043;font-weight:500;">Recipes</span>
-          </div>
-          <div onclick="browseLoad('https://www.nytimes.com')" style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:10px 6px;border-radius:12px;transition:background .2s;" onmouseover="this.style.background='rgba(0,0,0,.05)'" onmouseout="this.style.background='transparent'">
-            <div style="width:44px;height:44px;background:#000;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">📰</div>
-            <span style="font-size:11px;font-family:Arial,sans-serif;color:#3c4043;font-weight:500;">News</span>
-          </div>
-          <div onclick="browseLoad('https://duckduckgo.com')" style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:10px 6px;border-radius:12px;transition:background .2s;" onmouseover="this.style.background='rgba(0,0,0,.05)'" onmouseout="this.style.background='transparent'">
-            <div style="width:44px;height:44px;background:#DE5833;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">🦆</div>
-            <span style="font-size:11px;font-family:Arial,sans-serif;color:#3c4043;font-weight:500;">DuckDuckGo</span>
-          </div>
+        <div onclick="browseOpenExternal('https://weather.com')" style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:10px 6px;border-radius:12px;" onmouseover="this.style.background='rgba(0,0,0,.05)'" onmouseout="this.style.background='transparent'">
+          <div style="width:44px;height:44px;background:#4285F4;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">🌤️</div>
+          <span style="font-size:11px;font-family:Arial,sans-serif;color:#3c4043;font-weight:500;">Weather</span>
+        </div>
+        <div onclick="browseOpenExternal('https://maps.google.com')" style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:10px 6px;border-radius:12px;" onmouseover="this.style.background='rgba(0,0,0,.05)'" onmouseout="this.style.background='transparent'">
+          <div style="width:44px;height:44px;background:#34A853;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">🗺️</div>
+          <span style="font-size:11px;font-family:Arial,sans-serif;color:#3c4043;font-weight:500;">Maps</span>
+        </div>
+        <div onclick="browseOpenExternal('https://www.chabad.org')" style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:10px 6px;border-radius:12px;" onmouseover="this.style.background='rgba(0,0,0,.05)'" onmouseout="this.style.background='transparent'">
+          <div style="width:44px;height:44px;background:#003087;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">🕍</div>
+          <span style="font-size:11px;font-family:Arial,sans-serif;color:#3c4043;font-weight:500;">Chabad</span>
+        </div>
+        <div onclick="browseOpenExternal('https://www.allrecipes.com')" style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:10px 6px;border-radius:12px;" onmouseover="this.style.background='rgba(0,0,0,.05)'" onmouseout="this.style.background='transparent'">
+          <div style="width:44px;height:44px;background:#E07000;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">🍳</div>
+          <span style="font-size:11px;font-family:Arial,sans-serif;color:#3c4043;font-weight:500;">Recipes</span>
+        </div>
+        <div onclick="browseOpenExternal('https://www.nytimes.com')" style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:10px 6px;border-radius:12px;" onmouseover="this.style.background='rgba(0,0,0,.05)'" onmouseout="this.style.background='transparent'">
+          <div style="width:44px;height:44px;background:#000;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">📰</div>
+          <span style="font-size:11px;font-family:Arial,sans-serif;color:#3c4043;font-weight:500;">News</span>
+        </div>
+        <div onclick="browseOpenExternal('https://duckduckgo.com')" style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:10px 6px;border-radius:12px;" onmouseover="this.style.background='rgba(0,0,0,.05)'" onmouseout="this.style.background='transparent'">
+          <div style="width:44px;height:44px;background:#DE5833;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">🦆</div>
+          <span style="font-size:11px;font-family:Arial,sans-serif;color:#3c4043;font-weight:500;">DuckDuckGo</span>
         </div>
       </div>
-
-      <div style="flex:1;min-height:20px;"></div>
     </div>
-
-    <!-- Loading spinner -->
-    <div id="browseLoading" style="display:none;position:absolute;inset:0;background:var(--bg);z-index:3;align-items:center;justify-content:center;flex-direction:column;gap:14px;">
-      <div style="width:40px;height:40px;border:3px solid var(--border);border-top-color:#4285F4;border-radius:50%;animation:spin .8s linear infinite;"></div>
-      <div id="browseLoadingUrl" style="font-size:12px;font-weight:600;color:var(--muted);max-width:240px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
-    </div>
-
-    <!-- Blocked site fallback -->
-    <div id="browseBlocked" style="display:none;position:absolute;inset:0;background:var(--bg);z-index:3;align-items:center;justify-content:center;flex-direction:column;gap:14px;padding:28px;text-align:center;">
-      <div style="font-size:44px;">🚫</div>
-      <div style="font-size:16px;font-weight:800;color:var(--text);">Can't show this inside the app</div>
-      <div id="browseBlockedUrl" style="font-size:12px;color:var(--muted);font-weight:600;word-break:break-all;max-width:280px;"></div>
-      <div style="font-size:12px;color:var(--muted);font-weight:600;line-height:1.7;max-width:280px;">This website doesn't allow being embedded. Tap below to open it in your real browser instead.</div>
-      <button onclick="browseOpenExternal()" style="background:#4285F4;color:#fff;border:none;border-radius:24px;padding:12px 28px;font-size:15px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;margin-top:4px;">↗ Open in Browser</button>
-      <button onclick="browseGoHome()" style="background:none;border:none;color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:-4px;">← Back to Search</button>
-    </div>
-
-    <!-- The actual iframe -->
-    <iframe id="browseFrame"
-      style="width:100%;height:100%;border:none;display:none;position:absolute;inset:0;"
-      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation allow-top-navigation-by-user-activation"
-      allowfullscreen
-      title="Family Browser"></iframe>
-
+    <div style="flex:1;min-height:20px;"></div>
   </div>
+
 </div>
 </div>
 
@@ -3125,12 +3083,6 @@ async function aiEnhanceText(){
         return;
     }
 
-    // Check Puter is loaded
-    if(typeof puter === 'undefined'){
-        toast('AI not ready yet — try again in a moment', 'warn');
-        return;
-    }
-
     // Show loading state
     btn.textContent = '⏳';
     btn.classList.add('loading');
@@ -3138,34 +3090,24 @@ async function aiEnhanceText(){
     input.style.opacity = '0.5';
 
     try {
-        const prompt = `You are a friendly message enhancer for a family chat app. 
-Improve the following message to sound warmer, clearer, and more natural — keep the same meaning and tone, just make it nicer. 
-Keep it short and conversational. Do NOT add explanations, just return the enhanced message only.
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: 'claude-sonnet-4-20250514',
+                max_tokens: 300,
+                messages: [{
+                    role: 'user',
+                    content: `You are a friendly message enhancer for a family chat app. Improve the following message to sound warmer, clearer, and more natural — keep the same meaning and tone, just make it nicer. Keep it short and conversational. Return ONLY the enhanced message, no explanations or quotes.\n\nOriginal: ${text}`
+                }]
+            })
+        });
 
-Original message: "${text}"
-
-Enhanced message:`;
-
-        const response = await puter.ai.chat(prompt, { model: 'gpt-4o-mini' });
-
-        // Extract clean text from response
-        let enhanced = '';
-        if(typeof response === 'string'){
-            enhanced = response.trim();
-        } else if(response?.message?.content){
-            enhanced = Array.isArray(response.message.content)
-                ? response.message.content.map(c => c.text||'').join('').trim()
-                : (response.message.content || '').trim();
-        } else if(response?.content){
-            enhanced = (response.content || '').trim();
-        }
-
-        // Strip any surrounding quotes the AI might add
-        enhanced = enhanced.replace(/^["'""'']|["'""'']$/g, '').trim();
+        const data = await response.json();
+        let enhanced = (data?.content?.[0]?.text || '').trim().replace(/^["'""'']|["'""'']$/g, '').trim();
 
         if(enhanced && enhanced !== text){
             input.value = enhanced;
-            // Trigger resize
             input.style.height = 'auto';
             input.style.height = Math.min(input.scrollHeight, 100) + 'px';
             toast('✨ Message enhanced by AI!');
@@ -3175,13 +3117,7 @@ Enhanced message:`;
 
     } catch(err){
         console.error('AI enhance error:', err);
-        // Puter may require user to be signed in to puter.com
-        if(err?.message?.toLowerCase().includes('auth') || err?.message?.toLowerCase().includes('sign') || err?.message?.toLowerCase().includes('login')){
-            toast('✨ AI needs a quick sign-in — Puter.com will open', 'warn');
-            window.open('https://puter.com', '_blank', 'noopener');
-        } else {
-            toast('AI couldn\'t enhance right now — try again!', 'warn');
-        }
+        toast('AI couldn\'t enhance right now — try again!', 'warn');
     } finally {
         btn.textContent = '✨';
         btn.classList.remove('loading');
@@ -5326,7 +5262,10 @@ function loadAllDiscover(){
 }
 
 async function loadWeather(el, card){
-    const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${DISCOVER_LAT}&longitude=${DISCOVER_LNG}&current_weather=true&hourly=precipitation_probability&temperature_unit=fahrenheit&timezone=auto`);
+    const r = await Promise.race([
+        fetch(`https://api.open-meteo.com/v1/forecast?latitude=${DISCOVER_LAT}&longitude=${DISCOVER_LNG}&current_weather=true&hourly=precipitation_probability&temperature_unit=fahrenheit&timezone=auto`),
+        new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),8000))
+    ]);
     const d = await r.json();
     const w = d.current_weather;
     const codes = {0:'☀️ Clear',1:'🌤 Mostly clear',2:'⛅ Partly cloudy',3:'☁️ Overcast',45:'🌫 Foggy',48:'🌫 Foggy',51:'🌦 Drizzle',61:'🌧 Rain',71:'❄️ Snow',80:'🌧 Showers',95:'⛈ Thunderstorm'};
@@ -5390,9 +5329,24 @@ async function loadHolidays(el, card){
 }
 
 async function loadJoke(el, card){
-    const r = await fetch('https://official-joke-api.appspot.com/random_joke');
-    const d = await r.json();
-    el.innerHTML = `<i>${d.setup}</i><br><b style="color:var(--accent)">— ${d.punchline}</b>`;
+    const fallbackJokes = [
+        {setup:"Why don't scientists trust atoms?", punchline:"Because they make up everything!"},
+        {setup:"Why did the scarecrow win an award?", punchline:"Because he was outstanding in his field!"},
+        {setup:"What do you call fake spaghetti?", punchline:"An impasta!"},
+        {setup:"Why can't you give Elsa a balloon?", punchline:"Because she'll let it go!"},
+        {setup:"What do you call cheese that isn't yours?", punchline:"Nacho cheese!"},
+        {setup:"Why did the math book look so sad?", punchline:"Because it had too many problems."},
+    ];
+    try{
+        const r = await Promise.race([
+            fetch('https://official-joke-api.appspot.com/random_joke'),
+            new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),4000))
+        ]);
+        const d = await r.json();
+        if(d && d.setup){ el.innerHTML = `<i>${d.setup}</i><br><b style="color:var(--accent)">— ${d.punchline}</b>`; return; }
+    }catch(e){}
+    const j = fallbackJokes[Math.floor(Math.random()*fallbackJokes.length)];
+    el.innerHTML = `<i>${j.setup}</i><br><b style="color:var(--accent)">— ${j.punchline}</b>`;
 }
 
 async function loadFact(el, card){
@@ -5412,32 +5366,47 @@ async function loadFact(el, card){
 }
 
 async function loadQuote(el, card){
-    // quotable.io supports CORS
+    const quotes = [
+        {content:"The family is one of nature's masterpieces.", author:"G. Santayana"},
+        {content:"Family is not an important thing. It's everything.", author:"Michael J. Fox"},
+        {content:"In family life, love is the oil that eases friction.", author:"Friedrich Nietzsche"},
+        {content:"The love of family is life's greatest blessing.", author:"Anonymous"},
+        {content:"A happy family is but an earlier heaven.", author:"George Bernard Shaw"},
+        {content:"Family: where life begins and love never ends.", author:"Anonymous"},
+        {content:"Cherish your human connections: your relationships with friends and family.", author:"Barbara Bush"},
+        {content:"Where we love is home — home that our feet may leave, but not our hearts.", author:"Oliver Wendell Holmes"},
+        {content:"The bond that links your true family is not one of blood, but of respect and joy.", author:"Richard Bach"},
+        {content:"You don't choose your family. They are God's gift to you.", author:"Desmond Tutu"},
+    ];
     try{
-        const r = await fetch('https://api.quotable.io/quotes/random?limit=1');
+        const r = await Promise.race([
+            fetch('https://api.quotable.io/quotes/random?limit=1'),
+            new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),4000))
+        ]);
         const d = await r.json();
-        const q = d[0];
-        el.innerHTML = `"<i>${q.content}</i>"<br><b>— ${q.author}</b>`;
-    }catch(e){
-        el.textContent = '\u201cThe family is one of nature\u2019s masterpieces.\u201d \u2014 G. Santayana';
-    }
+        const q = Array.isArray(d) ? d[0] : d;
+        if(q && q.content){ el.innerHTML = `"<i>${q.content}</i>"<br><b>— ${q.author}</b>`; return; }
+    }catch(e){}
+    const q = quotes[Math.floor(Math.random()*quotes.length)];
+    el.innerHTML = `"<i>${q.content}</i>"<br><b>— ${q.author}</b>`;
 }
 
 async function loadAnimal(el, card){
     try{
         if(Math.random() > 0.5){
-            const r = await fetch('https://catfact.ninja/fact');
+            const r = await Promise.race([fetch('https://catfact.ninja/fact'),new Promise((_,rej)=>setTimeout(()=>rej(),5000))]);
             const d = await r.json();
             el.innerHTML = '🐱 ' + d.fact;
             if(card) card.querySelector('.dc-icon').textContent = '🐱';
         } else {
-            const r = await fetch('https://dog.ceo/api/breeds/image/random');
+            const r = await Promise.race([fetch('https://dog.ceo/api/breeds/image/random'),new Promise((_,rej)=>setTimeout(()=>rej(),5000))]);
             const d = await r.json();
             el.innerHTML = `🐶 Random pup!<br><img src="${d.message}" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-top:6px;">`;
             if(card) card.querySelector('.dc-icon').textContent = '🐶';
         }
     }catch(e){
-        el.textContent = '🐾 A cat has 32 muscles in each ear!';
+        const facts=['🐱 A cat has 32 muscles in each ear!','🐶 Dogs\' sense of smell is 40× stronger than humans.','🦁 Lions sleep up to 20 hours a day.','🐬 Dolphins sleep with one eye open.','🐘 Elephants are the only animals that can\'t jump.','🦜 Parrots can live for over 80 years.','🐙 Octopuses have three hearts and blue blood.'];
+        el.textContent = facts[Math.floor(Math.random()*facts.length)];
     }
 }
 
@@ -5747,23 +5716,21 @@ function browseLoad(url){
 }
 
 function browseGo(){
-    const input = document.getElementById('browseUrl');
-    if(input) browseLoad(input.value);
+    const val = (document.getElementById('browseUrl')?.value || '').trim();
+    if(!val) return;
+    let url = /^https?:\/\//i.test(val) ? val : (/\s/.test(val)||!/\./.test(val)) ? 'https://www.google.com/search?q='+encodeURIComponent(val) : 'https://'+val;
+    window.open(url, '_blank', 'noopener');
 }
 
 function googleSearch(){
     const q = (document.getElementById('googleSearchInput')||{}).value?.trim();
     if(!q) return;
-    // DuckDuckGo search embeds; Google search redirect opens externally
-    browseLoad('https://duckduckgo.com/?q=' + encodeURIComponent(q) + '&ia=web');
+    window.open('https://www.google.com/search?q=' + encodeURIComponent(q), '_blank', 'noopener');
 }
 
 function googleLucky(){
     const q = (document.getElementById('googleSearchInput')||{}).value?.trim();
-    const url = q
-        ? 'https://www.google.com/search?q=' + encodeURIComponent(q) + '&btnI=1'
-        : 'https://www.google.com/doodles';
-    window.open(url, '_blank', 'noopener');
+    window.open(q ? 'https://www.google.com/search?q='+encodeURIComponent(q)+'&btnI=1' : 'https://www.google.com/doodles', '_blank', 'noopener');
 }
 
 function startVoiceSearch(){
@@ -5816,9 +5783,9 @@ function browseRefresh(){
     if(_browseCurrentUrl) browseLoad(_browseCurrentUrl);
 }
 
-function browseOpenExternal(){
-    const url = _browseCurrentUrl || document.getElementById('browseUrl')?.value;
-    if(url) window.open(browseNormaliseUrl(url), '_blank', 'noopener');
+function browseOpenExternal(url){
+    const target = url || _browseCurrentUrl || document.getElementById('browseUrl')?.value;
+    if(target) window.open(browseNormaliseUrl(target), '_blank', 'noopener');
 }
 
 function browseCopyUrl(){
@@ -6457,9 +6424,10 @@ function updateLiveClock(){
     const elE = document.getElementById('clockExtra');
     if(el) el.textContent = `${h12}:${mm} ${ampm}`;
     if(elD) elD.textContent = `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
-    if(elE) elE.textContent = `${s % 2 === 0 ? '⏱' : '⏲'} ${h12}:${mm}:${ss}`;
+    if(elE) elE.textContent = `⏱ ${h12}:${mm}:${ss}`;
 }
-updateLiveClock();
+if(document.getElementById('clockTime')){ updateLiveClock(); }
+else { document.addEventListener('DOMContentLoaded', updateLiveClock); }
 setInterval(updateLiveClock, 1000);
 
 window.switchFeatureTab = function(panel,btn){
