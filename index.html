@@ -830,17 +830,18 @@ function removeHostMemory() {
   <div style="padding:14px 16px 10px;background:linear-gradient(135deg,rgba(99,102,241,.12),rgba(168,85,247,.08));border-bottom:1.5px solid var(--border);flex-shrink:0;">
     <div style="display:flex;align-items:center;gap:10px;">
       <div style="width:38px;height:38px;background:linear-gradient(135deg,#6366f1,#a855f7);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🤖</div>
-      <div>
+      <div style="flex:1;">
         <div style="font-family:'Fredoka One',cursive;font-size:17px;color:var(--text);">Family AI Assistant</div>
         <div style="font-size:11px;color:var(--muted);font-weight:600;">Knows general knowledge + your family's private info</div>
       </div>
+      <button onclick="aiClearHistory()" title="Clear conversation" style="background:none;border:1.5px solid var(--border);border-radius:10px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;color:var(--muted);font-family:inherit;flex-shrink:0;">🗑 Clear</button>
     </div>
   </div>
 
   <!-- Chat messages area -->
   <div id="aiChatMessages" style="flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:12px;">
-    <!-- Welcome bubble -->
-    <div style="display:flex;gap:10px;align-items:flex-start;">
+    <!-- Welcome bubble shown until history loads -->
+    <div id="aiWelcomeBubble" style="display:flex;gap:10px;align-items:flex-start;">
       <div style="width:32px;height:32px;background:linear-gradient(135deg,#6366f1,#a855f7);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">🤖</div>
       <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:0 16px 16px 16px;padding:12px 14px;max-width:85%;font-size:14px;font-weight:600;color:var(--text);line-height:1.6;">
         Hi! I'm your Family AI Assistant 👋<br>
@@ -5021,20 +5022,48 @@ async function sendHostPushNotification() {
     } catch(e) { toast('Failed to send: ' + e.message, 'danger'); }
 }
 
-// ── Listen for push notifications written to Firebase ─────
+// ── Listen for push notifications written to Firebase ─────────────────────────
+// This is how push works in this app:
+// Host writes to Firebase → ALL users listening get a browser notification
+// No FCM server needed — pure Firebase realtime listener triggers SW notification
 let lastNotifTimestamp = Date.now(); // ignore old ones on boot
 
 function listenPushNotifications() {
-    if (!window.db || !isHost) return; // only host receives push listeners
+    if (!window.db) return; // removed isHost guard — ALL users listen
     window.dbOnValue(window.dbRef(window.db, 'pushNotif'), snap => {
         if (!snap.exists()) return;
         const d = snap.val();
         if (!d.timestamp || d.timestamp <= lastNotifTimestamp) return;
         lastNotifTimestamp = d.timestamp;
-        // Don't notify the host who sent it
-        if (isHost && d.type === 'manual') return;
-        showNotification(d.title || 'Family Hub 🏠', d.body || '', 'push-manual');
+        // Host who sent it gets a toast instead of a notification
+        if (isHost && d.sentBy === currentUser) {
+            toast('📨 Notification sent to all family members!');
+            return;
+        }
+        // Show real push notification via service worker (works when app is open AND in background)
+        _showPushNotification(d.title || 'Family Hub 🏠', d.body || '');
     });
+}
+
+// ── Central function to show a browser notification ───────────────────────────
+function _showPushNotification(title, body){
+    // Always show in-app toast
+    toast('🔔 ' + title + (body ? ': ' + body : ''), 'info');
+
+    // Show real OS notification via service worker if permission granted
+    if(notifPermission === 'granted' && 'serviceWorker' in navigator){
+        navigator.serviceWorker.ready.then(sw => {
+            sw.showNotification(title, {
+                body,
+                icon: './icon-192.png',
+                badge: './icon-192.png',
+                tag: 'family-hub-push-' + Date.now(),
+                renotify: true,
+                vibrate: [200, 100, 200],
+                data: { url: './' }
+            });
+        }).catch(e => console.log('SW notification failed:', e));
+    }
 }
 
 // ── Listen for announcements → notify if setting on ───────
@@ -5047,23 +5076,9 @@ function listenAnnouncementsWithNotif() {
             const d = snap.val();
             document.getElementById('announcementText').textContent = d.text;
             b.classList.add('active');
-            if (d.timestamp && d.timestamp > lastAnnouncementTs && notifSettings.announce !== false && !isHost) {
+            if (d.timestamp && d.timestamp > lastAnnouncementTs && !isHost) {
                 lastAnnouncementTs = d.timestamp;
-                // In-app toast always
-                toast('📢 ' + (d.text || 'New announcement'), 'info');
-                // Real browser push notification if permission granted (PWA)
-                if(notifPermission === 'granted' && 'serviceWorker' in navigator){
-                    navigator.serviceWorker.ready.then(sw => {
-                        sw.showNotification('📢 Family Announcement', {
-                            body: d.text || 'New announcement from host',
-                            icon: './icon-192.png',
-                            badge: './icon-192.png',
-                            tag: 'announcement',
-                            renotify: true,
-                            vibrate: [200, 100, 200],
-                        });
-                    });
-                }
+                _showPushNotification('📢 Family Announcement', d.text || 'New announcement from host');
             } else if (d.timestamp) {
                 lastAnnouncementTs = d.timestamp;
             }
@@ -5102,24 +5117,9 @@ function listenChatGroupForNotif(group) {
         entries.forEach(msg => {
             if (msg.timestamp > (lastChatTs[key] || 0) && msg.author !== currentUser) {
                 lastChatTs[key] = msg.timestamp;
-                if(notifSettings.chat !== false && !isHost){
+                if(!isHost){
                     const body = (msg.text || '🎙️ Voice message').slice(0,80);
-                    // In-app toast
-                    toast('💬 ' + (msg.author||'Someone') + ': ' + body.slice(0,50));
-                    // Real push notification if permission granted (PWA)
-                    if(notifPermission === 'granted' && 'serviceWorker' in navigator){
-                        navigator.serviceWorker.ready.then(sw => {
-                            sw.showNotification('💬 ' + (msg.author||'Someone'), {
-                                body,
-                                icon: './icon-192.png',
-                                badge: './icon-192.png',
-                                tag: 'chat-' + key,
-                                renotify: true,
-                                vibrate: [100, 50, 100],
-                                data: { url: './' }
-                            });
-                        });
-                    }
+                    _showPushNotification('💬 ' + (msg.author||'Someone'), body);
                 }
             }
         });
@@ -5430,23 +5430,24 @@ window.updateUserNamePill=updateUserNamePill;
 })();
 
 async function _bootPushForUser(){
-    // Only works in PWA / Chrome — skip if no service worker support
-    if(!('serviceWorker' in navigator) || !('Notification' in window)) return;
-    if(!window.messaging) return;
+    // Start listening for Firebase push notifications regardless of browser permission
+    // (Firebase listener works for all users who are signed in)
+    listenPushNotifications();
 
-    // If already granted — just save token silently
+    // Browser notification permission (for OS-level popups)
+    if(!('Notification' in window)) return;
+
+    // If already granted — set flag and we're done
     if(Notification.permission === 'granted'){
         notifPermission = 'granted';
-        await saveNotifToken();
-        listenPushNotifications();
         return;
     }
 
     // If denied — don't ask again
     if(Notification.permission === 'denied') return;
 
-    // First time — show a friendly in-app prompt before the browser dialog
-    _showNotifPrompt();
+    // First time — show friendly prompt after a short delay
+    setTimeout(_showNotifPrompt, 3000);
 }
 
 function _showNotifPrompt(){
@@ -5488,11 +5489,10 @@ async function _askNotifPermission(){
     const permission = await Notification.requestPermission();
     if(permission === 'granted'){
         notifPermission = 'granted';
-        toast('🔔 Notifications enabled!');
-        await saveNotifToken();
-        listenPushNotifications();
+        toast('🔔 Notifications enabled! You\'ll get notified even when the app is closed.');
+        listenPushNotifications(); // make sure listener is active
     } else {
-        toast('Notifications blocked — you can enable them in Chrome settings','warn');
+        toast('Notifications blocked — enable in Chrome Settings → Site Settings','warn');
     }
 }
 
@@ -5697,17 +5697,49 @@ async function _fetchJewish(){
     const now = new Date();
     const y=now.getFullYear(), mo=now.getMonth()+1, dd=now.getDate();
     const todayStr = `${y}-${String(mo).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
-    const [r1,r2] = await Promise.all([
-        fetch(`https://www.hebcal.com/hebcal?v=1&cfg=json&year=${y}&month=${mo}&maj=on&min=on&nx=on&mf=on&ss=on&mod=on&geo=pos&latitude=${DISCOVER_LAT}&longitude=${DISCOVER_LNG}&tzid=America/New_York&c=on`),
-        fetch(`https://www.hebcal.com/shabbat?cfg=json&geonameid=5128581`)
+    const dateParam = `date=${todayStr}`;
+
+    // Fire all API calls in parallel
+    const [r1, r2, r3, r4] = await Promise.all([
+        // Full Hebrew calendar: holidays, candle lighting, Torah, Omer
+        fetch(`https://www.hebcal.com/hebcal?v=1&cfg=json&year=${y}&month=${mo}&maj=on&min=on&nx=on&mf=on&ss=on&mod=on&omer=on&geo=pos&latitude=${DISCOVER_LAT}&longitude=${DISCOVER_LNG}&tzid=America/New_York&c=on&M=on&s=on`),
+        // Shabbat times (candle lighting + havdalah)
+        fetch(`https://www.hebcal.com/shabbat?cfg=json&geonameid=5128581&M=on`),
+        // Zmanim (prayer times) for today
+        fetch(`https://www.hebcal.com/zmanim?cfg=json&${dateParam}&geonameid=5128581`),
+        // Upcoming major holidays (next 60 days)
+        fetch(`https://www.hebcal.com/hebcal?v=1&cfg=json&maj=on&min=off&nx=on&mf=on&ss=on&mod=on&omer=on&geo=pos&latitude=${DISCOVER_LAT}&longitude=${DISCOVER_LNG}&tzid=America/New_York&c=on&start=${todayStr}&end=${y}-12-31`)
     ]);
-    const [data, shabbat] = await Promise.all([r1.json(), r2.json()]);
-    const todayItems = (data.items||[]).filter(i=>i.date===todayStr);
-    const candle = (shabbat.items||[]).find(i=>i.category==='candles');
+
+    const [cal, shabbat, zmanimData, upcoming] = await Promise.all([r1.json(), r2.json(), r3.json(), r4.json()]);
+
+    // Today's events
+    const todayItems = (cal.items||[]).filter(i=>i.date===todayStr);
+    // Hebrew date
+    const hebrewDate = (cal.items||[]).find(i=>i.category==='hebdate')?.hebrew || '';
+    // Omer today
+    const omerToday = todayItems.find(i=>i.category==='omer');
+    // Torah reading this week
+    const parsha = (cal.items||[]).find(i=>i.category==='parashat');
+    // Shabbat candle/havdalah
+    const candle   = (shabbat.items||[]).find(i=>i.category==='candles');
     const havdalah = (shabbat.items||[]).find(i=>i.category==='havdalah');
-    const hebrewDate = (data.items||[]).find(i=>i.category==='hebdate')?.hebrew || '';
-    const preview = todayItems[0]?.title || (candle ? '🕯️ Shabbat soon' : hebrewDate || 'No events today');
-    return { preview, detail: { todayItems, candle, havdalah, hebrewDate, allItems: data.items||[] } };
+    // Zmanim
+    const zmanim = zmanimData.times || {};
+    // Upcoming holidays (next 8)
+    const upcomingHols = (upcoming.items||[])
+        .filter(i=>['holiday','roshchodesh','omer'].includes(i.category) && i.date >= todayStr)
+        .slice(0, 8);
+
+    // Smart preview
+    let preview = '';
+    if(omerToday) preview = `📿 ${omerToday.title}`;
+    else if(todayItems.find(i=>i.category==='holiday')) preview = '🎉 ' + todayItems.find(i=>i.category==='holiday').title;
+    else if(candle) preview = `🕯️ Candle lighting ${new Date(candle.date).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`;
+    else if(hebrewDate) preview = hebrewDate;
+    else preview = 'Tap for full calendar';
+
+    return { preview, detail: { todayItems, hebrewDate, omerToday, parsha, candle, havdalah, zmanim, upcomingHols } };
 }
 
 async function _fetchHolidays(){
@@ -5940,27 +5972,127 @@ function _renderDetailPage(key){
         </div>`;
     }
     else if(key==='jewish'){
-        const todayHtml = d.todayItems.length
-            ? d.todayItems.map(i=>`<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:15px;font-weight:600;">• ${i.title}</div>`).join('')
-            : '<div style="color:var(--muted);font-size:14px;">No special events today</div>';
+        const fmt = iso => { try{ const t=new Date(iso); return t.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }catch(e){return '';} };
+        const fmtFull = iso => { try{ const t=new Date(iso); return t.toLocaleString([],{weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}); }catch(e){return '';} };
+
+        // ── Omer counting ──────────────────────────────────────────────────────
+        let omerHtml = '';
+        if(d.omerToday){
+            const t = d.omerToday.title; // e.g. "22nd day of the Omer"
+            const match = t.match(/(\d+)/);
+            const dayNum = match ? parseInt(match[1]) : 0;
+            const weeks = Math.floor((dayNum-1)/7);
+            const days  = (dayNum-1)%7;
+            const weekStr = weeks>0 ? `${weeks} week${weeks>1?'s':''} ` : '';
+            const dayStr  = days>0  ? `${days} day${days>1?'s':''}`     : '';
+            const progress = Math.round((dayNum/49)*100);
+            omerHtml = `
+            <div class="discover-detail-section" style="background:linear-gradient(135deg,rgba(99,102,241,.1),rgba(168,85,247,.08));">
+                <div class="discover-detail-label">📿 Sefirat HaOmer — Counting the Omer</div>
+                <div style="text-align:center;padding:10px 0;">
+                    <div style="font-size:52px;font-weight:900;color:#6366f1;font-family:'Fredoka One',cursive;">${dayNum}</div>
+                    <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px;">Day ${dayNum} of 49</div>
+                    ${weekStr||dayStr ? `<div style="font-size:13px;color:var(--muted);font-weight:600;">${weekStr}${weekStr&&dayStr?'and ':''}${dayStr} of the Omer</div>` : ''}
+                    <div style="margin:12px 0 4px;background:var(--border);border-radius:10px;height:10px;overflow:hidden;">
+                        <div style="width:${progress}%;height:100%;background:linear-gradient(90deg,#6366f1,#a855f7);border-radius:10px;transition:width .5s;"></div>
+                    </div>
+                    <div style="font-size:12px;color:var(--muted);font-weight:600;">${progress}% to Shavuot 🎉</div>
+                    <div style="font-size:11px;color:#9b59b6;font-weight:700;margin-top:6px;">${49-dayNum} days until Shavuot</div>
+                </div>
+            </div>`;
+        }
+
+        // ── Today's events ─────────────────────────────────────────────────────
+        const holidayItems = (d.todayItems||[]).filter(i=>i.category==='holiday'||i.category==='roshchodesh'||i.category==='mevarchim');
+        const todayHtml = holidayItems.length
+            ? holidayItems.map(i=>`<div style="padding:10px 0;border-bottom:1px solid var(--border);font-size:15px;font-weight:700;">🎉 ${i.title}</div>`).join('')
+            : '<div style="color:var(--muted);font-size:14px;padding:8px 0;">No special events today</div>';
+
+        // ── Torah reading ──────────────────────────────────────────────────────
+        const parshaHtml = d.parsha ? `
+            <div class="discover-detail-section">
+                <div class="discover-detail-label">📖 Torah Portion This Week</div>
+                <div style="font-size:17px;font-weight:800;color:var(--accent);">${d.parsha.title}</div>
+                ${d.parsha.hebrew ? `<div style="font-size:14px;color:var(--muted);font-weight:600;">${d.parsha.hebrew}</div>` : ''}
+            </div>` : '';
+
+        // ── Shabbat times ──────────────────────────────────────────────────────
         const candleHtml = d.candle
-            ? `<div class="discover-detail-value">🕯️ ${new Date(d.candle.date).toLocaleString([],{weekday:'long',hour:'2-digit',minute:'2-digit'})}</div>`
-            : '<div class="discover-detail-value" style="color:var(--muted);">No candle lighting this week</div>';
-        const havdalahHtml = d.havdalah
-            ? `<div class="discover-detail-value">✨ ${new Date(d.havdalah.date).toLocaleString([],{weekday:'long',hour:'2-digit',minute:'2-digit'})}</div>`
+            ? `<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">
+                <span style="font-weight:700;">🕯️ Candle Lighting</span>
+                <span style="font-weight:800;color:var(--accent);">${fmtFull(d.candle.date)}</span></div>`
             : '';
+        const havdalahHtml = d.havdalah
+            ? `<div style="display:flex;justify-content:space-between;padding:10px 0;">
+                <span style="font-weight:700;">✨ Havdalah</span>
+                <span style="font-weight:800;color:#9b59b6;">${fmtFull(d.havdalah.date)}</span></div>`
+            : '';
+
+        // ── Zmanim ─────────────────────────────────────────────────────────────
+        const z = d.zmanim || {};
+        const zmanimRows = [
+            {label:'🌅 Alot HaShachar', key:'alotHaShachar', desc:'Dawn'},
+            {label:'🌄 Misheyakir', key:'misheyakir', desc:'Earliest Talit & Tefillin'},
+            {label:'☀️ Sunrise', key:'sunrise', desc:'Hanetz HaChama'},
+            {label:'📿 Latest Shma (GRA)', key:'sofZmanShma', desc:'Latest Kriyat Shma'},
+            {label:'🙏 Latest Shacharit (GRA)', key:'sofZmanTfilla', desc:'Latest Morning Prayer'},
+            {label:'⏰ Chatzot', key:'chatzot', desc:'Solar Noon'},
+            {label:'🕌 Mincha Gedola', key:'minchaGedola', desc:'Earliest Mincha'},
+            {label:'🕌 Mincha Ketana', key:'minchaKetana', desc:'Best Mincha time'},
+            {label:'🌆 Plag HaMincha', key:'plagHaMincha', desc:'Plag'},
+            {label:'🌇 Sunset', key:'sunset', desc:'Shkiya'},
+            {label:'🌃 Tzeit Hakochavim', key:'tzeit', desc:'Nightfall — 3 stars'},
+        ].filter(row=>z[row.key]);
+
+        const zmanimHtml = zmanimRows.length ? zmanimRows.map(row=>`
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);">
+                <div>
+                    <div style="font-size:13px;font-weight:700;">${row.label}</div>
+                    <div style="font-size:11px;color:var(--muted);">${row.desc}</div>
+                </div>
+                <div style="font-size:14px;font-weight:800;color:var(--accent);">${fmt(z[row.key])}</div>
+            </div>`).join('') : '<div style="color:var(--muted);">Zmanim unavailable</div>';
+
+        // ── Upcoming holidays ──────────────────────────────────────────────────
+        const upcomingHtml = (d.upcomingHols||[]).length ? (d.upcomingHols).map(h=>{
+            const dt = new Date(h.date+'T12:00:00');
+            const daysUntil = Math.round((dt-new Date())/(1000*60*60*24));
+            const badge = daysUntil===0?'<span style="background:var(--accent);color:#fff;border-radius:8px;padding:2px 8px;font-size:11px;font-weight:700;">TODAY</span>':
+                daysUntil===1?'<span style="background:var(--accent2);color:#fff;border-radius:8px;padding:2px 8px;font-size:11px;font-weight:700;">TOMORROW</span>':
+                `<span style="color:var(--muted);font-size:12px;font-weight:700;">${daysUntil}d</span>`;
+            return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
+                <div><div style="font-size:14px;font-weight:700;">${h.title}</div>
+                <div style="font-size:11px;color:var(--muted);">${dt.toLocaleDateString([],{month:'long',day:'numeric'})}</div></div>
+                ${badge}</div>`;
+        }).join('') : '';
+
         html = `
         <div class="discover-detail-hero">🕍</div>
-        ${d.hebrewDate ? `<div style="text-align:center;font-size:20px;font-weight:700;margin-bottom:20px;color:var(--accent);">${d.hebrewDate}</div>` : ''}
+        ${d.hebrewDate ? `<div style="text-align:center;font-size:22px;font-weight:800;margin-bottom:20px;color:var(--accent);">${d.hebrewDate}</div>` : ''}
+
+        ${omerHtml}
+
         <div class="discover-detail-section">
-            <div class="discover-detail-label">Today's Events</div>
+            <div class="discover-detail-label">📅 Today's Events</div>
             ${todayHtml}
         </div>
+
+        ${parshaHtml}
+
+        ${(candleHtml||havdalahHtml) ? `<div class="discover-detail-section">
+            <div class="discover-detail-label">🕯️ Shabbat Times</div>
+            ${candleHtml}${havdalahHtml}
+        </div>` : ''}
+
         <div class="discover-detail-section">
-            <div class="discover-detail-label">Candle Lighting</div>
-            ${candleHtml}
+            <div class="discover-detail-label">⏰ Zmanim — Prayer Times Today</div>
+            ${zmanimHtml}
         </div>
-        ${havdalahHtml ? `<div class="discover-detail-section"><div class="discover-detail-label">Havdalah</div>${havdalahHtml}</div>` : ''}`;
+
+        ${upcomingHtml ? `<div class="discover-detail-section">
+            <div class="discover-detail-label">📆 Upcoming Jewish Holidays</div>
+            ${upcomingHtml}
+        </div>` : ''}`;
     }
     else if(key==='holidays'){
         const rows = d.upcoming.map((h,i)=>{
@@ -6272,9 +6404,90 @@ window.saveAIBrain      = saveAIBrain;
 let _aiChatHistory = []; // rolling context for multi-turn conversation
 let _aiThinking    = false;
 let _familyFacts   = null; // cached from Firebase
+let _aiHistoryLoaded = false;
+
+// ── Firebase path for this user's AI history ──────────────────────────────────
+function _aiHistoryPath(){
+    const userKey = (currentUser||'guest').replace(/[.#$[\]]/g,'_');
+    return 'aiHistory/' + userKey;
+}
+
+// ── Save conversation to Firebase ─────────────────────────────────────────────
+async function _saveAIHistory(){
+    if(!window.db || !currentUser) return;
+    try {
+        // Keep last 40 messages (20 exchanges) in Firebase
+        const toSave = _aiChatHistory.slice(-40);
+        await window.dbSet(window.dbRef(window.db, _aiHistoryPath()), toSave);
+    } catch(e){ console.log('AI history save failed', e); }
+}
+
+// ── Load conversation from Firebase and render ────────────────────────────────
+async function _loadAIHistory(){
+    if(!window.db || !currentUser) return;
+    try {
+        const snap = await window.dbGet(window.dbRef(window.db, _aiHistoryPath()));
+        if(!snap.exists()) return;
+        const saved = snap.val();
+        if(!Array.isArray(saved) || !saved.length) return;
+
+        _aiChatHistory = saved;
+
+        // Hide the welcome bubble since we have real history
+        const welcome = document.getElementById('aiWelcomeBubble');
+        if(welcome) welcome.style.display = 'none';
+
+        // Hide suggestions since there's existing conversation
+        const sugg = document.getElementById('aiSuggestions');
+        if(sugg) sugg.style.display = 'none';
+
+        // Render all saved messages
+        const wrap = document.getElementById('aiChatMessages');
+        if(!wrap) return;
+
+        // Add a "previous conversation" date divider
+        const divider = document.createElement('div');
+        divider.style.cssText = 'text-align:center;font-size:11px;font-weight:700;color:var(--muted);padding:4px 0;';
+        divider.textContent = '— Previous conversation —';
+        wrap.appendChild(divider);
+
+        saved.forEach(msg => {
+            if(msg.role === 'user' || msg.role === 'assistant'){
+                aiRenderBubble(msg.role === 'user' ? 'user' : 'ai', msg.content);
+            }
+        });
+
+        // Scroll to bottom
+        wrap.scrollTop = wrap.scrollHeight;
+    } catch(e){ console.log('AI history load failed', e); }
+}
+
+// ── Clear conversation ────────────────────────────────────────────────────────
+async function aiClearHistory(){
+    if(!confirm('Clear your conversation history with the AI?')) return;
+    _aiChatHistory = [];
+    if(window.db && currentUser){
+        try { await window.dbRemove(window.dbRef(window.db, _aiHistoryPath())); } catch(e){}
+    }
+    // Reset the chat panel
+    const wrap = document.getElementById('aiChatMessages');
+    if(wrap){
+        wrap.innerHTML = '';
+        // Re-add welcome bubble
+        wrap.innerHTML = `<div id="aiWelcomeBubble" style="display:flex;gap:10px;align-items:flex-start;">
+            <div style="width:32px;height:32px;background:linear-gradient(135deg,#6366f1,#a855f7);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">🤖</div>
+            <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:0 16px 16px 16px;padding:12px 14px;max-width:85%;font-size:14px;font-weight:600;color:var(--text);line-height:1.6;">
+                History cleared! Ask me anything new 😊
+            </div>
+        </div>`;
+    }
+    const sugg = document.getElementById('aiSuggestions');
+    if(sugg) sugg.style.display = 'flex';
+    toast('Conversation cleared 🗑');
+}
 
 async function loadFamilyFacts(){
-    if(_familyFacts !== null) return _familyFacts; // use cache
+    if(_familyFacts !== null) return _familyFacts;
     if(!window.db) return '';
     try {
         const snap = await window.dbGet(window.dbRef(window.db, 'aiBrain/facts'));
@@ -6283,9 +6496,13 @@ async function loadFamilyFacts(){
     return _familyFacts;
 }
 
-// Invalidate facts cache when we switch to Ask AI tab (in case host just saved)
+// Load history when tab opens, but only once per session
 function onAskAITabOpen(){
-    _familyFacts = null;
+    _familyFacts = null; // refresh facts in case host updated them
+    if(!_aiHistoryLoaded){
+        _aiHistoryLoaded = true;
+        _loadAIHistory();
+    }
 }
 
 function aiRenderBubble(role, text, isLoading=false){
@@ -6318,26 +6535,23 @@ async function aiSendQuestion(){
     const question = input?.value?.trim();
     if(!question) return;
 
-    // Hide suggestions after first real question
+    // Hide suggestions and welcome after first question
     const sugg = document.getElementById('aiSuggestions');
     if(sugg) sugg.style.display = 'none';
+    const welcome = document.getElementById('aiWelcomeBubble');
+    if(welcome) welcome.style.display = 'none';
 
-    // Clear input
     input.value = '';
     input.style.height = 'auto';
 
-    // Render user bubble
     aiRenderBubble('user', question);
 
-    // Show typing indicator
     _aiThinking = true;
     if(sendBtn) sendBtn.style.opacity = '0.5';
     const thinkBubble = aiRenderBubble('ai', '', true);
 
-    // Load family facts (RAG)
     const facts = await loadFamilyFacts();
 
-    // Build system prompt — facts are injected here so AI always knows them
     const systemPrompt = `You are the Family Hub AI assistant for this family's private app.
 
 IMPORTANT — FAMILY FACTS (use these to answer personal questions):
@@ -6351,7 +6565,6 @@ RULES:
 - If someone asks "who is the host" or "what is the host's name" — check the family facts for that answer`;
 
     try {
-        // Build message history for context
         const messages = [
             { role: 'system', content: systemPrompt },
             ..._aiChatHistory.slice(-8),
@@ -6365,9 +6578,11 @@ RULES:
             thinkBubble.textContent = answer;
         }
 
+        // Save to rolling history and persist to Firebase
         _aiChatHistory.push({ role: 'user', content: question });
         _aiChatHistory.push({ role: 'assistant', content: answer });
-        if(_aiChatHistory.length > 20) _aiChatHistory = _aiChatHistory.slice(-20);
+        if(_aiChatHistory.length > 40) _aiChatHistory = _aiChatHistory.slice(-40);
+        _saveAIHistory(); // async, don't await
 
     } catch(err){
         console.error('AI error:', err);
@@ -6394,6 +6609,7 @@ function aiAskQuestion(q){
 window.aiSendQuestion = aiSendQuestion;
 window.aiAskQuestion  = aiAskQuestion;
 window.onAskAITabOpen = onAskAITabOpen;
+window.aiClearHistory = aiClearHistory;
 
 function sendGameInviteByInput(type){
     const name = (document.getElementById('gameInviteNameInput')||{}).value?.trim();
@@ -6540,14 +6756,40 @@ function listenMyGames(){
             const myTurn=g.turn===currentUser;
             const card=document.createElement('div');
             card.className='my-game-card';
-            card.innerHTML=`<div style="font-size:26px">${g.type==='chess'?'♟️':g.type==='battleship'?'🚢':'⭕'}</div>
-                <div style="flex:1"><div style="font-size:14px;font-weight:700">${GAME_NAMES[g.type]||g.type}</div>
-                <div style="font-size:12px;color:var(--muted)">vs ${g.vsComputer?'🤖 Computer':opp}</div></div>
-                <div style="font-size:12px;font-weight:700;color:${myTurn?'var(--accent2)':'var(--muted)'}">${myTurn?'Your turn!':'Waiting…'}</div>`;
-            card.onclick=()=>openGameBoard(gameId,g.type);
+            card.style.position='relative';
+            card.innerHTML=`
+                <div style="font-size:26px">${g.type==='chess'?'♟️':g.type==='battleship'?'🚢':'⭕'}</div>
+                <div style="flex:1;cursor:pointer;" onclick="openGameBoard('${gameId}','${g.type}')">
+                    <div style="font-size:14px;font-weight:700">${GAME_NAMES[g.type]||g.type}</div>
+                    <div style="font-size:12px;color:var(--muted)">vs ${g.vsComputer?'🤖 Computer':opp}</div>
+                </div>
+                <div style="font-size:12px;font-weight:700;color:${myTurn?'var(--accent2)':'var(--muted)'};cursor:pointer;margin-right:8px;" onclick="openGameBoard('${gameId}','${g.type}')">${myTurn?'Your turn!':'Waiting…'}</div>
+                <button onclick="event.stopPropagation();cancelGame('${gameId}')" title="Cancel game"
+                    style="background:rgba(217,94,82,.12);border:1.5px solid rgba(217,94,82,.3);color:var(--danger);border-radius:10px;padding:6px 10px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;flex-shrink:0;transition:all .2s;"
+                    onmouseover="this.style.background='rgba(217,94,82,.25)'" onmouseout="this.style.background='rgba(217,94,82,.12)'">
+                    🗑 Cancel
+                </button>`;
             list.appendChild(card);
         });
     });
+}
+
+async function cancelGame(gameId){
+    if(!window.db) return;
+    // Show confirmation
+    const confirmed = confirm('Cancel this game? It will be deleted for both players.');
+    if(!confirmed) return;
+    try{
+        await window.dbRemove(window.dbRef(window.db,'games/'+gameId));
+        // Also remove any pending invites for this game
+        await window.dbRemove(window.dbRef(window.db,'gameInvites/'+currentUser.replace(/[.#$[\]]/g,'_')+'/'+gameId)).catch(()=>{});
+        toast('Game cancelled 🗑');
+        // If we were viewing this game, go back to picker
+        if(currentGameId===gameId) leaveGameBoard();
+        else listenMyGames();
+    }catch(e){
+        toast('Could not cancel — try again','danger');
+    }
 }
 
 // ── Build initial state ──────────────────────────────────
@@ -6603,9 +6845,10 @@ function renderGameBoard(gameId, g, wrap){
     const amP1=g.player1===currentUser;
     const vsComp=g.vsComputer;
     const compTag=vsComp?'<span style="font-size:11px;background:rgba(91,171,111,.15);color:var(--accent2);border-radius:6px;padding:2px 7px;font-weight:700;"> vs 🤖 Computer</span>':'';
-    let html=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    let html=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
         <button onclick="leaveGameBoard()" style="background:none;border:1.5px solid var(--border);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;color:var(--muted);font-family:inherit;">← Back</button>
         <div style="font-family:'Fredoka One',cursive;font-size:18px;flex:1">${GAME_NAMES[g.type]}${compTag}</div>
+        <button onclick="cancelGame('${gameId}')" style="background:rgba(217,94,82,.12);border:1.5px solid rgba(217,94,82,.3);color:var(--danger);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;" title="Cancel and delete this game">🗑 Cancel</button>
     </div>`;
     if(g.status==='waiting'){
         html+=`<div style="text-align:center;padding:30px;color:var(--muted);font-size:14px;font-weight:600;">⏳ Waiting for ${opp} to accept the invite…</div>`;
@@ -7043,11 +7286,110 @@ window.bsConfirmPlacement=bsConfirmPlacement;
 window.chessClick=chessClick;
 window.openGameBoard=openGameBoard;
 window.leaveGameBoard=leaveGameBoard;
+window.cancelGame=cancelGame;
 window.acceptGameInvite=acceptGameInvite;
 window.declineGameInvite=declineGameInvite;
 window.sendGameInviteByInput=sendGameInviteByInput;
 window.switchToHumanGame=switchToHumanGame;
 
+// ── Android Back Button Handler ───────────────────────────────────────────────
+// Intercepts the Android hardware/gesture back button when running as a PWA.
+// Instead of closing the app, it steps back through in-app screens.
+// Uses the History API — each "screen open" pushes a state, back pops it.
+
+(function(){
+    // Push a base state so there's always something to pop back to
+    history.replaceState({ screen: 'home' }, '');
+
+    function _pushState(screen){
+        history.pushState({ screen }, '');
+    }
+
+    // What to do when back is pressed for each screen
+    function _handleBack(){
+        // 1. Any open modal
+        const openModal = document.querySelector('.modal.active, .modal[style*="flex"], .modal[style*="block"]');
+        if(openModal && openModal.id){
+            closeModal(openModal.id);
+            return;
+        }
+        // 2. Discover detail overlay
+        const discoverOverlay = document.getElementById('discoverDetailOverlay');
+        if(discoverOverlay && discoverOverlay.style.display !== 'none'){
+            closeDiscoverDetail();
+            return;
+        }
+        // 3. Active game board
+        const gameBoardWrap = document.getElementById('gameBoardWrap');
+        if(gameBoardWrap && gameBoardWrap.style.display !== 'none'){
+            leaveGameBoard();
+            return;
+        }
+        // 4. Mini game open
+        const miniGameArea = document.getElementById('miniGameArea');
+        if(miniGameArea && miniGameArea.style.display !== 'none'){
+            closeMiniGame();
+            return;
+        }
+        // 5. Chat modal open
+        const chatModal = document.getElementById('commentsModal');
+        if(chatModal && (chatModal.classList.contains('active') || chatModal.style.display === 'flex')){
+            closeModal('commentsModal');
+            return;
+        }
+        // 6. Not on Home tab — go home
+        const activeTab = document.querySelector('.feature-tab.active');
+        if(activeTab && activeTab.dataset.panel !== 'cards'){
+            const homeTab = document.querySelector('[data-panel="cards"]');
+            if(homeTab) switchFeatureTab('cards', homeTab);
+            return;
+        }
+        // 7. Already on home — push a new state so next back doesn't exit
+        // (This prevents the app from closing on the first back press at home)
+        history.pushState({ screen: 'home' }, '');
+    }
+
+    // Patch functions to push history states when screens open
+    const _origSwitchFT = window.switchFeatureTab;
+    window.switchFeatureTab = function(panel, btn){
+        _origSwitchFT(panel, btn);
+        if(panel !== 'cards') _pushState('tab:' + panel);
+        else history.replaceState({ screen: 'home' }, '');
+    };
+
+    const _origOpenModal = window.openModal;
+    if(_origOpenModal){
+        window.openModal = function(id){
+            _origOpenModal(id);
+            _pushState('modal:' + id);
+        };
+    }
+
+    const _origOpenDiscover = window.openDiscoverDetail;
+    window.openDiscoverDetail = function(key){
+        _origOpenDiscover(key);
+        _pushState('discover:' + key);
+    };
+
+    const _origOpenGame = window.openGameBoard;
+    window.openGameBoard = function(gameId, type){
+        _origOpenGame(gameId, type);
+        _pushState('game:' + gameId);
+    };
+
+    const _origOpenMini = window.openMiniGame;
+    window.openMiniGame = function(key){
+        _origOpenMini(key);
+        _pushState('minigame:' + key);
+    };
+
+    // Listen for back button (popstate fires when history goes back)
+    window.addEventListener('popstate', function(e){
+        _handleBack();
+        // Always push a fresh state so back doesn't exit
+        history.pushState({ screen: e.state?.screen || 'home' }, '');
+    });
+})();
 
 </script>
 <!-- New Group Modal -->
