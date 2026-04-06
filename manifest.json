@@ -2,13 +2,14 @@
   "name": "Family Hub",
   "short_name": "Family Hub",
   "description": "Your private family app",
-  "start_url": "./index.html",
-  "scope": "./",
+  "start_url": "/Hanukkah-family-phone/index.html",
+  "scope": "/Hanukkah-family-phone/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#fffaf5",
   "theme_color": "#e8834a",
   "lang": "en",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "icon-192.png",
