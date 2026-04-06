@@ -88,17 +88,6 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .request-badge{position:absolute;top:-5px;right:-5px;background:var(--danger);color:#fff;min-width:18px;height:18px;padding:0 4px;border-radius:9px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg);animation:pulse 1.5s infinite;}
 
 /* CHROME PROMPT OVERLAY */
-.chrome-prompt-overlay{position:fixed;inset:0;background:rgba(255,250,245,.97);display:flex;justify-content:center;align-items:center;z-index:10001;backdrop-filter:blur(8px);transition:opacity .4s,visibility .4s;}
-.chrome-prompt-overlay.hidden{opacity:0;visibility:hidden;pointer-events:none;}
-.chrome-prompt-box{background:var(--surface);padding:36px 30px;border-radius:var(--radius-lg);border:2px solid var(--border);box-shadow:0 0 60px rgba(232,131,74,.12),0 24px 60px rgba(232,131,74,.08);text-align:center;max-width:420px;width:92%;animation:slideUp .5s cubic-bezier(.22,1,.36,1);}
-.chrome-prompt-icon{font-size:52px;margin-bottom:10px;}
-.chrome-prompt-title{font-family:'Fredoka One',cursive;font-size:26px;color:var(--accent);margin-bottom:8px;letter-spacing:.5px;}
-.chrome-prompt-text{color:var(--text);font-size:15px;font-weight:600;line-height:1.55;margin-bottom:8px;}
-.chrome-prompt-sub{color:var(--muted);font-size:13px;font-weight:600;margin-bottom:22px;line-height:1.5;}
-.chrome-prompt-link{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px 20px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;text-decoration:none;box-shadow:0 4px 20px rgba(232,131,74,.3);transition:all .2s;margin-bottom:10px;}
-.chrome-prompt-link:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(232,131,74,.4);}
-.chrome-prompt-skip{background:transparent;color:var(--muted);border:1.5px solid var(--border);border-radius:var(--radius);padding:11px 20px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;width:100%;transition:all .2s;}
-.chrome-prompt-skip:hover{border-color:var(--accent);color:var(--accent);}
 
 /* SIGN-IN */
 .signin-overlay{position:fixed;inset:0;background:rgba(255,250,245,.97);display:flex;justify-content:center;align-items:center;z-index:10000;backdrop-filter:blur(8px);transition:opacity .4s,visibility .4s;}
@@ -668,7 +657,8 @@ function removeHostMemory() {
 
 <!-- Sign In -->
 <div class="signin-overlay" id="signinOverlay">
-    <div class="signin-box">
+    <div class="signin-box" style="position:relative;">
+        <button onclick="startTutorial()" title="App Tutorial" style="position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;border:none;font-size:16px;font-weight:900;cursor:pointer;box-shadow:0 2px 12px rgba(232,131,74,.4);display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;transition:transform .2s,box-shadow .2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">?</button>
         <div class="signin-logo">🏠 Family Hub</div>
         <p class="signin-sub" id="signinSub">Who's joining today? 😊</p>
         <!-- Saved accounts list -->
@@ -4304,16 +4294,6 @@ function signIn(){
     doSignIn(name);
 }
 
-function showChromePrompt(){
-    const overlay = document.getElementById('chromePromptOverlay');
-    if(overlay) overlay.classList.remove('hidden');
-}
-
-function dismissChromePrompt(){
-    const overlay = document.getElementById('chromePromptOverlay');
-    if(overlay) overlay.classList.add('hidden');
-}
-
 function doSignIn(name){
     // Save to accounts list if not already there
     const accounts = getSavedAccounts();
@@ -4347,7 +4327,6 @@ function doSignIn(name){
     });
     checkBirthdays();
     updateUserNamePill(name);
-    showChromePrompt();
 }
 
 function updateUserNamePill(name){
@@ -4361,6 +4340,124 @@ function updateUserNamePill(name){
     pillAvatar.textContent = initials;
     pillText.textContent = name;
     pill.classList.remove('hidden');
+}
+
+// ══════════════════════════════════════════════════════════
+//  APP TUTORIAL
+// ══════════════════════════════════════════════════════════
+const TUTORIAL_STEPS = [
+    {
+        emoji: '👋',
+        title: 'Welcome to Family Hub!',
+        tag: 'YOUR FAMILY APP',
+        text: 'This app is your family\'s private space — shared posts, events, recipes, games, and more. Let\'s take a quick tour so you feel right at home! 🏡'
+    },
+    {
+        emoji: '🏠',
+        title: 'Home',
+        tag: 'HOME TAB',
+        text: 'The Home tab is your family\'s main feed. You\'ll see posts, photos, videos, and updates shared by everyone. Tap any post to like it, leave a comment, or react with an emoji!'
+    },
+    {
+        emoji: '📅',
+        title: 'Family Calendar',
+        tag: 'CALENDAR TAB',
+        text: 'Keep track of family events, birthdays, and plans all in one place. See what\'s coming up, add new events, and never miss an important date again. The calendar also shows the Jewish calendar with Zmanim prayer times!'
+    },
+    {
+        emoji: '🍳',
+        title: 'Family Recipes',
+        tag: 'RECIPES TAB',
+        text: 'A private cookbook just for your family! Browse recipes that family members have added, search by name or ingredient, and save your favorites. You can also add your own family recipes to share with everyone.'
+    },
+    {
+        emoji: '🗳️',
+        title: 'Family Poll',
+        tag: 'POLL TAB',
+        text: 'Can\'t agree on where to eat or what movie to watch? Start a family poll! Everyone can vote and see the live results together. Perfect for making group decisions the fun way. 🎉'
+    },
+    {
+        emoji: '🌍',
+        title: 'Discover',
+        tag: 'DISCOVER TAB',
+        text: 'Your daily dose of interesting things! Check today\'s weather, NASA\'s photo of the day, daily trivia, sports scores, word of the day, a random recipe, and more — all in one place. New content every day!'
+    },
+    {
+        emoji: '🤖',
+        title: 'Ask AI',
+        tag: 'ASK AI TAB',
+        text: 'Your family\'s own AI assistant! Ask it anything — it even knows special facts about your family that the host has added. Ask about weekend plans, get recipe ideas, settle a debate, or just have a chat. Your conversation is saved between visits!'
+    },
+    {
+        emoji: '💰',
+        title: 'Finance',
+        tag: 'FINANCE TAB',
+        text: 'A live financial dashboard showing stock market indices (Dow, S&P 500, NASDAQ), top cryptocurrencies like Bitcoin and Ethereum, and currency exchange rates for USD vs major world currencies. Great for staying informed!'
+    },
+    {
+        emoji: '💬',
+        title: 'Family Chat',
+        tag: 'BOTTOM NAVIGATION',
+        text: 'Tap the Chat button at the bottom to open the family chat room. Send text messages, share photos, and even send voice messages to the whole family in real time!'
+    },
+    {
+        emoji: '🎮',
+        title: 'Games',
+        tag: 'BOTTOM NAVIGATION',
+        text: 'Challenge a family member to a game! Play Chess, Tic-Tac-Toe, Wordle, and more. Tap the Games icon at the bottom, choose a game, and invite someone to play. May the best player win! 🏆'
+    },
+    {
+        emoji: '🎉',
+        title: 'You\'re all set!',
+        tag: 'ENJOY THE APP',
+        text: 'That\'s the whole app! Jump in, explore, and have fun connecting with your family. If you ever forget something, just tap the ❓ button on the sign-in screen to replay this tutorial anytime. Welcome to Family Hub! 💛'
+    }
+];
+
+let _tutIdx = 0;
+
+function startTutorial(){
+    _tutIdx = 0;
+    document.getElementById('tutorialOverlay').style.display = 'flex';
+    _renderTutStep();
+}
+
+function closeTutorial(){
+    document.getElementById('tutorialOverlay').style.display = 'none';
+}
+
+function tutStep(dir){
+    _tutIdx = Math.max(0, Math.min(TUTORIAL_STEPS.length - 1, _tutIdx + dir));
+    _renderTutStep();
+}
+
+function _renderTutStep(){
+    const s = TUTORIAL_STEPS[_tutIdx];
+    const total = TUTORIAL_STEPS.length;
+    document.getElementById('tutEmoji').textContent = s.emoji;
+    document.getElementById('tutTitle').textContent = s.title;
+    document.getElementById('tutText').textContent = s.text;
+    const tagEl = document.getElementById('tutTag');
+    if(s.tag){ tagEl.textContent = s.tag; tagEl.style.display = 'inline-block'; }
+    else { tagEl.style.display = 'none'; }
+    // Dots
+    const dots = document.getElementById('tutDots');
+    dots.innerHTML = '';
+    for(let i=0;i<total;i++){
+        const d = document.createElement('div');
+        d.style.cssText = `width:${i===_tutIdx?20:8}px;height:8px;border-radius:4px;background:${i===_tutIdx?'var(--accent)':'var(--border)'};transition:all .3s;`;
+        dots.appendChild(d);
+    }
+    // Buttons
+    document.getElementById('tutPrevBtn').style.display = _tutIdx === 0 ? 'none' : 'block';
+    const nextBtn = document.getElementById('tutNextBtn');
+    if(_tutIdx === total - 1){
+        nextBtn.textContent = '✓ Done!';
+        nextBtn.onclick = closeTutorial;
+    } else {
+        nextBtn.textContent = 'Next →';
+        nextBtn.onclick = () => tutStep(1);
+    }
 }
 
 // ══════════════════════════════════════════════════════════
@@ -5042,7 +5139,7 @@ function showNotification(title, body, tag) {
 }
 
 // ── Notification settings (host-controlled, stored in Firebase) ──
-let notifSettings = { chat: false, announce: true, content: true };
+let notifSettings = { chat: true, announce: true, content: true };
 
 async function loadNotifSettings() {
     if (!window.db) return;
@@ -5188,23 +5285,23 @@ let listenedChatGroups = new Set();
 let lastChatTs = {};
 
 function listenChatGroupForNotif(group) {
+    if (!window.db) return;
     const key = group.replace(/\s+/g, '_');
     if (listenedChatGroups.has(key)) return;
     listenedChatGroups.add(key);
     lastChatTs[key] = Date.now();
 
     window.dbOnValue(window.dbRef(window.db, 'messages/' + key), snap => {
-        if (!snap.exists() || isHost) return;
+        if (!snap.exists()) return;
 
-        // Check personal pref for chat notifications
-        const prefs = getMyNotifPrefs();
-        if(prefs.chat === false) return;
+        // Check host-level setting for chat notifications
+        if (notifSettings.chat === false) return;
 
         // Check if this user can see this group (private group membership)
         const meta = chatGroupMeta[key] || {};
-        if(meta.type === 'private'){
+        if (meta.type === 'private') {
             const members = meta.members || [];
-            if(!members.includes(currentUser)) return; // not in this group
+            if (!members.includes(currentUser)) return;
         }
 
         const msgs = snap.val();
@@ -5212,29 +5309,31 @@ function listenChatGroupForNotif(group) {
         entries.forEach(msg => {
             if (msg.timestamp > (lastChatTs[key] || 0) && msg.author !== currentUser) {
                 lastChatTs[key] = msg.timestamp;
-                if(!isHost){
-                    const body = (msg.text || '🎙️ Voice message').slice(0,80);
-                    _showPushNotification('💬 ' + (msg.author||'Someone'), body);
-                }
+                const body = (msg.text || '🎙️ Voice message').slice(0, 80);
+                _showPushNotification('💬 ' + (msg.author || 'Someone'), body);
             }
         });
     });
 }
 
-// ── Listen for new card content → notify if setting on ────
+// ── Listen for new card/post content → notify everyone ────
 let lastCardUpdateTs = Date.now();
 
 function listenCardsForNotif() {
     if (!window.db) return;
     for (let s = 0; s < 5; s++) {
         window.dbOnValue(window.dbRef(window.db, 'cards/section' + s), snap => {
-            if (!snap.exists() || !notifSettings.content || isHost) return;
+            if (!snap.exists()) return;
+            if (notifSettings.content === false) return;
             const cards = snap.val();
             Object.values(cards).forEach(c => {
-                if (c.updatedAt && c.updatedAt > lastCardUpdateTs) {
-                    lastCardUpdateTs = c.updatedAt;
-                    // In-app toast only — no browser push for users
-                    toast('🆕 ' + (c.name||'A card') + ' was updated!');
+                const ts = c.updatedAt || c.createdAt || 0;
+                if (ts > lastCardUpdateTs) {
+                    lastCardUpdateTs = ts;
+                    // Don't notify the person who just posted
+                    if (c.author && c.author === currentUser) return;
+                    const who = c.author ? c.author + ' posted' : 'New post';
+                    _showPushNotification('🆕 ' + who, (c.name || c.title || 'New family content'));
                 }
             });
         });
@@ -5242,17 +5341,13 @@ function listenCardsForNotif() {
 }
 
 // ── Boot: initialise the notification system ───────────────
-// initNotifications is kept for host use only — regular users never called here now
 async function initNotifications() {
     await registerServiceWorker();
     await loadNotifSettings();
-    // Only subscribe to push if already granted (host who previously enabled it)
-    if (Notification.permission === 'granted' && isHost) {
+    if (Notification.permission === 'granted') {
         notifPermission = 'granted';
         await saveNotifToken();
-        listenPushNotifications();
     }
-    // Everyone listens for announcements as in-app toasts (no permission needed)
     listenAnnouncementsWithNotif();
 }
 
@@ -5263,14 +5358,15 @@ function listenAnnouncements() {
 
 // Patch loadChatGroups to also wire notif listeners per group
 const _origLoadChatGroups = loadChatGroups;
-function loadChatGroupsAndNotif() {
+loadChatGroups = function() {
     _origLoadChatGroups();
-    if (notifPermission === 'granted') {
-        setTimeout(() => {
-            if (Array.isArray(chatGroups)) chatGroups.forEach(g => listenChatGroupForNotif(g));
-        }, 2000);
-    }
-}
+    // Wire up chat notif listeners after groups load
+    setTimeout(() => {
+        if (Array.isArray(chatGroups)) {
+            chatGroups.forEach(g => listenChatGroupForNotif(g));
+        }
+    }, 2000);
+};
 
 // Patch sendAnnouncement so it also fires a push notification
 async function sendAnnouncement() {
@@ -5514,10 +5610,6 @@ window.updateUserNamePill=updateUserNamePill;
     doSignIn = function(name){
         _orig(name);
         setTimeout(async ()=>{
-            await loadNotifSettings();
-            listenAnnouncementsWithNotif();
-            // Ask ALL users for push permission when they sign in
-            // (PWA shows a native Android permission dialog)
             await _bootPushForUser();
         }, 2500);
     };
@@ -5525,21 +5617,35 @@ window.updateUserNamePill=updateUserNamePill;
 })();
 
 async function _bootPushForUser(){
-    // Start listening for Firebase push notifications regardless of browser permission
-    // (Firebase listener works for all users who are signed in)
+    // Load settings from Firebase first
+    await loadNotifSettings();
+
+    // Always start Firebase listeners — work for everyone regardless of browser permission
     listenPushNotifications();
+    listenAnnouncementsWithNotif();
+
+    // Start card/post notifications for everyone
+    listenCardsForNotif();
+
+    // Wire chat group listeners (groups load async, so wait for them)
+    setTimeout(() => {
+        if (Array.isArray(chatGroups)) {
+            chatGroups.forEach(g => listenChatGroupForNotif(g));
+        }
+    }, 3000);
 
     // Browser notification permission (for OS-level popups)
-    if(!('Notification' in window)) return;
+    if (!('Notification' in window)) return;
 
-    // If already granted — set flag and we're done
-    if(Notification.permission === 'granted'){
+    // If already granted — set flag, save token, done
+    if (Notification.permission === 'granted') {
         notifPermission = 'granted';
+        await saveNotifToken();
         return;
     }
 
     // If denied — don't ask again
-    if(Notification.permission === 'denied') return;
+    if (Notification.permission === 'denied') return;
 
     // First time — show friendly prompt after a short delay
     setTimeout(_showNotifPrompt, 3000);
@@ -8024,17 +8130,35 @@ window.switchToHumanGame=switchToHumanGame;
     </div>
 </div>
 
-<!-- Chrome Prompt Overlay -->
-<div class="chrome-prompt-overlay hidden" id="chromePromptOverlay">
-    <div class="chrome-prompt-box">
-        <div class="chrome-prompt-icon">🎙️</div>
-        <div class="chrome-prompt-title">One quick thing!</div>
-        <div class="chrome-prompt-text">This app has <strong>voice messaging</strong> — but it only works in <strong>Google Chrome</strong>.</div>
-        <div class="chrome-prompt-sub">Want the best experience? Open this app in Chrome to use voice messages!</div>
-        <button class="chrome-prompt-skip" onclick="dismissChromePrompt()" style="background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:14px 20px;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;width:100%;box-shadow:0 4px 20px rgba(232,131,74,.3);transition:all .2s;margin-bottom:10px;">Let's go! 👋</button>
-        <a class="chrome-prompt-link" href="https://cluemec1.github.io/Hanukkah-family-phone/" target="_blank" rel="noopener" style="background:transparent;color:var(--muted);border:1.5px solid var(--border);border-radius:var(--radius);padding:9px 16px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;width:auto;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;box-shadow:none;margin-bottom:0;transition:all .2s;">
-            🌐 Open in Chrome instead
-        </a>
+<!-- ══════════════════════════════════════
+     APP TUTORIAL OVERLAY
+══════════════════════════════════════ -->
+<div id="tutorialOverlay" style="display:none;position:fixed;inset:0;z-index:20000;background:rgba(10,8,20,.88);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+    <div id="tutorialBox" style="background:var(--surface);border-radius:28px;border:2px solid var(--border);box-shadow:0 0 80px rgba(232,131,74,.18),0 32px 80px rgba(0,0,0,.5);max-width:440px;width:92%;padding:36px 30px 28px;text-align:center;position:relative;animation:slideUp .4s cubic-bezier(.22,1,.36,1);">
+        <!-- Close X -->
+        <button onclick="closeTutorial()" style="position:absolute;top:14px;right:14px;background:var(--bg);border:1.5px solid var(--border);color:var(--muted);width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;">✕</button>
+
+        <!-- Step emoji -->
+        <div id="tutEmoji" style="font-size:60px;margin-bottom:12px;line-height:1;"></div>
+
+        <!-- Step title -->
+        <div id="tutTitle" style="font-family:'Fredoka One',cursive;font-size:26px;color:var(--accent);margin-bottom:10px;letter-spacing:.4px;line-height:1.2;"></div>
+
+        <!-- Highlighted tab label -->
+        <div id="tutTag" style="display:inline-block;background:rgba(232,131,74,.13);color:var(--accent);border:1.5px solid rgba(232,131,74,.3);border-radius:20px;padding:4px 14px;font-size:12px;font-weight:800;font-family:'Nunito',sans-serif;letter-spacing:.5px;margin-bottom:14px;"></div>
+
+        <!-- Step description -->
+        <p id="tutText" style="color:var(--text);font-size:15px;font-weight:600;line-height:1.65;margin-bottom:24px;font-family:'Nunito',sans-serif;"></p>
+
+        <!-- Progress dots -->
+        <div id="tutDots" style="display:flex;justify-content:center;gap:7px;margin-bottom:22px;"></div>
+
+        <!-- Buttons -->
+        <div style="display:flex;gap:10px;align-items:center;">
+            <button id="tutPrevBtn" onclick="tutStep(-1)" style="flex:0 0 auto;padding:11px 18px;background:var(--bg);border:2px solid var(--border);color:var(--muted);border-radius:var(--radius);font-size:14px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;transition:all .2s;">← Back</button>
+            <button id="tutNextBtn" onclick="tutStep(1)" style="flex:1;padding:13px 20px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:15px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;box-shadow:0 4px 20px rgba(232,131,74,.35);transition:all .2s;">Next →</button>
+        </div>
+        <button onclick="closeTutorial()" style="margin-top:12px;background:none;border:none;color:var(--muted);font-size:13px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;width:100%;padding:4px;">Skip tutorial</button>
     </div>
 </div>
 
