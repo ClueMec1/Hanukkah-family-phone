@@ -1050,11 +1050,6 @@ function removeHostMemory() {
       <div class="dc-preview" id="dd-word">Loading…</div>
     </div>
 
-    <div class="discover-card" onclick="openDiscoverDetail('bible')" id="dc-bible" style="grid-column:1/-1;">
-      <div class="dc-icon" id="dci-bible">✝️</div>
-      <div class="dc-title">Daily Bible Verse</div>
-      <div class="dc-preview" id="dd-bible">Loading…</div>
-    </div>
 
     <div class="discover-card" onclick="openDiscoverDetail('recipe')" id="dc-recipe" style="grid-column:1/-1;">
       <div class="dc-icon" id="dci-recipe">🍳</div>
@@ -5748,7 +5743,6 @@ const DISCOVER_CONFIG = {
     nasa:     { title:'🚀 NASA Photo of the Day',      icon:'🚀' },
     trivia:   { title:'🧠 Daily Trivia',               icon:'🧠' },
     word:     { title:'📝 Word of the Day',            icon:'📝' },
-    bible:    { title:'✝️ Daily Bible Verse',          icon:'✝️' },
     recipe:   { title:'🍳 Random Recipe',              icon:'🍳' },
     sports:   { title:'⚽ Today\'s Sports',            icon:'⚽' },
 };
@@ -5885,7 +5879,7 @@ const _discoverFetchers = {
     // NEW
     traffic:()=>_fetchTraffic(), weather7:()=>_fetchWeather7(), places:()=>_fetchPlaces(),
     nasa:()=>_fetchNasa(), trivia:()=>_fetchTrivia(), word:()=>_fetchWord(),
-    bible:()=>_fetchBible(), recipe:()=>_fetchRecipe(), sports:()=>_fetchSports()
+    recipe:()=>_fetchRecipe(), sports:()=>_fetchSports()
 };
 async function _fetchWeather(){
     const _ctrl1=new AbortController();setTimeout(()=>_ctrl1.abort(),10000);
@@ -6082,7 +6076,7 @@ async function _prefetchOne(key){
 function _prefetchAllDiscover(){
     _prefetchOne('moon');
     ['weather','sun','joke','quote','animal','holidays','fact','jewish',
-     'weather7','traffic','places','nasa','trivia','word','bible','recipe','sports']
+     'weather7','traffic','places','nasa','trivia','word','recipe','sports']
         .forEach((k,i)=>setTimeout(()=>_prefetchOne(k), 500+i*350));
 }
 
@@ -6272,8 +6266,8 @@ function _renderDetailPage(key){
             {label:'🌅 Alot HaShachar', key:'alotHaShachar', desc:'Dawn'},
             {label:'🌄 Misheyakir', key:'misheyakir', desc:'Earliest Talit & Tefillin'},
             {label:'☀️ Sunrise', key:'sunrise', desc:'Hanetz HaChama'},
-            {label:'📿 Latest Shma (GRA)', key:'sofZmanShma', desc:'Latest Kriyat Shma'},
-            {label:'🙏 Latest Shacharit (GRA)', key:'sofZmanTfilla', desc:'Latest Morning Prayer'},
+            {label:'📿 Latest Shma', key:'sofZmanShma', desc:'Latest Kriyat Shma'},
+            {label:'🙏 Latest Shacharit', key:'sofZmanTfilla', desc:'Latest Morning Prayer'},
             {label:'⏰ Chatzot', key:'chatzot', desc:'Solar Noon'},
             {label:'🕌 Mincha Gedola', key:'minchaGedola', desc:'Earliest Mincha'},
             {label:'🕌 Mincha Ketana', key:'minchaKetana', desc:'Best Mincha time'},
