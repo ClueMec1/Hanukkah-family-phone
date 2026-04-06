@@ -105,15 +105,18 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .feature-tabs{display:flex;gap:6px;padding:8px 14px;background:rgba(255,255,255,.9);border-bottom:2px solid var(--border);overflow-x:auto;scrollbar-width:none;}
 .feature-tabs::-webkit-scrollbar{display:none;}
 .feature-tab{flex-shrink:0;background:var(--surface);border:2px solid var(--border);border-radius:12px;padding:7px 13px;cursor:pointer;font-size:12px;font-weight:700;color:var(--muted);font-family:'Nunito',sans-serif;transition:all .2s;display:flex;align-items:center;gap:5px;}
-.discover-card{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:16px 14px;cursor:pointer;transition:all .2s;text-align:center;position:relative;overflow:hidden;}
+.discover-card{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:14px 12px;cursor:pointer;transition:all .2s;text-align:center;position:relative;overflow:hidden;}
 .discover-card:hover,.discover-card:active{border-color:var(--accent);transform:scale(1.02);}
-.dc-icon{font-size:28px;margin-bottom:6px;}
-.dc-title{font-size:13px;font-weight:800;color:var(--text);margin-bottom:4px;}
-.dc-sub{font-size:11px;color:var(--muted);line-height:1.5;min-height:28px;}
+.dc-icon{font-size:28px;margin-bottom:4px;}
+.dc-title{font-size:13px;font-weight:800;color:var(--text);margin-bottom:3px;}
+.dc-preview{font-size:11px;color:var(--muted);line-height:1.4;min-height:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .dc-loaded{border-color:var(--accent2);background:linear-gradient(135deg,rgba(91,171,111,.08),transparent);}
-.browse-bookmark{flex-shrink:0;background:var(--surface);border:1.5px solid var(--border);border-radius:20px;padding:7px 14px;font-size:12px;font-weight:700;color:var(--text);font-family:'Nunito',sans-serif;cursor:pointer;white-space:nowrap;transition:all .15s;}
-.browse-bookmark:hover,.browse-bookmark:active{background:var(--accent);color:#fff;border-color:var(--accent);}
 .dc-loading{opacity:.65;}
+.discover-detail-section{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px;}
+.discover-detail-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:10px;}
+.discover-detail-value{font-size:16px;font-weight:700;color:var(--text);line-height:1.6;}
+.discover-detail-big{font-size:48px;font-weight:800;color:var(--accent);font-family:'Fredoka One',cursive;text-align:center;padding:10px 0;}
+.discover-detail-hero{font-size:80px;text-align:center;margin:10px 0;}
 .feature-tab:hover{border-color:var(--accent);color:var(--text);}
 .feature-tab.active{border-color:var(--accent);background:rgba(232,131,74,.12);color:var(--accent);}
 /* Feature panels */
@@ -347,6 +350,17 @@ c
 .wa-action-btn{width:26px;height:26px;background:var(--surface);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;box-shadow:0 1px 4px rgba(0,0,0,.15);transition:all .15s;}
 .wa-action-btn:hover{background:var(--accent);color:#fff;}
 .wa-bubble.mine .wa-bubble-actions{right:auto;left:-6px;}
+.wa-reactions{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;}
+.wa-reaction-chip{background:var(--surface2);border:1.5px solid var(--border);border-radius:20px;padding:2px 8px;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:3px;transition:all .15s;user-select:none;}
+.wa-reaction-chip:hover{border-color:var(--accent);background:rgba(232,131,74,.1);}
+.wa-reaction-chip.mine{border-color:var(--accent);background:rgba(232,131,74,.15);}
+.wa-reaction-count{font-size:11px;font-weight:700;color:var(--muted);}
+.reaction-bar{position:absolute;bottom:calc(100% + 6px);left:0;background:var(--surface);border:1.5px solid var(--border);border-radius:30px;padding:6px 10px;display:flex;gap:6px;z-index:6000;box-shadow:0 4px 20px rgba(0,0,0,.2);animation:slideUp .15s ease;}
+.reaction-option{font-size:22px;cursor:pointer;transition:transform .1s;border-radius:50%;padding:2px;}
+.reaction-option:hover{transform:scale(1.3);}
+.msg-search-highlight{background:rgba(255,200,0,.4);border-radius:3px;}
+.wa-img-msg{max-width:200px;border-radius:10px;display:block;cursor:pointer;margin-top:4px;}
+.wa-pin-btn{font-size:11px;cursor:pointer;color:var(--muted);padding:2px 6px;border-radius:8px;background:var(--surface2);border:none;font-family:inherit;font-weight:700;}
 .wa-reply-bar{background:var(--surface2);border-top:2px solid var(--accent);padding:8px 14px;display:none;flex-shrink:0;align-items:center;gap:8px;}
 .wa-reply-bar.active{display:flex;}
 .wa-reply-bar-content{flex:1;font-size:12px;}
@@ -365,6 +379,8 @@ c
 .wa-enhance-btn:hover{transform:scale(1.1);filter:brightness(1.15);}
 .wa-enhance-btn:active{transform:scale(.95);}
 .wa-enhance-btn.loading{animation:spin .8s linear infinite;}
+.ai-suggestion-btn{flex-shrink:0;background:var(--surface);border:1.5px solid var(--border);border-radius:20px;padding:7px 13px;font-size:12px;font-weight:700;color:var(--text);font-family:'Nunito',sans-serif;cursor:pointer;white-space:nowrap;transition:all .15s;}
+.ai-suggestion-btn:hover{background:linear-gradient(135deg,rgba(99,102,241,.15),rgba(168,85,247,.1));border-color:#a855f7;color:#6366f1;}
 .wa-voice-msg{display:flex;align-items:center;gap:8px;padding:4px 2px;}
 .wa-voice-msg audio{width:180px;height:32px;vertical-align:middle;}
 .wa-voice-play{width:30px;height:30px;background:var(--accent);border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:#fff;}
@@ -629,6 +645,7 @@ function removeHostMemory() {
     }
 }
 </script>
+<!-- AI powered by Pollinations.ai — free, no signup, no new tab -->
 </head>
 <body>
 
@@ -773,7 +790,7 @@ function removeHostMemory() {
     <button class="feature-tab" data-panel="poll" onclick="switchFeatureTab('poll',this)">🗳️ Poll</button>
     <button class="feature-tab" data-panel="games" onclick="switchFeatureTab('games',this)" id="gamesTab">🎮 Games <span id="gameInviteBadge" style="display:none;background:var(--danger);color:#fff;border-radius:8px;padding:1px 6px;font-size:10px;margin-left:2px;">!</span></button>
     <button class="feature-tab" data-panel="discover" onclick="switchFeatureTab('discover',this)">🌍 Discover</button>
-    <button class="feature-tab" data-panel="browse" onclick="switchFeatureTab('browse',this)">🌐 Browse</button>
+    <button class="feature-tab" data-panel="askai" onclick="switchFeatureTab('askai',this)">🤖 Ask AI</button>
 </div>
 
 <!-- Home Panel -->
@@ -788,6 +805,57 @@ function removeHostMemory() {
         </div>
         <div class="cards-grid" id="cardsGrid"></div>
     </div>
+</div>
+
+<!-- Ask AI Panel -->
+<div class="feature-panel" id="panel-askai">
+<div style="display:flex;flex-direction:column;height:calc(100vh - 180px);">
+
+  <!-- Header -->
+  <div style="padding:14px 16px 10px;background:linear-gradient(135deg,rgba(99,102,241,.12),rgba(168,85,247,.08));border-bottom:1.5px solid var(--border);flex-shrink:0;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:38px;height:38px;background:linear-gradient(135deg,#6366f1,#a855f7);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🤖</div>
+      <div>
+        <div style="font-family:'Fredoka One',cursive;font-size:17px;color:var(--text);">Family AI Assistant</div>
+        <div style="font-size:11px;color:var(--muted);font-weight:600;">Knows general knowledge + your family's private info</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat messages area -->
+  <div id="aiChatMessages" style="flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:12px;">
+    <!-- Welcome bubble -->
+    <div style="display:flex;gap:10px;align-items:flex-start;">
+      <div style="width:32px;height:32px;background:linear-gradient(135deg,#6366f1,#a855f7);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">🤖</div>
+      <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:0 16px 16px 16px;padding:12px 14px;max-width:85%;font-size:14px;font-weight:600;color:var(--text);line-height:1.6;">
+        Hi! I'm your Family AI Assistant 👋<br>
+        Ask me <strong>anything</strong> — general knowledge, news, facts — or ask about <strong>your family specifically</strong> (the host adds private info I can use to answer personal questions).<br>
+        <span style="color:var(--muted);font-size:12px;">What would you like to know?</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Suggested questions -->
+  <div id="aiSuggestions" style="padding:0 12px 8px;display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;flex-shrink:0;">
+    <button class="ai-suggestion-btn" onclick="aiAskQuestion('Who is the president of the United States?')">🇺🇸 US President?</button>
+    <button class="ai-suggestion-btn" onclick="aiAskQuestion('Where does grandpa live?')">🏠 Grandpa's address?</button>
+    <button class="ai-suggestion-btn" onclick="aiAskQuestion('What is the wifi password?')">📶 WiFi password?</button>
+    <button class="ai-suggestion-btn" onclick="aiAskQuestion('What are we doing this weekend?')">📅 Weekend plans?</button>
+    <button class="ai-suggestion-btn" onclick="aiAskQuestion('Tell me a fun family fact')">✨ Fun family fact</button>
+  </div>
+
+  <!-- Input row -->
+  <div style="display:flex;gap:8px;padding:10px 12px 14px;border-top:1.5px solid var(--border);align-items:flex-end;background:var(--surface);flex-shrink:0;">
+    <textarea id="aiQuestionInput" placeholder="Ask anything… e.g. Where is grandpa's house?" rows="1"
+      style="flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:20px;padding:10px 14px;color:var(--text);font-size:14px;font-family:'Nunito',sans-serif;font-weight:600;resize:none;outline:none;max-height:100px;line-height:1.5;transition:border-color .2s;"
+      oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();aiSendQuestion();}"></textarea>
+    <button onclick="aiSendQuestion()" id="aiSendBtn"
+      style="width:44px;height:44px;background:linear-gradient(135deg,#6366f1,#a855f7);border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;font-size:18px;"
+      title="Ask">➤</button>
+  </div>
+
+</div>
 </div>
 
 <!-- Calendar Panel -->
@@ -824,166 +892,85 @@ function removeHostMemory() {
 </div>
 
 <!-- Browse Panel -->
-<div class="feature-panel" id="panel-browse">
-<div style="display:flex;flex-direction:column;height:calc(100vh - 180px);">
-
-  <!-- Search bar -->
-  <div style="display:flex;gap:6px;padding:10px 12px 8px;align-items:center;background:var(--surface);border-bottom:1.5px solid var(--border);">
-    <div style="flex:1;display:flex;align-items:center;gap:6px;background:var(--bg);border:1.5px solid var(--border);border-radius:20px;padding:7px 12px;">
-      <span style="font-size:13px;">🔍</span>
-      <input id="browseUrl" type="text" placeholder="Search Google or type a web address"
-        style="flex:1;background:none;border:none;outline:none;color:var(--text);font-size:13px;font-family:'Nunito',sans-serif;font-weight:600;"
-        onkeydown="if(event.key==='Enter') browseGo()"
-        autocomplete="off" autocapitalize="none" spellcheck="false">
-    </div>
-    <button onclick="browseGo()" style="background:var(--accent);color:#fff;border:none;border-radius:12px;padding:8px 14px;font-size:13px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;">Go ↗</button>
-  </div>
-
-  <!-- Google-style home -->
-  <div id="browseHome" style="flex:1;overflow-y:auto;background:var(--bg);display:flex;flex-direction:column;align-items:center;">
-    <div style="flex:1;min-height:40px;"></div>
-    <div style="margin-bottom:28px;text-align:center;">
-      <span style="font-size:52px;font-weight:700;letter-spacing:-2px;font-family:Arial,sans-serif;">
-        <span style="color:#4285F4;">G</span><span style="color:#EA4335;">o</span><span style="color:#FBBC05;">o</span><span style="color:#4285F4;">g</span><span style="color:#34A853;">l</span><span style="color:#EA4335;">e</span>
-      </span>
-    </div>
-    <div style="width:100%;max-width:480px;padding:0 16px;">
-      <div style="display:flex;align-items:center;background:#fff;border:1px solid #dfe1e5;border-radius:24px;padding:10px 16px;gap:10px;box-shadow:0 1px 6px rgba(32,33,36,.28);margin-bottom:16px;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" stroke="#9aa0a6" stroke-width="2" stroke-linecap="round"/></svg>
-        <input id="googleSearchInput" type="text" placeholder="Search Google or type a URL"
-          style="flex:1;border:none;outline:none;font-size:16px;font-family:Arial,sans-serif;color:#202124;background:transparent;"
-          onkeydown="if(event.key==='Enter') googleSearch()" autocomplete="off">
-      </div>
-      <div style="display:flex;justify-content:center;gap:10px;margin-bottom:20px;">
-        <button onclick="googleSearch()" style="background:#f8f9fa;border:1px solid #f8f9fa;border-radius:4px;padding:9px 16px;font-size:14px;font-family:Arial,sans-serif;color:#3c4043;cursor:pointer;" onmouseover="this.style.borderColor='#dadce0'" onmouseout="this.style.borderColor='#f8f9fa'">Google Search ↗</button>
-        <button onclick="googleLucky()" style="background:#f8f9fa;border:1px solid #f8f9fa;border-radius:4px;padding:9px 16px;font-size:14px;font-family:Arial,sans-serif;color:#3c4043;cursor:pointer;" onmouseover="this.style.borderColor='#dadce0'" onmouseout="this.style.borderColor='#f8f9fa'">I'm Feeling Lucky ↗</button>
-      </div>
-      <div style="text-align:center;margin-bottom:20px;padding:10px 14px;background:rgba(66,133,244,.07);border:1px solid rgba(66,133,244,.2);border-radius:12px;">
-        <div style="font-size:12px;font-weight:700;color:#4285F4;margin-bottom:2px;">🌐 Opens in your browser</div>
-        <div style="font-size:11px;color:var(--muted);font-weight:600;">Links open in Chrome or Safari — tap back to return here</div>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;">
-        <div onclick="browseOpenExternal('https://www.youtube.com')" style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:10px 6px;border-radius:12px;" onmouseover="this.style.background='rgba(0,0,0,.05)'" onmouseout="this.style.background='transparent'">
-          <div style="width:44px;height:44px;background:#FF0000;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;">▶️</div>
-          <span style="font-size:11px;font-family:Arial,sans-serif;color:#3c4043;font-weight:500;">YouTube</span>
-        </div>
-        <div onclick="browseOpenExternal('https://www.wikipedia.org')" style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:10px 6px;border-radius:12px;" onmouseover="this.style.background='rgba(0,0,0,.05)'" onmouseout="this.style.background='transparent'">
-          <div style="width:44px;height:44px;background:#fff;border:1px solid #dfe1e5;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">📚</div>
-          <span style="font-size:11px;font-family:Arial,sans-serif;color:#3c4043;font-weight:500;">Wikipedia</span>
-        </div>
-        <div onclick="browseOpenExternal('https://weather.com')" style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:10px 6px;border-radius:12px;" onmouseover="this.style.background='rgba(0,0,0,.05)'" onmouseout="this.style.background='transparent'">
-          <div style="width:44px;height:44px;background:#4285F4;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">🌤️</div>
-          <span style="font-size:11px;font-family:Arial,sans-serif;color:#3c4043;font-weight:500;">Weather</span>
-        </div>
-        <div onclick="browseOpenExternal('https://maps.google.com')" style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:10px 6px;border-radius:12px;" onmouseover="this.style.background='rgba(0,0,0,.05)'" onmouseout="this.style.background='transparent'">
-          <div style="width:44px;height:44px;background:#34A853;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">🗺️</div>
-          <span style="font-size:11px;font-family:Arial,sans-serif;color:#3c4043;font-weight:500;">Maps</span>
-        </div>
-        <div onclick="browseOpenExternal('https://www.chabad.org')" style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:10px 6px;border-radius:12px;" onmouseover="this.style.background='rgba(0,0,0,.05)'" onmouseout="this.style.background='transparent'">
-          <div style="width:44px;height:44px;background:#003087;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">🕍</div>
-          <span style="font-size:11px;font-family:Arial,sans-serif;color:#3c4043;font-weight:500;">Chabad</span>
-        </div>
-        <div onclick="browseOpenExternal('https://www.allrecipes.com')" style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:10px 6px;border-radius:12px;" onmouseover="this.style.background='rgba(0,0,0,.05)'" onmouseout="this.style.background='transparent'">
-          <div style="width:44px;height:44px;background:#E07000;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">🍳</div>
-          <span style="font-size:11px;font-family:Arial,sans-serif;color:#3c4043;font-weight:500;">Recipes</span>
-        </div>
-        <div onclick="browseOpenExternal('https://www.nytimes.com')" style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:10px 6px;border-radius:12px;" onmouseover="this.style.background='rgba(0,0,0,.05)'" onmouseout="this.style.background='transparent'">
-          <div style="width:44px;height:44px;background:#000;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">📰</div>
-          <span style="font-size:11px;font-family:Arial,sans-serif;color:#3c4043;font-weight:500;">News</span>
-        </div>
-        <div onclick="browseOpenExternal('https://duckduckgo.com')" style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:10px 6px;border-radius:12px;" onmouseover="this.style.background='rgba(0,0,0,.05)'" onmouseout="this.style.background='transparent'">
-          <div style="width:44px;height:44px;background:#DE5833;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">🦆</div>
-          <span style="font-size:11px;font-family:Arial,sans-serif;color:#3c4043;font-weight:500;">DuckDuckGo</span>
-        </div>
-      </div>
-    </div>
-    <div style="flex:1;min-height:20px;"></div>
-  </div>
-
-</div>
-</div>
-
 <!-- Discover Panel -->
 <div class="feature-panel" id="panel-discover">
-<div style="padding:16px 16px 80px;">
+<div style="padding:14px 14px 80px;">
 
-<!-- Section header -->
-<div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;">🌍 Live from the world — no signup needed</div>
+  <div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;">🌍 Tap any card to open it</div>
 
-<!-- Cards grid -->
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;" id="discoverGrid">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;" id="discoverGrid">
 
-  <!-- Weather -->
-  <div class="discover-card" onclick="loadDiscover('weather')" style="grid-column:1/-1;" id="dc-weather">
-    <div class="dc-icon">🌤️</div>
-    <div class="dc-title">Weather</div>
-    <div class="dc-sub" id="dd-weather">Tap to load</div>
+    <div class="discover-card" onclick="openDiscoverDetail('weather')" id="dc-weather" style="grid-column:1/-1;">
+      <div class="dc-icon" id="dci-weather">🌤️</div>
+      <div class="dc-title">Weather</div>
+      <div class="dc-preview" id="dd-weather">Loading…</div>
+    </div>
+
+    <div class="discover-card" onclick="openDiscoverDetail('sun')" id="dc-sun">
+      <div class="dc-icon" id="dci-sun">🌅</div>
+      <div class="dc-title">Sunrise &amp; Sunset</div>
+      <div class="dc-preview" id="dd-sun">Loading…</div>
+    </div>
+
+    <div class="discover-card" onclick="openDiscoverDetail('moon')" id="dc-moon">
+      <div class="dc-icon" id="dci-moon">🌙</div>
+      <div class="dc-title">Moon Phase</div>
+      <div class="dc-preview" id="dd-moon">Loading…</div>
+    </div>
+
+    <div class="discover-card" onclick="openDiscoverDetail('jewish')" id="dc-jewish" style="grid-column:1/-1;">
+      <div class="dc-icon" id="dci-jewish">🕍</div>
+      <div class="dc-title">Jewish Calendar &amp; Candle Lighting</div>
+      <div class="dc-preview" id="dd-jewish">Loading…</div>
+    </div>
+
+    <div class="discover-card" onclick="openDiscoverDetail('holidays')" id="dc-holidays">
+      <div class="dc-icon" id="dci-holidays">🗓️</div>
+      <div class="dc-title">US Holidays</div>
+      <div class="dc-preview" id="dd-holidays">Loading…</div>
+    </div>
+
+    <div class="discover-card" onclick="openDiscoverDetail('joke')" id="dc-joke">
+      <div class="dc-icon" id="dci-joke">😂</div>
+      <div class="dc-title">Daily Joke</div>
+      <div class="dc-preview" id="dd-joke">Loading…</div>
+    </div>
+
+    <div class="discover-card" onclick="openDiscoverDetail('fact')" id="dc-fact">
+      <div class="dc-icon" id="dci-fact">🎂</div>
+      <div class="dc-title">Today in History</div>
+      <div class="dc-preview" id="dd-fact">Loading…</div>
+    </div>
+
+    <div class="discover-card" onclick="openDiscoverDetail('quote')" id="dc-quote">
+      <div class="dc-icon" id="dci-quote">📖</div>
+      <div class="dc-title">Daily Quote</div>
+      <div class="dc-preview" id="dd-quote">Loading…</div>
+    </div>
+
+    <div class="discover-card" onclick="openDiscoverDetail('animal')" id="dc-animal" style="grid-column:1/-1;">
+      <div class="dc-icon" id="dci-animal">🐾</div>
+      <div class="dc-title">Random Animal</div>
+      <div class="dc-preview" id="dd-animal">Loading…</div>
+    </div>
+
   </div>
-
-  <!-- Sunrise / Sunset -->
-  <div class="discover-card" onclick="loadDiscover('sun')" id="dc-sun">
-    <div class="dc-icon">🌅</div>
-    <div class="dc-title">Sunrise &amp; Sunset</div>
-    <div class="dc-sub" id="dd-sun">Tap to load</div>
-  </div>
-
-  <!-- Moon phase -->
-  <div class="discover-card" onclick="loadDiscover('moon')" id="dc-moon">
-    <div class="dc-icon">🌙</div>
-    <div class="dc-title">Moon Phase</div>
-    <div class="dc-sub" id="dd-moon">Tap to load</div>
-  </div>
-
-  <!-- Jewish calendar / Zmanim -->
-  <div class="discover-card" onclick="loadDiscover('jewish')" style="grid-column:1/-1;" id="dc-jewish">
-    <div class="dc-icon">🕍</div>
-    <div class="dc-title">Jewish Calendar &amp; Candle Lighting</div>
-    <div class="dc-sub" id="dd-jewish">Tap to load</div>
-  </div>
-
-  <!-- US Holidays -->
-  <div class="discover-card" onclick="loadDiscover('holidays')" id="dc-holidays">
-    <div class="dc-icon">🗓️</div>
-    <div class="dc-title">US Holidays</div>
-    <div class="dc-sub" id="dd-holidays">Tap to load</div>
-  </div>
-
-  <!-- Daily joke -->
-  <div class="discover-card" onclick="loadDiscover('joke')" id="dc-joke">
-    <div class="dc-icon">😂</div>
-    <div class="dc-title">Daily Joke</div>
-    <div class="dc-sub" id="dd-joke">Tap to load</div>
-  </div>
-
-  <!-- Date fact -->
-  <div class="discover-card" onclick="loadDiscover('fact')" id="dc-fact">
-    <div class="dc-icon">🎂</div>
-    <div class="dc-title">Today in History</div>
-    <div class="dc-sub" id="dd-fact">Tap to load</div>
-  </div>
-
-  <!-- Daily quote -->
-  <div class="discover-card" onclick="loadDiscover('quote')" id="dc-quote">
-    <div class="dc-icon">📖</div>
-    <div class="dc-title">Daily Quote</div>
-    <div class="dc-sub" id="dd-quote">Tap to load</div>
-  </div>
-
-  <!-- Animal fact -->
-  <div class="discover-card" onclick="loadDiscover('animal')" style="grid-column:1/-1;" id="dc-animal">
-    <div class="dc-icon">🐾</div>
-    <div class="dc-title">Random Animal Fact</div>
-    <div class="dc-sub" id="dd-animal">Tap to load</div>
-  </div>
-
+</div>
 </div>
 
-<!-- Load all button -->
-<button onclick="loadAllDiscover()" class="btn btn-primary" style="width:100%;margin-top:18px;font-size:14px;">
-  🔄 Load All Cards
-</button>
+<!-- Discover Detail Full-Screen Overlay -->
+<div id="discoverDetailOverlay" style="display:none;position:fixed;inset:0;z-index:3000;background:var(--bg);flex-direction:column;overflow:hidden;">
 
-</div>
+  <!-- Header bar -->
+  <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--surface);border-bottom:1.5px solid var(--border);flex-shrink:0;">
+    <button onclick="closeDiscoverDetail()" style="background:none;border:1.5px solid var(--border);border-radius:10px;padding:8px 14px;font-size:14px;font-weight:700;cursor:pointer;color:var(--text);font-family:inherit;">← Back</button>
+    <div id="discoverDetailTitle" style="font-family:'Fredoka One',cursive;font-size:20px;flex:1;"></div>
+    <button onclick="refreshDiscoverDetail()" style="background:none;border:none;font-size:20px;cursor:pointer;padding:4px 8px;" title="Refresh">↻</button>
+  </div>
+
+  <!-- Content area -->
+  <div id="discoverDetailContent" style="flex:1;overflow-y:auto;padding:24px 20px 40px;"></div>
+
 </div>
 
 <!-- Games Panel -->
@@ -1092,7 +1079,19 @@ function removeHostMemory() {
                 <div class="wa-header-title">Family Chat</div>
                 <div class="wa-header-sub" id="waChatSub">General</div>
             </div>
+            <button onclick="toggleChatSearch()" style="background:none;border:none;color:rgba(255,255,255,.8);font-size:17px;cursor:pointer;padding:4px 8px;" title="Search messages">🔍</button>
             <button class="wa-header-close" onclick="closeModal('commentsModal')">✕</button>
+        </div>
+        <!-- Search bar (hidden by default) -->
+        <div id="chatSearchBar" style="display:none;background:var(--surface);padding:8px 12px;border-bottom:1px solid var(--border);">
+            <input id="chatSearchInput" type="text" placeholder="Search messages…"
+                style="width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:20px;padding:8px 14px;font-size:13px;font-family:inherit;color:var(--text);outline:none;box-sizing:border-box;"
+                oninput="searchMessages(this.value)">
+        </div>
+        <!-- Pinned message bar -->
+        <div id="pinnedMsgBar" style="display:none;background:rgba(74,144,217,.1);border-bottom:2px solid #4a90d9;padding:8px 14px;cursor:pointer;" onclick="scrollToMsg(pinnedMsgKey)">
+            <div style="font-size:10px;font-weight:800;color:#4a90d9;text-transform:uppercase;letter-spacing:.5px;">📌 Pinned</div>
+            <div id="pinnedMsgText" style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
         </div>
         <div class="wa-groups" id="waGroupTabs"></div>
         <div class="wa-reply-bar" id="waReplyBar">
@@ -1120,17 +1119,30 @@ function removeHostMemory() {
         <div id="waReadonlyNotice" style="display:none;align-items:center;justify-content:center;gap:8px;padding:12px 16px;background:rgba(232,131,74,.08);border-top:2px solid var(--border);font-size:13px;font-weight:700;color:var(--muted);">
             📢 This is a broadcast channel — only the host posts here
         </div>
+        <!-- Image preview strip (shows before sending) -->
+        <div id="imgPreviewStrip" style="display:none;padding:8px 14px;background:var(--surface);border-top:1px solid var(--border);gap:8px;align-items:center;">
+            <img id="imgPreviewThumb" style="width:60px;height:60px;object-fit:cover;border-radius:10px;border:1.5px solid var(--border);" src="">
+            <div style="flex:1;font-size:12px;font-weight:600;color:var(--muted);">Image ready to send</div>
+            <button onclick="clearImagePreview()" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--muted);">✕</button>
+        </div>
+        <input type="file" id="chatImageInput" accept="image/*" style="display:none" onchange="handleImagePick(this)">
         <div class="wa-input-area" id="waInputArea">
             <button class="wa-voice-btn" id="voiceBtn" onclick="toggleVoiceRecording()" title="Voice message">
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
             </button>
-            <textarea class="wa-input" id="newComment" placeholder="Type a message…" rows="1" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px';onTypingInput()"></textarea>
-            <button class="wa-enhance-btn" id="aiEnhanceBtn" onclick="aiEnhanceText()" title="✨ AI Enhance — improve your message with AI">
-                ✨
-            </button>
+            <button onclick="openChatEmoji()" title="Emoji" style="width:36px;height:36px;background:var(--surface2);border:1.5px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px;flex-shrink:0;transition:all .2s;">😊</button>
+            <textarea class="wa-input" id="newComment" placeholder="Type a message…" rows="1" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px';onTypingInput()"
+                onpaste="handleChatPaste(event)"></textarea>
+            <button onclick="document.getElementById('chatImageInput').click()" title="Send image" style="width:36px;height:36px;background:var(--surface2);border:1.5px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px;flex-shrink:0;transition:all .2s;">📷</button>
+            <button class="wa-enhance-btn" id="aiEnhanceBtn" onclick="aiEnhanceText()" title="✨ AI Enhance">✨</button>
             <button class="wa-send-btn" onclick="postComment()">
                 <svg width="18" height="18" fill="white" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
+        </div>
+        <!-- Emoji picker panel -->
+        <div id="chatEmojiPicker" style="display:none;padding:10px 12px;background:var(--surface);border-top:1px solid var(--border);max-height:160px;overflow-y:auto;">
+            <div style="display:flex;flex-wrap:wrap;gap:2px;">
+            </div>
         </div>
     </div>
 </div>
@@ -1201,6 +1213,9 @@ function removeHostMemory() {
             </button>
             <button class="host-tab" onclick="switchHostTab('notify',this);loadNotifyPanel();">
                 🔔 Notify
+            </button>
+            <button class="host-tab" onclick="switchHostTab('aibrain',this);loadAIBrainPanel();">
+                🧠 AI Brain
             </button>
         </div>
 
@@ -1352,10 +1367,35 @@ function removeHostMemory() {
                 </div>
             </div>
         </div>
+
+        <!-- AI Brain Panel — host adds family facts -->
+        <div class="host-panel" id="panel-aibrain">
+            <p style="color:var(--muted);font-size:12px;margin-bottom:14px;line-height:1.6;">
+                🧠 <strong>Family Knowledge Base</strong> — type in facts the AI should know about your family. Anyone can then ask the AI anything and it will use this info to give personal answers.<br>
+                <span style="font-size:11px;">One fact per line. Example: <em>Grandpa’s house is at 70 Example St</em></span>
+            </p>
+            <textarea id="aiBrainFacts"
+                placeholder="Add family facts — one per line. For example:
+Grandpa lives at 70 Example St, Brooklyn NY
+Mom’s birthday is March 15
+The wifi password is Family2024!
+Shabbat dinner is every Friday at 7pm at Grandma’s house
+Dad’s car is a blue Toyota Camry
+Our family vacation this year is to Florida in August
+Cousin Jake just got married to Sarah
+Family emergency contact is Uncle David: 555-1234"
+                rows="11"
+                style="width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:12px;color:var(--text);font-size:13px;font-family:'Nunito',sans-serif;font-weight:600;resize:vertical;outline:none;line-height:1.7;box-sizing:border-box;"
+                oninput="aiBrainUnsaved()"></textarea>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:8px;flex-wrap:wrap;">
+                <span id="aiBrainStatus" style="font-size:11px;color:var(--muted);font-weight:600;"></span>
+                <button onclick="saveAIBrain()" class="btn btn-primary" style="font-size:13px;padding:10px 20px;">💾 Save</button>
+            </div>
+        </div>
+
     </div>
 </div>
 
-<!-- Add Event Modal -->
 <div class="modal" id="addEventModal">
     <div class="modal-content">
         <h2>📅 Add Event</h2>
@@ -2726,6 +2766,7 @@ function msgPath(group){ return 'messages/'+group.replace(/\s+/g,'_'); }
 
 function loadMessages(group){
     listenTyping(group);
+    listenPinnedMessage(group);
     window.dbOnValue(window.dbRef(window.db, msgPath(group)), snap=>{
         const container = document.getElementById('waMessages');
         container.innerHTML = '';
@@ -2745,7 +2786,6 @@ function buildBubble(key, msg){
     const meta = chatGroupMeta[currentGroup.replace(/\s+/g,'_')] || {};
     const isAnnounce = meta.type === 'announce';
 
-    // Announce groups: render as full-width broadcast banner
     if(isAnnounce){
         const wrap = document.createElement('div');
         wrap.style.cssText = 'width:100%;margin-bottom:4px;';
@@ -2754,7 +2794,7 @@ function buildBubble(key, msg){
             <div style="background:linear-gradient(135deg,rgba(232,131,74,.12),rgba(91,171,111,.08));border:2px solid rgba(232,131,74,.35);border-radius:14px;padding:14px 16px;">
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
                     <span style="font-size:20px;">📢</span>
-                    <span style="font-family:'Fredoka One',cursive;font-size:15px;color:var(--accent);letter-spacing:.3px;">Announcement from Host</span>
+                    <span style="font-family:'Fredoka One',cursive;font-size:15px;color:var(--accent);">Announcement from Host</span>
                     <span style="margin-left:auto;font-size:10px;color:var(--muted);font-weight:600;">${formatMsgTime(msg.timestamp)}</span>
                 </div>
                 <div style="font-size:15px;font-weight:700;color:var(--text);line-height:1.6;">${esc(msg.text)}</div>
@@ -2765,32 +2805,75 @@ function buildBubble(key, msg){
     }
 
     const wrap = document.createElement('div');
-    wrap.style.cssText = 'display:flex;flex-direction:column;align-items:'+(isMine?'flex-end':'flex-start');
+    wrap.style.cssText = 'display:flex;flex-direction:column;align-items:'+(isMine?'flex-end':'flex-start')+';margin-bottom:2px;';
+    wrap.id = 'msg-'+key;
+
     const bubble = document.createElement('div');
     bubble.className = 'wa-bubble '+(isMine?'mine':'theirs')+(msgIsFromHost?' host-bubble':'');
-    if(msgIsFromHost) bubble.style.cssText += ';border-left:3px solid var(--danger);';
-    bubble.id = 'msg-'+key;
+    if(msgIsFromHost) bubble.style.borderLeft = '3px solid var(--danger)';
+
+    // Double-tap to ❤️ like
+    let tapTimer = null;
+    bubble.addEventListener('touchend', ()=>{
+        if(tapTimer){ clearTimeout(tapTimer); tapTimer=null; toggleReaction(key,'❤️'); }
+        else tapTimer = setTimeout(()=>{tapTimer=null;}, 300);
+    });
+
     let inner = '';
     if(msgIsFromHost) inner += '<div style="font-size:10px;font-weight:800;color:var(--danger);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px;">📢 Message from Host</div>';
     if(!isMine) inner += '<div class="wa-author" style="'+(msgIsFromHost?'color:var(--danger);font-weight:700;':'')+'">'+esc(msg.author)+'</div>';
     if(msg.replyTo) inner += '<div class="wa-reply-preview" onclick="scrollToMsg(\''+esc(msg.replyTo.key)+'\')"><div class="rp-author">'+esc(msg.replyTo.author)+'</div><div>'+esc((msg.replyTo.text||'').slice(0,80))+'</div></div>';
-    inner += '<div class="wa-text" style="'+(msgIsFromHost?'font-weight:700;':'')+'">'+esc(msg.text)+'</div>';
-    if(msg.audioUrl){
-        // preload=metadata enables timeline scrubbing on iOS & Android
-        const isDataUrl = msg.audioUrl.startsWith('data:');
-        inner += '<div class="wa-voice-msg"><audio controls preload="metadata" style="width:100%;max-width:260px;border-radius:8px;">'
-            + '<source src="'+esc(msg.audioUrl)+'">'
-            + (isDataUrl ? '' : '<source src="'+esc(msg.audioUrl)+'">')
-            + '</audio></div>';
+
+    // Text or image
+    if(msg.imageUrl){
+        inner += `<img src="${esc(msg.imageUrl)}" class="wa-img-msg" onclick="openMediaLightbox('${esc(msg.imageUrl)}','image','')" loading="lazy">`;
+        if(msg.text) inner += '<div class="wa-text">'+esc(msg.text)+'</div>';
+    } else {
+        inner += '<div class="wa-text" style="'+(msgIsFromHost?'font-weight:700;':'')+'">'+esc(msg.text)+'</div>';
     }
-    inner += '<div class="wa-time">'+formatMsgTime(msg.timestamp)+'</div>';
+
+    if(msg.audioUrl){
+        inner += '<div class="wa-voice-msg"><audio controls preload="metadata" style="width:100%;max-width:260px;border-radius:8px;"><source src="'+esc(msg.audioUrl)+'"></audio></div>';
+    }
+
+    // Time + read tick
+    inner += '<div class="wa-time">'+formatMsgTime(msg.timestamp)+(isMine?' ✓✓':'')+'</div>';
+
+    // Action buttons
     const canDel = isHost || msg.author === currentUser;
-    inner += '<div class="wa-bubble-actions">'
-        +'<div class="wa-action-btn" title="Reply" onclick="startReply(\''+esc(key)+'\',\''+esc(msg.author)+'\',\''+esc((msg.text||'').slice(0,60).replace(/\\/g,'\\\\').replace(/'/g,"\\'"))+'\')">↩</div>'
-        +(canDel?'<div class="wa-action-btn" title="Delete" onclick="deleteComment(\''+esc(key)+'\')">🗑</div>':'')
-        +'</div>';
+    const pinBtn = isHost ? `<div class="wa-action-btn" title="Pin" onclick="pinMessage('${esc(key)}','${esc((msg.text||msg.imageUrl||'').slice(0,60))}')">📌</div>` : '';
+    inner += `<div class="wa-bubble-actions">
+        <div class="wa-action-btn" title="React" onclick="showReactionBar(event,'${esc(key)}')">😊</div>
+        <div class="wa-action-btn" title="Reply" onclick="startReply('${esc(key)}','${esc(msg.author)}','${esc((msg.text||'').slice(0,60).replace(/\\/g,'\\\\').replace(/'/g,"\\'"))}')">↩</div>
+        ${pinBtn}
+        ${canDel?`<div class="wa-action-btn" title="Delete" onclick="deleteComment('${esc(key)}')">🗑</div>`:''}
+    </div>`;
+
     bubble.innerHTML = inner;
-    wrap.appendChild(bubble);
+
+    // Render existing reactions
+    if(msg.reactions && Object.keys(msg.reactions).length){
+        const reactionWrap = document.createElement('div');
+        reactionWrap.className = 'wa-reactions';
+        // Count each emoji
+        const counts = {};
+        const myReactions = new Set();
+        Object.entries(msg.reactions).forEach(([user, emoji])=>{
+            counts[emoji] = (counts[emoji]||0)+1;
+            if(user === currentUser.replace(/[.#$[\]]/g,'_')) myReactions.add(emoji);
+        });
+        Object.entries(counts).forEach(([emoji, count])=>{
+            const chip = document.createElement('span');
+            chip.className = 'wa-reaction-chip' + (myReactions.has(emoji)?' mine':'');
+            chip.innerHTML = `${emoji}<span class="wa-reaction-count">${count>1?count:''}</span>`;
+            chip.onclick = ()=>toggleReaction(key, emoji);
+            reactionWrap.appendChild(chip);
+        });
+        wrap.appendChild(bubble);
+        wrap.appendChild(reactionWrap);
+    } else {
+        wrap.appendChild(bubble);
+    }
     return wrap;
 }
 
@@ -2814,6 +2897,176 @@ function cancelReply(){
 function scrollToMsg(key){
     const el = document.getElementById('msg-'+key);
     if(el){ el.scrollIntoView({behavior:'smooth',block:'center'}); el.style.outline='2px solid var(--accent)'; setTimeout(()=>el.style.outline='',1200); }
+}
+
+// ── Emoji reactions ───────────────────────────────────────────────────────────
+const QUICK_REACTIONS = ['❤️','👍','😂','😮','😢','🔥','🙏','🎉'];
+let _reactionBarKey = null;
+
+function showReactionBar(e, key){
+    e.stopPropagation();
+    // Remove any existing reaction bar
+    document.querySelectorAll('.reaction-bar').forEach(b=>b.remove());
+    _reactionBarKey = key;
+    const bar = document.createElement('div');
+    bar.className = 'reaction-bar';
+    QUICK_REACTIONS.forEach(em=>{
+        const btn = document.createElement('span');
+        btn.className = 'reaction-option';
+        btn.textContent = em;
+        btn.onclick = (ev)=>{ ev.stopPropagation(); toggleReaction(key,em); bar.remove(); };
+        bar.appendChild(btn);
+    });
+    const target = e.currentTarget || e.target;
+    target.closest('.wa-bubble').style.position = 'relative';
+    target.closest('.wa-bubble').appendChild(bar);
+    setTimeout(()=>document.addEventListener('click', ()=>bar.remove(), {once:true}), 10);
+}
+
+async function toggleReaction(key, emoji){
+    if(!window.db || !currentUser) return;
+    const userKey = currentUser.replace(/[.#$[\]]/g,'_');
+    const path = `messages/${currentGroup.replace(/\s+/g,'_')}/${key}/reactions/${userKey}`;
+    try{
+        const snap = await window.dbGet(window.dbRef(window.db, path));
+        if(snap.exists() && snap.val() === emoji){
+            await window.dbRemove(window.dbRef(window.db, path));
+        } else {
+            await window.dbSet(window.dbRef(window.db, path), emoji);
+        }
+    }catch(e){ console.log('Reaction error',e); }
+}
+
+// ── Image sending ─────────────────────────────────────────────────────────────
+let _pendingImageData = null;
+
+function handleImagePick(input){
+    const file = input.files?.[0];
+    if(!file) return;
+    if(file.size > 3*1024*1024){ toast('Image too large — max 3MB','warn'); return; }
+    const reader = new FileReader();
+    reader.onload = e=>{
+        _pendingImageData = e.target.result;
+        document.getElementById('imgPreviewThumb').src = _pendingImageData;
+        document.getElementById('imgPreviewStrip').style.display = 'flex';
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+}
+
+function handleChatPaste(e){
+    const items = e.clipboardData?.items;
+    if(!items) return;
+    for(const item of items){
+        if(item.type.startsWith('image/')){
+            e.preventDefault();
+            const file = item.getAsFile();
+            if(file.size > 3*1024*1024){ toast('Image too large — max 3MB','warn'); return; }
+            const reader = new FileReader();
+            reader.onload = ev=>{
+                _pendingImageData = ev.target.result;
+                document.getElementById('imgPreviewThumb').src = _pendingImageData;
+                document.getElementById('imgPreviewStrip').style.display = 'flex';
+            };
+            reader.readAsDataURL(file);
+            return;
+        }
+    }
+}
+
+function clearImagePreview(){
+    _pendingImageData = null;
+    document.getElementById('imgPreviewStrip').style.display = 'none';
+    document.getElementById('imgPreviewThumb').src = '';
+}
+
+// ── Emoji picker ──────────────────────────────────────────────────────────────
+const CHAT_EMOJIS = ['😀','😂','😍','🥰','😎','🤔','😢','😡','🥳','🤣','😊','😇','🙏','👍','👎','❤️','🔥','✨','🎉','💯','😴','🤯','😱','🤗','😋','🤩','😏','🙄','😅','🤦','🤷','💪','👏','🫶','🥹','😤','🤪','😬','🫠','🤭','🫡','🥺','🤑','😈','👻','🎃','🌟','⭐','💥','❄️','🌈','🍕','🍔','🎂','🍰','☕','🍷','🎵','🎶','📱','💻','🏠','🚗','✈️','🌍','🌙','☀️','🐶','🐱','🐾'];
+
+function openChatEmoji(){
+    const picker = document.getElementById('chatEmojiPicker');
+    if(picker.style.display !== 'none'){ picker.style.display = 'none'; return; }
+    const inner = picker.querySelector('div');
+    if(!inner.children.length){
+        CHAT_EMOJIS.forEach(em=>{
+            const btn = document.createElement('button');
+            btn.textContent = em;
+            btn.style.cssText = 'background:none;border:none;font-size:22px;cursor:pointer;padding:4px;border-radius:6px;transition:background .1s;';
+            btn.onmouseover = ()=>btn.style.background='var(--surface2)';
+            btn.onmouseout  = ()=>btn.style.background='none';
+            btn.onclick = ()=>{ insertEmoji(em); };
+            inner.appendChild(btn);
+        });
+    }
+    picker.style.display = 'block';
+}
+
+function insertEmoji(em){
+    const ta = document.getElementById('newComment');
+    const start = ta.selectionStart, end = ta.selectionEnd;
+    const val = ta.value;
+    ta.value = val.slice(0,start) + em + val.slice(end);
+    ta.selectionStart = ta.selectionEnd = start + em.length;
+    ta.focus();
+    ta.dispatchEvent(new Event('input'));
+}
+
+// ── Message search ────────────────────────────────────────────────────────────
+let _chatSearchOpen = false;
+
+function toggleChatSearch(){
+    _chatSearchOpen = !_chatSearchOpen;
+    const bar = document.getElementById('chatSearchBar');
+    bar.style.display = _chatSearchOpen ? 'block' : 'none';
+    if(_chatSearchOpen) document.getElementById('chatSearchInput').focus();
+    else { searchMessages(''); document.getElementById('chatSearchInput').value=''; }
+}
+
+function searchMessages(query){
+    const q = query.trim().toLowerCase();
+    const container = document.getElementById('waMessages');
+    container.querySelectorAll('.wa-text, .wa-author').forEach(el=>{
+        el.innerHTML = el.textContent; // reset highlights
+    });
+    if(!q) return;
+    container.querySelectorAll('.wa-text').forEach(el=>{
+        const orig = el.textContent;
+        if(orig.toLowerCase().includes(q)){
+            el.innerHTML = orig.replace(new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),
+                m=>`<mark class="msg-search-highlight">${m}</mark>`);
+            el.closest('[id^="msg-"]')?.scrollIntoView({behavior:'smooth',block:'nearest'});
+        }
+    });
+}
+
+// ── Message pinning ───────────────────────────────────────────────────────────
+let pinnedMsgKey = null;
+
+async function pinMessage(key, text){
+    if(!isHost || !window.db) return;
+    const path = 'chatPin/'+currentGroup.replace(/\s+/g,'_');
+    try{
+        const snap = await window.dbGet(window.dbRef(window.db, path));
+        if(snap.exists() && snap.val().key === key){
+            await window.dbRemove(window.dbRef(window.db, path));
+            toast('Message unpinned');
+        } else {
+            await window.dbSet(window.dbRef(window.db, path), {key, text});
+            toast('Message pinned! 📌');
+        }
+    }catch(e){}
+}
+
+function listenPinnedMessage(group){
+    const path = 'chatPin/'+group.replace(/\s+/g,'_');
+    window.dbOnValue(window.dbRef(window.db, path), snap=>{
+        const bar = document.getElementById('pinnedMsgBar');
+        if(!snap.exists()){ bar.style.display='none'; pinnedMsgKey=null; return; }
+        const d = snap.val();
+        pinnedMsgKey = d.key;
+        document.getElementById('pinnedMsgText').textContent = d.text||'';
+        bar.style.display = 'block';
+    });
 }
 
 // ── Typing Indicator ──────────────────────────────────────
@@ -3072,52 +3325,73 @@ async function uploadAndSendVoice(blob){
     }
 }
 
-// ── AI Text Enhancement (Puter.js — free, no API key) ────────────────────────
+// ── Shared AI helper — Pollinations POST (free, no auth, CORS-open) ──────────
+async function _aiChatMulti(messages){
+    // Log so we can confirm facts are in the prompt
+    const sys = messages.find(m=>m.role==='system');
+    if(sys) console.log('[AI] System prompt length:', sys.content.length, 'chars');
+
+    try {
+        const r = await fetch('https://text.pollinations.ai/openai', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ model: 'openai', messages })
+        });
+        if(!r.ok) throw new Error('status ' + r.status);
+        const d = await r.json();
+        const text = (d.choices?.[0]?.message?.content || '').trim();
+        if(!text) throw new Error('empty response');
+        return text;
+    } catch(e) {
+        console.warn('[AI] POST failed:', e.message, '— trying GET fallback');
+        // Fallback: GET endpoint with system + last user message
+        const sysText = sys ? sys.content : '';
+        const lastUser = [...messages].reverse().find(m=>m.role==='user')?.content || '';
+        const url = 'https://text.pollinations.ai/' +
+            encodeURIComponent(lastUser.slice(0, 500)) +
+            '?model=openai&system=' + encodeURIComponent(sysText.slice(0, 1000));
+        const r2 = await fetch(url);
+        if(!r2.ok) throw new Error('GET also failed: ' + r2.status);
+        return (await r2.text()).trim();
+    }
+}
+
+async function _aiChat(systemPrompt, userMessage){
+    return _aiChatMulti([
+        { role: 'system', content: systemPrompt },
+        { role: 'user',   content: userMessage  }
+    ]);
+}
+
+// ── ✨ AI Text Enhancement ────────────────────────────────────────────────────
 async function aiEnhanceText(){
     const input = document.getElementById('newComment');
     const btn   = document.getElementById('aiEnhanceBtn');
     const text  = input?.value?.trim();
 
-    if(!text){
-        toast('Type a message first, then tap ✨ to enhance it!', 'warn');
-        return;
-    }
+    if(!text){ toast('Type a message first, then tap ✨!', 'warn'); return; }
 
-    // Show loading state
     btn.textContent = '⏳';
     btn.classList.add('loading');
     btn.disabled = true;
     input.style.opacity = '0.5';
 
     try {
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                model: 'claude-sonnet-4-20250514',
-                max_tokens: 300,
-                messages: [{
-                    role: 'user',
-                    content: `You are a friendly message enhancer for a family chat app. Improve the following message to sound warmer, clearer, and more natural — keep the same meaning and tone, just make it nicer. Keep it short and conversational. Return ONLY the enhanced message, no explanations or quotes.\n\nOriginal: ${text}`
-                }]
-            })
-        });
+        const system = 'You are a friendly message enhancer for a family chat app. Improve the message to sound warmer, clearer and more natural — same meaning, just nicer. Keep it short and conversational. Return ONLY the enhanced message, no explanations.';
+        const enhanced = await _aiChat(system, text);
+        const clean = enhanced.replace(/^["'""'']|["'""'']$/g,'').trim();
 
-        const data = await response.json();
-        let enhanced = (data?.content?.[0]?.text || '').trim().replace(/^["'""'']|["'""'']$/g, '').trim();
-
-        if(enhanced && enhanced !== text){
-            input.value = enhanced;
+        if(clean && clean !== text){
+            input.value = clean;
             input.style.height = 'auto';
             input.style.height = Math.min(input.scrollHeight, 100) + 'px';
-            toast('✨ Message enhanced by AI!');
+            toast('✨ Message enhanced!');
         } else {
             toast('Message already looks great! 👍');
         }
-
     } catch(err){
-        console.error('AI enhance error:', err);
-        toast('AI couldn\'t enhance right now — try again!', 'warn');
+        console.error('Enhance error:', err);
+        toast('AI is busy — try again in a moment', 'warn');
     } finally {
         btn.textContent = '✨';
         btn.classList.remove('loading');
@@ -3130,21 +3404,21 @@ async function aiEnhanceText(){
 async function postComment(){
     const input = document.getElementById('newComment');
     const text = input.value.trim();
-    if(!text){ toast('Write something first!','warn'); return; }
+    if(!text && !_pendingImageData){ toast('Write something first!','warn'); return; }
     if(!currentUser){ toast('Please sign in first!','warn'); return; }
-    // Block non-host from posting in announce groups
     const meta = chatGroupMeta[currentGroup.replace(/\s+/g,'_')] || {};
     if(meta.type === 'announce' && !isHost){ toast('This is a broadcast channel — only the host can post here.','warn'); return; }
-    // Clear typing indicator immediately
     clearTimeout(typingTimer);
     stopTyping();
-    const data = {author:currentUser, text, timestamp:Date.now(), isHostMsg: isHost===true};
+    const data = {author:currentUser, text: text||'', timestamp:Date.now(), isHostMsg: isHost===true};
     if(replyTo) data.replyTo = replyTo;
+    if(_pendingImageData){ data.imageUrl = _pendingImageData; clearImagePreview(); }
     try{
         await window.dbSet(window.dbPush(window.dbRef(window.db, msgPath(currentGroup))), data);
         input.value = ''; input.style.height = 'auto';
+        // Close emoji picker if open
+        document.getElementById('chatEmojiPicker').style.display = 'none';
         cancelReply();
-        // SMS any offline family members about the new chat message
     }catch(e){ toast('Failed: '+e.message,'danger'); }
 }
 
@@ -5055,6 +5329,17 @@ window.closeDriveLightbox=closeDriveLightbox;
 window.startReply=startReply;
 window.cancelReply=cancelReply;
 window.scrollToMsg=scrollToMsg;
+window.showReactionBar=showReactionBar;
+window.toggleReaction=toggleReaction;
+window.handleImagePick=handleImagePick;
+window.handleChatPaste=handleChatPaste;
+window.clearImagePreview=clearImagePreview;
+window.openChatEmoji=openChatEmoji;
+window.insertEmoji=insertEmoji;
+window.toggleChatSearch=toggleChatSearch;
+window.searchMessages=searchMessages;
+window.pinMessage=pinMessage;
+window.pinnedMsgKey=null;
 window.addChatGroup=openAddGroupModal;
 window.openAddGroupModal=openAddGroupModal;
 window.saveNewGroup=saveNewGroup;
@@ -5226,192 +5511,408 @@ async function startVsComputer(type){
     toast('Playing vs Computer! 🤖');
 }
 
-// ── Discover Panel — free APIs no signup ──────────────────────────────────────
-const DISCOVER_CITY  = 'New York'; // could be made configurable
-const DISCOVER_LAT   = 40.7128;
-const DISCOVER_LNG   = -74.0060;
+// ── Discover Panel ───────────────────────────────────────────────────────────
+const DISCOVER_LAT = 40.7128, DISCOVER_LNG = -74.0060;
+const _discoverCache = {}, _discoverPending = {};
 
-async function loadDiscover(key){
-    const subEl = document.getElementById('dd-'+key);
-    const cardEl = document.getElementById('dc-'+key);
-    if(!subEl) return;
-    subEl.textContent = 'Loading…';
-    cardEl && cardEl.classList.add('dc-loading');
-    try{
-        switch(key){
-            case 'weather': await loadWeather(subEl, cardEl); break;
-            case 'sun':     await loadSun(subEl, cardEl); break;
-            case 'moon':    await loadMoon(subEl, cardEl); break;
-            case 'jewish':  await loadJewish(subEl, cardEl); break;
-            case 'holidays':await loadHolidays(subEl, cardEl); break;
-            case 'joke':    await loadJoke(subEl, cardEl); break;
-            case 'fact':    await loadFact(subEl, cardEl); break;
-            case 'quote':   await loadQuote(subEl, cardEl); break;
-            case 'animal':  await loadAnimal(subEl, cardEl); break;
-        }
-        cardEl && cardEl.classList.add('dc-loaded');
-    }catch(e){
-        subEl.textContent = 'Could not load 😕';
-        console.log('Discover error:', key, e);
-    }
-    cardEl && cardEl.classList.remove('dc-loading');
-}
+// ── Config: title, icon, preview extractor, detail renderer ──────────────────
+const DISCOVER_CONFIG = {
+    weather:  { title:'🌤️ Weather',                  icon:'🌤️' },
+    sun:      { title:'🌅 Sunrise & Sunset',           icon:'🌅' },
+    moon:     { title:'🌙 Moon Phase',                 icon:'🌙' },
+    jewish:   { title:'🕍 Jewish Calendar',            icon:'🕍' },
+    holidays: { title:'🗓️ US Holidays',               icon:'🗓️' },
+    joke:     { title:'😂 Daily Joke',                 icon:'😂' },
+    fact:     { title:'🎂 Today in History',           icon:'🎂' },
+    quote:    { title:'📖 Daily Quote',                icon:'📖' },
+    animal:   { title:'🐾 Random Animal',              icon:'🐾' },
+};
 
-function loadAllDiscover(){
-    ['weather','sun','moon','jewish','holidays','joke','fact','quote','animal'].forEach(k=>loadDiscover(k));
-}
-
-async function loadWeather(el, card){
-    const r = await Promise.race([
-        fetch(`https://api.open-meteo.com/v1/forecast?latitude=${DISCOVER_LAT}&longitude=${DISCOVER_LNG}&current_weather=true&hourly=precipitation_probability&temperature_unit=fahrenheit&timezone=auto`),
-        new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),8000))
-    ]);
+// ── Fetchers — return structured data objects ─────────────────────────────────
+async function _fetchWeather(){
+    const _ctrl1=new AbortController();setTimeout(()=>_ctrl1.abort(),10000);
+    const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${DISCOVER_LAT}&longitude=${DISCOVER_LNG}&current_weather=true&hourly=precipitation_probability,temperature_2m,windspeed_10m&temperature_unit=fahrenheit&timezone=auto&forecast_days=1`,{signal:_ctrl1.signal});
     const d = await r.json();
     const w = d.current_weather;
-    const codes = {0:'☀️ Clear',1:'🌤 Mostly clear',2:'⛅ Partly cloudy',3:'☁️ Overcast',45:'🌫 Foggy',48:'🌫 Foggy',51:'🌦 Drizzle',61:'🌧 Rain',71:'❄️ Snow',80:'🌧 Showers',95:'⛈ Thunderstorm'};
-    const desc = codes[w.weathercode] || codes[Math.floor(w.weathercode/10)*10] || '🌡 Weather';
+    const codes = {0:'Clear sky',1:'Mostly clear',2:'Partly cloudy',3:'Overcast',45:'Foggy',48:'Foggy',51:'Light drizzle',61:'Rain',71:'Snow',80:'Showers',95:'Thunderstorm'};
+    const icons = {0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',61:'🌧️',71:'❄️',80:'🌧️',95:'⛈️'};
+    const desc = codes[w.weathercode] || codes[Math.floor(w.weathercode/10)*10] || 'Weather';
+    const wicon = icons[w.weathercode] || icons[Math.floor(w.weathercode/10)*10] || '🌡️';
     const rain = d.hourly?.precipitation_probability?.[0] ?? '?';
-    el.innerHTML = `<b style="font-size:20px">${Math.round(w.temperature)}°F</b><br>${desc}<br>💧 Rain chance: ${rain}%`;
-    if(card) card.querySelector('.dc-icon').textContent = w.weathercode <= 1 ? '☀️' : w.weathercode <= 3 ? '⛅' : '🌧';
+    const wind = Math.round(w.windspeed);
+    const temps = (d.hourly?.temperature_2m||[]).slice(0,12);
+    const hi = temps.length ? Math.round(Math.max(...temps)) : null;
+    const lo = temps.length ? Math.round(Math.min(...temps)) : null;
+    return { icon: wicon, preview: `${Math.round(w.temperature)}°F · ${desc}`,
+        detail: { temp: Math.round(w.temperature), desc, wicon, rain, wind, hi, lo } };
 }
 
-async function loadSun(el, card){
+async function _fetchSun(){
     const today = new Date().toISOString().split('T')[0];
-    const r = await fetch(`https://api.sunrise-sunset.org/json?lat=${DISCOVER_LAT}&lng=${DISCOVER_LNG}&date=${today}&formatted=0`);
+    const _ctrl2=new AbortController();setTimeout(()=>_ctrl2.abort(),10000);
+    const r = await fetch(`https://api.sunrise-sunset.org/json?lat=${DISCOVER_LAT}&lng=${DISCOVER_LNG}&date=${today}&formatted=0`,{signal:_ctrl2.signal});
     const d = await r.json();
-    const fmt = iso => { const t = new Date(iso); const h=t.getHours()%12||12,m=String(t.getMinutes()).padStart(2,'0'),ap=t.getHours()>=12?'PM':'AM'; return `${h}:${m} ${ap}`; };
-    el.innerHTML = `🌅 Sunrise: <b>${fmt(d.results.sunrise)}</b><br>🌇 Sunset: &nbsp;<b>${fmt(d.results.sunset)}</b>`;
+    const fmt = iso => { const t=new Date(iso); const h=t.getHours()%12||12,m=String(t.getMinutes()).padStart(2,'0'),ap=t.getHours()>=12?'PM':'AM'; return `${h}:${m} ${ap}`; };
+    const sr = fmt(d.results.sunrise), ss = fmt(d.results.sunset);
+    const dayLen = Math.round((new Date(d.results.sunset)-new Date(d.results.sunrise))/1000/60);
+    return { preview: `🌅 ${sr}  🌇 ${ss}`,
+        detail: { sunrise: sr, sunset: ss, dayLen, dawn: fmt(d.results.civil_twilight_begin), dusk: fmt(d.results.civil_twilight_end) } };
 }
 
-async function loadMoon(el, card){
-    // Calculate moon phase locally — no API needed!
+function _fetchMoon(){
     const now = new Date();
-    // Synodic month is 29.53059 days; reference new moon: Jan 6 2000
     const ref = new Date('2000-01-06T18:14:00Z');
-    const elapsed = (now - ref) / (1000*60*60*24);
-    const cycle = elapsed % 29.53059;
-    const pct = cycle / 29.53059;
+    const pct = ((now - ref)/(1000*60*60*24) % 29.53059) / 29.53059;
     let phase, icon;
-    if(pct < 0.033) { phase='New Moon'; icon='🌑'; }
-    else if(pct < 0.25) { phase='Waxing Crescent'; icon='🌒'; }
-    else if(pct < 0.285) { phase='First Quarter'; icon='🌓'; }
-    else if(pct < 0.5) { phase='Waxing Gibbous'; icon='🌔'; }
-    else if(pct < 0.533) { phase='Full Moon'; icon='🌕'; }
-    else if(pct < 0.75) { phase='Waning Gibbous'; icon='🌖'; }
-    else if(pct < 0.785) { phase='Third Quarter'; icon='🌗'; }
-    else { phase='Waning Crescent'; icon='🌘'; }
-    const illum = Math.round(Math.abs(Math.cos(pct * 2 * Math.PI)) * 100);
-    el.innerHTML = `${icon} <b>${phase}</b><br>Illumination: ~${illum}%`;
-    if(card) card.querySelector('.dc-icon').textContent = icon;
+    if(pct<0.033){phase='New Moon';icon='🌑';}
+    else if(pct<0.25){phase='Waxing Crescent';icon='🌒';}
+    else if(pct<0.285){phase='First Quarter';icon='🌓';}
+    else if(pct<0.5){phase='Waxing Gibbous';icon='🌔';}
+    else if(pct<0.533){phase='Full Moon';icon='🌕';}
+    else if(pct<0.75){phase='Waning Gibbous';icon='🌖';}
+    else if(pct<0.785){phase='Third Quarter';icon='🌗';}
+    else{phase='Waning Crescent';icon='🌘';}
+    const illum = Math.round(Math.abs(Math.cos(pct*2*Math.PI))*100);
+    const daysToFull = pct < 0.5 ? Math.round((0.5-pct)*29.53) : Math.round((1.5-pct)*29.53);
+    return { icon, preview: `${icon} ${phase} · ${illum}% lit`,
+        detail: { phase, icon, illum, pct, daysToFull } };
 }
 
-async function loadJewish(el, card){
+async function _fetchJewish(){
     const now = new Date();
-    const y=now.getFullYear(), mo=now.getMonth()+1, d=now.getDate();
-    const r = await fetch(`https://www.hebcal.com/hebcal?v=1&cfg=json&year=${y}&month=${mo}&maj=on&min=on&nx=on&mf=on&ss=on&mod=on&geo=pos&latitude=${DISCOVER_LAT}&longitude=${DISCOVER_LNG}&tzid=America/New_York&c=on`);
-    const data = await r.json();
-    const items = (data.items||[]).filter(i=>i.date===`${y}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`||i.title?.toLowerCase().includes('candle'));
-    const r2 = await fetch(`https://www.hebcal.com/shabbat?cfg=json&geonameid=5128581`);
-    const shabbat = await r2.json();
+    const y=now.getFullYear(), mo=now.getMonth()+1, dd=now.getDate();
+    const todayStr = `${y}-${String(mo).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
+    const [r1,r2] = await Promise.all([
+        fetch(`https://www.hebcal.com/hebcal?v=1&cfg=json&year=${y}&month=${mo}&maj=on&min=on&nx=on&mf=on&ss=on&mod=on&geo=pos&latitude=${DISCOVER_LAT}&longitude=${DISCOVER_LNG}&tzid=America/New_York&c=on`),
+        fetch(`https://www.hebcal.com/shabbat?cfg=json&geonameid=5128581`)
+    ]);
+    const [data, shabbat] = await Promise.all([r1.json(), r2.json()]);
+    const todayItems = (data.items||[]).filter(i=>i.date===todayStr);
     const candle = (shabbat.items||[]).find(i=>i.category==='candles');
-    const lines = items.slice(0,3).map(i=>`• ${i.title}`);
-    if(candle) lines.push(`🕯️ Candle lighting: ${new Date(candle.date).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`);
-    el.innerHTML = lines.length ? lines.join('<br>') : 'No events today';
+    const havdalah = (shabbat.items||[]).find(i=>i.category==='havdalah');
+    const hebrewDate = (data.items||[]).find(i=>i.category==='hebdate')?.hebrew || '';
+    const preview = todayItems[0]?.title || (candle ? '🕯️ Shabbat soon' : hebrewDate || 'No events today');
+    return { preview, detail: { todayItems, candle, havdalah, hebrewDate, allItems: data.items||[] } };
 }
 
-async function loadHolidays(el, card){
+async function _fetchHolidays(){
     const y = new Date().getFullYear();
     const r = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${y}/US`);
     const d = await r.json();
     const today = new Date().toISOString().split('T')[0];
-    const upcoming = d.filter(h=>h.date>=today).slice(0,3);
-    el.innerHTML = upcoming.map(h=>`📅 <b>${h.localName}</b> — ${new Date(h.date+'T12:00:00').toLocaleDateString([],{month:'short',day:'numeric'})}`).join('<br>');
+    const upcoming = d.filter(h=>h.date>=today).slice(0,6);
+    const next = upcoming[0];
+    const daysUntil = next ? Math.round((new Date(next.date+'T12:00:00')-new Date())/(1000*60*60*24)) : null;
+    const preview = next ? `${next.localName} · ${daysUntil===0?'Today':daysUntil===1?'Tomorrow':daysUntil+' days'}` : 'No upcoming holidays';
+    return { preview, detail: { upcoming } };
 }
 
-async function loadJoke(el, card){
-    const fallbackJokes = [
-        {setup:"Why don't scientists trust atoms?", punchline:"Because they make up everything!"},
-        {setup:"Why did the scarecrow win an award?", punchline:"Because he was outstanding in his field!"},
-        {setup:"What do you call fake spaghetti?", punchline:"An impasta!"},
-        {setup:"Why can't you give Elsa a balloon?", punchline:"Because she'll let it go!"},
-        {setup:"What do you call cheese that isn't yours?", punchline:"Nacho cheese!"},
-        {setup:"Why did the math book look so sad?", punchline:"Because it had too many problems."},
-    ];
-    try{
-        const r = await Promise.race([
-            fetch('https://official-joke-api.appspot.com/random_joke'),
-            new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),4000))
-        ]);
+async function _fetchJoke(){
+    // Primary: official-joke-api; Fallback: JokeAPI v2 (both CORS-open, free)
+    try {
+        const ctrl = new AbortController();
+        setTimeout(()=>ctrl.abort(), 6000);
+        const r = await fetch('https://official-joke-api.appspot.com/random_joke', {signal:ctrl.signal});
+        if(!r.ok) throw new Error('status '+r.status);
         const d = await r.json();
-        if(d && d.setup){ el.innerHTML = `<i>${d.setup}</i><br><b style="color:var(--accent)">— ${d.punchline}</b>`; return; }
-    }catch(e){}
-    const j = fallbackJokes[Math.floor(Math.random()*fallbackJokes.length)];
-    el.innerHTML = `<i>${j.setup}</i><br><b style="color:var(--accent)">— ${j.punchline}</b>`;
+        return { preview: d.setup.slice(0,60)+'…', detail: { setup: d.setup, punchline: d.punchline, type: d.type } };
+    } catch(e) {
+        const r2 = await fetch('https://v2.jokeapi.dev/joke/Any?safe-mode&type=twopart');
+        const d2 = await r2.json();
+        return { preview: d2.setup.slice(0,60)+'…', detail: { setup: d2.setup, punchline: d2.delivery, type: d2.category } };
+    }
 }
 
-async function loadFact(el, card){
-    // Use history API via a CORS-friendly source
+async function _fetchFact(){
     const now = new Date();
-    const m = now.getMonth()+1, d = now.getDate();
-    // Wikipedia "On This Day" via REST
-    try{
-        const r = await fetch(`https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/events/${m}/${d}`);
-        const data = await r.json();
-        const ev = (data.events||[])[Math.floor(Math.random()*Math.min(5,(data.events||[]).length))];
-        if(ev) el.innerHTML = `<b>${ev.year}</b> — ${ev.text.slice(0,120)}${ev.text.length>120?'…':''}`;
-        else el.textContent = 'No facts today';
-    }catch(e){
-        el.textContent = `On this day, ${now.toLocaleDateString([],{month:'long',day:'numeric'})}…`;
-    }
+    const _ctrl3=new AbortController();setTimeout(()=>_ctrl3.abort(),10000);
+    const r = await fetch(`https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/events/${now.getMonth()+1}/${now.getDate()}`,{signal:_ctrl3.signal});
+    const data = await r.json();
+    const events = (data.events||[]).slice(0,5);
+    const pick = events[Math.floor(Math.random()*events.length)];
+    const preview = pick ? `${pick.year} — ${pick.text.slice(0,60)}…` : 'No facts today';
+    return { preview, detail: { events, date: now.toLocaleDateString([],{month:'long',day:'numeric'}) } };
 }
 
-async function loadQuote(el, card){
-    const quotes = [
-        {content:"The family is one of nature's masterpieces.", author:"G. Santayana"},
-        {content:"Family is not an important thing. It's everything.", author:"Michael J. Fox"},
-        {content:"In family life, love is the oil that eases friction.", author:"Friedrich Nietzsche"},
-        {content:"The love of family is life's greatest blessing.", author:"Anonymous"},
-        {content:"A happy family is but an earlier heaven.", author:"George Bernard Shaw"},
-        {content:"Family: where life begins and love never ends.", author:"Anonymous"},
-        {content:"Cherish your human connections: your relationships with friends and family.", author:"Barbara Bush"},
-        {content:"Where we love is home — home that our feet may leave, but not our hearts.", author:"Oliver Wendell Holmes"},
-        {content:"The bond that links your true family is not one of blood, but of respect and joy.", author:"Richard Bach"},
-        {content:"You don't choose your family. They are God's gift to you.", author:"Desmond Tutu"},
+async function _fetchQuote(){
+    const FALLBACKS = [
+        {content:'Family is not an important thing. It’s everything.',author:'Michael J. Fox'},
+        {content:'The love of family is life’s greatest blessing.',author:'Eva Burrows'},
+        {content:'In family life, love is the oil that eases friction.',author:'Friedrich Nietzsche'},
+        {content:'A happy family is but an earlier heaven.',author:'George Bernard Shaw'},
+        {content:'The bond that links your true family is not one of blood, but of respect.',author:'Richard Bach'},
+        {content:'Other things may change us, but we start and end with family.',author:'Anthony Brandt'},
+        {content:'Rejoice with your family in the beautiful land of life.',author:'Albert Einstein'},
+        {content:'The memories we make with our family is everything.',author:'Candace Cameron Bure'},
     ];
-    try{
-        const r = await Promise.race([
-            fetch('https://api.quotable.io/quotes/random?limit=1'),
-            new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),4000))
-        ]);
+    try {
+        const ctrl = new AbortController();
+        setTimeout(()=>ctrl.abort(), 6000);
+        const r = await fetch('https://api.quotable.io/quotes/random?limit=1', {signal:ctrl.signal});
+        if(!r.ok) throw new Error('status '+r.status);
         const d = await r.json();
-        const q = Array.isArray(d) ? d[0] : d;
-        if(q && q.content){ el.innerHTML = `"<i>${q.content}</i>"<br><b>— ${q.author}</b>`; return; }
-    }catch(e){}
-    const q = quotes[Math.floor(Math.random()*quotes.length)];
-    el.innerHTML = `"<i>${q.content}</i>"<br><b>— ${q.author}</b>`;
-}
-
-async function loadAnimal(el, card){
-    try{
-        if(Math.random() > 0.5){
-            const r = await Promise.race([fetch('https://catfact.ninja/fact'),new Promise((_,rej)=>setTimeout(()=>rej(),5000))]);
-            const d = await r.json();
-            el.innerHTML = '🐱 ' + d.fact;
-            if(card) card.querySelector('.dc-icon').textContent = '🐱';
-        } else {
-            const r = await Promise.race([fetch('https://dog.ceo/api/breeds/image/random'),new Promise((_,rej)=>setTimeout(()=>rej(),5000))]);
-            const d = await r.json();
-            el.innerHTML = `🐶 Random pup!<br><img src="${d.message}" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-top:6px;">`;
-            if(card) card.querySelector('.dc-icon').textContent = '🐶';
-        }
-    }catch(e){
-        const facts=['🐱 A cat has 32 muscles in each ear!','🐶 Dogs\' sense of smell is 40× stronger than humans.','🦁 Lions sleep up to 20 hours a day.','🐬 Dolphins sleep with one eye open.','🐘 Elephants are the only animals that can\'t jump.','🦜 Parrots can live for over 80 years.','🐙 Octopuses have three hearts and blue blood.'];
-        el.textContent = facts[Math.floor(Math.random()*facts.length)];
+        const q = d[0];
+        return { preview: `“${q.content.slice(0,55)}…”`, detail: { content: q.content, author: q.author, tags: q.tags } };
+    } catch(e) {
+        const q = FALLBACKS[Math.floor(Math.random()*FALLBACKS.length)];
+        return { preview: `“${q.content.slice(0,55)}…”`, detail: { content: q.content, author: q.author, tags: ['family'] } };
     }
 }
+
+async function _fetchAnimal(){
+    if(Math.random()>0.5){
+        const _ctrl4=new AbortController();setTimeout(()=>_ctrl4.abort(),8000);
+        const r = await fetch('https://catfact.ninja/fact',{signal:_ctrl4.signal});
+        const d = await r.json();
+        return { icon:'🐱', preview:'🐱 '+d.fact.slice(0,55)+'…', detail:{ type:'cat', fact:d.fact, img:null } };
+    } else {
+        const _ctrl5=new AbortController();setTimeout(()=>_ctrl5.abort(),8000);
+        const r = await fetch('https://dog.ceo/api/breeds/image/random',{signal:_ctrl5.signal});
+        const d = await r.json();
+        return { icon:'🐶', preview:'🐶 Random dog photo!', detail:{ type:'dog', fact:'Every dog is unique!', img: d.message } };
+    }
+}
+
+const _discoverFetchers = {
+    weather:()=>_fetchWeather(), sun:()=>_fetchSun(), moon:()=>Promise.resolve(_fetchMoon()),
+    jewish:()=>_fetchJewish(), holidays:()=>_fetchHolidays(), joke:()=>_fetchJoke(),
+    fact:()=>_fetchFact(), quote:()=>_fetchQuote(), animal:()=>_fetchAnimal()
+};
+
+// ── Prefetch ──────────────────────────────────────────────────────────────────
+async function _prefetchOne(key){
+    if(_discoverCache[key]||_discoverPending[key]) return;
+    _discoverPending[key]=true;
+    try{
+        const result = await _discoverFetchers[key]();
+        _discoverCache[key] = result;
+        _updateCard(key);
+    }catch(e){
+        _discoverCache[key] = {error:true, preview:'Could not load'};
+        _updateCard(key);
+        console.log('Discover prefetch error:',key,e.message);
+    }
+    _discoverPending[key]=false;
+}
+
+function _prefetchAllDiscover(){
+    _prefetchOne('moon');
+    ['weather','sun','joke','quote','animal','holidays','fact','jewish']
+        .forEach((k,i)=>setTimeout(()=>_prefetchOne(k), 500+i*350));
+}
+
+// ── Update the small card preview ────────────────────────────────────────────
+function _updateCard(key){
+    const cached = _discoverCache[key];
+    if(!cached) return;
+    const preEl = document.getElementById('dd-'+key);
+    const cardEl = document.getElementById('dc-'+key);
+    const iconEl = document.getElementById('dci-'+key);
+    if(preEl) preEl.textContent = cached.error ? 'Tap to retry' : (cached.preview||'');
+    if(iconEl && cached.icon) iconEl.textContent = cached.icon;
+    if(cardEl){
+        cardEl.classList.toggle('dc-loaded', !cached.error);
+        cardEl.classList.remove('dc-loading');
+    }
+}
+
+function loadAllDiscover(){
+    Object.keys(_discoverFetchers).forEach(k=>{
+        if(_discoverCache[k]) _updateCard(k);
+        else if(!_discoverPending[k]) _prefetchOne(k);
+    });
+}
+
+function loadDiscover(key){ if(!_discoverCache[key]&&!_discoverPending[key]) _prefetchOne(key); else _updateCard(key); }
+
+// ── Detail page renderers ─────────────────────────────────────────────────────
+let _currentDetailKey = null;
+
+function openDiscoverDetail(key){
+    _currentDetailKey = key;
+    const cfg = DISCOVER_CONFIG[key]||{};
+    document.getElementById('discoverDetailTitle').textContent = cfg.title||key;
+    _renderDetailPage(key);
+    const ov = document.getElementById('discoverDetailOverlay');
+    ov.style.display = 'flex';
+    ov.scrollTop = 0;
+}
+
+function closeDiscoverDetail(){
+    document.getElementById('discoverDetailOverlay').style.display = 'none';
+    _currentDetailKey = null;
+}
+
+function refreshDiscoverDetail(){
+    if(!_currentDetailKey) return;
+    delete _discoverCache[_currentDetailKey];
+    _discoverPending[_currentDetailKey] = false;
+    const content = document.getElementById('discoverDetailContent');
+    content.innerHTML = '<div style="text-align:center;padding:60px;color:var(--muted);font-size:14px;font-weight:700;">⏳ Refreshing…</div>';
+    _prefetchOne(_currentDetailKey).then(()=>_renderDetailPage(_currentDetailKey));
+}
+
+function _renderDetailPage(key){
+    const content = document.getElementById('discoverDetailContent');
+    const cached = _discoverCache[key];
+
+    if(!cached){
+        content.innerHTML = '<div style="text-align:center;padding:60px;color:var(--muted);font-size:14px;font-weight:700;">⏳ Loading…</div>';
+        // Wait for prefetch
+        const wait = setInterval(()=>{
+            if(_discoverCache[key]){ clearInterval(wait); _renderDetailPage(key); }
+        },200);
+        if(!_discoverPending[key]) _prefetchOne(key);
+        return;
+    }
+    if(cached.error){ content.innerHTML = '<div style="text-align:center;padding:60px;"><div style="font-size:40px;margin-bottom:12px;">😕</div><div style="font-weight:700;color:var(--muted);">Could not load — tap ↻ to retry</div></div>'; return; }
+
+    const d = cached.detail;
+    let html = '';
+
+    if(key==='weather'){
+        html = `
+        <div class="discover-detail-hero">${d.wicon}</div>
+        <div class="discover-detail-big">${d.temp}°F</div>
+        <div style="text-align:center;font-size:18px;font-weight:700;margin-bottom:24px;color:var(--muted);">${d.desc}</div>
+        <div class="discover-detail-section">
+            <div class="discover-detail-label">Today's Range</div>
+            <div class="discover-detail-value">🌡️ High: ${d.hi!==null?d.hi+'°F':'—'} &nbsp;·&nbsp; Low: ${d.lo!==null?d.lo+'°F':'—'}</div>
+        </div>
+        <div class="discover-detail-section">
+            <div class="discover-detail-label">Rain Chance</div>
+            <div class="discover-detail-value">💧 ${d.rain}%</div>
+        </div>
+        <div class="discover-detail-section">
+            <div class="discover-detail-label">Wind Speed</div>
+            <div class="discover-detail-value">💨 ${d.wind} km/h</div>
+        </div>`;
+    }
+    else if(key==='sun'){
+        const h = Math.floor(d.dayLen/60), m = d.dayLen%60;
+        html = `
+        <div class="discover-detail-hero">🌅</div>
+        <div class="discover-detail-section">
+            <div class="discover-detail-label">Sunrise</div>
+            <div class="discover-detail-big" style="font-size:36px;">${d.sunrise}</div>
+        </div>
+        <div class="discover-detail-section">
+            <div class="discover-detail-label">Sunset</div>
+            <div class="discover-detail-big" style="font-size:36px;">${d.sunset}</div>
+        </div>
+        <div class="discover-detail-section">
+            <div class="discover-detail-label">Day Length</div>
+            <div class="discover-detail-value">⏱️ ${h}h ${m}m of daylight</div>
+        </div>
+        <div class="discover-detail-section">
+            <div class="discover-detail-label">Civil Twilight</div>
+            <div class="discover-detail-value">🌄 Dawn: ${d.dawn}<br>🌆 Dusk: ${d.dusk}</div>
+        </div>`;
+    }
+    else if(key==='moon'){
+        const bar = Math.round(d.illum/10);
+        const barFill = '█'.repeat(bar)+'░'.repeat(10-bar);
+        html = `
+        <div class="discover-detail-hero" style="font-size:100px;">${d.icon}</div>
+        <div class="discover-detail-big">${d.phase}</div>
+        <div class="discover-detail-section">
+            <div class="discover-detail-label">Illumination</div>
+            <div class="discover-detail-value">${d.illum}% lit<br><span style="font-family:monospace;font-size:18px;letter-spacing:1px;color:var(--accent);">${barFill}</span></div>
+        </div>
+        <div class="discover-detail-section">
+            <div class="discover-detail-label">Days Until Full Moon</div>
+            <div class="discover-detail-value">🌕 ${d.daysToFull} day${d.daysToFull!==1?'s':''}</div>
+        </div>`;
+    }
+    else if(key==='jewish'){
+        const todayHtml = d.todayItems.length
+            ? d.todayItems.map(i=>`<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:15px;font-weight:600;">• ${i.title}</div>`).join('')
+            : '<div style="color:var(--muted);font-size:14px;">No special events today</div>';
+        const candleHtml = d.candle
+            ? `<div class="discover-detail-value">🕯️ ${new Date(d.candle.date).toLocaleString([],{weekday:'long',hour:'2-digit',minute:'2-digit'})}</div>`
+            : '<div class="discover-detail-value" style="color:var(--muted);">No candle lighting this week</div>';
+        const havdalahHtml = d.havdalah
+            ? `<div class="discover-detail-value">✨ ${new Date(d.havdalah.date).toLocaleString([],{weekday:'long',hour:'2-digit',minute:'2-digit'})}</div>`
+            : '';
+        html = `
+        <div class="discover-detail-hero">🕍</div>
+        ${d.hebrewDate ? `<div style="text-align:center;font-size:20px;font-weight:700;margin-bottom:20px;color:var(--accent);">${d.hebrewDate}</div>` : ''}
+        <div class="discover-detail-section">
+            <div class="discover-detail-label">Today's Events</div>
+            ${todayHtml}
+        </div>
+        <div class="discover-detail-section">
+            <div class="discover-detail-label">Candle Lighting</div>
+            ${candleHtml}
+        </div>
+        ${havdalahHtml ? `<div class="discover-detail-section"><div class="discover-detail-label">Havdalah</div>${havdalahHtml}</div>` : ''}`;
+    }
+    else if(key==='holidays'){
+        const rows = d.upcoming.map((h,i)=>{
+            const dt = new Date(h.date+'T12:00:00');
+            const daysUntil = Math.round((dt-new Date())/(1000*60*60*24));
+            const badge = daysUntil===0?'<span style="background:var(--accent);color:#fff;border-radius:8px;padding:2px 8px;font-size:11px;font-weight:700;">TODAY</span>':
+                          daysUntil===1?'<span style="background:var(--accent2);color:#fff;border-radius:8px;padding:2px 8px;font-size:11px;font-weight:700;">TOMORROW</span>':
+                          `<span style="color:var(--muted);font-size:12px;font-weight:700;">${daysUntil} days</span>`;
+            return `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);">
+                <div><div style="font-size:15px;font-weight:700;">${h.localName}</div><div style="font-size:12px;color:var(--muted);">${dt.toLocaleDateString([],{month:'long',day:'numeric'})}</div></div>
+                ${badge}</div>`;
+        }).join('');
+        html = `<div class="discover-detail-hero">🗓️</div><div class="discover-detail-section"><div class="discover-detail-label">Upcoming US Holidays</div>${rows}</div>`;
+    }
+    else if(key==='joke'){
+        html = `
+        <div class="discover-detail-hero">😂</div>
+        <div class="discover-detail-section">
+            <div class="discover-detail-label">Setup</div>
+            <div style="font-size:18px;font-weight:700;color:var(--text);line-height:1.5;">${d.setup}</div>
+        </div>
+        <div class="discover-detail-section" style="background:linear-gradient(135deg,rgba(232,131,74,.1),rgba(91,171,111,.1));">
+            <div class="discover-detail-label">Punchline 🥁</div>
+            <div style="font-size:20px;font-weight:800;color:var(--accent);line-height:1.5;">${d.punchline}</div>
+        </div>
+        <div style="text-align:center;margin-top:8px;"><span style="background:var(--surface);border:1.5px solid var(--border);border-radius:20px;padding:4px 14px;font-size:12px;font-weight:700;color:var(--muted);">${d.type}</span></div>`;
+    }
+    else if(key==='fact'){
+        const evHtml = d.events.map(ev=>`
+            <div style="padding:14px 0;border-bottom:1px solid var(--border);">
+                <div style="font-size:22px;font-weight:800;color:var(--accent);margin-bottom:4px;">${ev.year}</div>
+                <div style="font-size:14px;font-weight:600;line-height:1.6;">${ev.text}</div>
+            </div>`).join('');
+        html = `<div class="discover-detail-hero">🎂</div>
+        <div style="text-align:center;font-size:16px;font-weight:700;margin-bottom:20px;color:var(--muted);">On this day: ${d.date}</div>
+        <div class="discover-detail-section">${evHtml}</div>`;
+    }
+    else if(key==='quote'){
+        const tagsHtml = (d.tags||[]).map(t=>`<span style="background:var(--surface2);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;color:var(--muted);">${t}</span>`).join(' ');
+        html = `
+        <div class="discover-detail-hero">📖</div>
+        <div class="discover-detail-section" style="text-align:center;">
+            <div style="font-size:18px;font-style:italic;font-weight:600;line-height:1.7;color:var(--text);margin-bottom:16px;">"${d.content}"</div>
+            <div style="font-size:16px;font-weight:800;color:var(--accent);">— ${d.author}</div>
+        </div>
+        ${tagsHtml ? `<div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:12px;">${tagsHtml}</div>` : ''}`;
+    }
+    else if(key==='animal'){
+        html = `
+        <div class="discover-detail-hero">${cached.icon||'🐾'}</div>
+        ${d.img ? `<div style="margin-bottom:20px;border-radius:16px;overflow:hidden;"><img src="${d.img}" style="width:100%;max-height:280px;object-fit:cover;display:block;" onerror="this.style.display='none'"></div>` : ''}
+        <div class="discover-detail-section">
+            <div class="discover-detail-label">${d.type==='cat'?'Cat Fact':'Dog Fact'}</div>
+            <div style="font-size:16px;font-weight:600;line-height:1.7;">${d.fact}</div>
+        </div>`;
+    }
+
+    content.innerHTML = html || '<div style="padding:40px;text-align:center;color:var(--muted);">No data available</div>';
+}
+
+setTimeout(_prefetchAllDiscover, 2000);
 
 window.loadDiscover=loadDiscover;
 window.loadAllDiscover=loadAllDiscover;
+window.openDiscoverDetail=openDiscoverDetail;
+window.closeDiscoverDetail=closeDiscoverDetail;
+window.refreshDiscoverDetail=refreshDiscoverDetail;
 window.startVsComputer=startVsComputer;
 window.openGameModeModal=openGameModeModal;
 
@@ -5486,8 +5987,13 @@ function build2048Game(wrap){
     render();
     wrap.setAttribute('tabindex','0');
     wrap.onkeydown=e=>{const m={ArrowLeft:'l',ArrowRight:'r',ArrowUp:'u',ArrowDown:'d'};if(m[e.key]){e.preventDefault();move(m[e.key]);}};
-    let tx=0;wrap.ontouchstart=e=>tx=e.touches[0].clientX;
-    wrap.ontouchend=e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>30)move(dx>0?'r':'l');};
+    let tx=0,ty=0;
+    wrap.ontouchstart=e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;};
+    wrap.ontouchend=e=>{
+        const dx=e.changedTouches[0].clientX-tx, dy=e.changedTouches[0].clientY-ty;
+        if(Math.abs(dx)>Math.abs(dy)){ if(Math.abs(dx)>25)move(dx>0?'r':'l'); }
+        else { if(Math.abs(dy)>25)move(dy>0?'d':'u'); }
+    };
     setTimeout(()=>wrap.focus(),100);
 }
 
@@ -5506,12 +6012,13 @@ function buildSnakeGame(wrap){
             g.appendChild(d);}}}
     wrap.innerHTML=`<div style="padding:16px;text-align:center;"><div id="snakeScore" style="font-weight:800;font-size:15px;margin-bottom:10px;">Score: 0</div>
     <div id="snakeGrid" style="display:inline-grid;grid-template-columns:repeat(${size},18px);gap:0;background:var(--surface);border:2px solid var(--border);border-radius:10px;overflow:hidden;"></div>
-    <div style="margin-top:12px;display:flex;justify-content:center;gap:8px;flex-wrap:wrap;">
-    <button onclick="this.closest('[id]')" style="all:unset"></button>
-    <button id="snakeUp" style="background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:10px 18px;font-size:16px;cursor:pointer;">⬆</button><br>
-    <button id="snakeLeft" style="background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:10px 18px;font-size:16px;cursor:pointer;">⬅</button>
-    <button id="snakeDown" style="background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:10px 18px;font-size:16px;cursor:pointer;">⬇</button>
-    <button id="snakeRight" style="background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:10px 18px;font-size:16px;cursor:pointer;">➡</button>
+    <div style="margin-top:14px;display:grid;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(2,52px);gap:6px;justify-content:center;">
+      <div></div>
+      <button id="snakeUp" style="background:var(--surface);border:1.5px solid var(--border);border-radius:10px;font-size:20px;cursor:pointer;">⬆</button>
+      <div></div>
+      <button id="snakeLeft" style="background:var(--surface);border:1.5px solid var(--border);border-radius:10px;font-size:20px;cursor:pointer;">⬅</button>
+      <button id="snakeDown" style="background:var(--surface);border:1.5px solid var(--border);border-radius:10px;font-size:20px;cursor:pointer;">⬇</button>
+      <button id="snakeRight" style="background:var(--surface);border:1.5px solid var(--border);border-radius:10px;font-size:20px;cursor:pointer;">➡</button>
     </div></div>`;
     render();
     function step(){
@@ -5531,6 +6038,13 @@ function buildSnakeGame(wrap){
     wrap.querySelector('#snakeLeft').onclick=()=>setDir(0,-1);
     wrap.querySelector('#snakeRight').onclick=()=>setDir(0,1);
     document.onkeydown=e=>{const m={ArrowUp:[-1,0],ArrowDown:[1,0],ArrowLeft:[0,-1],ArrowRight:[0,1]};if(m[e.key]){e.preventDefault();setDir(...m[e.key]);}};
+    let stx=0,sty=0;
+    wrap.ontouchstart=e=>{stx=e.touches[0].clientX;sty=e.touches[0].clientY;};
+    wrap.ontouchend=e=>{
+        const dx=e.changedTouches[0].clientX-stx, dy=e.changedTouches[0].clientY-sty;
+        if(Math.abs(dx)>Math.abs(dy)){ if(Math.abs(dx)>20)setDir(0,dx>0?1:-1); }
+        else { if(Math.abs(dy)>20)setDir(dy>0?1:-1,0); }
+    };
 }
 
 function buildWordleGame(wrap){
@@ -5598,218 +6112,173 @@ window.openMiniGame=openMiniGame;
 window.closeMiniGame=closeMiniGame;
 window.submitWordleGuess=function(){}; // placeholder, overwritten by buildWordleGame
 
-// ── Family Browser ────────────────────────────────────────────────────────────
-let _browseCurrentUrl = '';
-let _browseHistory = [];
-let _browseHistoryIdx = -1;
 
-// Sites known to block iframes — show "open in browser" immediately
-const BROWSE_BLOCKED_HOSTS = [
-    'google.com','www.google.com',
-    'facebook.com','www.facebook.com',
-    'instagram.com','www.instagram.com',
-    'twitter.com','x.com',
-    'linkedin.com','www.linkedin.com',
-    'amazon.com','www.amazon.com',
-];
+// ── AI Brain — host manages family knowledge base ─────────────────────────────
+let _aiBrainSaved = true;
 
-function browseNormaliseUrl(raw){
-    raw = (raw||'').trim();
-    if(!raw) return '';
-    if(/^https?:\/\//i.test(raw)) return raw;
-    // Search terms (spaces) or no dot → DuckDuckGo search (embeds fine)
-    if(/\s/.test(raw) || (!/\./.test(raw))){
-        return 'https://duckduckgo.com/?q=' + encodeURIComponent(raw) + '&ia=web';
-    }
-    return 'https://' + raw;
+function loadAIBrainPanel(){
+    if(!window.db) return;
+    window.dbGet(window.dbRef(window.db, 'aiBrain/facts')).then(snap => {
+        const ta = document.getElementById('aiBrainFacts');
+        if(ta && snap.exists()) ta.value = snap.val() || '';
+        const st = document.getElementById('aiBrainStatus');
+        if(st) st.textContent = snap.exists() ? '✓ Knowledge base loaded' : 'No facts saved yet';
+        _aiBrainSaved = true;
+    }).catch(()=>{});
 }
 
-function browseIsBlocked(url){
-    try{
-        const host = new URL(url).hostname.replace(/^www\./,'');
-        return BROWSE_BLOCKED_HOSTS.some(b => b.replace(/^www\./,'') === host);
-    }catch(e){ return false; }
+function aiBrainUnsaved(){
+    _aiBrainSaved = false;
+    const st = document.getElementById('aiBrainStatus');
+    if(st) st.textContent = '● Unsaved changes';
 }
 
-function browseLoad(url){
-    url = browseNormaliseUrl(url);
-    if(!url) return;
-
-    const input    = document.getElementById('browseUrl');
-    const frame    = document.getElementById('browseFrame');
-    const home     = document.getElementById('browseHome');
-    const loading  = document.getElementById('browseLoading');
-    const blocked  = document.getElementById('browseBlocked');
-    const blockedUrl = document.getElementById('browseBlockedUrl');
-    const loadUrl  = document.getElementById('browseLoadingUrl');
-    const icon     = document.getElementById('browseSiteIcon');
-    const gsInput  = document.getElementById('googleSearchInput');
-
-    if(input){ input.value = url; input.type = 'text'; }
-    if(gsInput) gsInput.value = '';
-    _browseCurrentUrl = url;
-
-    // History
-    if(_browseHistory[_browseHistoryIdx] !== url){
-        _browseHistory = _browseHistory.slice(0, _browseHistoryIdx + 1);
-        _browseHistory.push(url);
-        _browseHistoryIdx = _browseHistory.length - 1;
+async function saveAIBrain(){
+    const ta = document.getElementById('aiBrainFacts');
+    const st = document.getElementById('aiBrainStatus');
+    if(!ta || !window.db) return;
+    const facts = ta.value.trim();
+    try {
+        await window.dbSet(window.dbRef(window.db, 'aiBrain/facts'), facts);
+        _aiBrainSaved = true;
+        if(st){ st.textContent = '✓ Saved!'; st.style.color = 'var(--accent2)'; }
+        toast('Family knowledge base saved! 🧠');
+        setTimeout(()=>{ if(st){ st.textContent = ''; st.style.color = ''; } }, 3000);
+    } catch(e){
+        toast('Could not save — try again', 'danger');
     }
+}
 
-    // Hide home screen
-    if(home)    home.style.display    = 'none';
-    if(blocked) blocked.style.display = 'none';
-    if(frame)   frame.style.display   = 'none';
+window.loadAIBrainPanel = loadAIBrainPanel;
+window.aiBrainUnsaved   = aiBrainUnsaved;
+window.saveAIBrain      = saveAIBrain;
 
-    // Known blocked? Show immediately
-    if(browseIsBlocked(url)){
-        if(blockedUrl) blockedUrl.textContent = url;
-        if(blocked){ blocked.style.display = 'flex'; }
-        if(loading) loading.style.display = 'none';
-        if(icon) icon.textContent = '⚠️';
-        return;
+// ── Ask AI — user chat interface with RAG (family knowledge + general AI) ─────
+let _aiChatHistory = []; // rolling context for multi-turn conversation
+let _aiThinking    = false;
+let _familyFacts   = null; // cached from Firebase
+
+async function loadFamilyFacts(){
+    if(_familyFacts !== null) return _familyFacts; // use cache
+    if(!window.db) return '';
+    try {
+        const snap = await window.dbGet(window.dbRef(window.db, 'aiBrain/facts'));
+        _familyFacts = snap.exists() ? (snap.val() || '') : '';
+    } catch(e){ _familyFacts = ''; }
+    return _familyFacts;
+}
+
+// Invalidate facts cache when we switch to Ask AI tab (in case host just saved)
+function onAskAITabOpen(){
+    _familyFacts = null;
+}
+
+function aiRenderBubble(role, text, isLoading=false){
+    const wrap = document.getElementById('aiChatMessages');
+    if(!wrap) return null;
+    const isAI = role === 'ai';
+    const div = document.createElement('div');
+    div.style = 'display:flex;gap:10px;align-items:flex-start;' + (isAI ? '' : 'flex-direction:row-reverse;');
+    const avatar = document.createElement('div');
+    avatar.style = `width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;${isAI ? 'background:linear-gradient(135deg,#6366f1,#a855f7);' : 'background:var(--accent);'}`;
+    avatar.textContent = isAI ? '🤖' : '🧑';
+    const bubble = document.createElement('div');
+    bubble.style = `background:${isAI ? 'var(--surface)' : 'linear-gradient(135deg,var(--accent),var(--accent2))'};border:1.5px solid ${isAI ? 'var(--border)' : 'transparent'};border-radius:${isAI ? '0 16px 16px 16px' : '16px 0 16px 16px'};padding:12px 14px;max-width:85%;font-size:14px;font-weight:600;color:${isAI ? 'var(--text)' : '#fff'};line-height:1.6;white-space:pre-wrap;word-wrap:break-word;`;
+    if(isLoading){
+        bubble.innerHTML = '<span style="display:inline-flex;gap:4px;align-items:center;"><span style="animation:pulse .8s infinite;animation-delay:0s;">●</span><span style="animation:pulse .8s infinite;animation-delay:.2s;">●</span><span style="animation:pulse .8s infinite;animation-delay:.4s;">●</span></span>';
+    } else {
+        bubble.textContent = text;
     }
+    div.appendChild(avatar);
+    div.appendChild(bubble);
+    wrap.appendChild(div);
+    wrap.scrollTop = wrap.scrollHeight;
+    return bubble;
+}
 
-    // Show loading
-    if(loading){ loading.style.display = 'flex'; }
-    if(loadUrl) loadUrl.textContent = url;
-    if(icon) icon.textContent = '🔒';
+async function aiSendQuestion(){
+    if(_aiThinking) return;
+    const input = document.getElementById('aiQuestionInput');
+    const sendBtn = document.getElementById('aiSendBtn');
+    const question = input?.value?.trim();
+    if(!question) return;
 
-    // Timeout fallback — if nothing loads in 9s assume blocked
-    let loadTimer = setTimeout(()=>{
-        if(loading) loading.style.display = 'none';
-        if(frame)   frame.style.display   = 'none';
-        if(blockedUrl) blockedUrl.textContent = url;
-        if(blocked){ blocked.style.display = 'flex'; }
-        if(icon) icon.textContent = '⚠️';
-    }, 9000);
+    // Hide suggestions after first real question
+    const sugg = document.getElementById('aiSuggestions');
+    if(sugg) sugg.style.display = 'none';
 
-    frame.onload = () => {
-        clearTimeout(loadTimer);
-        if(loading) loading.style.display = 'none';
-        try {
-            // Cross-origin = content loaded fine (just can't read it — that's normal)
-            const doc = frame.contentDocument || frame.contentWindow?.document;
-            if(!doc || doc.body.innerHTML.length < 5){
-                // Truly blank — blocked
-                if(blockedUrl) blockedUrl.textContent = url;
-                if(blocked){ blocked.style.display = 'flex'; }
-                if(icon) icon.textContent = '⚠️';
-                return;
-            }
-        } catch(crossOriginErr) {
-            // Cross-origin error = page loaded fine, we just can't read it
+    // Clear input
+    input.value = '';
+    input.style.height = 'auto';
+
+    // Render user bubble
+    aiRenderBubble('user', question);
+
+    // Show typing indicator
+    _aiThinking = true;
+    if(sendBtn) sendBtn.style.opacity = '0.5';
+    const thinkBubble = aiRenderBubble('ai', '', true);
+
+    // Load family facts (RAG)
+    const facts = await loadFamilyFacts();
+
+    // Build system prompt — facts are injected here so AI always knows them
+    const systemPrompt = `You are the Family Hub AI assistant for this family's private app.
+
+IMPORTANT — FAMILY FACTS (use these to answer personal questions):
+${facts && facts.trim() ? facts.trim() : '(No family facts added yet — host can add them in Settings → AI Brain)'}
+
+RULES:
+- For ANY question about this family, ALWAYS use the facts above — they are 100% accurate
+- For general knowledge questions (history, science, news, etc.) use your own knowledge
+- Be warm, friendly and concise
+- Never say you don't know something that IS in the family facts above
+- If someone asks "who is the host" or "what is the host's name" — check the family facts for that answer`;
+
+    try {
+        // Build message history for context
+        const messages = [
+            { role: 'system', content: systemPrompt },
+            ..._aiChatHistory.slice(-8),
+            { role: 'user', content: question }
+        ];
+
+        const answer = await _aiChatMulti(messages) || 'Hmm, I had trouble answering that. Try rephrasing!';
+
+        if(thinkBubble){
+            thinkBubble.innerHTML = '';
+            thinkBubble.textContent = answer;
         }
-        frame.style.display = 'block';
-        if(icon) icon.textContent = '🔒';
-    };
 
-    frame.onerror = () => {
-        clearTimeout(loadTimer);
-        if(loading) loading.style.display = 'none';
-        if(blockedUrl) blockedUrl.textContent = url;
-        if(blocked){ blocked.style.display = 'flex'; }
-        if(icon) icon.textContent = '⚠️';
-    };
+        _aiChatHistory.push({ role: 'user', content: question });
+        _aiChatHistory.push({ role: 'assistant', content: answer });
+        if(_aiChatHistory.length > 20) _aiChatHistory = _aiChatHistory.slice(-20);
 
-    frame.src = url;
-}
-
-function browseGo(){
-    const val = (document.getElementById('browseUrl')?.value || '').trim();
-    if(!val) return;
-    let url = /^https?:\/\//i.test(val) ? val : (/\s/.test(val)||!/\./.test(val)) ? 'https://www.google.com/search?q='+encodeURIComponent(val) : 'https://'+val;
-    window.open(url, '_blank', 'noopener');
-}
-
-function googleSearch(){
-    const q = (document.getElementById('googleSearchInput')||{}).value?.trim();
-    if(!q) return;
-    window.open('https://www.google.com/search?q=' + encodeURIComponent(q), '_blank', 'noopener');
-}
-
-function googleLucky(){
-    const q = (document.getElementById('googleSearchInput')||{}).value?.trim();
-    window.open(q ? 'https://www.google.com/search?q='+encodeURIComponent(q)+'&btnI=1' : 'https://www.google.com/doodles', '_blank', 'noopener');
-}
-
-function startVoiceSearch(){
-    if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)){
-        toast('Voice search not supported in this browser','warn'); return;
+    } catch(err){
+        console.error('AI error:', err);
+        if(thinkBubble){
+            thinkBubble.innerHTML = '';
+            thinkBubble.style.background = 'rgba(235,87,87,.1)';
+            thinkBubble.style.borderColor = 'var(--danger)';
+            thinkBubble.style.color = 'var(--danger)';
+            thinkBubble.textContent = '⚠️ Couldn\'t get an answer right now. Check your connection and try again.';
+        }
     }
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const r = new SR();
-    r.lang = 'en-US'; r.interimResults = false; r.maxAlternatives = 1;
-    toast('🎙️ Listening…');
-    r.onresult = e => {
-        const q = e.results[0][0].transcript;
-        const el = document.getElementById('googleSearchInput');
-        if(el) el.value = q;
-        googleSearch();
-    };
-    r.onerror = () => toast('Could not hear you','warn');
-    r.start();
+
+    _aiThinking = false;
+    if(sendBtn) sendBtn.style.opacity = '1';
+    if(input) input.focus();
 }
 
-function browseGoHome(){
-    const home    = document.getElementById('browseHome');
-    const blocked = document.getElementById('browseBlocked');
-    const loading = document.getElementById('browseLoading');
-    const frame   = document.getElementById('browseFrame');
-    if(blocked) blocked.style.display = 'none';
-    if(loading) loading.style.display = 'none';
-    if(frame)   { frame.style.display = 'none'; frame.src = 'about:blank'; }
-    if(home)    home.style.display = 'flex';
-    const input = document.getElementById('browseUrl');
-    if(input) input.value = '';
-    _browseCurrentUrl = '';
+function aiAskQuestion(q){
+    const input = document.getElementById('aiQuestionInput');
+    if(input){ input.value = q; }
+    aiSendQuestion();
 }
 
-function browseBack(){
-    if(_browseHistoryIdx > 0){
-        _browseHistoryIdx--;
-        browseLoad(_browseHistory[_browseHistoryIdx]);
-    }
-}
-
-function browseForward(){
-    if(_browseHistoryIdx < _browseHistory.length - 1){
-        _browseHistoryIdx++;
-        browseLoad(_browseHistory[_browseHistoryIdx]);
-    }
-}
-
-function browseRefresh(){
-    if(_browseCurrentUrl) browseLoad(_browseCurrentUrl);
-}
-
-function browseOpenExternal(url){
-    const target = url || _browseCurrentUrl || document.getElementById('browseUrl')?.value;
-    if(target) window.open(browseNormaliseUrl(target), '_blank', 'noopener');
-}
-
-function browseCopyUrl(){
-    const url = _browseCurrentUrl || document.getElementById('browseUrl')?.value;
-    if(!url) return;
-    navigator.clipboard?.writeText(url).then(()=>toast('Link copied! 📋')).catch(()=>{
-        const el = document.createElement('textarea');
-        el.value = url; document.body.appendChild(el); el.select();
-        document.execCommand('copy'); document.body.removeChild(el);
-        toast('Link copied! 📋');
-    });
-}
-
-window.browseLoad=browseLoad;
-window.browseGo=browseGo;
-window.browseBack=browseBack;
-window.browseForward=browseForward;
-window.browseRefresh=browseRefresh;
-window.browseOpenExternal=browseOpenExternal;
-window.browseCopyUrl=browseCopyUrl;
-window.browseGoHome=browseGoHome;
-window.googleSearch=googleSearch;
-window.googleLucky=googleLucky;
-window.startVoiceSearch=startVoiceSearch;
+window.aiSendQuestion = aiSendQuestion;
+window.aiAskQuestion  = aiAskQuestion;
+window.onAskAITabOpen = onAskAITabOpen;
 
 function sendGameInviteByInput(type){
     const name = (document.getElementById('gameInviteNameInput')||{}).value?.trim();
@@ -5997,14 +6466,16 @@ function openGameBoard(gameId, type){
     gameStateListener=window.dbOnValue(window.dbRef(window.db,'games/'+gameId),snap=>{
         if(!snap.exists()){wrap.innerHTML='<p style="color:var(--muted);text-align:center;padding:24px">Game not found.</p>';return;}
         currentGameData=snap.val();
-        if(type==='chess') loadChessJS(()=>renderGameBoard(gameId,currentGameData,wrap));
+        // Reset selection when it's no longer our turn (opponent just moved)
+        if(currentGameData.turn !== currentUser) chessSelected = null;
+        if(currentGameData.type==='chess') loadChessJS(()=>renderGameBoard(gameId,currentGameData,wrap));
         else renderGameBoard(gameId,currentGameData,wrap);
     });
 }
 
 function leaveGameBoard(){
     if(gameStateListener) try{gameStateListener();}catch(e){}
-    gameStateListener=null; currentGameId=null; currentGameData=null; chessEngine=null;
+    gameStateListener=null; currentGameId=null; currentGameData=null; chessEngine=null; chessSelected=null;
     document.getElementById('gameBoardWrap').style.display='none';
     document.getElementById('gamePickerWrap').style.display='block';
     listenMyGames();
@@ -6200,11 +6671,13 @@ async function bsConfirmPlacement(gameId,amP1,cells){
         const snap=await window.dbGet(window.dbRef(window.db,'games/'+gameId));
         if(snap.exists()){
             const g=snap.val();
+            const vsComp=g.vsComputer;
             const otherPlaced=amP1?g.ships2?.placed:g.ships1?.placed;
-            if(otherPlaced) update.status='active';
+            // If other side is placed (either opponent or computer), start the game
+            if(otherPlaced || vsComp) update.status='active';
         }
         await window.dbUpdate(window.dbRef(window.db,'games/'+gameId),update);
-        toast('Ships placed! ⚓');
+        toast('Ships placed! ⚓ Game starting…');
     }catch(e){ toast('Error placing ships','warn'); }
 }
 
@@ -6227,7 +6700,7 @@ async function bsShoot(gameId,idx,amP1){
 // ════════════════════════════════════════════════════════
 //  CHESS — powered by chess.js library
 // ════════════════════════════════════════════════════════
-let chessSelected=null;
+let chessSelected = null; // holds a square string like 'e2' or null
 
 const CHESS_UNICODE={
     wK:'♔',wQ:'♕',wR:'♖',wB:'♗',wN:'♘',wP:'♙',
@@ -6243,39 +6716,48 @@ function fenPieceToUnicode(piece){
 
 function renderChess(g,gameId,canPlay,amP1){
     const fen=g.fen||'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-    // Build chess engine from FEN
-    if(window.Chess){
-        chessEngine=new Chess(fen);
-    } else {
-        return '<p style="color:var(--muted);text-align:center;padding:20px;">Loading chess engine…</p>';
-    }
-    const validMoves=chessSelected!==null ? chessEngine.moves({square:indexToSquare(chessSelected),verbose:true}).map(m=>squareToIndex(m.to)) : [];
-    let h='<div class="chess-board">';
-    for(let r=0;r<8;r++){
-        // White sees board normally (rank 8 top), Black sees it flipped
-        const rank=amP1?7-r:r;
-        for(let c=0;c<8;c++){
-            const file=amP1?c:7-c;
-            const idx=rank*8+file;
-            const sq=indexToSquare(idx);
-            const piece=chessEngine.get(sq);
-            const isLight=(rank+file)%2===0;
-            const isSel=chessSelected===idx;
-            const isValid=validMoves.includes(idx);
-            const isLastFrom=g.lastMove&&squareToIndex(g.lastMove.from)===idx;
-            const isLastTo=g.lastMove&&squareToIndex(g.lastMove.to)===idx;
-            let cls=`chess-cell ${isLight?'light':'dark'}`;
-            if(isSel) cls+=' selected';
-            if(isLastFrom||isLastTo) cls+=' last-move';
-            const clickAttr=canPlay?`onclick="chessClick(${idx},'${gameId}',${amP1})"`:''
-            h+=`<div class="${cls}" ${clickAttr}>
-                ${piece?`<span class="chess-piece ${piece.color==='w'?'white-piece':'black-piece'}">${fenPieceToUnicode(piece)}</span>`:''}
-                ${isValid?'<div class="chess-valid-dot"></div>':''}
+    if(!window.Chess) return '<p style="color:var(--muted);text-align:center;padding:20px;">Loading chess engine…</p>';
+    chessEngine = new Chess(fen);
+
+    // White (amP1) sees rank 8 at top; Black sees rank 1 at top (flipped)
+    // We iterate visually: row 0 = top of screen
+    const validSquares = chessSelected !== null
+        ? chessEngine.moves({square: chessSelected, verbose:true}).map(m => m.to)
+        : [];
+
+    let h = '<div class="chess-board">';
+    for(let row=0; row<8; row++){
+        for(let col=0; col<8; col++){
+            // Map visual row/col to chess square
+            const rank = amP1 ? (8 - row) : (row + 1);           // rank 1-8
+            const file = amP1 ? col : (7 - col);                   // file 0-7 (a-h)
+            const sq   = String.fromCharCode(97 + file) + rank;    // e.g. "e4"
+
+            const piece   = chessEngine.get(sq);
+            const isLight = (rank + file) % 2 === 0;
+            const isSel   = chessSelected === sq;
+            const isValid = validSquares.includes(sq);
+            const isLastFrom = g.lastMove && g.lastMove.from === sq;
+            const isLastTo   = g.lastMove && g.lastMove.to   === sq;
+
+            let cls = `chess-cell ${isLight ? 'light' : 'dark'}`;
+            if(isSel)                    cls += ' selected';
+            if(isLastFrom || isLastTo)   cls += ' last-move';
+
+            const clickAttr = canPlay ? `onclick="chessClick('${sq}','${gameId}',${amP1})"` : '';
+            h += `<div class="${cls}" ${clickAttr}>
+                ${piece ? `<span class="chess-piece ${piece.color==='w'?'white-piece':'black-piece'}">${fenPieceToUnicode(piece)}</span>` : ''}
+                ${isValid ? '<div class="chess-valid-dot"></div>' : ''}
             </div>`;
         }
     }
-    h+='</div>';
-    h+=`<div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px;">You play as ${amP1?'White \u2654':'Black \u265a'}</div>`;
+    h += '</div>';
+    const turn = chessEngine.turn();
+    const myTurn = (amP1 && turn==='w') || (!amP1 && turn==='b');
+    const inCheck = chessEngine.inCheck ? chessEngine.inCheck() : false;
+    h += `<div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px;">
+        You play as ${amP1 ? 'White ♔' : 'Black ♚'}${inCheck ? ' &nbsp;⚠️ CHECK!' : ''}
+    </div>`;
     return h;
 }
 
@@ -6292,45 +6774,47 @@ function squareToIndex(sq){
     return rank*8+file;
 }
 
-function chessClick(idx,gameId,amP1){
-    if(!chessEngine||!currentGameData) return;
-    const g=currentGameData;
-    const myColor=amP1?'w':'b';
-    const sq=indexToSquare(idx);
-    const piece=chessEngine.get(sq);
+function chessClick(sq, gameId, amP1){
+    if(!chessEngine || !currentGameData) return;
+    const g = currentGameData;
+    const myColor = amP1 ? 'w' : 'b';
+    const piece = chessEngine.get(sq);
 
-    if(chessSelected===null){
-        if(piece&&piece.color===myColor){
-            chessSelected=idx;
-            renderGameBoard(gameId,g,document.getElementById('gameBoardWrap'));
+    if(chessSelected === null){
+        // Select a piece of the player's color
+        if(piece && piece.color === myColor){
+            chessSelected = sq;
+            renderGameBoard(gameId, g, document.getElementById('gameBoardWrap'));
         }
         return;
     }
-    // Try to make the move
-    const from=indexToSquare(chessSelected);
-    // Check for pawn promotion
-    let promotion='q';
-    const movingPiece=chessEngine.get(from);
-    const isPromotion=movingPiece&&movingPiece.type==='p'&&
-        ((myColor==='w'&&sq[1]==='8')||(myColor==='b'&&sq[1]==='1'));
 
-    const move=chessEngine.move({from,to:sq,promotion});
+    // Already have a selection — try to move there
+    const from = chessSelected;
+    if(from === sq){ chessSelected = null; renderGameBoard(gameId,g,document.getElementById('gameBoardWrap')); return; }
+
+    // Detect pawn promotion
+    const movingPiece = chessEngine.get(from);
+    const isPromotion = movingPiece && movingPiece.type === 'p' &&
+        ((myColor==='w' && sq[1]==='8') || (myColor==='b' && sq[1]==='1'));
+
+    const move = chessEngine.move({from, to: sq, promotion: 'q'});
     if(move){
-        chessSelected=null;
-        // Save new FEN to Firebase
-        const newFen=chessEngine.fen();
-        const nextTurn=amP1?g.player2:g.player1;
-        const update={fen:newFen,turn:nextTurn,lastMove:{from,to:sq}};
-        if(chessEngine.isCheckmate()){update.status='done';update.winner=currentUser;}
-        else if(chessEngine.isDraw()||chessEngine.isStalemate()){update.status='done';update.winner=null;}
-        window.dbUpdate(window.dbRef(window.db,'games/'+gameId),update).catch(()=>{});
-    } else if(piece&&piece.color===myColor){
-        // Reselect
-        chessSelected=idx;
-        renderGameBoard(gameId,g,document.getElementById('gameBoardWrap'));
+        chessSelected = null;
+        const newFen   = chessEngine.fen();
+        const nextTurn = amP1 ? g.player2 : g.player1;
+        const update   = {fen: newFen, turn: nextTurn, lastMove: {from, to: sq}};
+        if(chessEngine.isCheckmate()){ update.status='done'; update.winner=currentUser; }
+        else if(chessEngine.isDraw() || chessEngine.isStalemate()){ update.status='done'; update.winner=null; }
+        window.dbUpdate(window.dbRef(window.db,'games/'+gameId), update).catch(()=>{});
+    } else if(piece && piece.color === myColor){
+        // Reselect a different own piece
+        chessSelected = sq;
+        renderGameBoard(gameId, g, document.getElementById('gameBoardWrap'));
     } else {
-        chessSelected=null;
-        renderGameBoard(gameId,g,document.getElementById('gameBoardWrap'));
+        // Invalid target — deselect
+        chessSelected = null;
+        renderGameBoard(gameId, g, document.getElementById('gameBoardWrap'));
     }
 }
 
@@ -6424,16 +6908,16 @@ function updateLiveClock(){
     const elE = document.getElementById('clockExtra');
     if(el) el.textContent = `${h12}:${mm} ${ampm}`;
     if(elD) elD.textContent = `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
-    if(elE) elE.textContent = `⏱ ${h12}:${mm}:${ss}`;
+    if(elE) elE.textContent = `${s % 2 === 0 ? '⏱' : '⏲'} ${h12}:${mm}:${ss}`;
 }
-if(document.getElementById('clockTime')){ updateLiveClock(); }
-else { document.addEventListener('DOMContentLoaded', updateLiveClock); }
+updateLiveClock();
 setInterval(updateLiveClock, 1000);
 
 window.switchFeatureTab = function(panel,btn){
     window._origSwitchTab(panel,btn);
     if(panel==='games') onGamesTabOpen();
-    if(panel==='discover' && !window._discoverLoaded){ window._discoverLoaded=true; loadAllDiscover(); }
+    if(panel==='discover'){ loadAllDiscover(); } // renders from cache instantly if prefetched
+    if(panel==='askai') onAskAITabOpen();
 };
 window.selectGame=selectGame;
 window.tttMove=tttMove;
