@@ -806,6 +806,7 @@ function removeHostMemory() {
     <button class="feature-tab" data-panel="games" onclick="switchFeatureTab('games',this)" id="gamesTab">🎮 Games <span id="gameInviteBadge" style="display:none;background:var(--danger);color:#fff;border-radius:8px;padding:1px 6px;font-size:10px;margin-left:2px;">!</span></button>
     <button class="feature-tab" data-panel="discover" onclick="switchFeatureTab('discover',this)">🌍 Discover</button>
     <button class="feature-tab" data-panel="askai" onclick="switchFeatureTab('askai',this)">🤖 Ask AI</button>
+    <button class="feature-tab" data-panel="finance" onclick="switchFeatureTab('finance',this)">💰 Finance</button>
 </div>
 
 <!-- Home Panel -->
@@ -908,6 +909,44 @@ function removeHostMemory() {
 </div>
 
 <!-- Browse Panel -->
+<!-- Finance Panel -->
+<div class="feature-panel" id="panel-finance">
+<div style="padding:14px 14px 80px;">
+  <div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;">💰 Live Finance — tap any card</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;" id="financeGrid">
+
+    <div class="discover-card" onclick="openFinanceDetail('stocks')" id="fc-stocks" style="grid-column:1/-1;">
+      <div class="dc-icon" id="fci-stocks">📈</div>
+      <div class="dc-title">Major Stock Indices</div>
+      <div class="dc-preview" id="fd-stocks">Loading…</div>
+    </div>
+
+    <div class="discover-card" onclick="openFinanceDetail('crypto')" id="fc-crypto" style="grid-column:1/-1;">
+      <div class="dc-icon" id="fci-crypto">₿</div>
+      <div class="dc-title">Crypto Prices</div>
+      <div class="dc-preview" id="fd-crypto">Loading…</div>
+    </div>
+
+    <div class="discover-card" onclick="openFinanceDetail('forex')" id="fc-forex" style="grid-column:1/-1;">
+      <div class="dc-icon" id="fci-forex">💱</div>
+      <div class="dc-title">Currency Exchange</div>
+      <div class="dc-preview" id="fd-forex">Loading…</div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- Finance Detail Overlay -->
+<div id="financeDetailOverlay" style="display:none;position:fixed;inset:0;z-index:3000;background:var(--bg);flex-direction:column;overflow:hidden;">
+  <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--surface);border-bottom:1.5px solid var(--border);flex-shrink:0;">
+    <button onclick="closeFinanceDetail()" style="background:none;border:1.5px solid var(--border);border-radius:10px;padding:8px 14px;font-size:14px;font-weight:700;cursor:pointer;color:var(--text);font-family:inherit;">← Back</button>
+    <div id="financeDetailTitle" style="font-family:'Fredoka One',cursive;font-size:20px;flex:1;"></div>
+    <button onclick="refreshFinanceDetail()" style="background:none;border:none;font-size:20px;cursor:pointer;padding:4px 8px;">↻</button>
+  </div>
+  <div id="financeDetailContent" style="flex:1;overflow-y:auto;padding:24px 20px 40px;"></div>
+</div>
+
 <!-- Discover Panel -->
 <div class="feature-panel" id="panel-discover">
 <div style="padding:14px 14px 80px;">
@@ -968,6 +1007,67 @@ function removeHostMemory() {
       <div class="dc-icon" id="dci-animal">🐾</div>
       <div class="dc-title">Random Animal</div>
       <div class="dc-preview" id="dd-animal">Loading…</div>
+    </div>
+
+    <!-- NEW CARDS -->
+    <div style="grid-column:1/-1;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-top:6px;">📍 Location & Travel</div>
+
+    <div class="discover-card" onclick="openDiscoverDetail('traffic')" id="dc-traffic" style="grid-column:1/-1;">
+      <div class="dc-icon" id="dci-traffic">🚦</div>
+      <div class="dc-title">Traffic & Travel</div>
+      <div class="dc-preview" id="dd-traffic">Loading…</div>
+    </div>
+
+    <div class="discover-card" onclick="openDiscoverDetail('weather7')" id="dc-weather7" style="grid-column:1/-1;">
+      <div class="dc-icon" id="dci-weather7">📅</div>
+      <div class="dc-title">7-Day Forecast</div>
+      <div class="dc-preview" id="dd-weather7">Loading…</div>
+    </div>
+
+    <div class="discover-card" onclick="openDiscoverDetail('places')" id="dc-places" style="grid-column:1/-1;">
+      <div class="dc-icon" id="dci-places">🍕</div>
+      <div class="dc-title">Nearby Places</div>
+      <div class="dc-preview" id="dd-places">Loading…</div>
+    </div>
+
+    <div style="grid-column:1/-1;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-top:6px;">🧠 Knowledge</div>
+
+    <div class="discover-card" onclick="openDiscoverDetail('nasa')" id="dc-nasa" style="grid-column:1/-1;">
+      <div class="dc-icon" id="dci-nasa">🚀</div>
+      <div class="dc-title">NASA Photo of the Day</div>
+      <div class="dc-preview" id="dd-nasa">Loading…</div>
+    </div>
+
+    <div class="discover-card" onclick="openDiscoverDetail('trivia')" id="dc-trivia">
+      <div class="dc-icon" id="dci-trivia">🧠</div>
+      <div class="dc-title">Daily Trivia</div>
+      <div class="dc-preview" id="dd-trivia">Loading…</div>
+    </div>
+
+    <div class="discover-card" onclick="openDiscoverDetail('word')" id="dc-word">
+      <div class="dc-icon" id="dci-word">📝</div>
+      <div class="dc-title">Word of the Day</div>
+      <div class="dc-preview" id="dd-word">Loading…</div>
+    </div>
+
+    <div class="discover-card" onclick="openDiscoverDetail('bible')" id="dc-bible" style="grid-column:1/-1;">
+      <div class="dc-icon" id="dci-bible">✝️</div>
+      <div class="dc-title">Daily Bible Verse</div>
+      <div class="dc-preview" id="dd-bible">Loading…</div>
+    </div>
+
+    <div class="discover-card" onclick="openDiscoverDetail('recipe')" id="dc-recipe" style="grid-column:1/-1;">
+      <div class="dc-icon" id="dci-recipe">🍳</div>
+      <div class="dc-title">Random Recipe</div>
+      <div class="dc-preview" id="dd-recipe">Loading…</div>
+    </div>
+
+    <div style="grid-column:1/-1;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-top:6px;">⚽ Sports</div>
+
+    <div class="discover-card" onclick="openDiscoverDetail('sports')" id="dc-sports" style="grid-column:1/-1;">
+      <div class="dc-icon" id="dci-sports">⚽</div>
+      <div class="dc-title">Today's Sports Scores</div>
+      <div class="dc-preview" id="dd-sports">Loading…</div>
     </div>
 
   </div>
@@ -5641,9 +5741,152 @@ const DISCOVER_CONFIG = {
     fact:     { title:'🎂 Today in History',           icon:'🎂' },
     quote:    { title:'📖 Daily Quote',                icon:'📖' },
     animal:   { title:'🐾 Random Animal',              icon:'🐾' },
+    // NEW
+    traffic:  { title:'🚦 Traffic & Travel',           icon:'🚦' },
+    weather7: { title:'📅 7-Day Forecast',             icon:'📅' },
+    places:   { title:'🍕 Nearby Places',              icon:'🍕' },
+    nasa:     { title:'🚀 NASA Photo of the Day',      icon:'🚀' },
+    trivia:   { title:'🧠 Daily Trivia',               icon:'🧠' },
+    word:     { title:'📝 Word of the Day',            icon:'📝' },
+    bible:    { title:'✝️ Daily Bible Verse',          icon:'✝️' },
+    recipe:   { title:'🍳 Random Recipe',              icon:'🍳' },
+    sports:   { title:'⚽ Today\'s Sports',            icon:'⚽' },
 };
 
-// ── Fetchers — return structured data objects ─────────────────────────────────
+// ── NEW FETCHERS ──────────────────────────────────────────────────────────────
+
+async function _fetchWeather7(){
+    const c=new AbortController();setTimeout(()=>c.abort(),10000);
+    const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${DISCOVER_LAT}&longitude=${DISCOVER_LNG}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&timezone=auto&forecast_days=7`,{signal:c.signal});
+    const d=await r.json();
+    const days=d.daily||{};
+    const icons={0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',51:'🌦️',61:'🌧️',71:'❄️',80:'🌧️',95:'⛈️'};
+    const items=(days.time||[]).map((date,i)=>({
+        date, hi:Math.round(days.temperature_2m_max[i]), lo:Math.round(days.temperature_2m_min[i]),
+        rain:days.precipitation_probability_max[i],
+        icon:icons[days.weathercode[i]]||icons[Math.floor((days.weathercode[i]||0)/10)*10]||'🌡️'
+    }));
+    const today=items[0];
+    return { preview:`${today?.icon} ${today?.hi}°F / ${today?.lo}°F · ${today?.rain}% rain`, detail:{ items } };
+}
+
+async function _fetchTraffic(){
+    // Use Open-Meteo wind + visibility as travel conditions proxy (no key needed)
+    // Also fetch road info from Overpass API (free, no key)
+    const c=new AbortController();setTimeout(()=>c.abort(),10000);
+    const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${DISCOVER_LAT}&longitude=${DISCOVER_LNG}&current_weather=true&hourly=visibility,windspeed_10m&timezone=auto&forecast_days=1`,{signal:c.signal});
+    const d=await r.json();
+    const vis=d.hourly?.visibility?.[0]||10000;
+    const wind=d.current_weather?.windspeed||0;
+    const visMi=Math.round(vis/1609);
+    let cond='✅ Good conditions';
+    if(wind>25||visMi<2) cond='⚠️ Poor visibility/wind';
+    else if(wind>15||visMi<5) cond='🟡 Fair conditions';
+    const now=new Date();
+    const h=now.getHours();
+    const rush=(h>=7&&h<=9)||(h>=16&&h<=19);
+    const trafficLevel=rush?'🔴 Rush hour — heavy traffic likely':'🟢 Light traffic expected';
+    return { preview:cond, detail:{ cond, wind:Math.round(wind), visMi, trafficLevel, rush,
+        tip: rush?'Consider leaving 30 min earlier or later to avoid peak traffic.':'Good time to travel!' } };
+}
+
+async function _fetchPlaces(){
+    // Overpass API — free, no key, finds nearby restaurants/cafes/parks
+    const c=new AbortController();setTimeout(()=>c.abort(),12000);
+    const radius=1500; // 1.5km
+    const query=`[out:json][timeout:10];(node["amenity"~"restaurant|cafe|fast_food|park|pharmacy|supermarket"](around:${radius},${DISCOVER_LAT},${DISCOVER_LNG}););out 20;`;
+    const r=await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`,{signal:c.signal});
+    const d=await r.json();
+    const elements=(d.elements||[]).filter(e=>e.tags?.name).slice(0,12);
+    const typeIcon={'restaurant':'🍽️','cafe':'☕','fast_food':'🍔','park':'🌳','pharmacy':'💊','supermarket':'🛒'};
+    const places=elements.map(e=>({ name:e.tags.name, type:e.tags.amenity, icon:typeIcon[e.tags.amenity]||'📍', cuisine:e.tags.cuisine||'' }));
+    const preview=places.length?`${places[0].icon} ${places[0].name} + ${places.length-1} more nearby`:'No places found nearby';
+    return { preview, detail:{ places } };
+}
+
+async function _fetchNasa(){
+    const c=new AbortController();setTimeout(()=>c.abort(),10000);
+    const r=await fetch(`https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY`,{signal:c.signal});
+    const d=await r.json();
+    return { preview:d.title||'NASA Photo', detail:{ title:d.title, date:d.date, explanation:d.explanation, url:d.url, media_type:d.media_type, copyright:d.copyright } };
+}
+
+async function _fetchTrivia(){
+    const c=new AbortController();setTimeout(()=>c.abort(),8000);
+    // Get 5 questions so we can pick a fresh one each tap
+    const r=await fetch(`https://opentdb.com/api.php?amount=5&type=multiple`,{signal:c.signal});
+    const d=await r.json();
+    const q=d.results?.[0]||{};
+    const decode=s=>{ try{ const t=document.createElement('textarea');t.innerHTML=s;return t.value; }catch(e){return s;} };
+    const question=decode(q.question||'');
+    const correct=decode(q.correct_answer||'');
+    const wrong=(q.incorrect_answers||[]).map(decode);
+    const answers=[...wrong,correct].sort(()=>Math.random()-.5);
+    const preview=question.slice(0,60)+'…';
+    return { preview, detail:{ question, correct, answers, category:q.category, difficulty:q.difficulty, allQuestions:d.results } };
+}
+
+async function _fetchWord(){
+    const c=new AbortController();setTimeout(()=>c.abort(),8000);
+    // Random word from dictionary API
+    const words=['ephemeral','serendipity','luminous','resilient','tenacious','wanderlust','jubilant','eloquent','vivacious','fortitude'];
+    const w=words[new Date().getDate()%words.length]; // daily rotating word
+    const r=await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${w}`,{signal:c.signal});
+    const d=await r.json();
+    const entry=Array.isArray(d)?d[0]:null;
+    const meanings=entry?.meanings||[];
+    const def=meanings[0]?.definitions?.[0]?.definition||'No definition found';
+    const pos=meanings[0]?.partOfSpeech||'';
+    const example=meanings[0]?.definitions?.[0]?.example||'';
+    const phonetic=entry?.phonetic||'';
+    return { preview:`${w} — ${def.slice(0,55)}…`, detail:{ word:w, phonetic, pos, def, example, synonyms:meanings[0]?.synonyms?.slice(0,6)||[] } };
+}
+
+async function _fetchBible(){
+    const c=new AbortController();setTimeout(()=>c.abort(),8000);
+    // Bible-api.com — free, no key, CORS open
+    const verses=['john 3:16','psalm 23:1','proverbs 3:5','philippians 4:13','romans 8:28','jeremiah 29:11','matthew 5:9','isaiah 40:31','psalm 46:1','james 1:17'];
+    const v=verses[new Date().getDate()%verses.length];
+    const r=await fetch(`https://bible-api.com/${encodeURIComponent(v)}`,{signal:c.signal});
+    const d=await r.json();
+    return { preview:`"${(d.text||'').trim().slice(0,70)}…"`, detail:{ reference:d.reference, text:(d.text||'').trim(), translation_name:d.translation_name||'WEB' } };
+}
+
+async function _fetchRecipe(){
+    const c=new AbortController();setTimeout(()=>c.abort(),8000);
+    const r=await fetch(`https://www.themealdb.com/api/json/v1/1/random.php`,{signal:c.signal});
+    const d=await r.json();
+    const m=d.meals?.[0]||{};
+    const ingredients=[];
+    for(let i=1;i<=20;i++){
+        const ing=m[`strIngredient${i}`];
+        const meas=m[`strMeasure${i}`];
+        if(ing&&ing.trim()) ingredients.push(`${meas?meas.trim()+' ':''}${ing.trim()}`);
+    }
+    return { preview:`${m.strMeal||'Recipe'} — ${m.strCategory||''}`, detail:{ name:m.strMeal, category:m.strCategory, area:m.strArea, thumb:m.strMealThumb, instructions:m.strInstructions, ingredients, youtube:m.strYoutube } };
+}
+
+async function _fetchSports(){
+    const c=new AbortController();setTimeout(()=>c.abort(),10000);
+    // TheSportsDB free tier — no key needed for basic data
+    const today=new Date().toISOString().split('T')[0];
+    const r=await fetch(`https://www.thesportsdb.com/api/v1/json/3/eventsday.php?d=${today}&s=Soccer`,{signal:c.signal});
+    const d=await r.json();
+    const events=(d.events||[]).slice(0,8);
+    const preview=events.length?`${events[0].strHomeTeam} vs ${events[0].strAwayTeam}`:'No games today';
+    return { preview, detail:{ events, date:today } };
+}
+
+// ── FETCHERS MAP (updated) ─────────────────────────────────────────────────────
+const _discoverFetchers = {
+    weather:()=>_fetchWeather(), sun:()=>_fetchSun(), moon:()=>Promise.resolve(_fetchMoon()),
+    jewish:()=>_fetchJewish(), holidays:()=>_fetchHolidays(), joke:()=>_fetchJoke(),
+    fact:()=>_fetchFact(), quote:()=>_fetchQuote(), animal:()=>_fetchAnimal(),
+    // NEW
+    traffic:()=>_fetchTraffic(), weather7:()=>_fetchWeather7(), places:()=>_fetchPlaces(),
+    nasa:()=>_fetchNasa(), trivia:()=>_fetchTrivia(), word:()=>_fetchWord(),
+    bible:()=>_fetchBible(), recipe:()=>_fetchRecipe(), sports:()=>_fetchSports()
+};
 async function _fetchWeather(){
     const _ctrl1=new AbortController();setTimeout(()=>_ctrl1.abort(),10000);
     const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${DISCOVER_LAT}&longitude=${DISCOVER_LNG}&current_weather=true&hourly=precipitation_probability,temperature_2m,windspeed_10m&temperature_unit=fahrenheit&timezone=auto&forecast_days=1`,{signal:_ctrl1.signal});
@@ -5820,12 +6063,6 @@ async function _fetchAnimal(){
     }
 }
 
-const _discoverFetchers = {
-    weather:()=>_fetchWeather(), sun:()=>_fetchSun(), moon:()=>Promise.resolve(_fetchMoon()),
-    jewish:()=>_fetchJewish(), holidays:()=>_fetchHolidays(), joke:()=>_fetchJoke(),
-    fact:()=>_fetchFact(), quote:()=>_fetchQuote(), animal:()=>_fetchAnimal()
-};
-
 // ── Prefetch ──────────────────────────────────────────────────────────────────
 async function _prefetchOne(key){
     if(_discoverCache[key]||_discoverPending[key]) return;
@@ -5844,7 +6081,8 @@ async function _prefetchOne(key){
 
 function _prefetchAllDiscover(){
     _prefetchOne('moon');
-    ['weather','sun','joke','quote','animal','holidays','fact','jewish']
+    ['weather','sun','joke','quote','animal','holidays','fact','jewish',
+     'weather7','traffic','places','nasa','trivia','word','bible','recipe','sports']
         .forEach((k,i)=>setTimeout(()=>_prefetchOne(k), 500+i*350));
 }
 
@@ -6150,8 +6388,354 @@ function _renderDetailPage(key){
         </div>`;
     }
 
+    // ── NEW DETAIL RENDERERS ──────────────────────────────────────────────────
+
+    else if(key==='weather7'){
+        const rows=(d.items||[]).map((day,i)=>{
+            const dt=new Date(day.date+'T12:00:00');
+            const label=i===0?'Today':i===1?'Tomorrow':dt.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'});
+            return `<div style="display:flex;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);gap:12px;">
+                <div style="font-size:28px;width:36px;text-align:center;">${day.icon}</div>
+                <div style="flex:1;font-size:14px;font-weight:700;">${label}</div>
+                <div style="text-align:right;">
+                    <span style="font-weight:800;color:var(--accent);">${day.hi}°</span>
+                    <span style="color:var(--muted);font-size:13px;"> / ${day.lo}°</span>
+                    ${day.rain>20?`<div style="font-size:11px;color:#4a90d9;font-weight:700;">💧 ${day.rain}%</div>`:''}
+                </div>
+            </div>`;
+        }).join('');
+        html=`<div class="discover-detail-hero">📅</div>
+        <div class="discover-detail-section"><div class="discover-detail-label">7-Day Forecast — New York</div>${rows}</div>`;
+    }
+
+    else if(key==='traffic'){
+        const levelColor=d.rush?'#e74c3c':'#27ae60';
+        html=`<div class="discover-detail-hero">🚦</div>
+        <div class="discover-detail-section" style="text-align:center;padding:20px;">
+            <div style="font-size:22px;font-weight:800;margin-bottom:8px;">${d.cond}</div>
+            <div style="font-size:20px;font-weight:700;color:${levelColor};margin-bottom:16px;">${d.trafficLevel}</div>
+            <div style="background:var(--surface2);border-radius:14px;padding:16px;text-align:left;margin-top:8px;">
+                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+                    <span style="font-weight:700;">💨 Wind Speed</span>
+                    <span style="font-weight:800;">${d.wind} mph</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+                    <span style="font-weight:700;">👁️ Visibility</span>
+                    <span style="font-weight:800;">${d.visMi} miles</span>
+                </div>
+                <div style="padding:12px 0 4px;font-size:13px;color:var(--muted);font-weight:600;">💡 ${d.tip}</div>
+            </div>
+        </div>`;
+    }
+
+    else if(key==='places'){
+        const rows=(d.places||[]).map(p=>`
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);">
+                <div style="font-size:26px;">${p.icon}</div>
+                <div>
+                    <div style="font-size:14px;font-weight:700;">${p.name}</div>
+                    <div style="font-size:12px;color:var(--muted);text-transform:capitalize;">${p.type}${p.cuisine?' · '+p.cuisine:''}</div>
+                </div>
+            </div>`).join('');
+        html=`<div class="discover-detail-hero">🍕</div>
+        <div class="discover-detail-section">
+            <div class="discover-detail-label">Nearby Places (within ~1 mile)</div>
+            ${rows||'<div style="color:var(--muted)">No named places found nearby</div>'}
+        </div>`;
+    }
+
+    else if(key==='nasa'){
+        html=`<div class="discover-detail-hero">🚀</div>
+        <div style="text-align:center;font-size:20px;font-weight:800;color:var(--accent);margin-bottom:16px;">${d.title}</div>
+        ${d.media_type==='image'?`<div style="border-radius:16px;overflow:hidden;margin-bottom:20px;"><img src="${d.url}" style="width:100%;max-height:320px;object-fit:cover;display:block;"></div>`:`<div style="padding:14px;background:var(--surface2);border-radius:12px;margin-bottom:16px;text-align:center;"><a href="${d.url}" target="_blank" style="color:var(--accent);font-weight:700;">▶ Watch Video</a></div>`}
+        <div class="discover-detail-section">
+            <div class="discover-detail-label">About</div>
+            <div style="font-size:14px;line-height:1.8;font-weight:600;">${d.explanation}</div>
+        </div>
+        ${d.copyright?`<div style="font-size:11px;color:var(--muted);padding:8px 0;">© ${d.copyright}</div>`:''}
+        <div style="font-size:12px;color:var(--muted);padding:4px 0;">📅 ${d.date}</div>`;
+    }
+
+    else if(key==='trivia'){
+        // Interactive trivia — user can tap answers
+        const qHtml=(d.answers||[]).map((a,i)=>`
+            <button onclick="_triviaAnswer(this,'${a.replace(/'/g,"\\'")}','${d.correct.replace(/'/g,"\\'")}',event)"
+                style="display:block;width:100%;text-align:left;padding:12px 16px;margin:8px 0;background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;">
+                ${a}
+            </button>`).join('');
+        html=`<div class="discover-detail-hero">🧠</div>
+        <div class="discover-detail-section">
+            <div style="display:flex;gap:8px;margin-bottom:12px;">
+                <span style="background:var(--surface2);border-radius:8px;padding:3px 10px;font-size:11px;font-weight:700;color:var(--muted);">${d.category||''}</span>
+                <span style="background:var(--surface2);border-radius:8px;padding:3px 10px;font-size:11px;font-weight:700;color:var(--accent);text-transform:capitalize;">${d.difficulty||''}</span>
+            </div>
+            <div style="font-size:17px;font-weight:800;line-height:1.5;margin-bottom:20px;">${d.question}</div>
+            <div id="triviaAnswers">${qHtml}</div>
+        </div>`;
+    }
+
+    else if(key==='word'){
+        const synHtml=(d.synonyms||[]).length?`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">${d.synonyms.map(s=>`<span style="background:var(--surface2);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;">${s}</span>`).join('')}</div>`:'';
+        html=`<div class="discover-detail-hero">📝</div>
+        <div style="text-align:center;margin-bottom:20px;">
+            <div style="font-size:36px;font-weight:900;color:var(--accent);font-family:'Fredoka One',cursive;">${d.word}</div>
+            ${d.phonetic?`<div style="font-size:16px;color:var(--muted);font-weight:600;">${d.phonetic}</div>`:''}
+        </div>
+        <div class="discover-detail-section">
+            <div class="discover-detail-label">${d.pos||'Definition'}</div>
+            <div style="font-size:16px;font-weight:600;line-height:1.7;">${d.def}</div>
+            ${d.example?`<div style="font-size:14px;color:var(--muted);margin-top:10px;font-style:italic;border-left:3px solid var(--accent);padding-left:12px;">"${d.example}"</div>`:''}
+        </div>
+        ${(d.synonyms||[]).length?`<div class="discover-detail-section"><div class="discover-detail-label">Synonyms</div>${synHtml}</div>`:''}`;
+    }
+
+    else if(key==='bible'){
+        html=`<div class="discover-detail-hero">✝️</div>
+        <div style="text-align:center;font-size:17px;font-weight:800;color:var(--accent);margin-bottom:20px;">${d.reference}</div>
+        <div class="discover-detail-section" style="background:linear-gradient(135deg,rgba(232,131,74,.08),rgba(91,171,111,.05));">
+            <div style="font-size:18px;font-weight:600;line-height:1.9;text-align:center;font-style:italic;">"${d.text}"</div>
+        </div>
+        <div style="text-align:center;font-size:12px;color:var(--muted);margin-top:12px;">Translation: ${d.translation_name}</div>`;
+    }
+
+    else if(key==='recipe'){
+        const ingHtml=(d.ingredients||[]).map(i=>`<li style="padding:4px 0;font-size:13px;font-weight:600;">${i}</li>`).join('');
+        html=`<div class="discover-detail-hero">🍳</div>
+        ${d.thumb?`<div style="border-radius:16px;overflow:hidden;margin-bottom:16px;"><img src="${d.thumb}" style="width:100%;max-height:220px;object-fit:cover;display:block;"></div>`:''}
+        <div style="text-align:center;font-size:20px;font-weight:800;color:var(--accent);margin-bottom:6px;">${d.name}</div>
+        <div style="text-align:center;margin-bottom:16px;">
+            ${d.category?`<span style="background:var(--surface2);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;margin:3px;">${d.category}</span>`:''}
+            ${d.area?`<span style="background:var(--surface2);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;margin:3px;">🌍 ${d.area}</span>`:''}
+        </div>
+        <div class="discover-detail-section">
+            <div class="discover-detail-label">Ingredients</div>
+            <ul style="padding-left:18px;margin:0;">${ingHtml}</ul>
+        </div>
+        <div class="discover-detail-section">
+            <div class="discover-detail-label">Instructions</div>
+            <div style="font-size:13px;line-height:1.8;font-weight:600;">${(d.instructions||'').slice(0,600)}${d.instructions?.length>600?'…':''}</div>
+        </div>
+        ${d.youtube?`<div style="text-align:center;margin-top:12px;"><a href="${d.youtube}" target="_blank" style="display:inline-block;background:var(--danger);color:#fff;padding:10px 24px;border-radius:20px;font-weight:800;font-size:14px;text-decoration:none;">▶ Watch on YouTube</a></div>`:''}`;
+    }
+
+    else if(key==='sports'){
+        const rows=(d.events||[]).map(e=>{
+            const score=(e.intHomeScore!=null&&e.intAwayScore!=null)?`${e.intHomeScore} - ${e.intAwayScore}`:'vs';
+            const time=e.strTime?e.strTime.slice(0,5):'';
+            return `<div style="display:flex;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);gap:8px;">
+                <div style="flex:1;font-size:13px;font-weight:700;text-align:right;">${e.strHomeTeam}</div>
+                <div style="padding:4px 10px;background:var(--surface2);border-radius:10px;font-size:13px;font-weight:800;color:var(--accent);white-space:nowrap;">${score}</div>
+                <div style="flex:1;font-size:13px;font-weight:700;">${e.strAwayTeam}</div>
+                ${time?`<div style="font-size:11px;color:var(--muted);font-weight:600;">${time}</div>`:''}
+            </div>`;
+        }).join('');
+        html=`<div class="discover-detail-hero">⚽</div>
+        <div style="text-align:center;font-size:13px;color:var(--muted);font-weight:700;margin-bottom:16px;">${d.date}</div>
+        <div class="discover-detail-section">
+            <div class="discover-detail-label">Today's Soccer Matches</div>
+            ${rows||'<div style="color:var(--muted);padding:12px 0;">No matches scheduled today</div>'}
+        </div>`;
+    }
+
     content.innerHTML = html || '<div style="padding:40px;text-align:center;color:var(--muted);">No data available</div>';
 }
+
+// Trivia answer handler
+function _triviaAnswer(btn, selected, correct, e){
+    const container = document.getElementById('triviaAnswers');
+    if(!container||container.dataset.answered) return;
+    container.dataset.answered='1';
+    const btns=container.querySelectorAll('button');
+    btns.forEach(b=>{
+        const txt=b.textContent.trim();
+        if(txt===correct){ b.style.background='rgba(91,171,111,.25)';b.style.borderColor='var(--accent2)';b.style.color='var(--accent2)'; }
+        else if(txt===selected&&selected!==correct){ b.style.background='rgba(217,94,82,.15)';b.style.borderColor='var(--danger)';b.style.color='var(--danger)'; }
+        b.style.cursor='default';
+    });
+}
+window._triviaAnswer=_triviaAnswer;
+
+// ══════════════════════════════════════════════════════════
+//  FINANCE TAB
+// ══════════════════════════════════════════════════════════
+const _financeCache = {};
+const _financePending = {};
+let _currentFinanceKey = null;
+
+const FINANCE_CONFIG = {
+    stocks: { title:'📈 Stock Indices', icon:'📈' },
+    crypto: { title:'₿ Crypto Prices', icon:'₿' },
+    forex:  { title:'💱 Currency Exchange', icon:'💱' },
+};
+
+async function _fetchStocks(){
+    // Stooq.com — free, no key, CORS open
+    const symbols = ['^DJI','^SPX','^NDQ'];
+    const names   = ['Dow Jones','S&P 500','NASDAQ'];
+    const results = await Promise.allSettled(symbols.map((s,i)=>
+        fetch(`https://stooq.com/q/l/?s=${s}&f=sd2t2ohlcv&h&e=json`).then(r=>r.json()).then(d=>({
+            name:names[i], symbol:s, price:d.symbols?.[0]?.close, change:d.symbols?.[0]?.change
+        }))
+    ));
+    const stocks=results.filter(r=>r.status==='fulfilled').map(r=>r.value);
+    const preview=stocks[0]?`${stocks[0].name}: ${stocks[0].price??'—'}`:'Tap to see markets';
+    return { preview, detail:{ stocks } };
+}
+
+async function _fetchCrypto(){
+    const c=new AbortController();setTimeout(()=>c.abort(),10000);
+    const r=await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin,ethereum,solana,dogecoin&order=market_cap_desc&per_page=4&page=1&sparkline=false',{signal:c.signal});
+    const d=await r.json();
+    const coins=(Array.isArray(d)?d:[]).map(c=>({
+        name:c.name, symbol:c.symbol.toUpperCase(), price:c.current_price,
+        change:c.price_change_percentage_24h, image:c.image
+    }));
+    const preview=coins[0]?`₿ BTC $${coins[0].price?.toLocaleString()}`:'Tap for crypto prices';
+    return { preview, detail:{ coins } };
+}
+
+async function _fetchForex(){
+    const c=new AbortController();setTimeout(()=>c.abort(),10000);
+    const r=await fetch('https://open.er-api.com/v6/latest/USD',{signal:c.signal});
+    const d=await r.json();
+    const rates=d.rates||{};
+    const pairs=['EUR','GBP','ILS','JPY','CAD','AUD','MXN','CHF'];
+    const items=pairs.map(code=>({ code, rate:rates[code], flag:_currencyFlag(code) }));
+    const preview=`$1 USD = €${rates.EUR?.toFixed(2)||'—'} / ₪${rates.ILS?.toFixed(2)||'—'}`;
+    return { preview, detail:{ items, updated:d.time_last_update_utc } };
+}
+
+function _currencyFlag(code){
+    const flags={'EUR':'🇪🇺','GBP':'🇬🇧','ILS':'🇮🇱','JPY':'🇯🇵','CAD':'🇨🇦','AUD':'🇦🇺','MXN':'🇲🇽','CHF':'🇨🇭','INR':'🇮🇳','BRL':'🇧🇷'};
+    return flags[code]||'💱';
+}
+
+async function _prefetchFinance(key){
+    if(_financeCache[key]||_financePending[key]) return;
+    _financePending[key]=true;
+    const fetchers={ stocks:_fetchStocks, crypto:_fetchCrypto, forex:_fetchForex };
+    try{
+        const result=await fetchers[key]();
+        _financeCache[key]=result;
+        // Update card preview
+        const preEl=document.getElementById('fd-'+key);
+        const cardEl=document.getElementById('fc-'+key);
+        if(preEl) preEl.textContent=result.preview||'';
+        if(cardEl){ cardEl.classList.add('dc-loaded');cardEl.classList.remove('dc-loading'); }
+    }catch(e){
+        _financeCache[key]={error:true,preview:'Could not load'};
+        const preEl=document.getElementById('fd-'+key);
+        if(preEl) preEl.textContent='Tap to retry';
+    }
+    _financePending[key]=false;
+}
+
+function _prefetchAllFinance(){
+    ['stocks','crypto','forex'].forEach((k,i)=>setTimeout(()=>_prefetchFinance(k),300+i*400));
+}
+
+function openFinanceDetail(key){
+    _currentFinanceKey=key;
+    const cfg=FINANCE_CONFIG[key]||{};
+    const overlay=document.getElementById('financeDetailOverlay');
+    const title=document.getElementById('financeDetailTitle');
+    const content=document.getElementById('financeDetailContent');
+    if(!overlay) return;
+    if(title) title.textContent=cfg.title||key;
+    overlay.style.display='flex';
+    if(!_financeCache[key]){
+        content.innerHTML='<div style="text-align:center;padding:60px;color:var(--muted);">Loading…</div>';
+        _prefetchFinance(key).then(()=>_renderFinanceDetail(key));
+    } else {
+        _renderFinanceDetail(key);
+    }
+}
+
+function closeFinanceDetail(){
+    const o=document.getElementById('financeDetailOverlay');
+    if(o) o.style.display='none';
+    _currentFinanceKey=null;
+}
+
+function refreshFinanceDetail(){
+    if(!_currentFinanceKey) return;
+    delete _financeCache[_currentFinanceKey];
+    _financePending[_currentFinanceKey]=false;
+    openFinanceDetail(_currentFinanceKey);
+}
+
+function _renderFinanceDetail(key){
+    const content=document.getElementById('financeDetailContent');
+    if(!content) return;
+    const cached=_financeCache[key];
+    if(!cached||cached.error){ content.innerHTML='<div style="padding:40px;text-align:center;color:var(--danger);">Could not load data. Tap ↻ to retry.</div>'; return; }
+    const d=cached.detail||{};
+    let html='';
+
+    if(key==='stocks'){
+        const rows=(d.stocks||[]).map(s=>{
+            const chg=parseFloat(s.change)||0;
+            const color=chg>=0?'var(--accent2)':'var(--danger)';
+            const arrow=chg>=0?'▲':'▼';
+            return `<div style="display:flex;align-items:center;padding:14px 0;border-bottom:1px solid var(--border);">
+                <div style="flex:1;">
+                    <div style="font-size:16px;font-weight:800;">${s.name}</div>
+                    <div style="font-size:12px;color:var(--muted);">${s.symbol}</div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-size:18px;font-weight:900;">${s.price??'—'}</div>
+                    <div style="font-size:13px;font-weight:700;color:${color};">${arrow} ${Math.abs(chg).toFixed(2)}</div>
+                </div>
+            </div>`;
+        }).join('');
+        html=`<div class="discover-detail-hero">📈</div>
+        <div class="discover-detail-section"><div class="discover-detail-label">Major Indices</div>${rows||'<div style="color:var(--muted)">Data unavailable</div>'}</div>
+        <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px;">Data via Stooq · 15-min delay</div>`;
+    }
+
+    else if(key==='crypto'){
+        const rows=(d.coins||[]).map(c=>{
+            const chg=c.change||0;
+            const color=chg>=0?'var(--accent2)':'var(--danger)';
+            const arrow=chg>=0?'▲':'▼';
+            return `<div style="display:flex;align-items:center;padding:14px 0;border-bottom:1px solid var(--border);gap:12px;">
+                <img src="${c.image}" style="width:36px;height:36px;border-radius:50%;" onerror="this.style.display='none'">
+                <div style="flex:1;">
+                    <div style="font-size:15px;font-weight:800;">${c.name}</div>
+                    <div style="font-size:12px;color:var(--muted);">${c.symbol}</div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-size:17px;font-weight:900;">$${c.price?.toLocaleString()??'—'}</div>
+                    <div style="font-size:13px;font-weight:700;color:${color};">${arrow} ${Math.abs(chg).toFixed(2)}%</div>
+                </div>
+            </div>`;
+        }).join('');
+        html=`<div class="discover-detail-hero">₿</div>
+        <div class="discover-detail-section"><div class="discover-detail-label">Live Crypto Prices (USD)</div>${rows}</div>
+        <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px;">Data via CoinGecko · Updates every tap</div>`;
+    }
+
+    else if(key==='forex'){
+        const rows=(d.items||[]).map(item=>`
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border);">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:22px;">${item.flag}</span>
+                    <span style="font-size:15px;font-weight:800;">${item.code}</span>
+                </div>
+                <div style="font-size:16px;font-weight:800;color:var(--accent);">${item.rate?.toFixed(4)??'—'}</div>
+            </div>`).join('');
+        html=`<div class="discover-detail-hero">💱</div>
+        <div style="text-align:center;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:16px;">1 USD equals:</div>
+        <div class="discover-detail-section"><div class="discover-detail-label">Exchange Rates</div>${rows}</div>
+        ${d.updated?`<div style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px;">Updated: ${d.updated}</div>`:''}`;
+    }
+
+    content.innerHTML=html||'<div style="padding:40px;text-align:center;color:var(--muted);">No data</div>';
+}
+
+window.openFinanceDetail=openFinanceDetail;
+window.closeFinanceDetail=closeFinanceDetail;
+window.refreshFinanceDetail=refreshFinanceDetail;
 
 setTimeout(_prefetchAllDiscover, 2000);
 
@@ -7274,8 +7858,9 @@ setInterval(updateLiveClock, 1000);
 window.switchFeatureTab = function(panel,btn){
     window._origSwitchTab(panel,btn);
     if(panel==='games') onGamesTabOpen();
-    if(panel==='discover'){ loadAllDiscover(); } // renders from cache instantly if prefetched
+    if(panel==='discover'){ loadAllDiscover(); }
     if(panel==='askai') onAskAITabOpen();
+    if(panel==='finance') _prefetchAllFinance();
 };
 window.selectGame=selectGame;
 window.tttMove=tttMove;
