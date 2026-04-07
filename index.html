@@ -306,7 +306,7 @@ c
 
 /* MODAL */
 .modal{display:none;position:fixed;inset:0;z-index:9999;background:rgba(200,205,225,.75);backdrop-filter:blur(10px);overflow-y:auto;}
-.modal.active{display:flex;justify-content:center;align-items:flex-start;padding:32px 14px;}
+.modal.active{display:flex;justify-content:center;align-items:flex-start;padding:32px 14px;}.wa-chat-modal.active{padding:0;align-items:stretch;}
 .modal-content{background:var(--surface);padding:34px 30px;border-radius:var(--radius-lg);border:2px solid var(--border);box-shadow:0 0 40px rgba(232,131,74,.1),0 16px 48px rgba(232,131,74,.08);max-width:520px;width:100%;animation:slideUp .3s cubic-bezier(.22,1,.36,1);}
 .modal-content.wide{max-width:740px;}
 .modal-content h2{font-family:'Fredoka One',cursive;font-size:26px;margin-bottom:20px;text-align:center;color:var(--accent);letter-spacing:.5px;}
@@ -325,7 +325,7 @@ c
 .search-empty{text-align:center;color:var(--muted);padding:28px;grid-column:1/-1;font-size:14px;}
 
 /* WHATSAPP-STYLE CHAT */
-.wa-chat-modal .modal-content{max-width:600px;padding:0;border-radius:var(--radius-lg);overflow:hidden;display:flex;flex-direction:column;max-height:88vh;}
+.wa-chat-modal .modal-content{max-width:100%;width:100%;padding:0;border-radius:0;overflow:hidden;display:flex;flex-direction:column;height:100dvh;height:100vh;margin:0;}
 .wa-header{background:var(--accent);padding:16px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0;}
 .wa-header-icon{width:40px;height:40px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;}
 .wa-header-info{flex:1;}
@@ -340,7 +340,7 @@ c
 .wa-group-tab:hover{color:var(--text);}
 .wa-add-group{padding:9px 14px;font-size:13px;font-weight:600;font-family:inherit;border:none;background:transparent;cursor:pointer;color:var(--accent2);white-space:nowrap;}
 .wa-add-group:hover{color:var(--accent);}
-.wa-messages{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:6px;background:#fdf0e4;min-height:200px;max-height:400px;scrollbar-width:thin;}
+.wa-messages{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:6px;background:#fdf0e4;min-height:0;scrollbar-width:thin;}
 .wa-bubble{max-width:78%;padding:8px 12px 4px;border-radius:12px;position:relative;word-break:break-word;}
 .wa-bubble.mine{background:#dcf8c6;align-self:flex-end;border-radius:12px 12px 2px 12px;}
 .wa-bubble.theirs{background:#fff;align-self:flex-start;border-radius:12px 12px 12px 2px;box-shadow:0 1px 2px rgba(0,0,0,.1);}
@@ -353,6 +353,8 @@ c
 .wa-bubble:hover .wa-bubble-actions{display:flex;}
 .wa-action-btn{width:26px;height:26px;background:var(--surface);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;box-shadow:0 1px 4px rgba(0,0,0,.15);transition:all .15s;}
 .wa-action-btn:hover{background:var(--accent);color:#fff;}
+.wa-tts-btn{background:linear-gradient(135deg,rgba(99,102,241,.12),rgba(168,85,247,.1))!important;}
+.wa-tts-btn.speaking{background:linear-gradient(135deg,#6366f1,#a855f7)!important;color:#fff!important;animation:pulse .8s infinite;}
 .wa-bubble.mine .wa-bubble-actions{right:auto;left:-6px;}
 .wa-reactions{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;}
 .wa-reaction-chip{background:var(--surface2);border:1.5px solid var(--border);border-radius:20px;padding:2px 8px;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:3px;transition:all .15s;user-select:none;}
@@ -371,20 +373,29 @@ c
 .wa-reply-bar-author{font-weight:700;color:var(--accent);font-size:12px;}
 .wa-reply-bar-text{color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px;}
 .wa-reply-cancel{background:none;border:none;color:var(--danger);cursor:pointer;font-size:18px;padding:0 4px;}
-.wa-input-area{display:flex;gap:8px;padding:10px 14px;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;align-items:flex-end;}
-.wa-input{flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:22px;padding:10px 16px;font-size:14px;font-family:inherit;color:var(--text);outline:none;resize:none;max-height:100px;transition:border-color .2s;}
+.wa-input-area{display:flex;gap:8px;padding:12px 14px 16px;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;align-items:flex-end;}
+.wa-input{flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:22px;padding:12px 18px;font-size:16px;font-family:inherit;color:var(--text);outline:none;resize:none;max-height:140px;min-height:46px;transition:border-color .2s;line-height:1.5;}
 .wa-input:focus{border-color:var(--accent);}
-.wa-send-btn{width:44px;height:44px;background:var(--accent);border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;}
+.wa-send-btn{width:50px;height:50px;background:var(--accent);border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;}
 .wa-send-btn:hover{transform:scale(1.08);filter:brightness(1.1);}
-.wa-voice-btn{width:44px;height:44px;background:var(--surface2);border:1.5px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;color:var(--muted);}
+.wa-voice-btn{width:50px;height:50px;background:var(--surface2);border:1.5px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;color:var(--muted);}
 .wa-voice-btn:hover{background:var(--accent);border-color:var(--accent);color:#fff;}
 .wa-voice-btn.recording{background:var(--danger);border-color:var(--danger);color:#fff;animation:pulse 1s infinite;}
-.wa-enhance-btn{width:44px;height:44px;background:linear-gradient(135deg,#a855f7,#6366f1);border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;font-size:18px;position:relative;}
+.wa-enhance-btn{width:50px;height:50px;background:linear-gradient(135deg,#a855f7,#6366f1);border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;font-size:18px;position:relative;}
 .wa-enhance-btn:hover{transform:scale(1.1);filter:brightness(1.15);}
 .wa-enhance-btn:active{transform:scale(.95);}
 .wa-enhance-btn.loading{animation:spin .8s linear infinite;}
 .ai-suggestion-btn{flex-shrink:0;background:var(--surface);border:1.5px solid var(--border);border-radius:20px;padding:7px 13px;font-size:12px;font-weight:700;color:var(--text);font-family:'Nunito',sans-serif;cursor:pointer;white-space:nowrap;transition:all .15s;}
 .ai-suggestion-btn:hover{background:linear-gradient(135deg,rgba(99,102,241,.15),rgba(168,85,247,.1));border-color:#a855f7;color:#6366f1;}
+.img-style-btn{flex-shrink:0;background:var(--surface);border:1.5px solid var(--border);border-radius:20px;padding:7px 13px;font-size:12px;font-weight:700;color:var(--muted);font-family:'Nunito',sans-serif;cursor:pointer;white-space:nowrap;transition:all .2s;}
+.img-style-btn.active{background:linear-gradient(135deg,#f59e0b,#ef4444);border-color:transparent;color:#fff;box-shadow:0 2px 10px rgba(245,158,11,.3);}
+.img-idea-btn{flex-shrink:0;background:var(--surface2);border:1.5px solid var(--border);border-radius:16px;padding:6px 11px;font-size:11px;font-weight:700;color:var(--muted);font-family:'Nunito',sans-serif;cursor:pointer;white-space:nowrap;transition:all .2s;}
+.img-idea-btn:hover{border-color:var(--accent);color:var(--accent);}
+.img-gen-card{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;animation:slideUp .3s cubic-bezier(.22,1,.36,1);}
+.img-gen-card img{width:100%;display:block;cursor:pointer;transition:transform .2s;}
+.img-gen-card img:hover{transform:scale(1.02);}
+.img-gen-meta{padding:10px 14px 12px;display:flex;align-items:center;gap:8px;}
+.img-gen-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:40px;background:var(--surface);border:1.5px solid var(--border);border-radius:16px;}
 .wa-voice-msg{display:flex;align-items:center;gap:8px;padding:4px 2px;}
 .wa-voice-msg audio{width:180px;height:32px;vertical-align:middle;}
 .wa-voice-play{width:30px;height:30px;background:var(--accent);border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:#fff;}
@@ -825,6 +836,7 @@ function removeHostMemory() {
         <div style="font-family:'Fredoka One',cursive;font-size:17px;color:var(--text);">Family AI Assistant</div>
         <div style="font-size:11px;color:var(--muted);font-weight:600;">Knows general knowledge + your family's private info</div>
       </div>
+      <button onclick="openImageGen()" title="AI Image Generator" style="background:linear-gradient(135deg,#f59e0b,#ef4444);border:none;border-radius:10px;padding:6px 12px;font-size:12px;font-weight:800;cursor:pointer;color:#fff;font-family:inherit;flex-shrink:0;box-shadow:0 2px 10px rgba(245,158,11,.3);">🎨 Images</button>
       <button onclick="aiClearHistory()" title="Clear conversation" style="background:none;border:1.5px solid var(--border);border-radius:10px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;color:var(--muted);font-family:inherit;flex-shrink:0;">🗑 Clear</button>
     </div>
   </div>
@@ -863,6 +875,79 @@ function removeHostMemory() {
   </div>
 
 </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     AI IMAGE GENERATOR — FULL PAGE OVERLAY
+══════════════════════════════════════ -->
+<div id="imageGenOverlay" style="display:none;position:fixed;inset:0;z-index:10500;background:var(--bg);flex-direction:column;overflow:hidden;">
+
+  <!-- Header -->
+  <div style="background:linear-gradient(135deg,#f59e0b,#ef4444);padding:16px 18px;display:flex;align-items:center;gap:12px;flex-shrink:0;">
+    <button onclick="closeImageGen()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">←</button>
+    <div style="flex:1;">
+      <div style="font-family:'Fredoka One',cursive;font-size:20px;color:#fff;letter-spacing:.5px;">🎨 AI Image Generator</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.8);font-weight:600;">Free • No account needed • Powered by Pollinations AI</div>
+    </div>
+  </div>
+
+  <!-- Style presets -->
+  <div style="padding:12px 14px 6px;flex-shrink:0;">
+    <div style="font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;">Style</div>
+    <div style="display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;">
+      <button class="img-style-btn active" onclick="setImgStyle(this,'realistic')" data-style="realistic">📸 Realistic</button>
+      <button class="img-style-btn" onclick="setImgStyle(this,'cartoon')" data-style="cartoon">🎨 Cartoon</button>
+      <button class="img-style-btn" onclick="setImgStyle(this,'anime')" data-style="anime">✨ Anime</button>
+      <button class="img-style-btn" onclick="setImgStyle(this,'oil painting')" data-style="oil painting">🖼️ Oil Painting</button>
+      <button class="img-style-btn" onclick="setImgStyle(this,'watercolor')" data-style="watercolor">💧 Watercolor</button>
+      <button class="img-style-btn" onclick="setImgStyle(this,'pixel art')" data-style="pixel art">👾 Pixel Art</button>
+      <button class="img-style-btn" onclick="setImgStyle(this,'3d render')" data-style="3d render">🧊 3D</button>
+      <button class="img-style-btn" onclick="setImgStyle(this,'sketch pencil drawing')" data-style="sketch">✏️ Sketch</button>
+    </div>
+  </div>
+
+  <!-- Prompt input -->
+  <div style="padding:8px 14px 10px;flex-shrink:0;">
+    <div style="display:flex;gap:8px;align-items:flex-end;">
+      <textarea id="imgGenPrompt" placeholder="Describe your image… e.g. A cozy family dinner on a Friday night, warm lighting" rows="2"
+        style="flex:1;background:var(--surface);border:2px solid var(--border);border-radius:16px;padding:12px 16px;font-size:15px;font-family:'Nunito',sans-serif;font-weight:600;color:var(--text);resize:none;outline:none;line-height:1.5;transition:border-color .2s;"
+        onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();generateImage();}"></textarea>
+      <button onclick="generateImage()" id="imgGenBtn"
+        style="width:54px;height:54px;background:linear-gradient(135deg,#f59e0b,#ef4444);border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:22px;box-shadow:0 4px 16px rgba(245,158,11,.4);transition:all .2s;"
+        title="Generate">✦</button>
+    </div>
+
+    <!-- Quick prompt ideas -->
+    <div style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-top:8px;padding-bottom:2px;">
+      <button class="img-idea-btn" onclick="setImgPrompt('A family reunion picnic in a sunny park')">🧺 Family picnic</button>
+      <button class="img-idea-btn" onclick="setImgPrompt('A cozy Shabbat dinner table with candles and challah')">🕯️ Shabbat dinner</button>
+      <button class="img-idea-btn" onclick="setImgPrompt('Kids playing together in a colorful backyard')">👶 Kids playing</button>
+      <button class="img-idea-btn" onclick="setImgPrompt('A beautiful sunset over the ocean with a family silhouette')">🌅 Family sunset</button>
+      <button class="img-idea-btn" onclick="setImgPrompt('A magical Hanukkah celebration with menorah and gifts')">🕎 Hanukkah</button>
+      <button class="img-idea-btn" onclick="setImgPrompt('A grandparent reading a bedtime story to grandchildren')">📖 Bedtime story</button>
+    </div>
+  </div>
+
+  <!-- Generated images grid (scrollable) -->
+  <div id="imgGenGallery" style="flex:1;overflow-y:auto;padding:10px 14px 20px;display:flex;flex-direction:column;gap:16px;">
+    <!-- Empty state -->
+    <div id="imgGenEmpty" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:14px;padding:30px;">
+      <div style="font-size:64px;opacity:.4;">🎨</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:20px;color:var(--muted);text-align:center;">Describe something beautiful</div>
+      <div style="font-size:13px;color:var(--muted);font-weight:600;text-align:center;line-height:1.6;">Type a description above and tap ✦ to generate a free AI image — no account needed!</div>
+    </div>
+  </div>
+</div>
+
+<!-- Image Gen full-screen viewer -->
+<div id="imgGenViewer" style="display:none;position:fixed;inset:0;z-index:10600;background:rgba(0,0,0,.95);flex-direction:column;align-items:center;justify-content:center;">
+  <button onclick="closeImgViewer()" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,.15);border:none;color:#fff;width:40px;height:40px;border-radius:50%;font-size:20px;cursor:pointer;">✕</button>
+  <img id="imgGenViewerImg" src="" style="max-width:95%;max-height:80vh;border-radius:12px;object-fit:contain;">
+  <div style="display:flex;gap:12px;margin-top:16px;">
+    <a id="imgGenDownloadBtn" href="" download="family-ai-image.jpg" style="background:var(--accent);color:#fff;border:none;border-radius:12px;padding:12px 24px;font-size:14px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;text-decoration:none;">⬇ Download</a>
+    <button onclick="closeImgViewer()" style="background:rgba(255,255,255,.1);color:#fff;border:1.5px solid rgba(255,255,255,.2);border-radius:12px;padding:12px 24px;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;">✕ Close</button>
+  </div>
 </div>
 
 <!-- Calendar Panel -->
@@ -1222,22 +1307,37 @@ function removeHostMemory() {
         </div>
         <!-- Image preview strip (shows before sending) -->
         <div id="imgPreviewStrip" style="display:none;padding:8px 14px;background:var(--surface);border-top:1px solid var(--border);gap:8px;align-items:center;">
-            <img id="imgPreviewThumb" style="width:60px;height:60px;object-fit:cover;border-radius:10px;border:1.5px solid var(--border);" src="">
-            <div style="flex:1;font-size:12px;font-weight:600;color:var(--muted);">Image ready to send</div>
+            <img id="imgPreviewThumb" style="width:60px;height:60px;object-fit:cover;border-radius:10px;border:1.5px solid var(--border);display:none;" src="">
+            <video id="vidPreviewThumb" style="width:60px;height:60px;object-fit:cover;border-radius:10px;border:1.5px solid var(--border);display:none;" muted playsinline></video>
+            <div style="flex:1;">
+                <div id="mediaPreviewLabel" style="font-size:12px;font-weight:700;color:var(--text);">Ready to send</div>
+                <div id="mediaUploadProgress" style="display:none;font-size:11px;font-weight:600;color:var(--accent);margin-top:2px;">Uploading… 0%</div>
+            </div>
             <button onclick="clearImagePreview()" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--muted);">✕</button>
         </div>
-        <input type="file" id="chatImageInput" accept="image/*" style="display:none" onchange="handleImagePick(this)">
-        <div class="wa-input-area" id="waInputArea">
-            <button class="wa-voice-btn" id="voiceBtn" onclick="toggleVoiceRecording()" title="Voice message">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        <input type="file" id="chatImageInput" accept="image/*,video/*" style="display:none" onchange="handleImagePick(this)">
+        <!-- Extra tools tray (emoji, photo, AI) -->
+        <div id="chatToolsTray" style="display:none;padding:10px 14px 4px;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;gap:12px;align-items:center;justify-content:flex-start;">
+            <button onclick="openChatEmoji()" title="Emoji" style="display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;cursor:pointer;color:var(--muted);font-size:11px;font-weight:700;font-family:inherit;">
+                <span style="font-size:26px;">😊</span>Emoji
             </button>
-            <button onclick="openChatEmoji()" title="Emoji" style="width:36px;height:36px;background:var(--surface2);border:1.5px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px;flex-shrink:0;transition:all .2s;">😊</button>
-            <textarea class="wa-input" id="newComment" placeholder="Type a message…" rows="1" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px';onTypingInput()"
+            <button onclick="document.getElementById('chatImageInput').click()" title="Send image" style="display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;cursor:pointer;color:var(--muted);font-size:11px;font-weight:700;font-family:inherit;">
+                <span style="font-size:26px;">📷</span>Photo
+            </button>
+            <button onclick="aiEnhanceText()" title="✨ AI Enhance" id="aiEnhanceBtn" style="display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;cursor:pointer;color:var(--muted);font-size:11px;font-weight:700;font-family:inherit;">
+                <span style="font-size:26px;">✨</span>Enhance
+            </button>
+        </div>
+        <div class="wa-input-area" id="waInputArea">
+            <!-- + button toggles extra tools -->
+            <button onclick="toggleChatTools()" id="chatPlusBtn" title="More options" style="width:50px;height:50px;background:var(--surface2);border:1.5px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:24px;flex-shrink:0;transition:all .2s;color:var(--accent);font-weight:900;line-height:1;">+</button>
+            <button class="wa-voice-btn" id="voiceBtn" onclick="toggleVoiceRecording()" title="Voice message">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            </button>
+            <textarea class="wa-input" id="newComment" placeholder="Type a message…" rows="1" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,140)+'px';onTypingInput()"
                 onpaste="handleChatPaste(event)"></textarea>
-            <button onclick="document.getElementById('chatImageInput').click()" title="Send image" style="width:36px;height:36px;background:var(--surface2);border:1.5px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px;flex-shrink:0;transition:all .2s;">📷</button>
-            <button class="wa-enhance-btn" id="aiEnhanceBtn" onclick="aiEnhanceText()" title="✨ AI Enhance">✨</button>
             <button class="wa-send-btn" onclick="postComment()">
-                <svg width="18" height="18" fill="white" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                <svg width="20" height="20" fill="white" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
         </div>
         <!-- Emoji picker panel -->
@@ -2913,21 +3013,43 @@ function buildBubble(key, msg){
     bubble.className = 'wa-bubble '+(isMine?'mine':'theirs')+(msgIsFromHost?' host-bubble':'');
     if(msgIsFromHost) bubble.style.borderLeft = '3px solid var(--danger)';
 
-    // Double-tap to ❤️ like
+    // Double-tap to ❤️ like; long-press to show action buttons on mobile
     let tapTimer = null;
+    let pressTimer = null;
+    bubble.addEventListener('touchstart', ()=>{
+        pressTimer = setTimeout(()=>{
+            pressTimer = null;
+            // show action buttons
+            const ab = bubble.querySelector('.wa-bubble-actions');
+            if(ab){ ab.style.display='flex'; setTimeout(()=>{ ab.style.display=''; }, 4000); }
+        }, 500);
+    }, {passive:true});
     bubble.addEventListener('touchend', ()=>{
+        if(pressTimer){ clearTimeout(pressTimer); pressTimer=null; }
         if(tapTimer){ clearTimeout(tapTimer); tapTimer=null; toggleReaction(key,'❤️'); }
         else tapTimer = setTimeout(()=>{tapTimer=null;}, 300);
     });
+    bubble.addEventListener('touchmove', ()=>{ if(pressTimer){ clearTimeout(pressTimer); pressTimer=null; } }, {passive:true});
 
     let inner = '';
     if(msgIsFromHost) inner += '<div style="font-size:10px;font-weight:800;color:var(--danger);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px;">📢 Message from Host</div>';
     if(!isMine) inner += '<div class="wa-author" style="'+(msgIsFromHost?'color:var(--danger);font-weight:700;':'')+'">'+esc(msg.author)+'</div>';
     if(msg.replyTo) inner += '<div class="wa-reply-preview" onclick="scrollToMsg(\''+esc(msg.replyTo.key)+'\')"><div class="rp-author">'+esc(msg.replyTo.author)+'</div><div>'+esc((msg.replyTo.text||'').slice(0,80))+'</div></div>';
 
-    // Text or image
+    // Text, image, or video
     if(msg.imageUrl){
-        inner += `<img src="${esc(msg.imageUrl)}" class="wa-img-msg" onclick="openMediaLightbox('${esc(msg.imageUrl)}','image','')" loading="lazy">`;
+        const _mUrl = msg.imageUrl;
+        const _isVid = /\.(mp4|mov|webm|avi|mkv|m4v)($|\?)/i.test(_mUrl)
+                    || _mUrl.includes('/video/upload/')
+                    || _mUrl.includes('video%2F');
+        if(_isVid){
+            // Inline video player — looks native, file is on Cloudinary
+            inner += `<video class="wa-vid-msg" src="${esc(_mUrl)}" controls preload="metadata" playsinline
+                style="max-width:260px;width:100%;border-radius:10px;display:block;margin-top:4px;background:#000;"
+                onclick="event.stopPropagation()"></video>`;
+        } else {
+            inner += `<img src="${esc(_mUrl)}" class="wa-img-msg" onclick="openMediaLightbox('${esc(_mUrl)}','image','')" loading="lazy">`;
+        }
         if(msg.text) inner += '<div class="wa-text">'+esc(msg.text)+'</div>';
     } else {
         inner += '<div class="wa-text" style="'+(msgIsFromHost?'font-weight:700;':'')+'">'+esc(msg.text)+'</div>';
@@ -2943,9 +3065,12 @@ function buildBubble(key, msg){
     // Action buttons
     const canDel = isHost || msg.author === currentUser;
     const pinBtn = isHost ? `<div class="wa-action-btn" title="Pin" onclick="pinMessage('${esc(key)}','${esc((msg.text||msg.imageUrl||'').slice(0,60))}')">📌</div>` : '';
+    const _ttsRaw = (msg.text||'').trim();
+    const ttsBtn = _ttsRaw ? `<div class="wa-action-btn wa-tts-btn" title="Read aloud" onclick="readAloud(this,this.dataset.txt)" data-txt="${esc(_ttsRaw.slice(0,300))}">🔊</div>` : '';
     inner += `<div class="wa-bubble-actions">
         <div class="wa-action-btn" title="React" onclick="showReactionBar(event,'${esc(key)}')">😊</div>
-        <div class="wa-action-btn" title="Reply" onclick="startReply('${esc(key)}','${esc(msg.author)}','${esc((msg.text||'').slice(0,60).replace(/\\/g,'\\\\').replace(/'/g,"\\'"))}')">↩</div>
+        <div class="wa-action-btn" title="Reply" onclick="startReply('${esc(key)}','${esc(msg.author)}','${esc((msg.text||'').slice(0,60).replace(/'/g,"&apos;"))}')">↩</div>
+        ${ttsBtn}
         ${pinBtn}
         ${canDel?`<div class="wa-action-btn" title="Delete" onclick="deleteComment('${esc(key)}')">🗑</div>`:''}
     </div>`;
@@ -3038,21 +3163,119 @@ async function toggleReaction(key, emoji){
     }catch(e){ console.log('Reaction error',e); }
 }
 
-// ── Image sending ─────────────────────────────────────────────────────────────
-let _pendingImageData = null;
+// ── Media sending (image + video → Cloudinary URL → Firebase only stores URL) ──
+let _pendingImageData = null;   // holds the Cloudinary URL (NOT base64)
+let _pendingMediaType = null;   // 'image' or 'video'
+let _pendingFile = null;        // raw File object waiting for upload
 
 function handleImagePick(input){
     const file = input.files?.[0];
     if(!file) return;
-    if(file.size > 3*1024*1024){ toast('Image too large — max 3MB','warn'); return; }
-    const reader = new FileReader();
-    reader.onload = e=>{
-        _pendingImageData = e.target.result;
-        document.getElementById('imgPreviewThumb').src = _pendingImageData;
-        document.getElementById('imgPreviewStrip').style.display = 'flex';
-    };
-    reader.readAsDataURL(file);
     input.value = '';
+
+    const isVideo = file.type.startsWith('video/');
+    const isImage = file.type.startsWith('image/');
+    if(!isVideo && !isImage){ toast('Only images and videos are supported','warn'); return; }
+
+    // Size guard — warn but still allow (Cloudinary handles large files fine)
+    const mb = file.size / (1024*1024);
+    if(mb > 100){ toast('File too large — max 100MB','warn'); return; }
+
+    _pendingFile = file;
+    _pendingMediaType = isVideo ? 'video' : 'image';
+
+    // Show local preview while uploading
+    const strip = document.getElementById('imgPreviewStrip');
+    const imgThumb = document.getElementById('imgPreviewThumb');
+    const vidThumb = document.getElementById('vidPreviewThumb');
+    const label   = document.getElementById('mediaPreviewLabel');
+    const progress = document.getElementById('mediaUploadProgress');
+
+    imgThumb.style.display = 'none';
+    vidThumb.style.display = 'none';
+    progress.style.display = 'none';
+    strip.style.display = 'flex';
+
+    if(isImage){
+        const reader = new FileReader();
+        reader.onload = e => { imgThumb.src = e.target.result; imgThumb.style.display = 'block'; };
+        reader.readAsDataURL(file);
+        label.textContent = '📷 Image — tap send or type a caption';
+    } else {
+        // Video thumbnail via object URL
+        const objUrl = URL.createObjectURL(file);
+        vidThumb.src = objUrl;
+        vidThumb.style.display = 'block';
+        label.textContent = '🎬 Video (' + mb.toFixed(1) + 'MB) — tap send';
+    }
+
+    // Start uploading to Cloudinary immediately in the background
+    _uploadMediaToCloudinary(file);
+}
+
+async function _uploadMediaToCloudinary(file){
+    const progress = document.getElementById('mediaUploadProgress');
+    const label    = document.getElementById('mediaPreviewLabel');
+
+    if(CLOUDINARY_CLOUD_NAME === 'YOUR_CLOUD_NAME'){
+        // Fallback: store base64 for images only (small images, no Cloudinary)
+        if(file.type.startsWith('image/') && file.size < 3*1024*1024){
+            const reader = new FileReader();
+            reader.onload = e => {
+                _pendingImageData = e.target.result;
+                if(label) label.textContent = '📷 Image ready to send';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            toast('Set up Cloudinary in Host → Settings to send large images & videos', 'warn');
+            clearImagePreview();
+        }
+        return;
+    }
+
+    if(progress) { progress.style.display = 'block'; progress.textContent = 'Uploading… 0%'; }
+
+    try {
+        const fd = new FormData();
+        fd.append('file', file);
+        fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+        fd.append('folder', 'family_chat');
+
+        // Use XMLHttpRequest for upload progress
+        const url = await new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            const resourceType = file.type.startsWith('video/') ? 'video' : 'image';
+            xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`);
+
+            xhr.upload.onprogress = e => {
+                if(e.lengthComputable && progress){
+                    const pct = Math.round(e.loaded / e.total * 100);
+                    progress.textContent = 'Uploading… ' + pct + '%';
+                }
+            };
+            xhr.onload = () => {
+                if(xhr.status === 200){
+                    const r = JSON.parse(xhr.responseText);
+                    resolve(r.secure_url);
+                } else {
+                    reject(new Error('Upload failed: ' + xhr.status));
+                }
+            };
+            xhr.onerror = () => reject(new Error('Network error'));
+            xhr.send(fd);
+        });
+
+        // Upload done — store URL (NOT the file data)
+        _pendingImageData = url;
+        if(progress) progress.style.display = 'none';
+        if(label) label.textContent = (file.type.startsWith('video/') ? '🎬 Video' : '📷 Image') + ' ready to send ✓';
+        toast('Upload complete! Tap send ✓');
+
+    } catch(e) {
+        console.error('Cloudinary upload failed:', e);
+        toast('Upload failed — ' + e.message, 'danger');
+        clearImagePreview();
+    }
 }
 
 function handleChatPaste(e){
@@ -3062,14 +3285,7 @@ function handleChatPaste(e){
         if(item.type.startsWith('image/')){
             e.preventDefault();
             const file = item.getAsFile();
-            if(file.size > 3*1024*1024){ toast('Image too large — max 3MB','warn'); return; }
-            const reader = new FileReader();
-            reader.onload = ev=>{
-                _pendingImageData = ev.target.result;
-                document.getElementById('imgPreviewThumb').src = _pendingImageData;
-                document.getElementById('imgPreviewStrip').style.display = 'flex';
-            };
-            reader.readAsDataURL(file);
+            if(file) handleImagePick({ files: [file], value: '' });
             return;
         }
     }
@@ -3077,8 +3293,15 @@ function handleChatPaste(e){
 
 function clearImagePreview(){
     _pendingImageData = null;
+    _pendingMediaType = null;
+    _pendingFile = null;
     document.getElementById('imgPreviewStrip').style.display = 'none';
+    document.getElementById('imgPreviewThumb').style.display = 'none';
     document.getElementById('imgPreviewThumb').src = '';
+    const vt = document.getElementById('vidPreviewThumb');
+    if(vt){ vt.style.display = 'none'; vt.src = ''; }
+    const prog = document.getElementById('mediaUploadProgress');
+    if(prog) prog.style.display = 'none';
 }
 
 // ── Emoji picker ──────────────────────────────────────────────────────────────
@@ -3419,7 +3642,18 @@ async function uploadAndSendVoice(blob){
         const data = {author:currentUser, text:'🎙️ Voice message', audioUrl, timestamp:Date.now(), isHostMsg: isHost===true};
         await window.dbSet(window.dbPush(window.dbRef(window.db, msgPath(currentGroup))), data);
         toast('Voice message sent! 🎙️');
-        // SMS offline members about the voice message
+        // Notify all other family members
+        if(notifSettings.chat !== false && window.db){
+            try{
+                await window.dbSet(window.dbRef(window.db,'pushNotif'),{
+                    title: '💬 ' + (currentUser || 'Someone'),
+                    body: '🎙️ Sent a voice message',
+                    sentBy: currentUser || '',
+                    timestamp: Date.now(),
+                    type: 'chat'
+                });
+            }catch(e2){ console.warn('Voice notif failed:',e2); }
+        }
     }catch(e){ 
         console.error('Voice message error:', e);
         toast('Failed to send voice message: '+(e.message||e),'danger'); 
@@ -3517,9 +3751,20 @@ async function postComment(){
     try{
         await window.dbSet(window.dbPush(window.dbRef(window.db, msgPath(currentGroup))), data);
         input.value = ''; input.style.height = 'auto';
-        // Close emoji picker if open
         document.getElementById('chatEmojiPicker').style.display = 'none';
         cancelReply();
+        // Notify all other family members via pushNotif
+        if(notifSettings.chat !== false && window.db){
+            try{
+                await window.dbSet(window.dbRef(window.db,'pushNotif'),{
+                    title: '💬 ' + (currentUser || 'Someone'),
+                    body: (data.text || (data.imageUrl ? (_pendingMediaType==='video' ? '🎬 Video' : '📷 Photo') : '🎙️ Voice message')).slice(0,80),
+                    sentBy: currentUser || '',
+                    timestamp: Date.now(),
+                    type: 'chat'
+                });
+            }catch(e2){ console.warn('Chat notif write failed:',e2); }
+        }
     }catch(e){ toast('Failed: '+e.message,'danger'); }
 }
 
@@ -5227,9 +5472,11 @@ function listenPushNotifications() {
         const d = snap.val();
         if (!d.timestamp || d.timestamp <= lastNotifTimestamp) return;
         lastNotifTimestamp = d.timestamp;
-        // Host who sent it gets a toast instead of a notification
-        if (isHost && d.sentBy === currentUser) {
-            toast('📨 Notification sent to all family members!');
+        // The person who sent it: skip notification (but host gets a toast for manual pushes)
+        if (d.sentBy && d.sentBy === currentUser) {
+            if (d.type === 'manual' || d.type === 'announcement') {
+                toast('📨 Notification sent to all family members!');
+            }
             return;
         }
         // Show real push notification via service worker (works when app is open AND in background)
@@ -5356,6 +5603,16 @@ function listenAnnouncements() {
     listenAnnouncementsWithNotif();
 }
 
+// ── Chat tools tray toggle ────────────────────────────────
+function toggleChatTools(){
+    const tray = document.getElementById('chatToolsTray');
+    const btn  = document.getElementById('chatPlusBtn');
+    if(!tray) return;
+    const open = tray.style.display === 'flex';
+    tray.style.display = open ? 'none' : 'flex';
+    if(btn) btn.style.transform = open ? 'rotate(0deg)' : 'rotate(45deg)';
+}
+
 // Patch loadChatGroups to also wire notif listeners per group
 const _origLoadChatGroups = loadChatGroups;
 loadChatGroups = function() {
@@ -5420,6 +5677,106 @@ window.clearAnnouncement=clearAnnouncement;
 window.closeModal=closeModal;
 window.closeVideoLightbox=closeVideoLightbox;
 window.deleteComment=deleteComment;
+
+// ══════════════════════════════════════════════════════════
+//  READ ALOUD — Pollinations Audio TTS (free, no key)
+// ══════════════════════════════════════════════════════════
+let _ttsAudio = null; // currently playing audio
+let _ttsSpeakingBtn = null; // button currently active
+
+async function readAloud(btn, text){
+    if(!text || !text.trim()) return;
+
+    // If already playing this message — stop it
+    if(_ttsSpeakingBtn === btn){
+        _stopTTS();
+        return;
+    }
+
+    // Stop any currently playing TTS
+    _stopTTS();
+
+    // Mark this button as speaking
+    _ttsSpeakingBtn = btn;
+    btn.classList.add('speaking');
+    btn.title = 'Stop reading';
+    const originalEmoji = btn.textContent;
+    btn.textContent = '⏹';
+
+    try {
+        // Pollinations free TTS API
+        // Voices: alloy, echo, fable, onyx, nova, shimmer
+        const voice = 'nova'; // warm, clear female voice — great for family app
+        const encoded = encodeURIComponent(text.trim().slice(0, 500));
+        const url = `https://audio.pollinations.ai/tts?text=${encoded}&voice=${voice}&model=openai-audio`;
+
+        const audio = new Audio(url);
+        _ttsAudio = audio;
+
+        audio.onended = () => _resetTTSBtn(btn, originalEmoji);
+        audio.onerror = () => {
+            // Fallback: Web Speech API (browser built-in, always works)
+            _resetTTSBtn(btn, originalEmoji);
+            _webSpeechFallback(btn, text, originalEmoji);
+        };
+
+        await audio.play();
+
+    } catch(e) {
+        // Fallback to browser's built-in speech synthesis
+        _resetTTSBtn(btn, originalEmoji);
+        _webSpeechFallback(btn, text, originalEmoji);
+    }
+}
+
+function _stopTTS(){
+    if(_ttsAudio){
+        _ttsAudio.pause();
+        _ttsAudio.src = '';
+        _ttsAudio = null;
+    }
+    window.speechSynthesis?.cancel();
+    if(_ttsSpeakingBtn){
+        // Reset button — find original emoji by checking title
+        _ttsSpeakingBtn.textContent = '🔊';
+        _ttsSpeakingBtn.title = 'Read aloud';
+        _ttsSpeakingBtn.classList.remove('speaking');
+        _ttsSpeakingBtn = null;
+    }
+}
+
+function _resetTTSBtn(btn, originalEmoji){
+    if(btn){
+        btn.textContent = originalEmoji || '🔊';
+        btn.title = 'Read aloud';
+        btn.classList.remove('speaking');
+    }
+    if(_ttsSpeakingBtn === btn) _ttsSpeakingBtn = null;
+    _ttsAudio = null;
+}
+
+function _webSpeechFallback(btn, text, originalEmoji){
+    if(!('speechSynthesis' in window)){ toast('Text-to-speech not supported in this browser','warn'); return; }
+    window.speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.rate = 0.95;
+    utt.pitch = 1;
+    // Try to pick a nice voice
+    const voices = window.speechSynthesis.getVoices();
+    const nice = voices.find(v => v.name.includes('Google') && v.lang.startsWith('en'))
+               || voices.find(v => v.lang.startsWith('en-US'))
+               || voices[0];
+    if(nice) utt.voice = nice;
+
+    // Mark button speaking
+    if(btn){ btn.classList.add('speaking'); btn.textContent = '⏹'; _ttsSpeakingBtn = btn; }
+
+    utt.onend = () => _resetTTSBtn(btn, originalEmoji);
+    utt.onerror = () => _resetTTSBtn(btn, originalEmoji);
+    window.speechSynthesis.speak(utt);
+}
+
+window.readAloud = readAloud;
 window.joinWhatsAppCall=joinWhatsAppCall;
 window.kickUser=kickUser;
 window.openComments=openComments;
@@ -5570,6 +5927,7 @@ window.clearImagePreview=clearImagePreview;
 window.openChatEmoji=openChatEmoji;
 window.insertEmoji=insertEmoji;
 window.toggleChatSearch=toggleChatSearch;
+window.toggleChatTools=toggleChatTools;
 window.searchMessages=searchMessages;
 window.pinMessage=pinMessage;
 window.pinnedMsgKey=null;
@@ -7294,6 +7652,138 @@ window.aiSendQuestion = aiSendQuestion;
 window.aiAskQuestion  = aiAskQuestion;
 window.onAskAITabOpen = onAskAITabOpen;
 window.aiClearHistory = aiClearHistory;
+
+window.aiSendQuestion = aiSendQuestion;
+window.aiAskQuestion  = aiAskQuestion;
+window.onAskAITabOpen = onAskAITabOpen;
+window.aiClearHistory = aiClearHistory;
+
+// ══════════════════════════════════════════════════════════
+//  AI IMAGE GENERATOR — Pollinations.ai (100% free, no key)
+// ══════════════════════════════════════════════════════════
+let _imgStyle = 'realistic';
+let _imgGenHistory = []; // keep session gallery
+
+function openImageGen(){
+    document.getElementById('imageGenOverlay').style.display = 'flex';
+    // scroll to top of gallery
+    const g = document.getElementById('imgGenGallery');
+    if(g) g.scrollTop = 0;
+}
+
+function closeImageGen(){
+    document.getElementById('imageGenOverlay').style.display = 'none';
+}
+
+function setImgStyle(btn, style){
+    document.querySelectorAll('.img-style-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    _imgStyle = style;
+}
+
+function setImgPrompt(text){
+    const ta = document.getElementById('imgGenPrompt');
+    if(ta){ ta.value = text; ta.focus(); }
+}
+
+async function generateImage(){
+    const promptEl = document.getElementById('imgGenPrompt');
+    const btn      = document.getElementById('imgGenBtn');
+    const gallery  = document.getElementById('imgGenGallery');
+    const empty    = document.getElementById('imgGenEmpty');
+
+    const userPrompt = (promptEl?.value || '').trim();
+    if(!userPrompt){ toast('Describe the image you want first!','warn'); return; }
+
+    // Build full prompt with style
+    // ── Safety: append positive modest context + negative prompt ──
+    const SAFE_SUFFIX = ', family-friendly, modest, appropriate for all ages, wholesome';
+    const NEGATIVE    = 'nsfw, nudity, explicit, sexual, violence, gore, disturbing, inappropriate, adult content, suggestive, revealing clothing, offensive';
+    const fullPrompt  = userPrompt
+        + (_imgStyle && _imgStyle !== 'realistic' ? ', ' + _imgStyle + ' style' : ', photorealistic, high quality, detailed')
+        + SAFE_SUFFIX;
+
+    // Disable button + show loading card
+    if(btn){ btn.disabled = true; btn.style.opacity = '.5'; }
+    if(empty) empty.style.display = 'none';
+
+    // Insert loading card at top
+    const loadCard = document.createElement('div');
+    loadCard.className = 'img-gen-loading';
+    loadCard.innerHTML = `
+        <div style="width:48px;height:48px;border:4px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;"></div>
+        <div style="font-size:14px;font-weight:700;color:var(--muted);text-align:center;">Creating your image…<br><span style="font-size:12px;opacity:.7;">Takes about 5–10 seconds</span></div>
+    `;
+    gallery.insertBefore(loadCard, gallery.firstChild);
+
+    try {
+        // Pollinations free image API — safe mode ON + negative prompt
+        const seed = Math.floor(Math.random() * 999999);
+        const encoded  = encodeURIComponent(fullPrompt);
+        const negEnc   = encodeURIComponent(NEGATIVE);
+        const url = `https://image.pollinations.ai/prompt/${encoded}?width=768&height=768&seed=${seed}&nologo=true&enhance=true&safe=true&negative_prompt=${negEnc}`;
+
+        // Pre-load the image (it generates on-the-fly)
+        const img = new Image();
+        await new Promise((resolve, reject) => {
+            img.onload  = resolve;
+            img.onerror = reject;
+            img.src = url;
+            // Timeout after 30s
+            setTimeout(() => reject(new Error('timeout')), 30000);
+        });
+
+        // Remove loading card
+        loadCard.remove();
+
+        // Build result card
+        const card = document.createElement('div');
+        card.className = 'img-gen-card';
+        card.innerHTML = `
+            <img src="${url}" alt="${userPrompt}" loading="lazy" onclick="openImgViewer('${url}')">
+            <div class="img-gen-meta">
+                <div style="flex:1;font-size:12px;font-weight:600;color:var(--muted);line-height:1.4;">${userPrompt}</div>
+                <a href="${url}" download="family-ai-image.jpg" style="background:var(--accent);color:#fff;border:none;border-radius:10px;padding:7px 12px;font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;text-decoration:none;flex-shrink:0;">⬇</a>
+            </div>
+        `;
+        gallery.insertBefore(card, gallery.firstChild);
+
+        // Save to session history
+        _imgGenHistory.unshift({ url, prompt: userPrompt });
+
+        // Clear the prompt input
+        promptEl.value = '';
+        toast('Image created! Tap to view full size 🎨');
+
+    } catch(e) {
+        loadCard.remove();
+        if(_imgGenHistory.length === 0 && empty) empty.style.display = 'flex';
+        toast('Image generation failed — try a different description', 'warn');
+        console.warn('Image gen error:', e);
+    } finally {
+        if(btn){ btn.disabled = false; btn.style.opacity = '1'; }
+    }
+}
+
+function openImgViewer(url){
+    const v = document.getElementById('imgGenViewer');
+    const i = document.getElementById('imgGenViewerImg');
+    const d = document.getElementById('imgGenDownloadBtn');
+    if(v && i){ i.src = url; if(d) d.href = url; v.style.display = 'flex'; }
+}
+
+function closeImgViewer(){
+    const v = document.getElementById('imgGenViewer');
+    if(v) v.style.display = 'none';
+}
+
+window.openImageGen   = openImageGen;
+window.closeImageGen  = closeImageGen;
+window.generateImage  = generateImage;
+window.setImgStyle    = setImgStyle;
+window.setImgPrompt   = setImgPrompt;
+window.openImgViewer  = openImgViewer;
+window.closeImgViewer = closeImgViewer;
 
 function sendGameInviteByInput(type){
     const name = (document.getElementById('gameInviteNameInput')||{}).value?.trim();
