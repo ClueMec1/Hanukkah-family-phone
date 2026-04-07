@@ -99,15 +99,20 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .saved-accounts{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;max-height:280px;overflow-y:auto;}
 .saved-btn{display:flex;align-items:center;gap:11px;padding:12px 14px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all .2s;width:100%;font-family:inherit;text-align:left;}
 .saved-btn:hover{border-color:var(--accent);background:rgba(124,106,247,.1);transform:translateY(-1px);}
-.saved-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;}
+.saved-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0;overflow:hidden;position:relative;}
+.saved-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.saved-avatar-wrap{position:relative;flex-shrink:0;}
+.saved-avatar-cam{position:absolute;bottom:-2px;right:-2px;width:18px;height:18px;background:var(--accent);border:2px solid var(--surface);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;cursor:pointer;z-index:2;}
+.wa-msg-avatar{width:34px;height:34px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;overflow:hidden;align-self:flex-end;margin-bottom:2px;}
+.wa-msg-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
 .saved-name{font-size:14px;font-weight:600;color:var(--text);flex:1;}
 .saved-remove{width:26px;height:26px;background:transparent;border:none;color:var(--muted);cursor:pointer;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s;padding:0;}
 .saved-remove:hover{background:rgba(248,113,113,.15);color:var(--danger);}
 .signin-divider{display:flex;align-items:center;gap:10px;margin:12px 0;color:var(--muted);font-size:12px;}
 .signin-divider::before,.signin-divider::after{content:'';flex:1;height:1px;background:var(--border);}
 /* Feature nav tabs */
-.feature-tabs{display:flex;gap:6px;padding:8px 14px;background:rgba(255,255,255,.9);border-bottom:2px solid var(--border);overflow-x:auto;scrollbar-width:none;}
-.feature-tabs::-webkit-scrollbar{display:none;}
+.feature-tabs{display:flex;flex-wrap:wrap;gap:6px;padding:8px 14px;background:rgba(255,255,255,.9);border-bottom:2px solid var(--border);}
+
 .feature-tab{flex-shrink:0;background:var(--surface);border:2px solid var(--border);border-radius:12px;padding:7px 13px;cursor:pointer;font-size:12px;font-weight:700;color:var(--muted);font-family:'Nunito',sans-serif;transition:all .2s;display:flex;align-items:center;gap:5px;}
 .discover-card{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:14px 12px;cursor:pointer;transition:all .2s;text-align:center;position:relative;overflow:hidden;}
 .discover-card:hover,.discover-card:active{border-color:var(--accent);transform:scale(1.02);}
@@ -214,13 +219,13 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .user-badge{position:absolute;top:-5px;right:-5px;background:var(--accent);color:#fff;min-width:18px;height:18px;padding:0 4px;border-radius:9px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg);}
 
 /* NAV — sticky, always above anything that might overlap it */
-.top-nav{display:flex;flex-wrap:wrap;gap:8px;padding:12px 18px 11px;background:rgba(255,255,255,.99);backdrop-filter:blur(20px);border-top:2px solid var(--border);border-bottom:2px solid var(--border);overflow-x:auto;scrollbar-width:none;position:sticky;top:0;z-index:2000;box-shadow:0 4px 18px rgba(232,131,74,.13);}
+.top-nav{display:flex;flex-wrap:nowrap;gap:5px;padding:7px 12px;background:rgba(255,255,255,.99);backdrop-filter:blur(20px);border-top:1.5px solid var(--border);border-bottom:1.5px solid var(--border);overflow-x:auto;scrollbar-width:none;position:sticky;top:0;z-index:2000;box-shadow:0 2px 10px rgba(232,131,74,.1);}
 .top-nav::-webkit-scrollbar{display:none;}
-.nav-button{flex-shrink:0;background:var(--surface);border:2px solid var(--border);border-radius:14px;padding:8px 15px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:7px;color:var(--muted);position:relative;user-select:none;font-family:'Nunito',sans-serif;font-weight:700;}
+.nav-button{flex-shrink:0;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:5px 10px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;color:var(--muted);position:relative;user-select:none;font-family:'Nunito',sans-serif;font-weight:700;}
 .nav-button:hover{border-color:var(--accent);transform:translateY(-2px);color:var(--text);box-shadow:0 4px 12px rgba(232,131,74,.12);}
 .nav-button.active{border-color:var(--accent);background:rgba(232,131,74,.12);box-shadow:0 0 14px rgba(232,131,74,.15);color:var(--accent);}
-.nav-button-emoji{font-size:17px;}
-.nav-button-text{font-size:13px;font-weight:700;white-space:nowrap;}
+.nav-button-emoji{font-size:14px;}
+.nav-button-text{font-size:11px;font-weight:700;white-space:nowrap;}
 
 /* Host double-click indicator on nav buttons */
 .host-mode .nav-button::after{content:'✎';position:absolute;top:-6px;right:-6px;background:var(--accent);color:#fff;width:16px;height:16px;border-radius:50%;font-size:9px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;pointer-events:none;}
@@ -661,6 +666,8 @@ function removeHostMemory() {
 }
 </script>
 <!-- AI powered by Pollinations.ai — free, no signup, no new tab -->
+  <!-- Puter.js — free AI image generation backup (no API key, user-pays model) -->
+  <script src="https://js.puter.com/v2/" defer></script>
 </head>
 <body>
 
@@ -772,11 +779,6 @@ function removeHostMemory() {
 
 <!-- Top Nav -->
 <div class="top-nav" id="topNav">
-    <!-- Helper text above the buttons -->
-    <div style="width:100%;flex-shrink:0;padding:0 2px 8px;display:flex;flex-direction:column;gap:2px;pointer-events:none;">
-        <div style="font-size:13px;font-weight:800;color:var(--text);">👇 Tap a section to browse its cards</div>
-        <div style="font-size:11px;font-weight:600;color:var(--muted);">Each section has its own category of content</div>
-    </div>
     <div class="nav-button active" data-section="0"><span class="nav-button-emoji">📁</span><span class="nav-button-text">Section 1</span></div>
     <div class="nav-button" data-section="1"><span class="nav-button-emoji">📁</span><span class="nav-button-text">Section 2</span></div>
     <div class="nav-button" data-section="2"><span class="nav-button-emoji">📁</span><span class="nav-button-text">Section 3</span></div>
@@ -808,6 +810,7 @@ function removeHostMemory() {
     <button class="feature-tab" data-panel="discover" onclick="switchFeatureTab('discover',this)">🌍 Discover</button>
     <button class="feature-tab" data-panel="askai" onclick="switchFeatureTab('askai',this)">🤖 Ask AI</button>
     <button class="feature-tab" data-panel="finance" onclick="switchFeatureTab('finance',this)">💰 Finance</button>
+    <button class="feature-tab" data-panel="torah" onclick="switchFeatureTab('torah',this)">📜 Torah</button>
 </div>
 
 <!-- Home Panel -->
@@ -1020,6 +1023,103 @@ function removeHostMemory() {
     <button onclick="refreshFinanceDetail()" style="background:none;border:none;font-size:20px;cursor:pointer;padding:4px 8px;">↻</button>
   </div>
   <div id="financeDetailContent" style="flex:1;overflow-y:auto;padding:24px 20px 40px;"></div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TORAH PANEL — Powered by Sefaria API
+══════════════════════════════════════ -->
+<div class="feature-panel" id="panel-torah">
+<div style="padding:14px 14px 80px;">
+
+  <!-- Header -->
+  <div style="background:linear-gradient(135deg,rgba(101,77,44,.12),rgba(184,142,74,.08));border-radius:16px;padding:16px;margin-bottom:16px;border:1.5px solid rgba(184,142,74,.2);display:flex;align-items:center;gap:12px;">
+    <div style="font-size:36px;">📜</div>
+    <div>
+      <div style="font-family:'Fredoka One',cursive;font-size:18px;color:#8B6914;">Torah Learning Center</div>
+      <div style="font-size:11px;font-weight:600;color:var(--muted);">Powered by Sefaria · 3,000 years of Jewish texts</div>
+    </div>
+    <button onclick="loadTorahPanel()" style="margin-left:auto;background:none;border:none;font-size:20px;cursor:pointer;padding:4px 8px;" title="Refresh">↻</button>
+  </div>
+
+  <div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;">📅 Today's Learning</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;" id="torahDailyGrid">
+    <div class="discover-card" onclick="openTorahSection('parasha')" id="tc-parasha" style="grid-column:1/-1;">
+      <div class="dc-icon">📖</div>
+      <div class="dc-title">Weekly Parasha</div>
+      <div class="dc-preview" id="td-parasha">Loading…</div>
+    </div>
+    <div class="discover-card" onclick="openTorahSection('daf')" id="tc-daf">
+      <div class="dc-icon">📚</div>
+      <div class="dc-title">Daf Yomi</div>
+      <div class="dc-preview" id="td-daf">Loading…</div>
+    </div>
+    <div class="discover-card" onclick="openTorahSection('mishnah')" id="tc-mishnah">
+      <div class="dc-icon">🕎</div>
+      <div class="dc-title">Mishnah Yomit</div>
+      <div class="dc-preview" id="td-mishnah">Loading…</div>
+    </div>
+    <div class="discover-card" onclick="openTorahSection('rambam')" id="tc-rambam" style="grid-column:1/-1;">
+      <div class="dc-icon">📜</div>
+      <div class="dc-title">Rambam Daily</div>
+      <div class="dc-preview" id="td-rambam">Loading…</div>
+    </div>
+  </div>
+
+  <div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin:16px 0 10px;">✨ Explore Texts</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+    <div class="discover-card" onclick="openTorahSection('verse')">
+      <div class="dc-icon">📝</div>
+      <div class="dc-title">Random Torah Verse</div>
+      <div class="dc-preview" id="td-verse">Tap to load</div>
+    </div>
+    <div class="discover-card" onclick="openTorahSection('talmud')">
+      <div class="dc-icon">🏛️</div>
+      <div class="dc-title">Random Talmud</div>
+      <div class="dc-preview" id="td-talmud">Tap to load</div>
+    </div>
+    <div class="discover-card" onclick="openTorahSection('pirkei')">
+      <div class="dc-icon">💎</div>
+      <div class="dc-title">Pirkei Avot</div>
+      <div class="dc-preview" id="td-pirkei">Tap to load</div>
+    </div>
+    <div class="discover-card" onclick="openTorahSection('tehillim')">
+      <div class="dc-icon">🙏</div>
+      <div class="dc-title">Tehillim (Psalms)</div>
+      <div class="dc-preview" id="td-tehillim">Tap to load</div>
+    </div>
+    <div class="discover-card" onclick="openTorahSection('proverbs')" >
+      <div class="dc-icon">🌿</div>
+      <div class="dc-title">Mishlei (Proverbs)</div>
+      <div class="dc-preview" id="td-proverbs">Tap to load</div>
+    </div>
+    <div class="discover-card" onclick="openTorahSection('rashi')">
+      <div class="dc-icon">🔍</div>
+      <div class="dc-title">Rashi Commentary</div>
+      <div class="dc-preview" id="td-rashi">Tap to load</div>
+    </div>
+  </div>
+
+  <div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin:16px 0 10px;">🔎 Search Texts</div>
+  <div style="display:flex;gap:8px;margin-bottom:10px;">
+    <input id="torahSearchInput" type="text" placeholder='Search Jewish texts… e.g. "Shabbat" or "Genesis 1:1"'
+      style="flex:1;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:11px 14px;font-size:14px;font-family:'Nunito',sans-serif;font-weight:600;color:var(--text);outline:none;"
+      onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
+      onkeydown="if(event.key==='Enter') torahSearch()">
+    <button onclick="torahSearch()" style="background:#8B6914;color:#fff;border:none;border-radius:var(--radius);padding:11px 18px;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;white-space:nowrap;">Search</button>
+  </div>
+  <div id="torahSearchResults" style="display:none;"></div>
+
+</div>
+</div>
+
+<!-- Torah Detail Overlay -->
+<div id="torahDetailOverlay" style="display:none;position:fixed;inset:0;z-index:3000;background:var(--bg);flex-direction:column;overflow:hidden;">
+  <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:linear-gradient(135deg,#8B6914,#B8965A);flex-shrink:0;">
+    <button onclick="closeTorahDetail()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">←</button>
+    <div id="torahDetailTitle" style="font-family:'Fredoka One',cursive;font-size:18px;color:#fff;flex:1;"></div>
+    <button onclick="refreshTorahSection()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">↻</button>
+  </div>
+  <div id="torahDetailContent" style="flex:1;overflow-y:auto;padding:20px 18px 40px;"></div>
 </div>
 
 <!-- Discover Panel -->
@@ -1755,6 +1855,10 @@ window.getDownloadURL = getDownloadURL;
 // ── State ─────────────────────────────────────────────────
 let currentUser = null;
 let isHost      = false;
+
+// Profile photo cache — declared early so renderSignIn and bubble builder can access it
+let _profilePhotoCache   = {};
+let _profilePhotosLoaded = false;
 let currentSection = 0;
 let userRef     = null;
 let allCards    = {};
@@ -3006,8 +3110,31 @@ function buildBubble(key, msg){
     }
 
     const wrap = document.createElement('div');
-    wrap.style.cssText = 'display:flex;flex-direction:column;align-items:'+(isMine?'flex-end':'flex-start')+';margin-bottom:2px;';
+    wrap.style.cssText = 'display:flex;flex-direction:'+(isMine?'row-reverse':'row')+';align-items:flex-end;gap:7px;margin-bottom:2px;';
     wrap.id = 'msg-'+key;
+
+    // Profile photo / avatar circle
+    const msgAvatar = document.createElement('div');
+    msgAvatar.className = 'wa-msg-avatar';
+    const senderPhoto = _getProfilePhoto(msg.author);
+    const senderInitials = (msg.author||'?').split(' ').map(w=>w[0]||'').join('').toUpperCase().slice(0,2)||'?';
+    const senderColorIdx = (msg.author||'').split('').reduce((a,c)=>a+c.charCodeAt(0),0) % AVATAR_COLORS.length;
+    if(senderPhoto){
+        msgAvatar.style.background = '#eee';
+        msgAvatar.innerHTML = `<img src="${esc(senderPhoto)}" alt="${esc(msg.author||'')}">`;
+    } else {
+        msgAvatar.style.background = AVATAR_COLORS[senderColorIdx];
+        msgAvatar.textContent = senderInitials;
+    }
+    // Clicking avatar shows a bigger view
+    msgAvatar.title = msg.author || '';
+    msgAvatar.style.cursor = 'pointer';
+    msgAvatar.onclick = () => { if(senderPhoto) openProfilePhotoViewer(msg.author, senderPhoto); };
+    wrap.appendChild(msgAvatar);
+
+    const bubbleCol = document.createElement('div');
+    bubbleCol.style.cssText = 'display:flex;flex-direction:column;align-items:'+(isMine?'flex-end':'flex-start')+';min-width:0;flex:1;';
+    wrap.appendChild(bubbleCol);
 
     const bubble = document.createElement('div');
     bubble.className = 'wa-bubble '+(isMine?'mine':'theirs')+(msgIsFromHost?' host-bubble':'');
@@ -3095,10 +3222,10 @@ function buildBubble(key, msg){
             chip.onclick = ()=>toggleReaction(key, emoji);
             reactionWrap.appendChild(chip);
         });
-        wrap.appendChild(bubble);
-        wrap.appendChild(reactionWrap);
+        bubbleCol.appendChild(bubble);
+        bubbleCol.appendChild(reactionWrap);
     } else {
-        wrap.appendChild(bubble);
+        bubbleCol.appendChild(bubble);
     }
     return wrap;
 }
@@ -4490,12 +4617,21 @@ function renderSignIn(){
             const btn = document.createElement('button');
             btn.className = 'saved-btn';
             const isRememberedHost = localStorage.getItem('hostAccount') === acc.name;
-            btn.innerHTML = `<div class="saved-avatar" style="background:${color}">${initials}</div>
+            const storedPhoto = _getProfilePhoto(acc.name);
+            const avatarInner = storedPhoto
+                ? `<img src="${esc(storedPhoto)}" alt="${esc(acc.name)}">`
+                : `<span>${initials}</span>`;
+            btn.innerHTML = `
+                <div class="saved-avatar-wrap">
+                    <div class="saved-avatar" style="${storedPhoto?'background:#eee;':'background:'+color}">${avatarInner}</div>
+                    <div class="saved-avatar-cam" title="Change profile photo" data-name="${esc(acc.name)}">📷</div>
+                </div>
                 <span class="saved-name">${esc(acc.name)}</span>
                 ${isRememberedHost ? '<span style="font-size:10px;font-weight:700;color:var(--danger);background:rgba(229,57,53,.1);border:1px solid var(--danger);border-radius:10px;padding:2px 7px;">HOST</span>' : ''}
                 <button class="saved-remove" data-idx="${i}" title="Remove from this device">✕</button>`;
             btn.addEventListener('click', e => {
                 if(e.target.closest('.saved-remove')) return;
+                if(e.target.closest('.saved-avatar-cam')){ e.stopPropagation(); openProfilePhotoPicker(acc.name); return; }
                 doSignIn(acc.name);
             });
             btn.querySelector('.saved-remove').addEventListener('click', e => {
@@ -4581,8 +4717,14 @@ function updateUserNamePill(name){
     if(!pill || !name) return;
     const initials = name.split(' ').map(w=>w[0]||'').join('').toUpperCase().slice(0,2) || name[0].toUpperCase();
     const colorIdx = name.split('').reduce((a,c)=>a+c.charCodeAt(0),0) % AVATAR_COLORS.length;
-    pillAvatar.style.background = AVATAR_COLORS[colorIdx];
-    pillAvatar.textContent = initials;
+    const photo = _getProfilePhoto(name);
+    if(photo){
+        pillAvatar.style.background = '#eee';
+        pillAvatar.innerHTML = `<img src="${photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    } else {
+        pillAvatar.style.background = AVATAR_COLORS[colorIdx];
+        pillAvatar.innerHTML = initials;
+    }
     pillText.textContent = name;
     pill.classList.remove('hidden');
 }
@@ -4720,6 +4862,8 @@ function switchFeatureTab(panel, btn){
     if(panel === 'calendar') renderCalendar();
     if(panel === 'recipes') renderRecipes();
     if(panel === 'poll') renderPolls();
+    if(panel === 'torah') loadTorahPanel();
+    if(panel === 'finance') loadFinancePanel?.();
 }
 
 // ══════════════════════════════════════════════════════════
@@ -5928,6 +6072,148 @@ window.openChatEmoji=openChatEmoji;
 window.insertEmoji=insertEmoji;
 window.toggleChatSearch=toggleChatSearch;
 window.toggleChatTools=toggleChatTools;
+
+// ══════════════════════════════════════════════════════════
+//  PROFILE PHOTOS — WhatsApp-style per-user photos
+//  Firebase stores only the URL; photo lives on Cloudinary
+// ══════════════════════════════════════════════════════════
+// (_profilePhotoCache and _profilePhotosLoaded declared at top of script)
+
+// ── Get a user's photo (from cache) ──────────────────────
+function _getProfilePhoto(name){
+    if(!name) return null;
+    return _profilePhotoCache[name] || null;
+}
+
+// ── Load ALL profile photos from Firebase once ───────────
+async function loadAllProfilePhotos(){
+    if(!window.db || _profilePhotosLoaded) return;
+    try {
+        const snap = await window.dbGet(window.dbRef(window.db, 'userProfiles'));
+        if(snap.exists()){
+            const data = snap.val();
+            Object.entries(data).forEach(([name, profile]) => {
+                if(profile.photo) _profilePhotoCache[name] = profile.photo;
+            });
+        }
+        _profilePhotosLoaded = true;
+    } catch(e){ console.warn('Could not load profile photos:', e); }
+}
+
+// ── Listen for real-time profile photo updates ────────────
+function listenProfilePhotos(){
+    if(!window.db) return;
+    window.dbOnValue(window.dbRef(window.db, 'userProfiles'), snap => {
+        if(!snap.exists()) return;
+        const data = snap.val();
+        Object.entries(data).forEach(([name, profile]) => {
+            if(profile.photo) _profilePhotoCache[name] = profile.photo;
+        });
+        // Re-render sign-in avatars if visible
+        if(!document.getElementById('signinOverlay').classList.contains('hidden')){
+            renderSignIn();
+        }
+        // Update user name pill if it's the current user
+        if(currentUser && _profilePhotoCache[currentUser]){
+            updateUserNamePill(currentUser);
+        }
+    });
+}
+
+// ── Open file picker to set profile photo ─────────────────
+function openProfilePhotoPicker(name){
+    if(!name) return;
+    const inp = document.createElement('input');
+    inp.type = 'file';
+    inp.accept = 'image/*';
+    inp.style.display = 'none';
+    document.body.appendChild(inp);
+    inp.onchange = async () => {
+        const file = inp.files?.[0];
+        inp.remove();
+        if(!file) return;
+        if(file.size > 5*1024*1024){ toast('Photo too large — max 5MB', 'warn'); return; }
+        await _uploadProfilePhoto(name, file);
+    };
+    inp.click();
+}
+
+// ── Upload photo to Cloudinary, save URL to Firebase ──────
+async function _uploadProfilePhoto(name, file){
+    toast('Uploading profile photo…');
+
+    try {
+        let photoUrl;
+
+        if(CLOUDINARY_CLOUD_NAME === 'YOUR_CLOUD_NAME'){
+            // Fallback: use base64 for small images if no Cloudinary
+            if(file.size > 200*1024){ toast('Set up Cloudinary to use profile photos', 'warn'); return; }
+            photoUrl = await new Promise(res => {
+                const r = new FileReader();
+                r.onload = e => res(e.target.result);
+                r.readAsDataURL(file);
+            });
+        } else {
+            // Upload directly to Cloudinary — only URL goes to Firebase
+            const fd = new FormData();
+            fd.append('file', file);
+            fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+            fd.append('folder', 'family_profiles');
+            // Square crop for profile photos
+            fd.append('transformation', 'c_fill,g_face,w_200,h_200,q_auto');
+
+            const res = await fetch(
+                `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+                { method: 'POST', body: fd }
+            );
+            if(!res.ok) throw new Error('Cloudinary upload failed');
+            const data = await res.json();
+            photoUrl = data.secure_url;
+        }
+
+        // Save URL to Firebase (tiny — just a URL string)
+        if(window.db){
+            await window.dbSet(
+                window.dbRef(window.db, `userProfiles/${name}`),
+                { photo: photoUrl, updatedAt: Date.now() }
+            );
+        }
+
+        // Update local cache immediately
+        _profilePhotoCache[name] = photoUrl;
+
+        // Refresh UI
+        renderSignIn();
+        if(name === currentUser) updateUserNamePill(name);
+
+        toast('Profile photo updated! 🎉');
+
+    } catch(e){
+        console.error('Profile photo upload error:', e);
+        toast('Failed to upload photo — try again', 'danger');
+    }
+}
+
+// ── Full-screen viewer when you tap someone's avatar ──────
+function openProfilePhotoViewer(name, photoUrl){
+    const existing = document.getElementById('profilePhotoViewer');
+    if(existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'profilePhotoViewer';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:20000;background:rgba(0,0,0,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;';
+    overlay.innerHTML = `
+        <img src="${esc(photoUrl)}" style="max-width:90vw;max-height:75vh;border-radius:50%;object-fit:cover;width:280px;height:280px;border:4px solid rgba(255,255,255,.2);">
+        <div style="color:#fff;font-family:'Fredoka One',cursive;font-size:22px;">${esc(name)}</div>
+        <button onclick="document.getElementById('profilePhotoViewer').remove()"
+            style="background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);color:#fff;padding:12px 28px;border-radius:24px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;">Close</button>
+    `;
+    overlay.onclick = e => { if(e.target === overlay) overlay.remove(); };
+    document.body.appendChild(overlay);
+}
+
+window.openProfilePhotoPicker = openProfilePhotoPicker;
+window.openProfilePhotoViewer = openProfilePhotoViewer;
 window.searchMessages=searchMessages;
 window.pinMessage=pinMessage;
 window.pinnedMsgKey=null;
@@ -5984,6 +6270,9 @@ async function _bootPushForUser(){
 
     // Start card/post notifications for everyone
     listenCardsForNotif();
+    // Load & listen for profile photos
+    await loadAllProfilePhotos();
+    listenProfilePhotos();
 
     // Wire chat group listeners (groups load async, so wait for them)
     setTimeout(() => {
@@ -7717,21 +8006,90 @@ async function generateImage(){
     gallery.insertBefore(loadCard, gallery.firstChild);
 
     try {
-        // Pollinations free image API — safe mode ON + negative prompt
         const seed = Math.floor(Math.random() * 999999);
-        const encoded  = encodeURIComponent(fullPrompt);
-        const negEnc   = encodeURIComponent(NEGATIVE);
-        const url = `https://image.pollinations.ai/prompt/${encoded}?width=768&height=768&seed=${seed}&nologo=true&enhance=true&safe=true&negative_prompt=${negEnc}`;
+        const encoded = encodeURIComponent(fullPrompt);
+        const negEnc  = encodeURIComponent(NEGATIVE);
+        let url = null;
 
-        // Pre-load the image (it generates on-the-fly)
-        const img = new Image();
-        await new Promise((resolve, reject) => {
-            img.onload  = resolve;
-            img.onerror = reject;
-            img.src = url;
-            // Timeout after 30s
-            setTimeout(() => reject(new Error('timeout')), 30000);
-        });
+        // Helper: update loading message
+        const setMsg = (msg, sub='') => {
+            const el = document.querySelector('#imgGenGallery .img-gen-loading div:last-child');
+            if(el) el.innerHTML = `${msg}<br><span style="font-size:11px;opacity:.6;">${sub||'Free • Trying all engines'}</span>`;
+        };
+
+        // ═══════════════════════════════════════════════════
+        // ENGINE 1 — Pollinations.ai (7 models, no key ever)
+        // ═══════════════════════════════════════════════════
+        const pollinationsModels = [
+            'flux', 'turbo', 'flux-realism', 'flux-anime',
+            'flux-3d', 'any-dark', 'flux-pro'
+        ];
+        for(const model of pollinationsModels){
+            if(url) break;
+            setMsg(`🎨 Pollinations · ${model}`, 'Engine 1 of 3');
+            const candidate = `https://image.pollinations.ai/prompt/${encoded}?model=${model}&width=768&height=768&seed=${seed}&enhance=true&safe=true&negative_prompt=${negEnc}`;
+            try {
+                await new Promise((res, rej) => {
+                    const img = new Image();
+                    img.onload = res; img.onerror = rej;
+                    img.src = candidate;
+                    setTimeout(() => rej(new Error('timeout')), 20000);
+                });
+                url = candidate;
+            } catch(e){ console.warn(`Pollinations ${model} failed`); await new Promise(r=>setTimeout(r,600)); }
+        }
+
+        // ═══════════════════════════════════════════════════
+        // ENGINE 2 — Puter.js (20+ models, user-pays, no key)
+        // ═══════════════════════════════════════════════════
+        if(!url && typeof puter !== 'undefined' && puter.ai?.txt2img){
+            const puterModels = [
+                { model: 'black-forest-labs/FLUX.1-schnell-Free' },
+                { model: 'black-forest-labs/FLUX.1-dev' },
+                { model: 'gpt-image-1-mini' },
+                { model: 'dall-e-2' },
+                { model: 'dall-e-3' },
+                { model: 'Lykon/DreamShaper' },
+                { model: 'ByteDance-Seed/Seedream-3.0' },
+                { model: 'RunDiffusion/Juggernaut-pro-flux' },
+                { model: 'stabilityai/stable-diffusion-xl-base-1.0' },
+                { model: 'Qwen/Qwen-Image' },
+            ];
+            for(const opts of puterModels){
+                if(url) break;
+                setMsg(`🤖 Puter.js · ${opts.model.split('/').pop()}`, 'Engine 2 of 3');
+                try {
+                    const imgEl = await Promise.race([
+                        puter.ai.txt2img(fullPrompt, opts),
+                        new Promise((_,rej) => setTimeout(()=>rej(new Error('timeout')),25000))
+                    ]);
+                    if(imgEl?.src) url = imgEl.src;
+                } catch(pe){ console.warn(`Puter ${opts.model} failed`); await new Promise(r=>setTimeout(r,400)); }
+            }
+        }
+
+        // ═══════════════════════════════════════════════════
+        // ENGINE 3 — Pollinations alternate domains/endpoints
+        // ═══════════════════════════════════════════════════
+        if(!url){
+            const altModels = ['stable-diffusion', 'dreamshaper', 'realvisxl', 'juggernaut'];
+            for(const model of altModels){
+                if(url) break;
+                setMsg(`🔄 Alt engine · ${model}`, 'Engine 3 of 3');
+                const candidate = `https://image.pollinations.ai/prompt/${encoded}?model=${model}&width=512&height=512&seed=${seed}&safe=true`;
+                try {
+                    await new Promise((res, rej) => {
+                        const img = new Image();
+                        img.onload = res; img.onerror = rej;
+                        img.src = candidate;
+                        setTimeout(() => rej(new Error('timeout')), 20000);
+                    });
+                    url = candidate;
+                } catch(e){ console.warn(`Alt ${model} failed`); await new Promise(r=>setTimeout(r,400)); }
+            }
+        }
+
+        if(!url) throw new Error('All engines tried — please wait 1 minute and try again');
 
         // Remove loading card
         loadCard.remove();
@@ -7744,6 +8102,7 @@ async function generateImage(){
             <div class="img-gen-meta">
                 <div style="flex:1;font-size:12px;font-weight:600;color:var(--muted);line-height:1.4;">${userPrompt}</div>
                 <a href="${url}" download="family-ai-image.jpg" style="background:var(--accent);color:#fff;border:none;border-radius:10px;padding:7px 12px;font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;text-decoration:none;flex-shrink:0;">⬇</a>
+                <button onclick="deleteImgCard(this)" title="Delete" style="background:rgba(229,57,53,.1);color:var(--danger);border:1.5px solid rgba(229,57,53,.25);border-radius:10px;padding:7px 10px;font-size:13px;cursor:pointer;flex-shrink:0;transition:all .2s;" onmouseover="this.style.background='var(--danger)';this.style.color='#fff'" onmouseout="this.style.background='rgba(229,57,53,.1)';this.style.color='var(--danger)'">🗑</button>
             </div>
         `;
         gallery.insertBefore(card, gallery.firstChild);
@@ -7758,7 +8117,7 @@ async function generateImage(){
     } catch(e) {
         loadCard.remove();
         if(_imgGenHistory.length === 0 && empty) empty.style.display = 'flex';
-        toast('Image generation failed — try a different description', 'warn');
+        toast('All models are busy right now — wait 1 minute and try again', 'warn');
         console.warn('Image gen error:', e);
     } finally {
         if(btn){ btn.disabled = false; btn.style.opacity = '1'; }
@@ -7778,12 +8137,334 @@ function closeImgViewer(){
 }
 
 window.openImageGen   = openImageGen;
+
+// ══════════════════════════════════════════════════════════
+//  TORAH LEARNING CENTER — Powered by Sefaria API (free)
+//  https://www.sefaria.org/api
+// ══════════════════════════════════════════════════════════
+
+let _torahCurrentSection = null;
+let _torahPanelLoaded = false;
+
+// ── Random text references per section ───────────────────
+const TORAH_RANDOM = {
+    verse: () => {
+        const books = ['Genesis','Exodus','Leviticus','Numbers','Deuteronomy'];
+        const chapters = {'Genesis':50,'Exodus':40,'Leviticus':27,'Numbers':36,'Deuteronomy':34};
+        const b = books[Math.floor(Math.random()*books.length)];
+        const c = Math.floor(Math.random()*chapters[b])+1;
+        const v = Math.floor(Math.random()*20)+1;
+        return `${b}.${c}.${v}`;
+    },
+    talmud: () => {
+        const tractates = ['Berakhot','Shabbat','Eruvin','Pesachim','Yoma','Sukkah','Beitzah','Rosh_Hashanah','Taanit','Megillah','Moed_Katan','Chagigah','Bava_Kamma','Bava_Metzia','Bava_Batra','Sanhedrin','Makkot','Sotah','Gittin','Kiddushin'];
+        const t = tractates[Math.floor(Math.random()*tractates.length)];
+        const daf = Math.floor(Math.random()*40)+2;
+        return `${t}.${daf}a`;
+    },
+    pirkei: () => {
+        const ch = Math.floor(Math.random()*6)+1;
+        const mis = Math.floor(Math.random()*18)+1;
+        return `Pirkei_Avot.${ch}.${mis}`;
+    },
+    tehillim: () => {
+        const ch = Math.floor(Math.random()*150)+1;
+        return `Psalms.${ch}`;
+    },
+    proverbs: () => {
+        const ch = Math.floor(Math.random()*31)+1;
+        return `Proverbs.${ch}`;
+    },
+    rashi: () => {
+        const books = ['Genesis','Exodus','Leviticus','Numbers','Deuteronomy'];
+        const b = books[Math.floor(Math.random()*books.length)];
+        const c = Math.floor(Math.random()*10)+1;
+        return `Rashi_on_${b}.${c}.1.1`;
+    }
+};
+
+// ── Load the Torah panel (daily sections + previews) ──────
+async function loadTorahPanel(){
+    if(_torahPanelLoaded) return;
+    _torahPanelLoaded = true;
+
+    // Load Sefaria calendar (daily learning)
+    try {
+        const res = await fetch('https://www.sefaria.org/api/calendars?diaspora=1&timezone=America/New_York');
+        if(!res.ok) throw new Error('Failed');
+        const data = await res.json();
+        const items = data.calendar_items || [];
+
+        // Map items to our cards
+        const map = {
+            'Parashat Hashavua': 'parasha',
+            'Daf Yomi':          'daf',
+            'Mishna Yomit':      'mishnah',
+            'Rambam':            'rambam',
+        };
+
+        items.forEach(item => {
+            const key = Object.keys(map).find(k => item.title?.en?.includes(k) || item.title?.en === k);
+            if(!key) return;
+            const panelKey = map[key];
+            const el = document.getElementById('td-'+panelKey);
+            if(el){
+                const ref = item.displayValue?.en || item.ref || '';
+                const heRef = item.displayValue?.he || '';
+                el.innerHTML = `<span style="font-weight:700;color:var(--text);">${ref}</span>${heRef ? '<br><span style="font-size:11px;color:var(--muted);direction:rtl;">'+heRef+'</span>' : ''}`;
+            }
+        });
+
+        // Fill any that didn't match
+        ['parasha','daf','mishnah','rambam'].forEach(k => {
+            const el = document.getElementById('td-'+k);
+            if(el && el.textContent === 'Loading…') el.textContent = 'Tap to load';
+        });
+
+    } catch(e) {
+        ['parasha','daf','mishnah','rambam'].forEach(k => {
+            const el = document.getElementById('td-'+k);
+            if(el) el.textContent = 'Tap to load';
+        });
+    }
+}
+
+// ── Open a section in the detail overlay ─────────────────
+async function openTorahSection(section){
+    _torahCurrentSection = section;
+    const overlay = document.getElementById('torahDetailOverlay');
+    const content = document.getElementById('torahDetailContent');
+    const title   = document.getElementById('torahDetailTitle');
+    overlay.style.display = 'flex';
+    content.innerHTML = _torahLoadingHTML();
+
+    const labels = {
+        parasha:'📖 Weekly Parasha', daf:'📚 Daf Yomi', mishnah:'🕎 Mishnah Yomit',
+        rambam:'📜 Rambam Daily', verse:'📝 Torah Verse', talmud:'🏛️ Talmud',
+        pirkei:'💎 Pirkei Avot', tehillim:'🙏 Tehillim', proverbs:'🌿 Mishlei', rashi:'🔍 Rashi'
+    };
+    title.textContent = labels[section] || '📜 Torah';
+
+    try {
+        if(['parasha','daf','mishnah','rambam'].includes(section)){
+            await _loadDailySection(section, content);
+        } else {
+            await _loadRandomText(section, content);
+        }
+    } catch(e){
+        content.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);">
+            <div style="font-size:48px;margin-bottom:12px;">📡</div>
+            <div style="font-weight:700;margin-bottom:8px;">Could not connect to Sefaria</div>
+            <div style="font-size:13px;">Check your connection and try again</div>
+            <button onclick="refreshTorahSection()" style="margin-top:16px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:10px 24px;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;">Try Again</button>
+        </div>`;
+    }
+}
+
+async function _loadDailySection(section, container){
+    // Get calendar items
+    const res = await fetch('https://www.sefaria.org/api/calendars?diaspora=1&timezone=America/New_York');
+    if(!res.ok) throw new Error('Calendar fetch failed');
+    const data = await res.json();
+    const items = data.calendar_items || [];
+
+    const keyMap = {
+        parasha: ['Parashat Hashavua'],
+        daf:     ['Daf Yomi'],
+        mishnah: ['Mishna Yomit'],
+        rambam:  ['Rambam'],
+    };
+
+    const matches = items.filter(item => {
+        const en = item.title?.en || '';
+        return keyMap[section]?.some(k => en.includes(k));
+    });
+
+    if(!matches.length) throw new Error('Section not found in calendar');
+
+    let html = '';
+    for(const item of matches.slice(0,3)){
+        const ref = item.ref || '';
+        const displayEn = item.displayValue?.en || ref;
+        const displayHe = item.displayValue?.he || '';
+
+        html += `<div style="background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:18px;margin-bottom:16px;">
+            <div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">${item.title?.en||''}</div>
+            <div style="font-family:'Fredoka One',cursive;font-size:20px;color:#8B6914;margin-bottom:4px;">${displayEn}</div>
+            ${displayHe ? `<div style="font-size:18px;color:var(--text);direction:rtl;text-align:right;line-height:1.7;margin-bottom:10px;">${displayHe}</div>` : ''}
+        </div>`;
+
+        // Also load the actual text
+        if(ref){
+            html += await _fetchAndRenderText(ref);
+        }
+    }
+
+    container.innerHTML = html || _torahEmptyHTML();
+}
+
+async function _loadRandomText(section, container){
+    const ref = TORAH_RANDOM[section]?.();
+    if(!ref) throw new Error('Unknown section');
+    container.innerHTML = await _fetchAndRenderText(ref, true);
+}
+
+async function _fetchAndRenderText(ref, showRef=false){
+    try {
+        const res = await fetch(`https://www.sefaria.org/api/texts/${encodeURIComponent(ref)}?context=0&commentary=0`);
+        if(!res.ok) throw new Error('Text fetch failed');
+        const d = await res.json();
+
+        const heText = _flattenText(d.he);
+        const enText = _flattenText(d.text);
+        const bookTitle = d.book || d.ref || ref;
+        const heRef = d.heRef || '';
+
+        return `<div style="background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:18px;margin-bottom:16px;">
+            ${showRef ? `<div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">${bookTitle}</div>` : ''}
+            ${heRef ? `<div style="font-size:13px;font-weight:700;color:#8B6914;margin-bottom:10px;direction:rtl;text-align:right;">${heRef}</div>` : ''}
+            ${heText ? `<div style="font-size:18px;line-height:1.9;color:var(--text);direction:rtl;text-align:right;font-weight:500;margin-bottom:14px;padding:14px;background:rgba(139,105,20,.06);border-radius:12px;border-right:3px solid #8B6914;">${heText}</div>` : ''}
+            ${enText ? `<div style="font-size:15px;line-height:1.75;color:var(--text);font-weight:600;padding:12px;background:var(--bg);border-radius:12px;">${enText}</div>` : ''}
+            <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
+                <a href="https://www.sefaria.org/${encodeURIComponent(ref)}" target="_blank" rel="noopener"
+                    style="background:#8B6914;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;text-decoration:none;">
+                    Open in Sefaria ↗
+                </a>
+                <button onclick="_torahReadAloud(this,'${ref.replace(/'/g,"&apos;")}')"
+                    style="background:var(--surface2);color:var(--text);border:1.5px solid var(--border);border-radius:10px;padding:8px 16px;font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;">
+                    🔊 Read Aloud
+                </button>
+                ${Object.keys(TORAH_RANDOM).includes(_torahCurrentSection||'') ? `<button onclick="refreshTorahSection()"
+                    style="background:var(--surface2);color:var(--text);border:1.5px solid var(--border);border-radius:10px;padding:8px 16px;font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;">
+                    🔀 Another
+                </button>` : ''}
+            </div>
+        </div>`;
+    } catch(e){
+        return `<div style="color:var(--muted);font-size:13px;padding:10px;">Could not load text for ${ref}</div>`;
+    }
+}
+
+function _flattenText(t){
+    if(!t) return '';
+    if(Array.isArray(t)) return t.map(x => _flattenText(x)).filter(Boolean).join(' ');
+    // Strip HTML tags from Sefaria response
+    return String(t).replace(/<[^>]+>/g,'').trim();
+}
+
+// ── Torah search ──────────────────────────────────────────
+async function torahSearch(){
+    const q = (document.getElementById('torahSearchInput')?.value||'').trim();
+    if(!q){ toast('Type something to search','warn'); return; }
+
+    const resultsEl = document.getElementById('torahSearchResults');
+    resultsEl.style.display = 'block';
+    resultsEl.innerHTML = _torahLoadingHTML('Searching Sefaria…');
+
+    try {
+        const res = await fetch(`https://www.sefaria.org/api/search-wrapper?query=${encodeURIComponent(q)}&type=text&field=naive_lemmatizer&slop=0&start=0&size=8`);
+        if(!res.ok) throw new Error('Search failed');
+        const data = await res.json();
+        const hits = data.hits?.hits || [];
+
+        if(!hits.length){
+            resultsEl.innerHTML = `<div style="text-align:center;padding:20px;color:var(--muted);font-weight:600;">No results found for "${q}"</div>`;
+            return;
+        }
+
+        let html = `<div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">${hits.length} results for "${q}"</div>`;
+        hits.forEach(hit => {
+            const ref = hit._id || '';
+            const src = hit._source || {};
+            const snippet = (src.exact || src.naive_lemmatizer || '').slice(0,200);
+            const heSnippet = (src.hebrew || '').slice(0,150);
+            html += `<div onclick="openTorahRef('${ref.replace(/'/g,'&apos;')}')"
+                style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:14px;margin-bottom:8px;cursor:pointer;transition:all .2s;"
+                onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                <div style="font-weight:800;font-size:13px;color:#8B6914;margin-bottom:4px;">${ref}</div>
+                ${heSnippet ? `<div style="font-size:13px;direction:rtl;text-align:right;color:var(--muted);margin-bottom:4px;">${heSnippet}…</div>` : ''}
+                ${snippet ? `<div style="font-size:12px;color:var(--muted);line-height:1.5;">${snippet}…</div>` : ''}
+            </div>`;
+        });
+        resultsEl.innerHTML = html;
+
+    } catch(e){
+        resultsEl.innerHTML = `<div style="color:var(--muted);text-align:center;padding:16px;font-weight:600;">Search failed — try again</div>`;
+    }
+}
+
+async function openTorahRef(ref){
+    _torahCurrentSection = null;
+    const overlay = document.getElementById('torahDetailOverlay');
+    const content = document.getElementById('torahDetailContent');
+    const title   = document.getElementById('torahDetailTitle');
+    overlay.style.display = 'flex';
+    title.textContent = '📜 ' + ref;
+    content.innerHTML = _torahLoadingHTML();
+    content.innerHTML = await _fetchAndRenderText(ref, true);
+}
+
+// ── Read aloud a Torah text ───────────────────────────────
+function _torahReadAloud(btn, ref){
+    const content = document.getElementById('torahDetailContent');
+    // Collect all English text paragraphs
+    const paragraphs = [...content.querySelectorAll('div')].map(d=>d.textContent.trim()).filter(t=>t.length>20 && !/↗|Aloud|Another|Sefaria/.test(t));
+    const text = paragraphs.slice(0,3).join(' ').slice(0,600);
+    if(text) readAloud(btn, text);
+}
+
+// ── Helpers ───────────────────────────────────────────────
+function closeTorahDetail(){
+    document.getElementById('torahDetailOverlay').style.display = 'none';
+}
+
+function refreshTorahSection(){
+    if(_torahCurrentSection) openTorahSection(_torahCurrentSection);
+}
+
+function _torahLoadingHTML(msg='Loading from Sefaria…'){
+    return `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:14px;">
+        <div style="font-size:40px;">📜</div>
+        <div style="width:40px;height:40px;border:4px solid var(--border);border-top-color:#8B6914;border-radius:50%;animation:spin .8s linear infinite;"></div>
+        <div style="font-size:14px;font-weight:700;color:var(--muted);">${msg}</div>
+    </div>`;
+}
+
+function _torahEmptyHTML(){
+    return `<div style="text-align:center;padding:40px;color:var(--muted);"><div style="font-size:48px;">📖</div><div style="font-weight:700;margin-top:12px;">No content available today</div></div>`;
+}
+
+window.openTorahSection   = openTorahSection;
+window.closeTorahDetail   = closeTorahDetail;
+window.refreshTorahSection= refreshTorahSection;
+window.loadTorahPanel     = loadTorahPanel;
+window.torahSearch        = torahSearch;
+window.openTorahRef       = openTorahRef;
 window.closeImageGen  = closeImageGen;
 window.generateImage  = generateImage;
 window.setImgStyle    = setImgStyle;
 window.setImgPrompt   = setImgPrompt;
 window.openImgViewer  = openImgViewer;
 window.closeImgViewer = closeImgViewer;
+
+function deleteImgCard(btn){
+    const card = btn.closest('.img-gen-card');
+    if(!card) return;
+    card.style.transition = 'opacity .25s, transform .25s';
+    card.style.opacity = '0';
+    card.style.transform = 'scale(.95)';
+    setTimeout(() => {
+        card.remove();
+        // If gallery is now empty, show the empty state
+        const gallery = document.getElementById('imgGenGallery');
+        const remaining = gallery?.querySelectorAll('.img-gen-card');
+        if(gallery && remaining?.length === 0){
+            const empty = document.getElementById('imgGenEmpty');
+            if(empty) empty.style.display = 'flex';
+        }
+    }, 260);
+}
+window.deleteImgCard = deleteImgCard;
 
 function sendGameInviteByInput(type){
     const name = (document.getElementById('gameInviteNameInput')||{}).value?.trim();
