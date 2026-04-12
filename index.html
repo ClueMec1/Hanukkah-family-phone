@@ -9356,6 +9356,17 @@ window.switchToHumanGame=switchToHumanGame;
         <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
         Video Chat
     </button>
+    <button class="bottom-nav-btn" onclick="openLive()" title="Live Stream" id="bottomLiveBtn" style="position:relative;">
+        <span id="livePulseDot" style="display:none;position:absolute;top:6px;right:18px;width:8px;height:8px;background:#ff3b30;border-radius:50%;animation:livePulse 1.2s infinite;"></span>
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/>
+            <path d="M6.3 6.3a8 8 0 0 0 0 11.4"/>
+            <path d="M17.7 6.3a8 8 0 0 1 0 11.4"/>
+            <path d="M3.5 3.5a13 13 0 0 0 0 17"/>
+            <path d="M20.5 3.5a13 13 0 0 1 0 17"/>
+        </svg>
+        Live
+    </button>
     <button class="bottom-nav-btn" onclick="openSearch()" title="Search">
         <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         Search
@@ -9372,6 +9383,428 @@ window.switchToHumanGame=switchToHumanGame;
     <div class="user-name-pill-avatar" id="userNamePillAvatar">?</div>
     <span id="userNamePillText">You</span>
 </div>
+
+<!-- ═══════════════════ LIVE STREAM FEATURE ═══════════════════ -->
+
+<style>
+@keyframes livePulse {
+    0%,100%{opacity:1;transform:scale(1);}
+    50%{opacity:.4;transform:scale(1.5);}
+}
+@keyframes liveRingPulse {
+    0%{transform:scale(1);opacity:.8;}
+    100%{transform:scale(1.8);opacity:0;}
+}
+.live-modal-overlay {
+    display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9000;
+    flex-direction:column;align-items:center;justify-content:center;
+}
+.live-modal-overlay.active { display:flex; }
+.live-modal-box {
+    background:var(--card,#1a1a1a);border-radius:20px;padding:28px 24px;
+    max-width:420px;width:90%;text-align:center;color:var(--text,#fff);
+    box-shadow:0 8px 40px rgba(0,0,0,.6);
+}
+.live-badge {
+    display:inline-flex;align-items:center;gap:6px;
+    background:#ff3b30;color:#fff;font-weight:800;font-size:13px;
+    padding:4px 12px;border-radius:99px;letter-spacing:.08em;margin-bottom:14px;
+}
+.live-video-wrap {
+    width:100%;border-radius:14px;overflow:hidden;background:#000;
+    aspect-ratio:16/9;position:relative;margin:14px 0;
+}
+.live-video-wrap video {
+    width:100%;height:100%;object-fit:contain;display:block;
+}
+.live-video-wrap .live-overlay-badge {
+    position:absolute;top:10px;left:10px;
+    background:rgba(255,59,48,.9);color:#fff;font-weight:800;font-size:11px;
+    padding:2px 8px;border-radius:6px;letter-spacing:.08em;
+}
+.live-viewer-count {
+    font-size:12px;color:var(--muted,#888);margin-bottom:10px;
+}
+.live-btn {
+    width:100%;padding:14px;font-size:15px;font-weight:700;font-family:inherit;
+    border:none;border-radius:12px;cursor:pointer;transition:all .2s;margin-top:8px;
+}
+.live-btn-red { background:#ff3b30;color:#fff; }
+.live-btn-red:hover { background:#d0302a; }
+.live-btn-ghost { background:rgba(255,255,255,.12);color:var(--text,#fff); }
+.live-btn-ghost:hover { background:rgba(255,255,255,.2); }
+.live-choose-row { display:flex;gap:12px;margin:14px 0; }
+.live-choose-card {
+    flex:1;padding:18px 10px;border-radius:14px;border:2px solid rgba(255,255,255,.15);
+    cursor:pointer;transition:all .2s;background:rgba(255,255,255,.06);
+}
+.live-choose-card:hover { border-color:#ff3b30;background:rgba(255,59,48,.1); }
+.live-choose-card svg { display:block;margin:0 auto 8px; }
+.live-choose-card span { font-size:13px;font-weight:600;color:var(--text,#eee); }
+.live-status-dot {
+    display:inline-block;width:8px;height:8px;border-radius:50%;
+    background:#ff3b30;margin-right:6px;animation:livePulse 1.2s infinite;
+}
+.live-ring {
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    width:60px;height:60px;border-radius:50%;border:3px solid #ff3b30;
+    animation:liveRingPulse 1.4s infinite ease-out;pointer-events:none;
+}
+</style>
+
+<!-- Host: choose what to share -->
+<div class="live-modal-overlay" id="liveHostChooseModal">
+  <div class="live-modal-box">
+    <div style="font-size:22px;font-weight:800;margin-bottom:6px;">🔴 Go Live</div>
+    <div style="color:var(--muted,#888);font-size:13px;margin-bottom:20px;">Choose what to share with the family</div>
+    <div class="live-choose-row">
+      <div class="live-choose-card" onclick="startLive('camera')">
+        <svg width="36" height="36" fill="none" stroke="#ff3b30" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="10" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        <span>My Camera</span>
+      </div>
+      <div class="live-choose-card" onclick="startLive('screen')">
+        <svg width="36" height="36" fill="none" stroke="#ff3b30" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        <span>Share a Tab / Screen</span>
+      </div>
+    </div>
+    <button class="live-btn live-btn-ghost" onclick="closeLiveModal('liveHostChooseModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- Host: actively live -->
+<div class="live-modal-overlay" id="liveHostActiveModal">
+  <div class="live-modal-box">
+    <div class="live-badge"><span class="live-status-dot"></span> LIVE</div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:4px;">You are live!</div>
+    <div class="live-viewer-count" id="liveViewerCount">Waiting for viewers…</div>
+    <div class="live-video-wrap">
+      <video id="liveHostPreview" autoplay muted playsinline style="transform:scaleX(1);"></video>
+      <span class="live-overlay-badge">● LIVE</span>
+    </div>
+    <div style="font-size:12px;color:var(--muted,#888);margin-bottom:14px;">Family members will see your stream automatically.</div>
+    <button class="live-btn live-btn-red" onclick="stopLive()">⏹ End Stream</button>
+  </div>
+</div>
+
+<!-- Viewer: notification that someone is live -->
+<div class="live-modal-overlay" id="liveViewerJoinModal">
+  <div class="live-modal-box">
+    <div class="live-badge"><span class="live-status-dot"></span> LIVE NOW</div>
+    <div style="font-size:17px;font-weight:700;margin-bottom:6px;" id="liveViewerHostName">The host is live!</div>
+    <div style="color:var(--muted,#888);font-size:13px;margin-bottom:20px;">Tap to join the live stream</div>
+    <button class="live-btn live-btn-red" onclick="joinLive()">📺 Watch Live</button>
+    <button class="live-btn live-btn-ghost" style="margin-top:8px;" onclick="closeLiveModal('liveViewerJoinModal')">Not now</button>
+  </div>
+</div>
+
+<!-- Viewer: watching the stream -->
+<div class="live-modal-overlay" id="liveViewerWatchModal">
+  <div class="live-modal-box" style="max-width:500px;">
+    <div class="live-badge"><span class="live-status-dot"></span> LIVE</div>
+    <div class="live-video-wrap" style="position:relative;">
+      <video id="liveViewerVideo" autoplay playsinline style="width:100%;height:100%;object-fit:contain;"></video>
+      <span class="live-overlay-badge">● LIVE</span>
+      <div class="live-ring"></div>
+    </div>
+    <div style="font-size:12px;color:var(--muted,#888);margin:10px 0;">Watching live • <span id="liveViewerCountWatch">–</span> viewer(s)</div>
+    <button class="live-btn live-btn-ghost" onclick="leaveLive()">✕ Leave Stream</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+//  LIVE STREAM  —  WebRTC mesh via Firebase signaling
+//  Firebase paths:
+//    live/session   : { host, type, startedAt }  (null = no live)
+//    live/viewers/{vid} : { name, joinedAt }
+//    live/offers/{vid}  : { sdp, type }          host→viewer
+//    live/answers/{vid} : { sdp, type }           viewer→host
+//    live/hostIce/{vid}/{id} : ICE candidate      host→viewer
+//    live/viewerIce/{vid}/{id} : ICE candidate    viewer→host
+// ══════════════════════════════════════════════════════════════════
+(function(){
+const STUN = { iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}] };
+let localStream = null;          // host's MediaStream
+let peerConns   = {};            // host: { [viewerId]: RTCPeerConnection }
+let viewerPc    = null;          // viewer's RTCPeerConnection
+let viewerId    = null;          // this viewer's random ID
+let liveListeners = [];          // Firebase unsub functions to clean up
+let liveActive  = false;
+
+// ── Helpers ──────────────────────────────────────────────────────
+function liveRef(path){
+    return window.dbRef(window.db, 'live/' + path);
+}
+function liveSet(path,val){ return window.dbSet(liveRef(path),val); }
+function liveRemove(path){ return window.dbRemove(liveRef(path)); }
+function livePush(path,val){ return window.dbPush(liveRef(path),val); }
+function liveOnVal(path,cb){
+    const unsub = window.dbOnValue(liveRef(path), snap=>cb(snap));
+    liveListeners.push(unsub);
+    return unsub;
+}
+
+function closeLiveModal(id){ document.getElementById(id).classList.remove('active'); }
+function openLiveModal(id){ document.getElementById(id).classList.add('active'); }
+
+// Show/hide the pulsing red dot on the Live nav button
+function setLiveDot(on){
+    const dot = document.getElementById('livePulseDot');
+    if(dot) dot.style.display = on ? 'block' : 'none';
+}
+
+// ── Entry point: user taps Live button ───────────────────────────
+window.openLive = function(){
+    if(!window.db){ toast('Live stream needs internet connection.','warn'); return; }
+    // Check if someone is already live
+    window.dbGet(liveRef('session')).then(snap=>{
+        const session = snap.val();
+        if(session){
+            // Someone is live
+            if(isHost){
+                // Host sees their own control panel
+                openLiveModal('liveHostActiveModal');
+            } else {
+                document.getElementById('liveViewerHostName').textContent =
+                    (session.host || 'The host') + ' is live! 🎥';
+                openLiveModal('liveViewerJoinModal');
+            }
+        } else {
+            if(isHost){
+                openLiveModal('liveHostChooseModal');
+            } else {
+                toast('No live stream right now. The host can start one!','info');
+            }
+        }
+    }).catch(()=>toast('Could not check live status.','warn'));
+};
+
+// ── HOST: start live ─────────────────────────────────────────────
+window.startLive = async function(type){
+    closeLiveModal('liveHostChooseModal');
+    try {
+        if(type === 'screen'){
+            localStream = await navigator.mediaDevices.getDisplayMedia({
+                video:{ cursor:'always' }, audio:true
+            });
+        } else {
+            localStream = await navigator.mediaDevices.getUserMedia({
+                video:{ width:1280,height:720,facingMode:'user' }, audio:true
+            });
+        }
+    } catch(e){
+        if(e.name === 'NotAllowedError')
+            toast('Permission denied. Please allow camera/screen access.','warn');
+        else
+            toast('Could not access media: ' + e.message,'warn');
+        return;
+    }
+
+    // Preview for host
+    const preview = document.getElementById('liveHostPreview');
+    preview.srcObject = localStream;
+
+    // Write session to Firebase
+    await liveSet('session',{
+        host: currentUser || 'Host',
+        type,
+        startedAt: Date.now()
+    });
+    liveActive = true;
+
+    // If screen share ends (user clicks browser's "Stop sharing" button)
+    localStream.getTracks().forEach(t=>{
+        t.onended = ()=>{ if(liveActive) stopLive(); };
+    });
+
+    openLiveModal('liveHostActiveModal');
+    setLiveDot(true);
+
+    // Listen for new viewers joining
+    liveOnVal('viewers', snap=>{
+        const viewers = snap.val() || {};
+        const count = Object.keys(viewers).length;
+        const el = document.getElementById('liveViewerCount');
+        if(el) el.textContent = count === 0 ? 'Waiting for viewers…'
+                                             : count + ' viewer(s) watching';
+        const el2 = document.getElementById('liveViewerCountWatch');
+        if(el2) el2.textContent = count;
+        // Connect to any new viewer
+        Object.keys(viewers).forEach(vid=>{
+            if(!peerConns[vid]) hostConnectToViewer(vid);
+        });
+    });
+
+    // Listen for answers from viewers
+    liveOnVal('answers', snap=>{
+        const answers = snap.val() || {};
+        Object.keys(answers).forEach(async vid=>{
+            const pc = peerConns[vid];
+            if(pc && !pc._answered){
+                pc._answered = true;
+                try {
+                    await pc.setRemoteDescription(new RTCSessionDescription(answers[vid]));
+                } catch(e){ console.warn('setRemoteDescription answer',e); }
+            }
+        });
+    });
+
+    // Listen for viewer ICE candidates
+    liveOnVal('viewerIce', snap=>{
+        const all = snap.val() || {};
+        Object.keys(all).forEach(vid=>{
+            const pc = peerConns[vid];
+            if(pc){
+                Object.values(all[vid]).forEach(c=>{
+                    if(c && !pc._iceDone) pc.addIceCandidate(new RTCIceCandidate(c)).catch(()=>{});
+                });
+            }
+        });
+    });
+};
+
+async function hostConnectToViewer(vid){
+    const pc = new RTCPeerConnection(STUN);
+    peerConns[vid] = pc;
+
+    localStream.getTracks().forEach(t=> pc.addTrack(t, localStream));
+
+    pc.onicecandidate = e=>{
+        if(e.candidate) livePush('hostIce/'+vid, e.candidate.toJSON());
+    };
+
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    await liveSet('offers/'+vid, { sdp: offer.sdp, type: offer.type });
+}
+
+// ── HOST: stop live ───────────────────────────────────────────────
+window.stopLive = async function(){
+    liveActive = false;
+    if(localStream){ localStream.getTracks().forEach(t=>t.stop()); localStream=null; }
+    Object.values(peerConns).forEach(pc=>pc.close());
+    peerConns = {};
+    liveListeners.forEach(u=>u()); liveListeners=[];
+    await liveRemove('session');
+    await liveRemove('viewers');
+    await liveRemove('offers');
+    await liveRemove('answers');
+    await liveRemove('hostIce');
+    await liveRemove('viewerIce');
+    closeLiveModal('liveHostActiveModal');
+    setLiveDot(false);
+    toast('Live stream ended.','info');
+};
+
+// ── VIEWER: join live ─────────────────────────────────────────────
+window.joinLive = async function(){
+    closeLiveModal('liveViewerJoinModal');
+    openLiveModal('liveViewerWatchModal');
+
+    viewerId = 'v_' + Math.random().toString(36).slice(2,10);
+    await liveSet('viewers/'+viewerId, { name: currentUser || 'Guest', joinedAt: Date.now() });
+
+    viewerPc = new RTCPeerConnection(STUN);
+
+    viewerPc.ontrack = e=>{
+        const vid = document.getElementById('liveViewerVideo');
+        if(vid && e.streams[0]) vid.srcObject = e.streams[0];
+    };
+
+    viewerPc.onicecandidate = e=>{
+        if(e.candidate) livePush('viewerIce/'+viewerId, e.candidate.toJSON());
+    };
+
+    // Wait for host's offer
+    const offerUnsub = window.dbOnValue(liveRef('offers/'+viewerId), async snap=>{
+        const offer = snap.val();
+        if(!offer || viewerPc._offerSet) return;
+        viewerPc._offerSet = true;
+        try {
+            await viewerPc.setRemoteDescription(new RTCSessionDescription(offer));
+            const answer = await viewerPc.createAnswer();
+            await viewerPc.setLocalDescription(answer);
+            await liveSet('answers/'+viewerId, { sdp: answer.sdp, type: answer.type });
+        } catch(e){ console.warn('viewer offer/answer',e); }
+    });
+    liveListeners.push(offerUnsub);
+
+    // Host ICE candidates
+    const iceUnsub = window.dbOnValue(liveRef('hostIce/'+viewerId), snap=>{
+        const cands = snap.val();
+        if(!cands) return;
+        Object.values(cands).forEach(c=>{
+            if(c) viewerPc.addIceCandidate(new RTCIceCandidate(c)).catch(()=>{});
+        });
+    });
+    liveListeners.push(iceUnsub);
+
+    // Viewer count
+    liveOnVal('viewers', snap=>{
+        const count = Object.keys(snap.val()||{}).length;
+        const el = document.getElementById('liveViewerCountWatch');
+        if(el) el.textContent = count;
+    });
+
+    // If session ends, close viewer
+    const sessUnsub = window.dbOnValue(liveRef('session'), snap=>{
+        if(!snap.val()){
+            leaveLive();
+            toast('The live stream has ended.','info');
+        }
+    });
+    liveListeners.push(sessUnsub);
+};
+
+// ── VIEWER: leave live ────────────────────────────────────────────
+window.leaveLive = function(){
+    if(viewerPc){ viewerPc.close(); viewerPc=null; }
+    if(viewerId){
+        liveRemove('viewers/'+viewerId).catch(()=>{});
+        liveRemove('answers/'+viewerId).catch(()=>{});
+        liveRemove('viewerIce/'+viewerId).catch(()=>{});
+        viewerId=null;
+    }
+    liveListeners.forEach(u=>u()); liveListeners=[];
+    const vid = document.getElementById('liveViewerVideo');
+    if(vid){ vid.srcObject=null; }
+    closeLiveModal('liveViewerWatchModal');
+};
+
+// ── Global listener: show red dot + popup when host goes live ─────
+function initLiveWatcher(){
+    if(!window.db) return;
+    window.dbOnValue(window.dbRef(window.db,'live/session'), snap=>{
+        const session = snap.val();
+        if(session && !isHost){
+            setLiveDot(true);
+            // Auto-popup if not already watching
+            if(!document.getElementById('liveViewerWatchModal').classList.contains('active') &&
+               !document.getElementById('liveViewerJoinModal').classList.contains('active')){
+                document.getElementById('liveViewerHostName').textContent =
+                    (session.host || 'The host') + ' is live! 🎥';
+                openLiveModal('liveViewerJoinModal');
+            }
+        } else if(!session){
+            setLiveDot(false);
+        }
+        if(session && isHost){
+            setLiveDot(true);
+        }
+    });
+}
+
+// Start watcher once Firebase is ready
+waitForFirebase(initLiveWatcher);
+
+// Clean up if host refreshes / closes tab
+window.addEventListener('beforeunload',()=>{
+    if(isHost && liveActive) liveRemove('session').catch(()=>{});
+});
+
+})();
+</script>
+<!-- ═══════════════════ END LIVE STREAM ═══════════════════ -->
 
 </body>
 </html>
