@@ -1364,6 +1364,7 @@ function removeHostMemory() {
             <div class="wa-header-info">
                 <div class="wa-header-title">Family Chat</div>
                 <div class="wa-header-sub" id="waChatSub">General</div>
+                <div onclick="openMemberList()" style="font-size:11px;color:rgba(255,255,255,.8);font-weight:500;margin-top:2px;display:flex;align-items:center;gap:4px;cursor:pointer;" title="See all members"><span style="width:6px;height:6px;background:#4cff91;border-radius:50%;display:inline-block;flex-shrink:0;box-shadow:0 0 5px #4cff91;"></span><span id="chatMemberCountText">…</span></div>
             </div>
             <button onclick="toggleChatSearch()" style="background:none;border:none;color:rgba(255,255,255,.8);font-size:17px;cursor:pointer;padding:4px 8px;" title="Search messages">🔍</button>
             <button class="wa-header-close" onclick="closeModal('commentsModal')">✕</button>
@@ -1957,6 +1958,7 @@ async function registerOnlineUser(){
             timestamp: Date.now(),
             deviceId: getDeviceId()
         });
+        try{ await window.dbSet(window.dbRef(window.db,'familyMembers/'+key),{name:currentUser,lastSeen:Date.now()}); }catch(e){}
     }catch(e){ console.log('Presence error:', e); }
 }
 window.addEventListener('beforeunload', ()=>{
@@ -9356,6 +9358,11 @@ window.switchToHumanGame=switchToHumanGame;
         <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
         Video Chat
     </button>
+    <button class="bottom-nav-btn" id="liveNavBtn" onclick="openLiveEntry()" title="Live / Call" style="position:relative;">
+        <span id="livePulseDot" style="display:none;position:absolute;top:6px;right:14px;width:8px;height:8px;background:#ff3b30;border-radius:50%;"></span>
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/><path d="M6.3 6.3a8 8 0 0 0 0 11.4"/><path d="M17.7 6.3a8 8 0 0 1 0 11.4"/><path d="M3.5 3.5a13 13 0 0 0 0 17"/><path d="M20.5 3.5a13 13 0 0 1 0 17"/></svg>
+        Live
+    </button>
     <button class="bottom-nav-btn" onclick="openSearch()" title="Search">
         <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         Search
@@ -9372,6 +9379,721 @@ window.switchToHumanGame=switchToHumanGame;
     <div class="user-name-pill-avatar" id="userNamePillAvatar">?</div>
     <span id="userNamePillText">You</span>
 </div>
+
+<!-- ═══════════════════════════════════════════════════
+     LIVE + VIDEO CALL + MEMBER LIST — clean rebuild
+═══════════════════════════════════════════════════ -->
+<style>
+.lv-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9100;align-items:center;justify-content:center;}
+.lv-ov.on{display:flex;}
+.lv-box{background:#1c1c1e;border-radius:22px;padding:28px 22px;max-width:400px;width:92%;color:#fff;box-shadow:0 12px 48px #0009;}
+.lv-h1{font-size:20px;font-weight:800;text-align:center;margin-bottom:6px;}
+.lv-sub{font-size:13px;color:rgba(255,255,255,.5);text-align:center;margin-bottom:20px;}
+.lv-row{display:flex;gap:12px;margin-bottom:12px;}
+.lv-card{flex:1;padding:20px 10px 16px;border-radius:16px;border:2px solid rgba(255,255,255,.12);cursor:pointer;text-align:center;background:rgba(255,255,255,.05);}
+.lv-card:active{border-color:#ff3b30;background:rgba(255,59,48,.15);}
+.lv-card.blue:active{border-color:#30a0ff;background:rgba(48,160,255,.15);}
+.lv-card svg{display:block;margin:0 auto 8px;}
+.lv-card-lbl{font-size:13px;font-weight:700;margin-bottom:3px;}
+.lv-card-hint{font-size:11px;color:rgba(255,255,255,.4);line-height:1.4;}
+.lv-rbadge{display:inline-flex;align-items:center;gap:5px;background:#ff3b30;color:#fff;font-weight:800;font-size:12px;padding:3px 10px;border-radius:99px;}
+.lv-rdot{width:7px;height:7px;background:#fff;border-radius:50%;animation:lvblink 1.1s infinite;}
+@keyframes lvblink{0%,100%{opacity:1}50%{opacity:.3}}
+.lv-btn{display:block;width:100%;padding:14px;font-size:15px;font-weight:700;font-family:inherit;border:none;border-radius:12px;cursor:pointer;margin-top:9px;}
+.lv-btn-red{background:#ff3b30;color:#fff;}
+.lv-btn-blue{background:#30a0ff;color:#fff;}
+.lv-btn-ghost{background:rgba(255,255,255,.12);color:#fff;}
+#lvRoom{display:none;position:fixed;inset:0;background:#111;z-index:9200;flex-direction:column;}
+#lvRoom.on{display:flex;}
+.lv-rh{display:flex;align-items:center;padding:12px 14px 8px;background:#000a;gap:10px;flex-shrink:0;}
+.lv-rt{flex:1;font-weight:700;font-size:15px;color:#fff;}
+.lv-rc{font-size:12px;color:rgba(255,255,255,.5);background:rgba(255,255,255,.1);padding:2px 10px;border-radius:99px;}
+.lv-endbtn{background:#ff3b30;color:#fff;border:none;border-radius:9px;padding:5px 13px;font-size:13px;font-weight:700;cursor:pointer;display:none;}
+.lv-grid{flex:1;overflow-y:auto;display:grid;gap:6px;padding:8px;align-content:start;}
+.lv-grid.s1{grid-template-columns:1fr;}
+.lv-grid.s2,.lv-grid.s3,.lv-grid.s4{grid-template-columns:1fr 1fr;}
+.lv-grid.s5,.lv-grid.s6{grid-template-columns:1fr 1fr 1fr;}
+.lv-tile{position:relative;border-radius:13px;overflow:hidden;background:#222;aspect-ratio:4/3;cursor:pointer;}
+.lv-tile video{width:100%;height:100%;object-fit:cover;display:block;background:#000;}
+.lv-tname{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,#000c);color:#fff;font-size:12px;font-weight:700;padding:18px 8px 5px;pointer-events:none;}
+.lv-tyou{position:absolute;top:6px;left:6px;background:rgba(48,160,255,.9);color:#fff;border-radius:5px;font-size:9px;padding:2px 5px;font-weight:800;pointer-events:none;}
+.lv-tlive{position:absolute;top:6px;right:6px;background:rgba(255,48,48,.9);color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:5px;pointer-events:none;}
+.lv-tkick{position:absolute;top:5px;right:5px;background:rgba(200,20,20,.9);color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:800;cursor:pointer;padding:2px 8px;z-index:3;}
+.lv-tmuted{position:absolute;top:6px;left:6px;background:#0009;color:#fff;border-radius:5px;font-size:9px;padding:2px 5px;display:none;pointer-events:none;}
+.lv-tnovid{display:none;position:absolute;inset:0;align-items:center;justify-content:center;background:#2a2a2a;font-size:40px;pointer-events:none;}
+.lv-thint{position:absolute;bottom:20px;left:0;right:0;text-align:center;color:rgba(255,255,255,.3);font-size:9px;pointer-events:none;}
+.lv-ctrlbar{display:flex;align-items:center;justify-content:center;gap:16px;padding:14px 0 22px;background:#000a;flex-shrink:0;}
+.lv-ctrl{width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.15);color:#fff;font-size:22px;}
+.lv-ctrl.off{background:rgba(255,48,48,.3);}
+.lv-ctrl.leave{background:#ff3b30;width:60px;height:60px;font-size:26px;}
+#lvFs{display:none;position:fixed;inset:0;background:#000;z-index:9500;flex-direction:column;align-items:center;justify-content:center;}
+#lvFs.on{display:flex;}
+#lvFs video{width:100%;height:100%;object-fit:contain;}
+.lv-fsx{position:absolute;top:14px;right:14px;background:#0008;color:#fff;border:none;border-radius:50%;width:40px;height:40px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;}
+.lv-fslbl{position:absolute;bottom:80px;left:0;right:0;text-align:center;color:#fff;font-size:15px;font-weight:700;pointer-events:none;}
+/* ── Members full-screen modal ── */
+#lvMemModal{display:none;position:fixed;inset:0;background:var(--bg,#fff);z-index:8500;flex-direction:column;}
+#lvMemModal.on{display:flex;}
+.lvm-header{display:flex;align-items:center;gap:12px;padding:16px 16px 12px;border-bottom:1px solid var(--border,#eee);flex-shrink:0;background:var(--surface,#fff);}
+.lvm-back{background:none;border:none;color:var(--accent,#e8834a);font-size:22px;cursor:pointer;padding:4px 8px 4px 0;line-height:1;}
+.lvm-title{font-size:18px;font-weight:800;color:var(--text,#222);flex:1;}
+.lvm-count{font-size:12px;color:var(--muted,#888);background:var(--surface2,#f5f5f5);padding:3px 10px;border-radius:99px;}
+.lvm-search{padding:10px 14px;border-bottom:1px solid var(--border,#eee);flex-shrink:0;}
+.lvm-search input{width:100%;padding:9px 14px;border-radius:99px;border:1.5px solid var(--border,#eee);background:var(--surface2,#f5f5f5);font-size:14px;font-family:inherit;color:var(--text,#222);outline:none;box-sizing:border-box;}
+.lvm-search input:focus{border-color:var(--accent,#e8834a);}
+.lvm-body{flex:1;overflow-y:auto;padding:0 0 20px;}
+.lvm-section{padding:14px 16px 4px;}
+.lvm-section-label{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted,#888);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.lvm-online-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;display:inline-block;box-shadow:0 0 6px #22c55e;}
+.lvm-card{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;margin-bottom:4px;transition:background .15s;}
+.lvm-card:active{background:var(--surface2,#f5f5f5);}
+.lvm-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#e8834a,#c05a25);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;flex-shrink:0;position:relative;}
+.lvm-avatar-online::after{content:'';position:absolute;bottom:1px;right:1px;width:11px;height:11px;border-radius:50%;background:#22c55e;border:2px solid var(--bg,#fff);}
+.lvm-info{flex:1;min-width:0;}
+.lvm-name{font-size:15px;font-weight:700;color:var(--text,#222);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lvm-status{font-size:12px;color:var(--muted,#888);margin-top:1px;}
+.lvm-status.online{color:#16a34a;font-weight:600;}
+.lvm-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;flex-shrink:0;}
+.lvm-tag-online{background:#dcfce7;color:#15803d;}
+.lvm-tag-you{background:#fff3e0;color:#e8834a;}
+.lvm-empty{text-align:center;color:var(--muted,#888);padding:40px 20px;font-size:14px;}
+.lvm-divider{height:1px;background:var(--border,#eee);margin:4px 16px 12px;}
+</style>
+
+<!-- Entry modal -->
+<div class="lv-ov" id="lvEntry">
+  <div class="lv-box">
+    <div class="lv-h1">📡 Live &amp; Calls</div>
+    <div id="lvEntryNew">
+      <div class="lv-sub">What do you want to do?</div>
+      <div class="lv-row">
+        <div class="lv-card" onclick="lvJoin('live')">
+          <svg width="34" height="34" fill="none" stroke="#ff3b30" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="#ff3b30" stroke="none"/><path d="M6.3 6.3a8 8 0 0 0 0 11.4"/><path d="M17.7 6.3a8 8 0 0 1 0 11.4"/><path d="M3.5 3.5a13 13 0 0 0 0 17"/><path d="M20.5 3.5a13 13 0 0 1 0 17"/></svg>
+          <div class="lv-card-lbl">🔴 Go Live</div>
+          <div class="lv-card-hint">Share your camera. Anyone can join.</div>
+        </div>
+        <div class="lv-card blue" onclick="lvJoin('call')">
+          <svg width="34" height="34" fill="none" stroke="#30a0ff" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 2.09 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <div class="lv-card-lbl">📞 Video Call</div>
+          <div class="lv-card-hint">Group call, everyone joins together.</div>
+        </div>
+      </div>
+    </div>
+    <div id="lvEntryJoin" style="display:none;text-align:center;">
+      <div class="lv-rbadge" style="margin:0 auto 12px;width:fit-content;"><span class="lv-rdot"></span><span id="lvJoinType">LIVE</span></div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:4px;" id="lvJoinWho">Someone is live!</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:16px;" id="lvJoinCount"></div>
+      <button class="lv-btn lv-btn-red" id="lvJoinBtn" onclick="lvJoin(window._lvType)">📺 Join Now</button>
+    </div>
+    <!-- Non-host, no room active -->
+    <div id="lvEntryNoRoom" style="display:none;text-align:center;padding:10px 0 6px;">
+      <div style="font-size:40px;margin-bottom:12px;">📡</div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:8px;">No live or call right now</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.6;">The host can start a live stream<br>or video call. Check back soon!</div>
+    </div>
+    <button class="lv-btn lv-btn-ghost" onclick="lvDismiss()">Close</button>
+  </div>
+</div>
+
+<!-- Room -->
+<div id="lvRoom">
+  <div class="lv-rh">
+    <div class="lv-rt" id="lvRoomTitle">🔴 Live</div>
+    <div class="lv-rc" id="lvRoomCount">0 in room</div>
+    <button class="lv-endbtn" id="lvEndBtn" onclick="lvEndRoom()">End for All</button>
+  </div>
+  <div class="lv-grid s1" id="lvGrid"></div>
+  <div class="lv-ctrlbar">
+    <button class="lv-ctrl" id="lvMicBtn" onclick="lvMicToggle()">🎙️</button>
+    <button class="lv-ctrl" id="lvShareBtn" onclick="lvShareOpen()" title="Share a tab or screen">🖥️</button>
+    <button class="lv-ctrl leave" onclick="lvLeave()">📵</button>
+    <button class="lv-ctrl" id="lvCamBtn" onclick="lvCamToggle()">📷</button>
+  </div>
+</div>
+
+<!-- Fullscreen -->
+<div id="lvFs">
+  <button class="lv-fsx" onclick="lvFsClose()">✕</button>
+  <video id="lvFsVid" autoplay playsinline></video>
+  <div class="lv-fslbl" id="lvFsLbl"></div>
+</div>
+
+<!-- Member list -->
+<div id="lvMemModal">
+  <div class="lvm-header">
+    <button class="lvm-back" onclick="lvMemClose()">&#8592;</button>
+    <div class="lvm-title">Family Members</div>
+    <div class="lvm-count" id="lvmCount">–</div>
+  </div>
+  <div class="lvm-search">
+    <input id="lvmSearch" type="search" placeholder="Search members…" oninput="lvmFilter(this.value)">
+  </div>
+  <div class="lvm-body" id="lvmBody">
+    <div class="lvm-empty">Loading…</div>
+  </div>
+</div>
+
+<script>
+var _lvStream=null,_lvUid=null,_lvPeers={},_lvUnsubs=[],_lvIn=false,_lvType=null,_lvMic=true,_lvCam=true,_lvDismiss=false,_lvReady=false,_lvJoinedAt=0;
+var STUN={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]};
+
+function _esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function _show(id){document.getElementById(id).classList.add('on');}
+function _hide(id){document.getElementById(id).classList.remove('on');}
+function _dot(on){var d=document.getElementById('livePulseDot');if(d)d.style.display=on?'block':'none';}
+function _db(p){return window.dbRef(window.db,'live/'+p);}
+
+waitForFirebase(function(){
+    _lvReady=true;
+    window.dbOnValue(window.dbRef(window.db,'familyMembers'),function(snap){
+        var el=document.getElementById('chatMemberCountText');if(!el)return;
+        var data=snap.val()||{};
+        var names=Object.values(data).map(function(m){return m&&m.name||'';}).filter(Boolean);
+        var c=names.length;
+        if(!c){el.textContent='No members yet';return;}
+        if(c===1){el.textContent='1 member - '+names[0];return;}
+        var show=c<=3?names.join(', '):names.slice(0,2).join(', ')+' + '+(c-2)+' more';
+        el.textContent=c+' members - '+show;
+    });
+    window.dbOnValue(window.dbRef(window.db,'live/room'),function(snap){
+        var room=snap.val();
+        _dot(!!room);
+        if(!room){_lvDismiss=false;return;}
+        if(_lvIn||_lvDismiss)return;
+        _setJoinView(room);
+        var em=document.getElementById('lvEntry');
+        if(!em.classList.contains('on'))em.classList.add('on');
+    });
+});
+
+function _setJoinView(room){
+    window._lvType=room.type;
+    var isCall=room.type==='call';
+    document.getElementById('lvJoinType').textContent=isCall?'VIDEO CALL':'LIVE';
+    document.getElementById('lvJoinBtn').className='lv-btn '+(isCall?'lv-btn-blue':'lv-btn-red');
+    document.getElementById('lvJoinWho').textContent=(room.createdBy||'Someone')+(isCall?' started a call!':' is live!');
+    if(_lvReady&&window.db){
+        try{window.dbGet(_db('peers')).then(function(ps){
+            var c=ps.val()?Object.keys(ps.val()).length:0;
+            document.getElementById('lvJoinCount').textContent=c+' participant'+(c===1?'':'s');
+        }).catch(function(){});}catch(e){}
+    }
+    document.getElementById('lvEntryNew').style.display='none';
+    document.getElementById('lvEntryJoin').style.display='block';
+}
+
+window.openLiveEntry=function(){
+    _lvDismiss=false;
+    document.getElementById('lvEntryNew').style.display='none';
+    document.getElementById('lvEntryJoin').style.display='none';
+    document.getElementById('lvEntryNoRoom').style.display='none';
+
+    if(_lvReady&&window.db){
+        try{window.dbGet(_db('room')).then(function(snap){
+            var room=snap.val();
+            if(room){
+                // Room active — everyone can join
+                _setJoinView(room);
+            } else if(isHost){
+                // No room — host can start one
+                document.getElementById('lvEntryNew').style.display='block';
+            } else {
+                // No room — non-host sees message
+                document.getElementById('lvEntryNoRoom').style.display='block';
+            }
+            _show('lvEntry');
+        }).catch(function(){
+            // Firebase error — fall back to host check
+            if(isHost) document.getElementById('lvEntryNew').style.display='block';
+            else document.getElementById('lvEntryNoRoom').style.display='block';
+            _show('lvEntry');
+        });}catch(e){
+            if(isHost) document.getElementById('lvEntryNew').style.display='block';
+            else document.getElementById('lvEntryNoRoom').style.display='block';
+            _show('lvEntry');
+        }
+    } else {
+        // Firebase not ready yet — show host options or wait message
+        if(isHost) document.getElementById('lvEntryNew').style.display='block';
+        else document.getElementById('lvEntryNoRoom').style.display='block';
+        _show('lvEntry');
+    }
+};
+
+window.lvDismiss=function(){_lvDismiss=true;_hide('lvEntry');};
+
+window.lvJoin=async function(type){
+    _hide('lvEntry');
+    if(!currentUser){toast('Please set your name first.','warn');return;}
+    if(!_lvReady||!window.db){toast('Still connecting, try again in a moment.','warn');return;}
+    _lvType=type;
+    _lvUid=(currentUser||'u').replace(/[^a-zA-Z0-9]/g,'_')+'_'+Math.random().toString(36).slice(2,7);
+    try{
+        var rs=await window.dbGet(_db('room'));
+        if(!rs.val())await window.dbSet(_db('room'),{type:type,createdBy:currentUser,startedAt:Date.now()});
+    }catch(e){toast('Could not connect to room.','warn');return;}
+    try{
+        _lvStream=await navigator.mediaDevices.getUserMedia({video:{width:640,height:480,facingMode:'user'},audio:true});
+        _lvCam=true;
+    }catch(e){
+        try{_lvStream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});_lvCam=false;}
+        catch(e2){toast('Please allow camera/mic access.','warn');return;}
+    }
+    _lvIn=true;_lvMic=true;_lvCtrlUpdate();
+    _lvJoinedAt=Date.now();try{await window.dbSet(_db('peers/'+_lvUid),{name:currentUser,joinedAt:_lvJoinedAt,audio:true,video:_lvCam});}catch(e){}
+    document.getElementById('lvRoom').classList.add('on');
+    document.getElementById('lvRoomTitle').textContent=type==='call'?'Video Call':'Live';
+    var eb=document.getElementById('lvEndBtn');if(eb)eb.style.display=isHost?'block':'none';
+    var st=_buildTile(_lvUid,currentUser,true);
+    st.querySelector('video').srcObject=_lvStream;
+    st.querySelector('video').muted=true;
+    document.getElementById('lvGrid').appendChild(st);
+    _reflow();
+    /* ── peers watcher ── */
+    _watch('peers',function(snap){
+        var ps=snap.val()||{};
+        var el=document.getElementById('lvRoomCount');
+        if(el)el.textContent=Object.keys(ps).length+' in room';
+
+        Object.keys(ps).forEach(function(uid){
+            if(uid===_lvUid)return;
+            var theirJoinedAt=ps[uid]?ps[uid].joinedAt||0:0;
+            // Who offers: the NEWER joiner (higher joinedAt). UID breaks ties.
+            var iOffer=_lvJoinedAt>theirJoinedAt||(_lvJoinedAt===theirJoinedAt&&_lvUid>uid);
+
+            if(iOffer && !_lvPeers[uid]){
+                // I offer — create PC and send offer
+                _doOffer(uid, ps[uid]);
+            } else if(!iOffer && !document.getElementById('lvt-'+uid)){
+                // They will offer to me — just show placeholder tile now
+                var t=_buildTile(uid,ps[uid].name||'Family',false);
+                document.getElementById('lvGrid').appendChild(t);_reflow();
+            }
+
+            // Update mute/cam badges
+            var p=ps[uid];
+            var mb=document.getElementById('lvm-'+uid),nv=document.getElementById('lvn-'+uid);
+            if(mb)mb.style.display=p.audio===false?'block':'none';
+            if(nv)nv.style.display=p.video===false?'flex':'none';
+        });
+    });
+
+    /* ── signaling watcher ── */
+    _watch('sig/'+_lvUid,function(snap){
+        var sigs=snap.val()||{};
+        Object.keys(sigs).forEach(function(from){
+            var msg=sigs[from];if(!msg)return;
+            if(msg.type==='offer')_handleOffer(from,msg);
+            else if(msg.type==='answer')_handleAnswer(from,msg);
+        });
+    });
+
+    /* ── ICE watcher — track already-added candidates to avoid duplicates ── */
+    var _iceAdded={};
+    _watch('ice/'+_lvUid,function(snap){
+        var all=snap.val()||{};
+        Object.keys(all).forEach(function(from){
+            var pc=_lvPeers[from];if(!pc)return;
+            if(!_iceAdded[from])_iceAdded[from]={};
+            Object.keys(all[from]).forEach(function(key){
+                if(_iceAdded[from][key])return;
+                _iceAdded[from][key]=true;
+                var c=all[from][key];
+                if(c)pc.addIceCandidate(new RTCIceCandidate(c)).catch(function(){});
+            });
+        });
+    });
+
+    _watch('kicked/'+_lvUid,function(snap){if(snap.val()){lvLeave();toast('You were removed from the room.','warn');}});
+    _watch('room',function(snap){if(!snap.val()&&_lvIn){lvLeave();toast('The room has ended.','info');}});
+};
+
+function _watch(path,cb){var u=window.dbOnValue(_db(path),cb);_lvUnsubs.push(u);return u;}
+
+function _buildTile(uid,name,isMe){
+    var tile=document.createElement('div');tile.className='lv-tile';tile.id='lvt-'+uid;
+    var vid=document.createElement('video');
+    vid.autoplay=true;vid.playsInline=true;
+    if(!isMe)vid.muted=false; else vid.muted=true;
+    tile.appendChild(vid);
+    var nv=document.createElement('div');nv.className='lv-tnovid';nv.id='lvn-'+uid;nv.textContent='No cam';tile.appendChild(nv);
+    var nm=document.createElement('div');nm.className='lv-tname';nm.textContent=name;tile.appendChild(nm);
+    var h=document.createElement('div');h.className='lv-thint';h.textContent='tap to fullscreen';tile.appendChild(h);
+    if(isMe){var y=document.createElement('div');y.className='lv-tyou';y.textContent='You';tile.appendChild(y);}
+    else if(_lvType==='live'){var lb=document.createElement('div');lb.className='lv-tlive';lb.textContent='LIVE';tile.appendChild(lb);}
+    var mb=document.createElement('div');mb.className='lv-tmuted';mb.id='lvm-'+uid;mb.textContent='Muted';tile.appendChild(mb);
+    if(isHost&&!isMe){
+        var kb=document.createElement('button');kb.className='lv-tkick';kb.textContent='✕';
+        (function(u,n){kb.onclick=function(e){e.stopPropagation();lvKick(u,n);};})(uid,name);
+        tile.appendChild(kb);
+    }
+    tile.addEventListener('click',function(e){if(e.target.classList.contains('lv-tkick'))return;lvFsOpen(uid,name,isMe);});
+    return tile;
+}
+
+function _setVideoSrc(vid, stream){
+    vid.srcObject=stream;
+    vid.play().catch(function(){});  // needed on mobile
+}
+
+function _reflow(){var g=document.getElementById('lvGrid'),c=g.children.length;g.className='lv-grid s'+(c||1);}
+
+function _makePc(uid){
+    if(_lvPeers[uid]){_lvPeers[uid].close();}
+    var pc=new RTCPeerConnection(STUN);
+    _lvPeers[uid]=pc;
+    _lvStream.getTracks().forEach(function(t){pc.addTrack(t,_lvStream);});
+
+    pc.onicecandidate=function(e){
+        if(e.candidate)window.dbPush(_db('ice/'+uid+'/'+_lvUid),e.candidate.toJSON());
+    };
+
+    pc.ontrack=function(e){
+        var tile=document.getElementById('lvt-'+uid);
+        if(!tile){
+            tile=_buildTile(uid,pc._name||'Family',false);
+            document.getElementById('lvGrid').appendChild(tile);_reflow();
+        }
+        var v=tile.querySelector('video');
+        // e.streams[0] can be undefined in Firefox/Safari — build stream from track
+        var stream=e.streams&&e.streams[0]?e.streams[0]:null;
+        if(!stream){stream=new MediaStream();stream.addTrack(e.track);}
+        _setVideoSrc(v,stream);
+        var nv=document.getElementById('lvn-'+uid);if(nv)nv.style.display='none';
+    };
+
+    pc.onconnectionstatechange=function(){
+        console.log('PC state ['+uid+']:', pc.connectionState);
+        if(['disconnected','failed','closed'].indexOf(pc.connectionState)>-1)_rmTile(uid);
+    };
+    pc.oniceconnectionstatechange=function(){
+        console.log('ICE state ['+uid+']:', pc.iceConnectionState);
+    };
+    return pc;
+}
+
+/* Offerer side: create PC, add tracks, create & send offer */
+function _doOffer(uid, peerData){
+    if(_lvPeers[uid])return;
+    var pd=peerData||{};
+    var pc=_makePc(uid);pc._name=pd.name||'Family';
+    if(!document.getElementById('lvt-'+uid)){
+        var t=_buildTile(uid,pd.name||'Family',false);
+        document.getElementById('lvGrid').appendChild(t);_reflow();
+    }
+    pc.createOffer().then(function(o){
+        return pc.setLocalDescription(o);
+    }).then(function(){
+        return window.dbSet(_db('sig/'+uid+'/'+_lvUid),{type:'offer',sdp:pc.localDescription.sdp});
+    }).catch(function(e){console.warn('createOffer err',e);});
+}
+
+/* Answerer side: receive offer, create & send answer */
+function _handleOffer(from,msg){
+    if(_lvPeers[from]&&_lvPeers[from]._oh)return; // already answered
+    var pc=_makePc(from);  // creates fresh PC (closes old if any)
+    pc._oh=true;
+    // Get name from Firebase then proceed
+    window.dbGet(_db('peers/'+from)).then(function(snap){
+        var pd=snap.val()||{};pc._name=pd.name||'Family';
+        // Update tile name if tile exists
+        var tile=document.getElementById('lvt-'+from);
+        if(tile){var nm=tile.querySelector('.lv-tname');if(nm)nm.textContent=pd.name||'Family';}
+        else{tile=_buildTile(from,pd.name||'Family',false);document.getElementById('lvGrid').appendChild(tile);_reflow();}
+        return pc.setRemoteDescription(new RTCSessionDescription(msg));
+    }).then(function(){
+        return pc.createAnswer();
+    }).then(function(a){
+        return pc.setLocalDescription(a);
+    }).then(function(){
+        return window.dbSet(_db('sig/'+from+'/'+_lvUid),{type:'answer',sdp:pc.localDescription.sdp});
+    }).catch(function(e){console.warn('handleOffer err',e);});
+}
+
+/* Offerer receives answer */
+function _handleAnswer(from,msg){
+    var pc=_lvPeers[from];
+    if(!pc||pc._ah)return;pc._ah=true;
+    pc.setRemoteDescription(new RTCSessionDescription(msg))
+        .catch(function(e){console.warn('handleAnswer err',e);});
+}
+
+function _rmTile(uid){
+    var t=document.getElementById('lvt-'+uid);if(t)t.remove();
+    if(_lvPeers[uid]){_lvPeers[uid].close();delete _lvPeers[uid];}
+    _reflow();
+}
+
+function _lvCtrlUpdate(){
+    var m=document.getElementById('lvMicBtn'),c=document.getElementById('lvCamBtn');
+    if(m){m.textContent=_lvMic?'mic':'muted';m.className='lv-ctrl'+(_lvMic?'':' off');}
+    if(c){c.textContent=_lvCam?'cam':'off';c.className='lv-ctrl'+(_lvCam?'':' off');}
+}
+
+window.lvMicToggle=function(){if(!_lvStream)return;_lvMic=!_lvMic;_lvStream.getAudioTracks().forEach(function(t){t.enabled=_lvMic;});try{window.dbSet(_db('peers/'+_lvUid+'/audio'),_lvMic);}catch(e){}_lvCtrlUpdate();};
+window.lvCamToggle=function(){if(!_lvStream)return;_lvCam=!_lvCam;_lvStream.getVideoTracks().forEach(function(t){t.enabled=_lvCam;});try{window.dbSet(_db('peers/'+_lvUid+'/video'),_lvCam);}catch(e){}var nv=document.getElementById('lvn-'+_lvUid);if(nv)nv.style.display=_lvCam?'none':'flex';_lvCtrlUpdate();};
+window.lvKick=function(uid,name){if(!isHost){toast('Only host can remove people.','warn');return;}if(!confirm('Remove '+name+'?'))return;try{window.dbSet(_db('kicked/'+uid),Date.now());}catch(e){}try{window.dbRemove(_db('peers/'+uid));}catch(e){}  _rmTile(uid);toast(name+' removed.','warn');};
+window.lvLeave=function(){_lvIn=false;if(_lvStream){_lvStream.getTracks().forEach(function(t){t.stop();});_lvStream=null;}Object.values(_lvPeers).forEach(function(pc){pc.close();});_lvPeers={};_lvUnsubs.forEach(function(u){u();});_lvUnsubs=[];if(_lvUid){['peers/'+_lvUid,'sig/'+_lvUid,'ice/'+_lvUid,'kicked/'+_lvUid].forEach(function(p){try{window.dbRemove(_db(p));}catch(e){}});_lvUid=null;}var g=document.getElementById('lvGrid');if(g)g.innerHTML='';document.getElementById('lvRoom').classList.remove('on');lvFsClose();_lvDismiss=false;};
+window.lvEndRoom=function(){if(!isHost){toast('Only host can end room.','warn');return;}if(!confirm('End room for everyone?'))return;try{window.dbRemove(_db('room'));}catch(e){}['peers','sig','ice','kicked'].forEach(function(p){try{window.dbRemove(_db(p));}catch(e){}});lvLeave();toast('Room ended.','info');};
+
+window.lvFsOpen=function(uid,name,isMe){var tile=document.getElementById('lvt-'+uid);if(!tile)return;var sv=tile.querySelector('video');if(!sv||!sv.srcObject)return;var ov=document.getElementById('lvFs'),fv=document.getElementById('lvFsVid');fv.srcObject=sv.srcObject;fv.muted=!!isMe;document.getElementById('lvFsLbl').textContent=name+(isMe?' (You)':'');ov.classList.add('on');try{if(ov.requestFullscreen)ov.requestFullscreen();else if(ov.webkitRequestFullscreen)ov.webkitRequestFullscreen();}catch(e){};};
+window.lvFsClose=function(){var ov=document.getElementById('lvFs'),fv=document.getElementById('lvFsVid');if(!ov)return;ov.classList.remove('on');if(fv)fv.srcObject=null;try{if(document.exitFullscreen&&document.fullscreenElement)document.exitFullscreen();}catch(e){}try{if(document.webkitExitFullscreen&&document.webkitFullscreenElement)document.webkitExitFullscreen();}catch(e){};};
+document.addEventListener('fullscreenchange',function(){if(!document.fullscreenElement)window.lvFsClose();});
+document.addEventListener('webkitfullscreenchange',function(){if(!document.webkitFullscreenElement)window.lvFsClose();});
+
+var _lvmAllMembers=[], _lvmOnlineUids=new Set();
+
+function lvmTimeSince(ts){
+    if(!ts)return'Never';
+    var diff=Date.now()-ts, mins=Math.floor(diff/60000);
+    if(mins<1)return'Just now';
+    if(mins<60)return mins+'m ago';
+    var hrs=Math.floor(mins/60);
+    if(hrs<24)return hrs+'h ago';
+    var days=Math.floor(hrs/24);
+    if(days<7)return days+'d ago';
+    var d=new Date(ts);
+    return d.toLocaleDateString(undefined,{month:'short',day:'numeric'});
+}
+
+function lvmRender(filter){
+    var body=document.getElementById('lvmBody'); if(!body)return;
+    filter=(filter||'').toLowerCase().trim();
+    var me=currentUser||'';
+
+    // Annotate each member with online status
+    var members=_lvmAllMembers.map(function(m){
+        return Object.assign({},m,{isOnline:_lvmOnlineUids.has(m.key),isMe:m.name===me});
+    });
+
+    // Filter
+    if(filter) members=members.filter(function(m){return(m.name||'').toLowerCase().includes(filter);});
+    if(!members.length){body.innerHTML='<div class="lvm-empty">No members match "'+_esc(filter)+'"</div>';return;}
+
+    // Split: online now vs offline
+    var online=members.filter(function(m){return m.isOnline;});
+    var offline=members.filter(function(m){return!m.isOnline;});
+    // Sort offline by lastSeen desc
+    offline.sort(function(a,b){return(b.lastSeen||0)-(a.lastSeen||0);});
+    // Sort online: me first, then alphabetical
+    online.sort(function(a,b){if(a.isMe)return-1;if(b.isMe)return 1;return(a.name||'').localeCompare(b.name||'');});
+
+    var html='';
+
+    if(online.length){
+        html+='<div class="lvm-section"><div class="lvm-section-label"><span class="lvm-online-dot"></span>Online now — '+online.length+'</div>';
+        online.forEach(function(m){
+            var init=(m.name||'?')[0].toUpperCase();
+            html+='<div class="lvm-card">'
+                +'<div class="lvm-avatar lvm-avatar-online">'+init+'</div>'
+                +'<div class="lvm-info"><div class="lvm-name">'+_esc(m.name)+'</div>'
+                +'<div class="lvm-status online">Active now</div></div>'
+                +(m.isMe?'<span class="lvm-tag lvm-tag-you">You</span>':'<span class="lvm-tag lvm-tag-online">Online</span>')
+                +'</div>';
+        });
+        html+='</div>';
+        if(offline.length) html+='<div class="lvm-divider"></div>';
+    }
+
+    if(offline.length){
+        html+='<div class="lvm-section"><div class="lvm-section-label">All members</div>';
+        offline.forEach(function(m){
+            var init=(m.name||'?')[0].toUpperCase();
+            var seen=m.lastSeen?'Last seen '+lvmTimeSince(m.lastSeen):'Never opened the app';
+            var joined=m.firstJoined?'Joined '+lvmTimeSince(m.firstJoined):'';
+            html+='<div class="lvm-card">'
+                +'<div class="lvm-avatar">'+init+'</div>'
+                +'<div class="lvm-info"><div class="lvm-name">'+_esc(m.name)+'</div>'
+                +'<div class="lvm-status">'+seen+(joined?' &bull; '+joined:'')+'</div></div>'
+                +'</div>';
+        });
+        html+='</div>';
+    }
+
+    body.innerHTML=html;
+}
+
+window.lvmFilter=function(val){ lvmRender(val); };
+
+window.openMemberList=function(){
+    var modal=document.getElementById('lvMemModal');
+    modal.classList.add('on');
+    var searchEl=document.getElementById('lvmSearch');
+    if(searchEl)searchEl.value='';
+    document.getElementById('lvmBody').innerHTML='<div class="lvm-empty">Loading\u2026</div>';
+    if(!_lvReady||!window.db){document.getElementById('lvmBody').innerHTML='<div class="lvm-empty">Not connected yet.</div>';return;}
+    var TWO_MIN=2*60*1000;
+    // Load both data sources in parallel
+    Promise.all([
+        window.dbGet(window.dbRef(window.db,'familyMembers')),
+        window.dbGet(window.dbRef(window.db,'onlineUsers'))
+    ]).then(function(results){
+        var fmSnap=results[0], ouSnap=results[1];
+        var fmData=fmSnap.val()||{};
+        var ouData=ouSnap.val()||{};
+        var now=Date.now();
+
+        // Build online set (heartbeat within 2 minutes)
+        _lvmOnlineUids=new Set();
+        Object.entries(ouData).forEach(function(e){
+            var key=e[0], u=e[1];
+            if(u&&u.timestamp&&(now-u.timestamp)<TWO_MIN) _lvmOnlineUids.add(u.name||key);
+        });
+
+        // Build member list from familyMembers
+        _lvmAllMembers=Object.entries(fmData)
+            .filter(function(e){return e[1]&&e[1].name;})
+            .map(function(e){return Object.assign({key:e[0]},e[1]);});
+
+        // Also add anyone in onlineUsers but not yet in familyMembers
+        Object.entries(ouData).forEach(function(e){
+            var u=e[1];
+            if(!u||!u.name)return;
+            var already=_lvmAllMembers.find(function(m){return m.name===u.name;});
+            if(!already) _lvmAllMembers.push({key:e[0],name:u.name,lastSeen:u.timestamp||now});
+        });
+
+        var count=_lvmAllMembers.length;
+        var el=document.getElementById('lvmCount');
+        if(el)el.textContent=count+' member'+(count===1?'':'s');
+
+        lvmRender('');
+    }).catch(function(){ document.getElementById('lvmBody').innerHTML='<div class="lvm-empty">Could not load members.</div>'; });
+};
+window.lvMemClose=function(){document.getElementById('lvMemModal').classList.remove('on');};
+
+window.addEventListener('beforeunload',function(){if(_lvIn)lvLeave();});
+
+/* ── Screen / Tab Share ─────────────────────────────────── */
+var _lvShareStream = null;  // active screen share MediaStream
+var _lvShareTile   = null;  // the share tile element
+
+window.lvShareOpen = function(){
+    /* show picker modal listing current participants */
+    var modal = document.getElementById('lvShareModal');
+    if(!modal) return;
+    /* populate participant list */
+    var list = document.getElementById('lvSharePeerList');
+    list.innerHTML = '';
+    /* "Everyone" option */
+    var evRow = document.createElement('label');
+    evRow.className = 'lvs-row';
+    evRow.innerHTML = '<input type="checkbox" value="__all__" checked> <span>Everyone in the room</span>';
+    evRow.querySelector('input').onchange = function(){
+        var checked = this.checked;
+        list.querySelectorAll('input[type=checkbox]:not([value="__all__"])').forEach(function(cb){ cb.checked=!checked; cb.disabled=checked; });
+    };
+    list.appendChild(evRow);
+    /* individual peers */
+    Object.keys(_lvPeers).forEach(function(uid){
+        var pc = _lvPeers[uid];
+        var name = pc._name || uid;
+        var row = document.createElement('label');
+        row.className = 'lvs-row';
+        row.innerHTML = '<input type="checkbox" value="'+uid+'" disabled> <span>'+_esc(name)+'</span>';
+        list.appendChild(row);
+    });
+    modal.classList.add('on');
+};
+
+window.lvShareStart = async function(){
+    var modal = document.getElementById('lvShareModal');
+    modal.classList.remove('on');
+
+    /* collect target UIDs */
+    var allChecked = document.querySelector('#lvSharePeerList input[value="__all__"]').checked;
+    var targets = allChecked
+        ? Object.keys(_lvPeers)
+        : Array.from(document.querySelectorAll('#lvSharePeerList input:checked')).map(function(cb){ return cb.value; });
+
+    if(!targets.length){ toast('No one selected to share with.','warn'); return; }
+
+    /* get screen/tab */
+    try{ _lvShareStream = await navigator.mediaDevices.getDisplayMedia({video:{cursor:'always'},audio:true}); }
+    catch(e){ toast('Screen share cancelled or not allowed.','warn'); return; }
+
+    /* mark share button active */
+    var btn = document.getElementById('lvShareBtn');
+    if(btn){ btn.textContent='🔴'; btn.className='lv-ctrl off'; btn.onclick=lvShareStop; btn.title='Stop sharing'; }
+
+    /* replace video track in selected peer connections */
+    var shareTrack = _lvShareStream.getVideoTracks()[0];
+    targets.forEach(function(uid){
+        var pc = _lvPeers[uid];
+        if(!pc) return;
+        var sender = pc.getSenders().find(function(s){ return s.track && s.track.kind==='video'; });
+        if(sender) sender.replaceTrack(shareTrack).catch(function(){});
+    });
+
+    /* add local preview tile */
+    _lvShareTile = _buildTile('__share__', 'Your Screen', true);
+    _lvShareTile.querySelector('video').srcObject = _lvShareStream;
+    _lvShareTile.querySelector('video').muted = true;
+    var badge = _lvShareTile.querySelector('.lv-tyou');
+    if(badge){ badge.textContent = '🖥️ Sharing'; badge.style.background='rgba(255,59,48,.9)'; }
+    document.getElementById('lvGrid').appendChild(_lvShareTile);
+    _reflow();
+
+    /* auto-stop when user clicks browser "Stop sharing" */
+    shareTrack.onended = function(){ lvShareStop(); };
+};
+
+window.lvShareStop = function(){
+    if(!_lvShareStream) return;
+    _lvShareStream.getTracks().forEach(function(t){ t.stop(); });
+    _lvShareStream = null;
+
+    /* restore camera track in all peer connections */
+    if(_lvStream){
+        var camTrack = _lvStream.getVideoTracks()[0];
+        if(camTrack){
+            Object.values(_lvPeers).forEach(function(pc){
+                var sender = pc.getSenders().find(function(s){ return s.track && s.track.kind==='video'; });
+                if(sender) sender.replaceTrack(camTrack).catch(function(){});
+            });
+        }
+    }
+
+    /* remove share tile */
+    if(_lvShareTile){ _lvShareTile.remove(); _lvShareTile=null; _reflow(); }
+
+    /* reset share button */
+    var btn = document.getElementById('lvShareBtn');
+    if(btn){ btn.textContent='🖥️'; btn.className='lv-ctrl'; btn.onclick=lvShareOpen; btn.title='Share a tab or screen'; }
+};
+
+window.lvShareCancel = function(){ document.getElementById('lvShareModal').classList.remove('on'); };
+</script>
+
+<!-- Share picker modal -->
+<style>
+#lvShareModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9300;align-items:center;justify-content:center;}
+#lvShareModal.on{display:flex;}
+.lvs-box{background:#1c1c1e;border-radius:20px;padding:24px 20px;max-width:360px;width:90%;color:#fff;}
+.lvs-title{font-size:17px;font-weight:800;margin-bottom:6px;}
+.lvs-hint{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:16px;}
+#lvSharePeerList{max-height:220px;overflow-y:auto;margin-bottom:16px;}
+.lvs-row{display:flex;align-items:center;gap:10px;padding:10px 8px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;}
+.lvs-row:hover{background:rgba(255,255,255,.07);}
+.lvs-row input{width:18px;height:18px;accent-color:#ff3b30;cursor:pointer;flex-shrink:0;}
+.lvs-btns{display:flex;gap:10px;}
+.lvs-btn{flex:1;padding:13px;font-size:14px;font-weight:700;font-family:inherit;border:none;border-radius:11px;cursor:pointer;}
+.lvs-btn-red{background:#ff3b30;color:#fff;}
+.lvs-btn-ghost{background:rgba(255,255,255,.1);color:#fff;}
+</style>
+<div id="lvShareModal">
+  <div class="lvs-box">
+    <div class="lvs-title">🖥️ Share a Tab or Screen</div>
+    <div class="lvs-hint">Choose who can see your screen, then pick a tab in the next step.</div>
+    <div id="lvSharePeerList"></div>
+    <div class="lvs-btns">
+      <button class="lvs-btn lvs-btn-ghost" onclick="lvShareCancel()">Cancel</button>
+      <button class="lvs-btn lvs-btn-red" onclick="lvShareStart()">Share Tab →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ END LIVE FEATURE ═══════════════════ -->
 
 </body>
 </html>
