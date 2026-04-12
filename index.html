@@ -1364,6 +1364,10 @@ function removeHostMemory() {
             <div class="wa-header-info">
                 <div class="wa-header-title">Family Chat</div>
                 <div class="wa-header-sub" id="waChatSub">General</div>
+                <div style="font-size:11px;color:rgba(255,255,255,.78);font-weight:500;margin-top:2px;display:flex;align-items:center;gap:4px;">
+                    <span style="width:6px;height:6px;background:#4cff91;border-radius:50%;display:inline-block;flex-shrink:0;box-shadow:0 0 5px #4cff91;"></span>
+                    <span id="chatMemberCountText">…</span>
+                </div>
             </div>
             <button onclick="toggleChatSearch()" style="background:none;border:none;color:rgba(255,255,255,.8);font-size:17px;cursor:pointer;padding:4px 8px;" title="Search messages">🔍</button>
             <button class="wa-header-close" onclick="closeModal('commentsModal')">✕</button>
@@ -1957,6 +1961,9 @@ async function registerOnlineUser(){
             timestamp: Date.now(),
             deviceId: getDeviceId()
         });
+        try{
+            await window.dbSet(window.dbRef(window.db,'familyMembers/'+key),{name:currentUser,lastSeen:Date.now()});
+        }catch(e){}
     }catch(e){ console.log('Presence error:', e); }
 }
 window.addEventListener('beforeunload', ()=>{
@@ -9356,15 +9363,9 @@ window.switchToHumanGame=switchToHumanGame;
         <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
         Video Chat
     </button>
-    <button class="bottom-nav-btn" onclick="openLive()" title="Live Stream" id="bottomLiveBtn" style="position:relative;">
-        <span id="livePulseDot" style="display:none;position:absolute;top:6px;right:18px;width:8px;height:8px;background:#ff3b30;border-radius:50%;animation:livePulse 1.2s infinite;"></span>
-        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/>
-            <path d="M6.3 6.3a8 8 0 0 0 0 11.4"/>
-            <path d="M17.7 6.3a8 8 0 0 1 0 11.4"/>
-            <path d="M3.5 3.5a13 13 0 0 0 0 17"/>
-            <path d="M20.5 3.5a13 13 0 0 1 0 17"/>
-        </svg>
+    <button class="bottom-nav-btn" onclick="openLiveEntry()" title="Live / Call" id="bottomLiveBtn" style="position:relative;">
+        <span id="livePulseDot" style="display:none;position:absolute;top:6px;right:14px;width:8px;height:8px;background:#ff3b30;border-radius:50%;animation:liveDotPulse 1.2s infinite;"></span>
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/><path d="M6.3 6.3a8 8 0 0 0 0 11.4"/><path d="M17.7 6.3a8 8 0 0 1 0 11.4"/><path d="M3.5 3.5a13 13 0 0 0 0 17"/><path d="M20.5 3.5a13 13 0 0 1 0 17"/></svg>
         Live
     </button>
     <button class="bottom-nav-btn" onclick="openSearch()" title="Search">
@@ -9384,427 +9385,450 @@ window.switchToHumanGame=switchToHumanGame;
     <span id="userNamePillText">You</span>
 </div>
 
-<!-- ═══════════════════ LIVE STREAM FEATURE ═══════════════════ -->
-
 <style>
-@keyframes livePulse {
-    0%,100%{opacity:1;transform:scale(1);}
-    50%{opacity:.4;transform:scale(1.5);}
-}
-@keyframes liveRingPulse {
-    0%{transform:scale(1);opacity:.8;}
-    100%{transform:scale(1.8);opacity:0;}
-}
-.live-modal-overlay {
-    display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9000;
+@keyframes liveDotPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(1.6)}}
+.lv-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9100;align-items:center;justify-content:center;}
+.lv-overlay.active{display:flex;}
+.lv-box{background:#1c1c1e;border-radius:22px;padding:28px 22px;max-width:400px;width:92%;color:#fff;box-shadow:0 12px 48px rgba(0,0,0,.7);}
+.lv-title{font-size:20px;font-weight:800;text-align:center;margin-bottom:6px;}
+.lv-sub{font-size:13px;color:rgba(255,255,255,.55);text-align:center;margin-bottom:22px;}
+.lv-row{display:flex;gap:12px;margin-bottom:12px;}
+.lv-card{flex:1;padding:20px 10px 16px;border-radius:16px;border:2px solid rgba(255,255,255,.12);cursor:pointer;text-align:center;transition:all .2s;background:rgba(255,255,255,.05);}
+.lv-card:hover{border-color:#ff3b30;background:rgba(255,59,48,.12);}
+.lv-card.call-card:hover{border-color:#30a0ff;background:rgba(48,160,255,.12);}
+.lv-card svg{display:block;margin:0 auto 8px;}
+.lv-card-label{font-size:13px;font-weight:700;margin-bottom:3px;}
+.lv-card-hint{font-size:11px;color:rgba(255,255,255,.45);line-height:1.4;}
+.lv-live-badge{display:inline-flex;align-items:center;gap:5px;background:#ff3b30;color:#fff;font-weight:800;font-size:12px;padding:3px 10px;border-radius:99px;letter-spacing:.07em;}
+.lv-dot{width:7px;height:7px;background:#fff;border-radius:50%;animation:liveDotPulse 1.2s infinite;}
+.lv-btn{width:100%;padding:14px;font-size:15px;font-weight:700;font-family:inherit;border:none;border-radius:12px;cursor:pointer;margin-top:8px;transition:all .18s;}
+.lv-btn-red{background:#ff3b30;color:#fff;}.lv-btn-red:hover{background:#d0302a;}
+.lv-btn-blue{background:#30a0ff;color:#fff;}.lv-btn-blue:hover{background:#1a8ae8;}
+.lv-btn-ghost{background:rgba(255,255,255,.1);color:#fff;}.lv-btn-ghost:hover{background:rgba(255,255,255,.18);}
+#liveRoomModal{display:none;position:fixed;inset:0;background:#111;z-index:9200;flex-direction:column;}
+#liveRoomModal.active{display:flex;}
+.lv-room-header{display:flex;align-items:center;padding:12px 16px 8px;background:rgba(0,0,0,.5);gap:10px;flex-shrink:0;}
+.lv-room-title{flex:1;font-weight:700;font-size:15px;color:#fff;}
+.lv-room-count{font-size:12px;color:rgba(255,255,255,.55);background:rgba(255,255,255,.1);padding:3px 10px;border-radius:99px;}
+.lv-room-end-btn{background:#ff3b30;color:#fff;border:none;border-radius:10px;padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer;display:none;}
+.lv-grid{flex:1;overflow-y:auto;display:grid;gap:6px;padding:8px;align-content:start;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));}
+.lv-grid.solo{grid-template-columns:1fr;}.lv-grid.duo{grid-template-columns:1fr 1fr;}
+.lv-tile{position:relative;border-radius:14px;overflow:hidden;background:#222;aspect-ratio:4/3;min-height:120px;}
+.lv-tile video{width:100%;height:100%;object-fit:cover;display:block;background:#000;}
+.lv-tile-name{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.75));color:#fff;font-size:12px;font-weight:700;padding:16px 8px 6px;}
+.lv-tile-you{position:absolute;top:7px;left:7px;background:rgba(48,160,255,.9);color:#fff;border-radius:6px;font-size:10px;padding:2px 6px;font-weight:700;}
+.lv-tile-kick{position:absolute;top:6px;right:6px;background:rgba(255,59,48,.88);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer;padding:3px 8px;display:none;line-height:1;}
+.lv-tile-kick:hover{background:#ff3b30;}
+.lv-tile-novideo{display:flex;align-items:center;justify-content:center;position:absolute;inset:0;background:#2a2a2a;font-size:36px;}
+.lv-tile-mutedbadge{position:absolute;top:7px;left:7px;background:rgba(0,0,0,.7);color:#fff;border-radius:6px;font-size:10px;padding:2px 6px;font-weight:700;display:none;}
+.lv-tile-livebadge{position:absolute;top:7px;right:7px;background:rgba(255,59,48,.9);color:#fff;font-weight:800;font-size:9px;padding:2px 6px;border-radius:5px;letter-spacing:.06em;}
+.lv-controls{display:flex;align-items:center;justify-content:center;gap:14px;padding:14px 16px 20px;background:rgba(0,0,0,.6);flex-shrink:0;}
+.lv-ctrl-btn{width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.15);color:#fff;transition:all .18s;font-size:22px;}
+.lv-ctrl-btn:hover{background:rgba(255,255,255,.25);}
+.lv-ctrl-btn.off{background:rgba(255,59,48,.35);color:#ff3b30;}
+.lv-ctrl-btn.leave{background:#ff3b30;width:60px;height:60px;font-size:26px;}
+.lv-ctrl-btn.leave:hover{background:#d0302a;}
+/* ── Fullscreen overlay ── */
+#lvFullscreenOverlay{
+    display:none;position:fixed;inset:0;background:#000;z-index:9500;
     flex-direction:column;align-items:center;justify-content:center;
 }
-.live-modal-overlay.active { display:flex; }
-.live-modal-box {
-    background:var(--card,#1a1a1a);border-radius:20px;padding:28px 24px;
-    max-width:420px;width:90%;text-align:center;color:var(--text,#fff);
-    box-shadow:0 8px 40px rgba(0,0,0,.6);
-}
-.live-badge {
-    display:inline-flex;align-items:center;gap:6px;
-    background:#ff3b30;color:#fff;font-weight:800;font-size:13px;
-    padding:4px 12px;border-radius:99px;letter-spacing:.08em;margin-bottom:14px;
-}
-.live-video-wrap {
-    width:100%;border-radius:14px;overflow:hidden;background:#000;
-    aspect-ratio:16/9;position:relative;margin:14px 0;
-}
-.live-video-wrap video {
+#lvFullscreenOverlay.active{display:flex;}
+#lvFullscreenOverlay video{
     width:100%;height:100%;object-fit:contain;display:block;
 }
-.live-video-wrap .live-overlay-badge {
-    position:absolute;top:10px;left:10px;
-    background:rgba(255,59,48,.9);color:#fff;font-weight:800;font-size:11px;
-    padding:2px 8px;border-radius:6px;letter-spacing:.08em;
+.lv-fs-close{
+    position:absolute;top:14px;right:16px;
+    background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;
+    width:38px;height:38px;font-size:20px;cursor:pointer;z-index:10;
+    display:flex;align-items:center;justify-content:center;
 }
-.live-viewer-count {
-    font-size:12px;color:var(--muted,#888);margin-bottom:10px;
+.lv-fs-name{
+    position:absolute;bottom:90px;left:0;right:0;text-align:center;
+    color:#fff;font-size:15px;font-weight:700;
+    text-shadow:0 1px 6px rgba(0,0,0,.8);pointer-events:none;
 }
-.live-btn {
-    width:100%;padding:14px;font-size:15px;font-weight:700;font-family:inherit;
-    border:none;border-radius:12px;cursor:pointer;transition:all .2s;margin-top:8px;
-}
-.live-btn-red { background:#ff3b30;color:#fff; }
-.live-btn-red:hover { background:#d0302a; }
-.live-btn-ghost { background:rgba(255,255,255,.12);color:var(--text,#fff); }
-.live-btn-ghost:hover { background:rgba(255,255,255,.2); }
-.live-choose-row { display:flex;gap:12px;margin:14px 0; }
-.live-choose-card {
-    flex:1;padding:18px 10px;border-radius:14px;border:2px solid rgba(255,255,255,.15);
-    cursor:pointer;transition:all .2s;background:rgba(255,255,255,.06);
-}
-.live-choose-card:hover { border-color:#ff3b30;background:rgba(255,59,48,.1); }
-.live-choose-card svg { display:block;margin:0 auto 8px; }
-.live-choose-card span { font-size:13px;font-weight:600;color:var(--text,#eee); }
-.live-status-dot {
-    display:inline-block;width:8px;height:8px;border-radius:50%;
-    background:#ff3b30;margin-right:6px;animation:livePulse 1.2s infinite;
-}
-.live-ring {
-    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-    width:60px;height:60px;border-radius:50%;border:3px solid #ff3b30;
-    animation:liveRingPulse 1.4s infinite ease-out;pointer-events:none;
+.lv-tap-hint{
+    position:absolute;bottom:8px;left:0;right:0;text-align:center;
+    color:rgba(255,255,255,.45);font-size:10px;pointer-events:none;
 }
 </style>
 
-<!-- Host: choose what to share -->
-<div class="live-modal-overlay" id="liveHostChooseModal">
-  <div class="live-modal-box">
-    <div style="font-size:22px;font-weight:800;margin-bottom:6px;">🔴 Go Live</div>
-    <div style="color:var(--muted,#888);font-size:13px;margin-bottom:20px;">Choose what to share with the family</div>
-    <div class="live-choose-row">
-      <div class="live-choose-card" onclick="startLive('camera')">
-        <svg width="36" height="36" fill="none" stroke="#ff3b30" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="10" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-        <span>My Camera</span>
+<!-- Entry Modal -->
+<div class="lv-overlay" id="liveEntryModal">
+  <div class="lv-box">
+    <div class="lv-title">📡 Live &amp; Calls</div>
+    <div class="lv-sub">What do you want to do?</div>
+    <div id="liveEntryOptions">
+      <div class="lv-row">
+        <div class="lv-card" onclick="liveJoinRoom('live')">
+          <svg width="34" height="34" fill="none" stroke="#ff3b30" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="#ff3b30" stroke="none"/><path d="M6.3 6.3a8 8 0 0 0 0 11.4"/><path d="M17.7 6.3a8 8 0 0 1 0 11.4"/><path d="M3.5 3.5a13 13 0 0 0 0 17"/><path d="M20.5 3.5a13 13 0 0 1 0 17"/></svg>
+          <div class="lv-card-label">🔴 Go Live</div>
+          <div class="lv-card-hint">Share your camera. Anyone can join and watch.</div>
+        </div>
+        <div class="lv-card call-card" onclick="liveJoinRoom('call')">
+          <svg width="34" height="34" fill="none" stroke="#30a0ff" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 2.09 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <div class="lv-card-label">📞 Video Call</div>
+          <div class="lv-card-hint">Group call — everyone joins with camera &amp; mic.</div>
+        </div>
       </div>
-      <div class="live-choose-card" onclick="startLive('screen')">
-        <svg width="36" height="36" fill="none" stroke="#ff3b30" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-        <span>Share a Tab / Screen</span>
+    </div>
+    <div id="liveEntryJoin" style="display:none;">
+      <div style="margin-bottom:18px;">
+        <div class="lv-live-badge" style="margin:0 auto 12px;width:fit-content;"><span class="lv-dot"></span><span id="liveJoinTypeLabel">LIVE</span></div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:4px;" id="liveJoinHostLabel">Family is live!</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.5);" id="liveJoinCountLabel">Loading…</div>
       </div>
+      <button class="lv-btn lv-btn-red" id="liveJoinBtn" onclick="liveJoinRoom(window._liveRoomType)">📺 Join Now</button>
     </div>
-    <button class="live-btn live-btn-ghost" onclick="closeLiveModal('liveHostChooseModal')">Cancel</button>
+    <!-- NOT NOW — sets dismissed flag so the listener won't re-open it -->
+    <button class="lv-btn lv-btn-ghost" onclick="dismissLivePopup()" style="margin-top:10px;">Not now</button>
   </div>
 </div>
 
-<!-- Host: actively live -->
-<div class="live-modal-overlay" id="liveHostActiveModal">
-  <div class="live-modal-box">
-    <div class="live-badge"><span class="live-status-dot"></span> LIVE</div>
-    <div style="font-size:16px;font-weight:700;margin-bottom:4px;">You are live!</div>
-    <div class="live-viewer-count" id="liveViewerCount">Waiting for viewers…</div>
-    <div class="live-video-wrap">
-      <video id="liveHostPreview" autoplay muted playsinline style="transform:scaleX(1);"></video>
-      <span class="live-overlay-badge">● LIVE</span>
-    </div>
-    <div style="font-size:12px;color:var(--muted,#888);margin-bottom:14px;">Family members will see your stream automatically.</div>
-    <button class="live-btn live-btn-red" onclick="stopLive()">⏹ End Stream</button>
-  </div>
+<!-- Fullscreen tile overlay -->
+<div id="lvFullscreenOverlay">
+  <button class="lv-fs-close" onclick="closeLvFullscreen()">✕</button>
+  <video id="lvFsVideo" autoplay playsinline muted></video>
+  <div class="lv-fs-name" id="lvFsName"></div>
 </div>
 
-<!-- Viewer: notification that someone is live -->
-<div class="live-modal-overlay" id="liveViewerJoinModal">
-  <div class="live-modal-box">
-    <div class="live-badge"><span class="live-status-dot"></span> LIVE NOW</div>
-    <div style="font-size:17px;font-weight:700;margin-bottom:6px;" id="liveViewerHostName">The host is live!</div>
-    <div style="color:var(--muted,#888);font-size:13px;margin-bottom:20px;">Tap to join the live stream</div>
-    <button class="live-btn live-btn-red" onclick="joinLive()">📺 Watch Live</button>
-    <button class="live-btn live-btn-ghost" style="margin-top:8px;" onclick="closeLiveModal('liveViewerJoinModal')">Not now</button>
+<!-- Room Modal -->
+<div id="liveRoomModal">
+  <div class="lv-room-header">
+    <div class="lv-room-title" id="liveRoomTitle">🔴 Live Room</div>
+    <div class="lv-room-count" id="liveRoomCount">0 in room</div>
+    <button class="lv-room-end-btn" id="liveEndRoomBtn" onclick="liveEndRoom()">End for All</button>
   </div>
-</div>
-
-<!-- Viewer: watching the stream -->
-<div class="live-modal-overlay" id="liveViewerWatchModal">
-  <div class="live-modal-box" style="max-width:500px;">
-    <div class="live-badge"><span class="live-status-dot"></span> LIVE</div>
-    <div class="live-video-wrap" style="position:relative;">
-      <video id="liveViewerVideo" autoplay playsinline style="width:100%;height:100%;object-fit:contain;"></video>
-      <span class="live-overlay-badge">● LIVE</span>
-      <div class="live-ring"></div>
-    </div>
-    <div style="font-size:12px;color:var(--muted,#888);margin:10px 0;">Watching live • <span id="liveViewerCountWatch">–</span> viewer(s)</div>
-    <button class="live-btn live-btn-ghost" onclick="leaveLive()">✕ Leave Stream</button>
+  <div class="lv-grid" id="liveVideoGrid"></div>
+  <div class="lv-controls">
+    <button class="lv-ctrl-btn" id="lvMicBtn" onclick="liveToggleMic()" title="Mute/Unmute">🎙️</button>
+    <button class="lv-ctrl-btn leave" onclick="liveLeaveRoom()" title="Leave">📵</button>
+    <button class="lv-ctrl-btn" id="lvCamBtn" onclick="liveToggleCam()" title="Camera on/off">📷</button>
   </div>
 </div>
 
 <script>
-// ══════════════════════════════════════════════════════════════════
-//  LIVE STREAM  —  WebRTC mesh via Firebase signaling
-//  Firebase paths:
-//    live/session   : { host, type, startedAt }  (null = no live)
-//    live/viewers/{vid} : { name, joinedAt }
-//    live/offers/{vid}  : { sdp, type }          host→viewer
-//    live/answers/{vid} : { sdp, type }           viewer→host
-//    live/hostIce/{vid}/{id} : ICE candidate      host→viewer
-//    live/viewerIce/{vid}/{id} : ICE candidate    viewer→host
-// ══════════════════════════════════════════════════════════════════
 (function(){
-const STUN = { iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}] };
-let localStream = null;          // host's MediaStream
-let peerConns   = {};            // host: { [viewerId]: RTCPeerConnection }
-let viewerPc    = null;          // viewer's RTCPeerConnection
-let viewerId    = null;          // this viewer's random ID
-let liveListeners = [];          // Firebase unsub functions to clean up
-let liveActive  = false;
+'use strict';
+const STUN={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]};
+let myStream=null,myUid=null,peers={},lvListeners=[],inRoom=false,roomType=null,micOn=true,camOn=true;
+let popupDismissed=false; // KEY FIX: once user taps "Not now", stop auto-popping
 
-// ── Helpers ──────────────────────────────────────────────────────
-function liveRef(path){
-    return window.dbRef(window.db, 'live/' + path);
-}
-function liveSet(path,val){ return window.dbSet(liveRef(path),val); }
-function liveRemove(path){ return window.dbRemove(liveRef(path)); }
-function livePush(path,val){ return window.dbPush(liveRef(path),val); }
-function liveOnVal(path,cb){
-    const unsub = window.dbOnValue(liveRef(path), snap=>cb(snap));
-    liveListeners.push(unsub);
-    return unsub;
-}
+const lR=p=>window.dbRef(window.db,'live/'+p);
+const lvSet=(p,v)=>window.dbSet(lR(p),v);
+const lvRemove=p=>window.dbRemove(lR(p));
+const lvPush=(p,v)=>window.dbPush(lR(p),v);
+const lvGet=p=>window.dbGet(lR(p));
+const lvListen=(p,cb)=>{const u=window.dbOnValue(lR(p),s=>cb(s));lvListeners.push(u);return u;};
 
-function closeLiveModal(id){ document.getElementById(id).classList.remove('active'); }
-function openLiveModal(id){ document.getElementById(id).classList.add('active'); }
+function closeLvModal(id){document.getElementById(id).classList.remove('active');}
+function openLvModal(id){document.getElementById(id).classList.add('active');}
+function setNavDot(on){const d=document.getElementById('livePulseDot');if(d)d.style.display=on?'block':'none';}
+function escH(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-// Show/hide the pulsing red dot on the Live nav button
-function setLiveDot(on){
-    const dot = document.getElementById('livePulseDot');
-    if(dot) dot.style.display = on ? 'block' : 'none';
-}
-
-// ── Entry point: user taps Live button ───────────────────────────
-window.openLive = function(){
-    if(!window.db){ toast('Live stream needs internet connection.','warn'); return; }
-    // Check if someone is already live
-    window.dbGet(liveRef('session')).then(snap=>{
-        const session = snap.val();
-        if(session){
-            // Someone is live
-            if(isHost){
-                // Host sees their own control panel
-                openLiveModal('liveHostActiveModal');
-            } else {
-                document.getElementById('liveViewerHostName').textContent =
-                    (session.host || 'The host') + ' is live! 🎥';
-                openLiveModal('liveViewerJoinModal');
-            }
-        } else {
-            if(isHost){
-                openLiveModal('liveHostChooseModal');
-            } else {
-                toast('No live stream right now. The host can start one!','info');
-            }
-        }
-    }).catch(()=>toast('Could not check live status.','warn'));
+// "Not now" — closes popup and prevents the listener from re-opening it
+window.dismissLivePopup=function(){
+    popupDismissed=true;
+    closeLvModal('liveEntryModal');
 };
 
-// ── HOST: start live ─────────────────────────────────────────────
-window.startLive = async function(type){
-    closeLiveModal('liveHostChooseModal');
-    try {
-        if(type === 'screen'){
-            localStream = await navigator.mediaDevices.getDisplayMedia({
-                video:{ cursor:'always' }, audio:true
+// Family member counter
+(function(){
+    waitForFirebase(function(){
+        window.dbOnValue(window.dbRef(window.db,'familyMembers'),function(snap){
+            const el=document.getElementById('chatMemberCountText');
+            if(!el)return;
+            const members=snap.val()||{};
+            const names=Object.values(members).map(m=>m.name||'?').filter(Boolean);
+            const c=names.length;
+            if(c===0)el.textContent='No members yet';
+            else if(c===1)el.textContent='1 member — '+names[0];
+            else{
+                const show=c<=3?names.join(', '):names.slice(0,2).join(', ')+' + '+(c-2)+' more';
+                el.textContent=c+' members — '+show;
+            }
+        });
+    });
+})();
+
+window.openLiveEntry=function(){
+    if(!window.db){toast('Live needs an internet connection.','warn');return;}
+    popupDismissed=false; // user explicitly opened it, reset dismiss flag
+    lvGet('room').then(snap=>{
+        const room=snap.val();
+        const opts=document.getElementById('liveEntryOptions');
+        const join=document.getElementById('liveEntryJoin');
+        if(room){
+            window._liveRoomType=room.type;
+            const isCall=room.type==='call';
+            document.getElementById('liveJoinTypeLabel').textContent=isCall?'VIDEO CALL':'LIVE';
+            document.getElementById('liveJoinBtn').className='lv-btn '+(isCall?'lv-btn-blue':'lv-btn-red');
+            document.getElementById('liveJoinHostLabel').textContent=(room.createdBy||'Someone')+(isCall?' started a call!':' is live! 🎥');
+            lvGet('peers').then(ps=>{
+                const c=ps.val()?Object.keys(ps.val()).length:0;
+                document.getElementById('liveJoinCountLabel').textContent=c+' participant'+(c===1?'':'s')+' in the room';
             });
-        } else {
-            localStream = await navigator.mediaDevices.getUserMedia({
-                video:{ width:1280,height:720,facingMode:'user' }, audio:true
+            opts.style.display='none';join.style.display='block';
+        }else{
+            opts.style.display='block';join.style.display='none';
+        }
+        openLvModal('liveEntryModal');
+    }).catch(()=>toast('Could not check room status.','warn'));
+};
+
+window.liveJoinRoom=async function(type){
+    closeLvModal('liveEntryModal');
+    if(!currentUser){toast('Please enter your name first (tap Chat).','warn');return;}
+    roomType=type;
+    myUid=currentUser.replace(/[^a-zA-Z0-9]/g,'_')+'_'+Math.random().toString(36).slice(2,7);
+    const roomSnap=await lvGet('room');
+    if(!roomSnap.val())await lvSet('room',{type,createdBy:currentUser,startedAt:Date.now()});
+    try{
+        myStream=await navigator.mediaDevices.getUserMedia({video:{width:640,height:480,facingMode:'user'},audio:true});
+        camOn=true;
+    }catch(e){
+        try{myStream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});camOn=false;}
+        catch(e2){toast('Please allow camera/mic access.','warn');return;}
+    }
+    inRoom=true;micOn=true;updateCtrlBtns();
+    await lvSet('peers/'+myUid,{name:currentUser,joinedAt:Date.now(),audio:micOn,video:camOn});
+    openRoomUI(type);addMyTile();
+    lvListen('peers',snap=>{
+        const ps=snap.val()||{};
+        const count=Object.keys(ps).length;
+        const el=document.getElementById('liveRoomCount');
+        if(el)el.textContent=count+' in room';
+        Object.keys(ps).forEach(uid=>{if(uid!==myUid&&!peers[uid])connectToPeer(uid,true);});
+        renderPeerStates(ps);
+    });
+    lvListen('sig/'+myUid,snap=>{
+        const sigs=snap.val()||{};
+        Object.keys(sigs).forEach(async fromUid=>{
+            const msg=sigs[fromUid];
+            if(!msg)return;
+            if(msg.type==='offer')await handleOffer(fromUid,msg);
+            else if(msg.type==='answer')await handleAnswer(fromUid,msg);
+        });
+    });
+    lvListen('ice/'+myUid,snap=>{
+        const all=snap.val()||{};
+        Object.keys(all).forEach(fromUid=>{
+            const pc=peers[fromUid];if(!pc)return;
+            Object.values(all[fromUid]).forEach(c=>{if(c)pc.addIceCandidate(new RTCIceCandidate(c)).catch(()=>{});});
+        });
+    });
+    lvListen('kicked/'+myUid,snap=>{
+        if(snap.val()){liveLeaveRoom();toast('You were removed from the room by the host.','warn');}
+    });
+    lvListen('room',snap=>{
+        if(!snap.val()&&inRoom){liveLeaveRoom();toast('The room has ended.','info');}
+    });
+    setNavDot(true);
+};
+
+function openRoomUI(type){
+    document.getElementById('liveRoomModal').classList.add('active');
+    document.getElementById('liveRoomTitle').textContent=type==='call'?'📞 Video Call':'🔴 Live Room';
+    const endBtn=document.getElementById('liveEndRoomBtn');
+    if(endBtn)endBtn.style.display=isHost?'block':'none';
+}
+function addMyTile(){
+    const grid=document.getElementById('liveVideoGrid');
+    const tile=makeTile(myUid,currentUser,true);
+    tile.querySelector('video').srcObject=myStream;
+    tile.querySelector('video').muted=true;
+    grid.appendChild(tile);refreshGrid();
+}
+function makeTile(uid,name,isMe){
+    const tile=document.createElement('div');
+    tile.className='lv-tile';tile.id='tile-'+uid;tile.style.cursor='pointer';
+    tile.innerHTML=`<video autoplay playsinline></video>
+<div class="lv-tile-novideo" id="novid-${uid}" style="display:none;">🙉</div>
+<div class="lv-tile-name">${escH(name)}</div>
+${isMe?'<div class="lv-tile-you">You</div>':''}
+${!isMe&&roomType==='live'?'<div class="lv-tile-livebadge">LIVE</div>':''}
+<div class="lv-tile-mutedbadge" id="muted-${uid}">🔇 Muted</div>
+${isHost&&!isMe?`<button class="lv-tile-kick" style="display:block" onclick="event.stopPropagation();liveKick('${uid.replace(/'/g,"\\'")}','${name.replace(/'/g,"\\'")}')">✕</button>`:''}`;
+<div class="lv-tap-hint" style="position:absolute;bottom:8px;left:0;right:0;text-align:center;color:rgba(255,255,255,.4);font-size:10px;pointer-events:none;">⤢ tap to expand</div>`;
+    tile.addEventListener('click',function(e){if(e.target.classList.contains('lv-tile-kick'))return;openLvFullscreen(uid,name,isMe);});
+    return tile;
+}
+function openLvFullscreen(uid,name,isMe){
+    const tile=document.getElementById('tile-'+uid);if(!tile)return;
+    const srcVid=tile.querySelector('video');if(!srcVid||!srcVid.srcObject)return;
+    const overlay=document.getElementById('lvFullscreenOverlay');
+    const fsVid=document.getElementById('lvFsVideo');
+    const fsName=document.getElementById('lvFsName');
+    fsVid.srcObject=srcVid.srcObject;fsVid.muted=isMe;
+    fsName.textContent=name+(isMe?' (You)':'');
+    overlay.classList.add('active');
+    if(overlay.requestFullscreen)overlay.requestFullscreen().catch(()=>{});
+    else if(overlay.webkitRequestFullscreen)overlay.webkitRequestFullscreen();
+}
+window.closeLvFullscreen=function(){
+    const overlay=document.getElementById('lvFullscreenOverlay');
+    const fsVid=document.getElementById('lvFsVideo');
+    overlay.classList.remove('active');fsVid.srcObject=null;
+    if(document.exitFullscreen&&document.fullscreenElement)document.exitFullscreen().catch(()=>{});
+    else if(document.webkitExitFullscreen&&document.webkitFullscreenElement)document.webkitExitFullscreen();
+};
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement)window.closeLvFullscreen();});
+document.addEventListener('webkitfullscreenchange',()=>{if(!document.webkitFullscreenElement)window.closeLvFullscreen();});
+function refreshGrid(){
+    const grid=document.getElementById('liveVideoGrid');
+    const c=grid.children.length;
+    grid.className='lv-grid'+(c===1?' solo':c===2?' duo':'');
+}
+function renderPeerStates(ps){
+    Object.entries(ps).forEach(([uid,p])=>{
+        const nv=document.getElementById('novid-'+uid);
+        const mb=document.getElementById('muted-'+uid);
+        if(nv)nv.style.display=p.video===false?'flex':'none';
+        if(mb)mb.style.display=p.audio===false?'block':'none';
+    });
+}
+function createPc(remoteUid){
+    const pc=new RTCPeerConnection(STUN);
+    peers[remoteUid]=pc;
+    myStream.getTracks().forEach(t=>pc.addTrack(t,myStream));
+    pc.onicecandidate=e=>{if(e.candidate)lvPush('ice/'+remoteUid+'/'+myUid,e.candidate.toJSON());};
+    pc.ontrack=e=>{
+        let tile=document.getElementById('tile-'+remoteUid);
+        if(!tile){tile=makeTile(remoteUid,pc._name||'Family Member',false);document.getElementById('liveVideoGrid').appendChild(tile);refreshGrid();}
+        const vid=tile.querySelector('video');
+        if(e.streams[0])vid.srcObject=e.streams[0];
+        const nv=document.getElementById('novid-'+remoteUid);if(nv)nv.style.display='none';
+    };
+    pc.onconnectionstatechange=()=>{
+        if(['disconnected','failed','closed'].includes(pc.connectionState))removePeerTile(remoteUid);
+    };
+    return pc;
+}
+async function connectToPeer(remoteUid,weOffer){
+    if(peers[remoteUid])return;
+    const nameSnap=await lvGet('peers/'+remoteUid);
+    const pd=nameSnap.val()||{};
+    const pc=createPc(remoteUid);pc._name=pd.name||'Family Member';
+    if(!document.getElementById('tile-'+remoteUid)){
+        const tile=makeTile(remoteUid,pd.name||'Family Member',false);
+        document.getElementById('liveVideoGrid').appendChild(tile);refreshGrid();
+    }
+    if(weOffer){
+        const offer=await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        await lvSet('sig/'+remoteUid+'/'+myUid,{type:'offer',sdp:offer.sdp});
+    }
+}
+async function handleOffer(fromUid,msg){
+    if(peers[fromUid]&&peers[fromUid]._offerHandled)return;
+    if(!peers[fromUid]){
+        const nameSnap=await lvGet('peers/'+fromUid);
+        const pd=nameSnap.val()||{};
+        const pc=createPc(fromUid);pc._name=pd.name||'Family Member';
+        if(!document.getElementById('tile-'+fromUid)){
+            const tile=makeTile(fromUid,pd.name||'Family Member',false);
+            document.getElementById('liveVideoGrid').appendChild(tile);refreshGrid();
+        }
+    }
+    const pc=peers[fromUid];pc._offerHandled=true;
+    try{
+        await pc.setRemoteDescription(new RTCSessionDescription(msg));
+        const answer=await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        await lvSet('sig/'+fromUid+'/'+myUid,{type:'answer',sdp:answer.sdp});
+    }catch(e){console.warn('handleOffer',e);}
+}
+async function handleAnswer(fromUid,msg){
+    const pc=peers[fromUid];
+    if(!pc||pc._answerHandled)return;pc._answerHandled=true;
+    try{await pc.setRemoteDescription(new RTCSessionDescription(msg));}
+    catch(e){console.warn('handleAnswer',e);}
+}
+function removePeerTile(uid){
+    const t=document.getElementById('tile-'+uid);if(t)t.remove();
+    if(peers[uid]){peers[uid].close();delete peers[uid];}
+    refreshGrid();
+}
+function updateCtrlBtns(){
+    const mb=document.getElementById('lvMicBtn');const cb=document.getElementById('lvCamBtn');
+    if(mb){mb.textContent=micOn?'🎙️':'🔇';mb.className='lv-ctrl-btn'+(micOn?'':' off');}
+    if(cb){cb.textContent=camOn?'📷':'🚫';cb.className='lv-ctrl-btn'+(camOn?'':' off');}
+}
+window.liveToggleMic=function(){
+    if(!myStream)return;micOn=!micOn;
+    myStream.getAudioTracks().forEach(t=>t.enabled=micOn);
+    lvSet('peers/'+myUid+'/audio',micOn).catch(()=>{});
+    updateCtrlBtns();
+};
+window.liveToggleCam=function(){
+    if(!myStream)return;camOn=!camOn;
+    myStream.getVideoTracks().forEach(t=>t.enabled=camOn);
+    lvSet('peers/'+myUid+'/video',camOn).catch(()=>{});
+    const nv=document.getElementById('novid-'+myUid);if(nv)nv.style.display=camOn?'none':'flex';
+    updateCtrlBtns();
+};
+window.liveKick=function(uid,name){
+    if(!isHost){toast('Only the host can remove participants.','warn');return;}
+    if(!confirm('Remove '+name+' from the room?'))return;
+    lvSet('kicked/'+uid,Date.now())
+        .then(()=>{lvRemove('peers/'+uid).catch(()=>{});removePeerTile(uid);toast(name+' was removed.','warn');})
+        .catch(()=>toast('Could not remove participant.','warn'));
+};
+window.liveLeaveRoom=function(){
+    inRoom=false;
+    if(myStream){myStream.getTracks().forEach(t=>t.stop());myStream=null;}
+    Object.values(peers).forEach(pc=>pc.close());peers={};
+    lvListeners.forEach(u=>u());lvListeners=[];
+    if(myUid){
+        lvRemove('peers/'+myUid).catch(()=>{});
+        lvRemove('sig/'+myUid).catch(()=>{});
+        lvRemove('ice/'+myUid).catch(()=>{});
+        lvRemove('kicked/'+myUid).catch(()=>{});
+        myUid=null;
+    }
+    const grid=document.getElementById('liveVideoGrid');if(grid)grid.innerHTML='';
+    document.getElementById('liveRoomModal').classList.remove('active');
+    setNavDot(false);
+    popupDismissed=false; // reset so next room auto-pops again
+};
+window.liveEndRoom=function(){
+    if(!isHost){toast('Only the host can end the room.','warn');return;}
+    if(!confirm('End the room for everyone?'))return;
+    lvRemove('room').then(()=>{
+        ['peers','sig','ice','kicked'].forEach(p=>lvRemove(p).catch(()=>{}));
+    }).catch(()=>{});
+    liveLeaveRoom();toast('Room ended.','info');
+};
+
+// Global watcher — respects popupDismissed flag
+waitForFirebase(function(){
+    window.dbOnValue(window.dbRef(window.db,'live/room'),snap=>{
+        const room=snap.val();
+        setNavDot(!!room);
+        if(room&&!inRoom&&!popupDismissed){
+            const isCall=room.type==='call';
+            window._liveRoomType=room.type;
+            document.getElementById('liveJoinTypeLabel').textContent=isCall?'VIDEO CALL':'LIVE';
+            document.getElementById('liveJoinBtn').className='lv-btn '+(isCall?'lv-btn-blue':'lv-btn-red');
+            document.getElementById('liveJoinHostLabel').textContent=(room.createdBy||'Someone')+(isCall?' started a call!':' is live! 🎥');
+            lvGet('peers').then(ps=>{
+                const c=ps.val()?Object.keys(ps.val()).length:0;
+                document.getElementById('liveJoinCountLabel').textContent=c+' participant'+(c===1?'':'s')+' in the room';
             });
+            document.getElementById('liveEntryOptions').style.display='none';
+            document.getElementById('liveEntryJoin').style.display='block';
+            const em=document.getElementById('liveEntryModal');
+            if(!em.classList.contains('active'))openLvModal('liveEntryModal');
         }
-    } catch(e){
-        if(e.name === 'NotAllowedError')
-            toast('Permission denied. Please allow camera/screen access.','warn');
-        else
-            toast('Could not access media: ' + e.message,'warn');
-        return;
-    }
-
-    // Preview for host
-    const preview = document.getElementById('liveHostPreview');
-    preview.srcObject = localStream;
-
-    // Write session to Firebase
-    await liveSet('session',{
-        host: currentUser || 'Host',
-        type,
-        startedAt: Date.now()
+        // Room ended — reset dismissed flag so next room will auto-pop
+        if(!room) popupDismissed=false;
     });
-    liveActive = true;
-
-    // If screen share ends (user clicks browser's "Stop sharing" button)
-    localStream.getTracks().forEach(t=>{
-        t.onended = ()=>{ if(liveActive) stopLive(); };
-    });
-
-    openLiveModal('liveHostActiveModal');
-    setLiveDot(true);
-
-    // Listen for new viewers joining
-    liveOnVal('viewers', snap=>{
-        const viewers = snap.val() || {};
-        const count = Object.keys(viewers).length;
-        const el = document.getElementById('liveViewerCount');
-        if(el) el.textContent = count === 0 ? 'Waiting for viewers…'
-                                             : count + ' viewer(s) watching';
-        const el2 = document.getElementById('liveViewerCountWatch');
-        if(el2) el2.textContent = count;
-        // Connect to any new viewer
-        Object.keys(viewers).forEach(vid=>{
-            if(!peerConns[vid]) hostConnectToViewer(vid);
-        });
-    });
-
-    // Listen for answers from viewers
-    liveOnVal('answers', snap=>{
-        const answers = snap.val() || {};
-        Object.keys(answers).forEach(async vid=>{
-            const pc = peerConns[vid];
-            if(pc && !pc._answered){
-                pc._answered = true;
-                try {
-                    await pc.setRemoteDescription(new RTCSessionDescription(answers[vid]));
-                } catch(e){ console.warn('setRemoteDescription answer',e); }
-            }
-        });
-    });
-
-    // Listen for viewer ICE candidates
-    liveOnVal('viewerIce', snap=>{
-        const all = snap.val() || {};
-        Object.keys(all).forEach(vid=>{
-            const pc = peerConns[vid];
-            if(pc){
-                Object.values(all[vid]).forEach(c=>{
-                    if(c && !pc._iceDone) pc.addIceCandidate(new RTCIceCandidate(c)).catch(()=>{});
-                });
-            }
-        });
-    });
-};
-
-async function hostConnectToViewer(vid){
-    const pc = new RTCPeerConnection(STUN);
-    peerConns[vid] = pc;
-
-    localStream.getTracks().forEach(t=> pc.addTrack(t, localStream));
-
-    pc.onicecandidate = e=>{
-        if(e.candidate) livePush('hostIce/'+vid, e.candidate.toJSON());
-    };
-
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-    await liveSet('offers/'+vid, { sdp: offer.sdp, type: offer.type });
-}
-
-// ── HOST: stop live ───────────────────────────────────────────────
-window.stopLive = async function(){
-    liveActive = false;
-    if(localStream){ localStream.getTracks().forEach(t=>t.stop()); localStream=null; }
-    Object.values(peerConns).forEach(pc=>pc.close());
-    peerConns = {};
-    liveListeners.forEach(u=>u()); liveListeners=[];
-    await liveRemove('session');
-    await liveRemove('viewers');
-    await liveRemove('offers');
-    await liveRemove('answers');
-    await liveRemove('hostIce');
-    await liveRemove('viewerIce');
-    closeLiveModal('liveHostActiveModal');
-    setLiveDot(false);
-    toast('Live stream ended.','info');
-};
-
-// ── VIEWER: join live ─────────────────────────────────────────────
-window.joinLive = async function(){
-    closeLiveModal('liveViewerJoinModal');
-    openLiveModal('liveViewerWatchModal');
-
-    viewerId = 'v_' + Math.random().toString(36).slice(2,10);
-    await liveSet('viewers/'+viewerId, { name: currentUser || 'Guest', joinedAt: Date.now() });
-
-    viewerPc = new RTCPeerConnection(STUN);
-
-    viewerPc.ontrack = e=>{
-        const vid = document.getElementById('liveViewerVideo');
-        if(vid && e.streams[0]) vid.srcObject = e.streams[0];
-    };
-
-    viewerPc.onicecandidate = e=>{
-        if(e.candidate) livePush('viewerIce/'+viewerId, e.candidate.toJSON());
-    };
-
-    // Wait for host's offer
-    const offerUnsub = window.dbOnValue(liveRef('offers/'+viewerId), async snap=>{
-        const offer = snap.val();
-        if(!offer || viewerPc._offerSet) return;
-        viewerPc._offerSet = true;
-        try {
-            await viewerPc.setRemoteDescription(new RTCSessionDescription(offer));
-            const answer = await viewerPc.createAnswer();
-            await viewerPc.setLocalDescription(answer);
-            await liveSet('answers/'+viewerId, { sdp: answer.sdp, type: answer.type });
-        } catch(e){ console.warn('viewer offer/answer',e); }
-    });
-    liveListeners.push(offerUnsub);
-
-    // Host ICE candidates
-    const iceUnsub = window.dbOnValue(liveRef('hostIce/'+viewerId), snap=>{
-        const cands = snap.val();
-        if(!cands) return;
-        Object.values(cands).forEach(c=>{
-            if(c) viewerPc.addIceCandidate(new RTCIceCandidate(c)).catch(()=>{});
-        });
-    });
-    liveListeners.push(iceUnsub);
-
-    // Viewer count
-    liveOnVal('viewers', snap=>{
-        const count = Object.keys(snap.val()||{}).length;
-        const el = document.getElementById('liveViewerCountWatch');
-        if(el) el.textContent = count;
-    });
-
-    // If session ends, close viewer
-    const sessUnsub = window.dbOnValue(liveRef('session'), snap=>{
-        if(!snap.val()){
-            leaveLive();
-            toast('The live stream has ended.','info');
-        }
-    });
-    liveListeners.push(sessUnsub);
-};
-
-// ── VIEWER: leave live ────────────────────────────────────────────
-window.leaveLive = function(){
-    if(viewerPc){ viewerPc.close(); viewerPc=null; }
-    if(viewerId){
-        liveRemove('viewers/'+viewerId).catch(()=>{});
-        liveRemove('answers/'+viewerId).catch(()=>{});
-        liveRemove('viewerIce/'+viewerId).catch(()=>{});
-        viewerId=null;
-    }
-    liveListeners.forEach(u=>u()); liveListeners=[];
-    const vid = document.getElementById('liveViewerVideo');
-    if(vid){ vid.srcObject=null; }
-    closeLiveModal('liveViewerWatchModal');
-};
-
-// ── Global listener: show red dot + popup when host goes live ─────
-function initLiveWatcher(){
-    if(!window.db) return;
-    window.dbOnValue(window.dbRef(window.db,'live/session'), snap=>{
-        const session = snap.val();
-        if(session && !isHost){
-            setLiveDot(true);
-            // Auto-popup if not already watching
-            if(!document.getElementById('liveViewerWatchModal').classList.contains('active') &&
-               !document.getElementById('liveViewerJoinModal').classList.contains('active')){
-                document.getElementById('liveViewerHostName').textContent =
-                    (session.host || 'The host') + ' is live! 🎥';
-                openLiveModal('liveViewerJoinModal');
-            }
-        } else if(!session){
-            setLiveDot(false);
-        }
-        if(session && isHost){
-            setLiveDot(true);
-        }
-    });
-}
-
-// Start watcher once Firebase is ready
-waitForFirebase(initLiveWatcher);
-
-// Clean up if host refreshes / closes tab
-window.addEventListener('beforeunload',()=>{
-    if(isHost && liveActive) liveRemove('session').catch(()=>{});
 });
-
+window.addEventListener('beforeunload',()=>{if(inRoom)liveLeaveRoom();});
+window.closeLvModal=closeLvModal;
 })();
 </script>
-<!-- ═══════════════════ END LIVE STREAM ═══════════════════ -->
 
 </body>
 </html>
