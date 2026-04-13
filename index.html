@@ -774,6 +774,10 @@ function removeHostMemory() {
   <div id="clockTime" style="font-size:clamp(36px,10vw,62px);font-weight:800;letter-spacing:-1px;font-family:'Fredoka One',sans-serif;line-height:1.1;text-shadow:0 2px 8px rgba(0,0,0,.2);">--:--</div>
   <div id="clockDate" style="font-size:clamp(13px,4vw,17px);font-weight:700;opacity:.9;margin-top:2px;">...</div>
   <div id="clockExtra" style="font-size:12px;opacity:.75;margin-top:6px;font-weight:600;letter-spacing:.3px;"></div>
+  <div onclick="openMemberList()" style="display:inline-flex;align-items:center;gap:6px;margin-top:12px;background:rgba(255,255,255,.18);border-radius:99px;padding:5px 14px;cursor:pointer;font-size:13px;font-weight:700;color:#fff;-webkit-tap-highlight-color:transparent;" title="See all family members">
+    <span id="clockMemberDot" style="width:8px;height:8px;background:#4cff91;border-radius:50%;display:inline-block;box-shadow:0 0 6px #4cff91;flex-shrink:0;"></span>
+    <span id="clockMemberText">… members</span>
+  </div>
 </div>
 </div>
 
@@ -808,7 +812,7 @@ function removeHostMemory() {
     <button class="feature-tab" data-panel="poll" onclick="switchFeatureTab('poll',this)">🗳️ Poll</button>
     <button class="feature-tab" data-panel="games" onclick="switchFeatureTab('games',this)" id="gamesTab">🎮 Games <span id="gameInviteBadge" style="display:none;background:var(--danger);color:#fff;border-radius:8px;padding:1px 6px;font-size:10px;margin-left:2px;">!</span></button>
     <button class="feature-tab" data-panel="discover" onclick="switchFeatureTab('discover',this)">🌍 Discover</button>
-    <button class="feature-tab" data-panel="askai" onclick="switchFeatureTab('askai',this)">✦ neumAI</button>
+    <button class="feature-tab" data-panel="askai" id="askaiTabBtn" onclick="openNeumAI()" title="neumAI">✦ neumAI</button>
     <button class="feature-tab" data-panel="finance" onclick="switchFeatureTab('finance',this)">💰 Finance</button>
     <button class="feature-tab" data-panel="torah" onclick="switchFeatureTab('torah',this)">📜 Torah</button>
 </div>
@@ -1034,6 +1038,12 @@ function removeHostMemory() {
   caret-color:#818cf8;
 }
 .nai-textarea::placeholder{color:rgba(100,116,139,.6);}
+/* Centered textarea gets a slightly bigger default */
+#naiEmptyState .nai-textarea{font-size:15px;}
+#naiEmptyState .nai-input-wrap:focus-within{
+    border-color:rgba(99,102,241,.6) !important;
+    box-shadow:0 0 0 3px rgba(99,102,241,.12),0 4px 30px rgba(99,102,241,.18) !important;
+}
 .nai-send-btn{
   width:40px;height:40px;flex-shrink:0;
   background:linear-gradient(135deg,#6366f1,#818cf8);
@@ -1071,8 +1081,10 @@ function removeHostMemory() {
 @keyframes naiPulse{0%,100%{opacity:1}50%{opacity:.4}}
 </style>
 
-<div class="feature-panel" id="panel-askai">
-<div class="nai-root">
+<!-- neumAI fullscreen overlay -->
+<div id="panel-askai" style="display:none;"></div><!-- placeholder so switchFeatureTab still finds it -->
+<div id="naiOverlay" style="display:none;position:fixed;inset:0;z-index:11000;flex-direction:column;">
+<div class="nai-root" style="height:100dvh;height:100vh;">
 
   <!-- Header -->
   <div class="nai-header">
@@ -1082,54 +1094,85 @@ function removeHostMemory() {
       <div class="nai-wordmark-sub">Family Intelligence · v2</div>
     </div>
     <div class="nai-hdr-btns">
-      <button class="nai-hdr-btn accent" onclick="openImageGen()">🎨 Images</button>
       <button class="nai-hdr-btn" onclick="openAIMemory()" title="What neumAI remembers about you">🧠 Memory</button>
       <button class="nai-hdr-btn" onclick="aiClearHistory()">↺ Clear</button>
     </div>
+    <button onclick="closeNeumAI()" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.3);color:#a5b4fc;border-radius:12px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;display:flex;align-items:center;gap:6px;white-space:nowrap;" title="Back">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/></svg>
+      Back
+    </button>
   </div>
 
-  <!-- Messages -->
-  <div class="nai-messages" id="aiChatMessages">
-    <div id="aiWelcomeBubble" style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:10px;padding:40px 20px;text-align:center;">
-      <div style="width:56px;height:56px;background:linear-gradient(135deg,#6366f1,#818cf8);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 0 0 1px rgba(99,102,241,.4),0 8px 32px rgba(99,102,241,.25);">✦</div>
-      <div style="font-size:22px;font-weight:700;color:#e2e8f0;letter-spacing:-.3px;font-family:'Outfit',sans-serif;"> you can even ask me about your family!!!</div>
+  <!-- Messages — hidden initially, shown after first message -->
+  <div class="nai-messages" id="aiChatMessages" style="display:none;flex:1;"></div>
+
+  <!-- Empty / centered state — like ChatGPT landing page -->
+  <div id="naiEmptyState" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 16px 32px;gap:32px;position:relative;z-index:1;">
+
+    <!-- Logo + title -->
+    <div id="aiWelcomeBubble" style="display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;">
+      <div style="width:68px;height:68px;background:linear-gradient(135deg,#6366f1,#818cf8);border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:32px;box-shadow:0 0 0 1px rgba(99,102,241,.4),0 8px 32px rgba(99,102,241,.25);">&#10022;</div>
+      <div style="font-size:26px;font-weight:700;color:#e2e8f0;letter-spacing:-.3px;font-family:'Outfit',sans-serif;">How can I help?</div>
+      <div style="font-size:12px;color:rgba(100,116,139,.5);font-family:'DM Mono',monospace;letter-spacing:.3px;">Text &middot; Images &middot; Files &middot; Family knowledge</div>
+    </div>
+
+    <!-- Centered input — bigger, more prominent -->
+    <div style="width:100%;max-width:660px;">
+      <div id="naiFilePreview" style="display:none;background:rgba(20,20,35,.8);border:1px solid rgba(99,102,241,.2);border-radius:12px;padding:8px 12px;margin-bottom:8px;align-items:center;gap:10px;">
+        <span id="naiFileName" style="flex:1;font-size:12px;color:#a5b4fc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'DM Mono',monospace;"></span>
+        <button onclick="naiClearFile()" style="background:none;border:none;color:rgba(100,116,139,.7);cursor:pointer;font-size:18px;padding:0;line-height:1;">&#x2715;</button>
+      </div>
+      <div class="nai-input-wrap" style="padding:12px 12px 12px 14px;border-radius:20px;border:1.5px solid rgba(99,102,241,.3);box-shadow:0 0 0 0 rgba(99,102,241,0),0 4px 30px rgba(0,0,0,.4);">
+        <input type="file" id="naiFileInput" accept="image/*,.pdf,.txt,.doc,.docx" style="display:none;" onchange="naiHandleFile(this)">
+        <button id="naiVoiceBtn" onclick="naiVoiceToggle()" title="Talk to neumAI" style="width:38px;height:38px;flex-shrink:0;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.25);border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(148,163,184,.8);transition:all .18s;padding:0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:16px;height:16px;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </button>
+        <button class="nai-attach-btn" onclick="document.getElementById('naiFileInput').click()" title="Attach a file" style="width:38px;height:38px;border-radius:12px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <textarea class="nai-textarea" id="aiQuestionInput"
+          placeholder="Ask anything, describe an image to create, or attach a file&#x2026;"
+          rows="3"
+          style="min-height:72px;font-size:15px;"
+          oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,180)+'px'"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();aiSendQuestion();}"></textarea>
+        <button class="nai-send-btn" onclick="aiSendQuestion()" id="aiSendBtn" title="Send" style="width:44px;height:44px;border-radius:14px;">
+          <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+      <div class="nai-status-bar" style="justify-content:center;margin-top:10px;">
+        <div class="nai-status-dot"></div>
+        <span>neumAI &middot; Powered by Pollinations</span>
+      </div>
     </div>
   </div>
 
-  <!-- Chips removed — clean ChatGPT-style UI -->
-  <div id="aiSuggestions" style="display:none;"></div>
-
-  <!-- Input -->
-  <div class="nai-input-bar">
-    <!-- File preview strip (hidden until a file is picked) -->
-    <div id="naiFilePreview" style="display:none;background:rgba(20,20,35,.8);border:1px solid rgba(99,102,241,.2);border-radius:12px;padding:8px 12px;margin-bottom:8px;display:none;align-items:center;gap:10px;">
-      <span id="naiFileName" style="flex:1;font-size:12px;color:#a5b4fc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'DM Mono',monospace;"></span>
-      <button onclick="naiClearFile()" style="background:none;border:none;color:rgba(100,116,139,.7);cursor:pointer;font-size:16px;padding:0 2px;line-height:1;">✕</button>
-    </div>
+  <!-- Bottom bar — appears after conversation starts -->
+  <div class="nai-input-bar" id="naiBottomBar" style="display:none;">
     <div class="nai-input-wrap">
-      <!-- Hidden file input -->
-      <input type="file" id="naiFileInput" accept="image/*,.pdf,.txt,.doc,.docx" style="display:none;" onchange="naiHandleFile(this)">
-      <!-- Plus / attach button -->
-      <button class="nai-attach-btn" onclick="document.getElementById('naiFileInput').click()" title="Attach a file">
+      <button id="naiVoiceBtnBottom" onclick="naiVoiceToggle()" title="Talk to neumAI" style="width:34px;height:34px;flex-shrink:0;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.25);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(148,163,184,.8);transition:all .18s;padding:0;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:15px;height:15px;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+      </button>
+      <button class="nai-attach-btn" onclick="document.getElementById('naiFileInput').click()" title="Attach">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </button>
-      <textarea class="nai-textarea" id="aiQuestionInput"
-        placeholder="Message neumAI…"
+      <textarea class="nai-textarea" id="aiQuestionInputBottom"
+        placeholder="Message neumAI&#x2026;"
         rows="1"
         oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,110)+'px'"
         onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();aiSendQuestion();}"></textarea>
-      <button class="nai-send-btn" onclick="aiSendQuestion()" id="aiSendBtn" title="Send">
-        <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      <button class="nai-send-btn" onclick="aiSendQuestion()" title="Send">
+        <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2.5;stroke-linecap:round;"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
       </button>
     </div>
-    <div class="nai-status-bar">
-      <div class="nai-status-dot"></div>
-      <span>neumAI · Powered by Pollinations</span>
-    </div>
+    <div class="nai-status-bar"><div class="nai-status-dot"></div><span>neumAI</span></div>
   </div>
 
+  <div id="aiSuggestions" style="display:none;"></div>
+
+
 </div>
-</div>
+</div><!-- end naiOverlay -->
 
 <!-- ══════════════════════════════════════
      AI IMAGE GENERATOR — FULL PAGE OVERLAY
@@ -1615,6 +1658,7 @@ function removeHostMemory() {
             <div class="wa-header-info">
                 <div class="wa-header-title">Family Chat</div>
                 <div class="wa-header-sub" id="waChatSub">General</div>
+                <div onclick="openMemberList()" style="font-size:11px;color:rgba(255,255,255,.8);font-weight:500;margin-top:2px;display:flex;align-items:center;gap:4px;cursor:pointer;" title="See all members"><span style="width:6px;height:6px;background:#4cff91;border-radius:50%;display:inline-block;flex-shrink:0;box-shadow:0 0 5px #4cff91;"></span><span id="chatMemberCountText">…</span></div>
             </div>
             <button onclick="toggleChatSearch()" style="background:none;border:none;color:rgba(255,255,255,.8);font-size:17px;cursor:pointer;padding:4px 8px;" title="Search messages">🔍</button>
             <button class="wa-header-close" onclick="closeModal('commentsModal')">✕</button>
@@ -1682,9 +1726,31 @@ function removeHostMemory() {
         <div class="wa-input-area" id="waInputArea">
             <!-- + button toggles extra tools -->
             <button onclick="toggleChatTools()" id="chatPlusBtn" title="More options" style="width:50px;height:50px;background:var(--surface2);border:1.5px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:24px;flex-shrink:0;transition:all .2s;color:var(--accent);font-weight:900;line-height:1;">+</button>
-            <button class="wa-voice-btn" id="voiceBtn" onclick="toggleVoiceRecording()" title="Voice message">
+            <button class="wa-voice-btn" id="voiceBtn"
+                title="Hold to record"
+                onmousedown="waMicDown(event)"  onmouseup="waMicUp(event)"   onmouseleave="waMicCancel(event)"
+                ontouchstart="waMicDown(event)" ontouchend="waMicUp(event)"   ontouchcancel="waMicCancel(event)"
+                ontouchmove="waMicMove(event)"
+                style="-webkit-user-select:none;user-select:none;touch-action:none;">
                 <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
             </button>
+            <!-- WhatsApp-style recording overlay -->
+            <div id="waMicOverlay" style="display:none;position:fixed;inset:0;z-index:9998;align-items:flex-end;justify-content:center;pointer-events:none;">
+              <div style="width:100%;max-width:600px;padding:0 12px 90px;pointer-events:none;">
+                <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:18px;padding:14px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 8px 32px rgba(0,0,0,.2);">
+                  <!-- Red dot + timer -->
+                  <span style="width:10px;height:10px;border-radius:50%;background:#ff3b30;flex-shrink:0;animation:pulse 1s infinite;"></span>
+                  <span id="waMicTimer" style="font-size:15px;font-weight:700;color:var(--text);font-family:'Nunito',sans-serif;min-width:40px;">0:00</span>
+                  <!-- Swipe hint -->
+                  <div style="flex:1;display:flex;align-items:center;gap:6px;justify-content:center;">
+                    <svg width="16" height="16" fill="none" stroke="var(--muted)" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/></svg>
+                    <span id="waMicHint" style="font-size:12px;font-weight:700;color:var(--muted);">Swipe left to cancel</span>
+                  </div>
+                  <!-- Cancel zone (left) -->
+                  <div id="waMicCancelZone" style="width:44px;height:44px;border-radius:50%;background:rgba(255,59,48,.12);border:1.5px solid rgba(255,59,48,.3);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🗑</div>
+                </div>
+              </div>
+            </div>
             <textarea class="wa-input" id="newComment" placeholder="Type a message…" rows="1" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,140)+'px';onTypingInput()"
                 onpaste="handleChatPaste(event)"></textarea>
             <button class="wa-send-btn" onclick="postComment()">
@@ -1699,32 +1765,8 @@ function removeHostMemory() {
     </div>
 </div>
 
-<!-- WhatsApp Video Chat -->
-<div class="modal" id="videoChatModal">
-    <div class="modal-content">
-        <h2>📱 Family Video Call</h2>
-        <div style="text-align:center;padding:10px 0 20px;">
-            <div style="background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:28px 20px;margin-bottom:20px;">
-                <svg width="56" height="56" viewBox="0 0 24 24" style="display:block;margin:0 auto 14px;">
-                    <circle cx="12" cy="12" r="12" fill="#25D366"/>
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" fill="white"/>
-                    <path d="M12 2C6.477 2 2 6.477 2 12c0 1.885.52 3.648 1.427 5.158L2 22l4.986-1.312A9.953 9.953 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18.182a8.163 8.163 0 01-4.194-1.156l-.3-.178-3.133.744.789-3.038-.196-.312A8.172 8.172 0 013.818 12C3.818 7.479 7.479 3.818 12 3.818c4.52 0 8.182 3.661 8.182 8.182 0 4.52-3.662 8.182-8.182 8.182z" fill="white"/>
-                </svg>
-                <div style="color:var(--text);font-size:16px;font-weight:600;margin-bottom:6px;">Join via WhatsApp</div>
-                <div style="color:var(--muted);font-size:13px;line-height:1.6;" id="meetRoomHint">The host has set up a WhatsApp call link for the family.</div>
-            </div>
-            <button onclick="joinWhatsAppCall()" style="width:100%;padding:16px;font-size:16px;font-weight:700;font-family:inherit;background:#25D366;color:#fff;border:none;border-radius:var(--radius);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .2s;box-shadow:0 4px 16px rgba(37,211,102,.3);" onmouseover="this.style.background='#1ebe5d'" onmouseout="this.style.background='#25D366'">
-                <svg width="20" height="20" fill="white" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.119.553 4.107 1.524 5.835L0 24l6.336-1.506A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.808 9.808 0 01-5.032-1.387l-.36-.214-3.762.893.947-3.645-.235-.374A9.818 9.818 0 012.182 12C2.182 6.575 6.575 2.182 12 2.182c5.424 0 9.818 4.393 9.818 9.818 0 5.424-4.394 9.818-9.818 9.818z"/></svg>
-                Open WhatsApp Call
-            </button>
-        </div>
-        <div class="modal-buttons">
-            <button class="btn btn-ghost" onclick="closeModal('videoChatModal')">Close</button>
-        </div>
-    </div>
-</div>
 
-<!-- Search -->
+<!-- Search<!-- Search -->
 <div class="modal" id="searchModal">
     <div class="modal-content">
         <h2>Search</h2>
@@ -2208,6 +2250,7 @@ async function registerOnlineUser(){
             timestamp: Date.now(),
             deviceId: getDeviceId()
         });
+        try{ await window.dbSet(window.dbRef(window.db,'familyMembers/'+key),{name:currentUser,lastSeen:Date.now()}); }catch(e){}
     }catch(e){ console.log('Presence error:', e); }
 }
 window.addEventListener('beforeunload', ()=>{
@@ -3899,85 +3942,135 @@ function resetRecordingState(){
     if(ind) ind.classList.remove('active');
 }
 
-async function toggleVoiceRecording(){
+/* ── WhatsApp-style hold-to-record ── */
+var _waMicStream   = null;
+var _waMicRecorder = null;
+var _waMicChunks   = [];
+var _waMicTimer    = null;
+var _waMicSeconds  = 0;
+var _waMicStartX   = 0;
+var _waMicStartY   = 0;
+var _waMicRecording = false;
+
+async function waMicDown(e){
+    if(e.type === 'mousedown' && e.button !== 0) return;
+    if(_waMicRecording) return;
     if(!currentUser){ toast('Please sign in first!','warn'); return; }
+    e.preventDefault();
 
-    // If already recording — stop it
-    if(isRecording){
-        if(mediaRecorder && mediaRecorder.state === 'recording'){
-            mediaRecorder.stop();
-        } else {
-            // Stuck state — reset
-            resetRecordingState();
-            toast('Recording stopped.','warn');
-        }
-        return;
-    }
+    var touch = e.touches ? e.touches[0] : e;
+    _waMicStartX = touch.clientX;
+    _waMicStartY = touch.clientY;
 
-    // Check browser support
-    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-        toast('Voice recording not supported in this browser. Try Chrome or Safari.','danger');
-        return;
+    if(!navigator.mediaDevices || typeof MediaRecorder === 'undefined'){
+        toast('Voice recording not supported in this browser.','danger'); return;
     }
-    if(typeof MediaRecorder === 'undefined'){
-        toast('Voice recording not supported in this browser.','danger');
-        return;
-    }
-
-    // Start recording
     try{
-        const stream = await navigator.mediaDevices.getUserMedia({audio:true});
-        activeStream = stream;
-        audioChunks = [];
+        _waMicStream = await navigator.mediaDevices.getUserMedia({audio:true});
+    }catch(err){
+        if(err.name==='NotAllowedError') toast('Microphone permission denied.','danger');
+        else toast('Could not start mic: '+err.message,'danger');
+        return;
+    }
 
-        // Pick best supported format
-        let mimeType = '';
-        if(MediaRecorder.isTypeSupported('audio/mp4')){ mimeType = 'audio/mp4'; }
-        else if(MediaRecorder.isTypeSupported('audio/webm;codecs=opus')){ mimeType = 'audio/webm;codecs=opus'; }
-        else if(MediaRecorder.isTypeSupported('audio/webm')){ mimeType = 'audio/webm'; }
-        else if(MediaRecorder.isTypeSupported('audio/ogg')){ mimeType = 'audio/ogg'; }
+    // Choose best format
+    var mime = '';
+    if(MediaRecorder.isTypeSupported('audio/mp4'))              mime='audio/mp4';
+    else if(MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) mime='audio/webm;codecs=opus';
+    else if(MediaRecorder.isTypeSupported('audio/webm'))         mime='audio/webm';
 
-        mediaRecorder = mimeType
-            ? new MediaRecorder(stream, {mimeType})
-            : new MediaRecorder(stream);
+    _waMicChunks = [];
+    _waMicRecorder = mime ? new MediaRecorder(_waMicStream,{mimeType:mime}) : new MediaRecorder(_waMicStream);
+    _waMicRecorder.ondataavailable = function(ev){ if(ev.data&&ev.data.size>0) _waMicChunks.push(ev.data); };
+    _waMicRecorder.start(250);
+    _waMicRecording = true;
 
-        mediaRecorder.ondataavailable = e => {
-            if(e.data && e.data.size > 0) audioChunks.push(e.data);
-        };
+    // Visual feedback
+    var btn = document.getElementById('voiceBtn');
+    if(btn){ btn.classList.add('recording'); btn.style.transform='scale(1.2)'; }
+    var overlay = document.getElementById('waMicOverlay');
+    if(overlay){ overlay.style.display='flex'; }
 
-        mediaRecorder.onstop = async () => {
-            const chunks = [...audioChunks];
-            const finalMime = (mediaRecorder && mediaRecorder.mimeType) || mimeType || 'audio/webm';
-            resetRecordingState();
-            const blob = new Blob(chunks, {type: finalMime});
-            if(blob.size < 500){ toast('Recording too short — try again','warn'); return; }
+    // Timer
+    _waMicSeconds = 0;
+    _updateMicTimer();
+    _waMicTimer = setInterval(_updateMicTimer, 1000);
+    toast('🔴 Hold to record • Swipe left to cancel');
+}
+
+function _updateMicTimer(){
+    _waMicSeconds++;
+    var m = Math.floor(_waMicSeconds/60);
+    var s = _waMicSeconds%60;
+    var el = document.getElementById('waMicTimer');
+    if(el) el.textContent = m+':'+(s<10?'0':'')+s;
+    // Max 2 minutes
+    if(_waMicSeconds >= 120) waMicUp(null);
+}
+
+function _waMicCleanup(){
+    clearInterval(_waMicTimer); _waMicTimer=null;
+    _waMicRecording = false;
+    var btn = document.getElementById('voiceBtn');
+    if(btn){ btn.classList.remove('recording'); btn.style.transform=''; }
+    var overlay = document.getElementById('waMicOverlay');
+    if(overlay){ overlay.style.display='none'; }
+    if(_waMicStream){ _waMicStream.getTracks().forEach(function(t){t.stop();}); _waMicStream=null; }
+}
+
+async function waMicUp(e){
+    if(!_waMicRecording) return;
+    if(_waMicRecorder && _waMicRecorder.state==='recording'){
+        _waMicRecorder.onstop = async function(){
+            var chunks = _waMicChunks.slice();
+            var finalMime = (_waMicRecorder && _waMicRecorder.mimeType) || 'audio/webm';
+            _waMicCleanup();
+            var blob = new Blob(chunks, {type:finalMime});
+            if(blob.size < 500 || _waMicSeconds < 1){ toast('Too short — hold longer to record','warn'); return; }
             await uploadAndSendVoice(blob);
         };
-
-        mediaRecorder.onerror = (e) => {
-            console.error('MediaRecorder error:', e);
-            resetRecordingState();
-            toast('Recording error — please try again','danger');
-        };
-
-        // Start with 250ms timeslice so we get data chunks regularly
-        mediaRecorder.start(250);
-        isRecording = true;
-        document.getElementById('voiceBtn').classList.add('recording');
-        document.getElementById('recordingIndicator').classList.add('active');
-        toast('🔴 Recording… tap again to send');
-
-    }catch(e){
-        resetRecordingState();
-        if(e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError'){
-            toast('Microphone access denied. Allow mic access in your browser settings.','danger');
-        } else if(e.name === 'NotFoundError'){
-            toast('No microphone found on this device.','danger');
-        } else {
-            toast('Could not start recording: ' + (e.message || e),'danger');
-        }
+        _waMicRecorder.stop();
+    } else {
+        _waMicCleanup();
     }
 }
+
+function waMicCancel(e){
+    if(!_waMicRecording) return;
+    if(_waMicRecorder && _waMicRecorder.state==='recording'){
+        _waMicRecorder.onstop = function(){ _waMicCleanup(); };
+        _waMicRecorder.stop();
+    } else {
+        _waMicCleanup();
+    }
+    _waMicChunks = []; // discard
+    toast('Recording cancelled');
+}
+
+function waMicMove(e){
+    if(!_waMicRecording) return;
+    var touch = e.touches ? e.touches[0] : e;
+    var dx = touch.clientX - _waMicStartX;
+    var dy = touch.clientY - _waMicStartY;
+    var hint = document.getElementById('waMicHint');
+    var cancelZone = document.getElementById('waMicCancelZone');
+    // Swiping left to cancel
+    if(dx < -40){
+        var pct = Math.min(1, Math.abs(dx)/120);
+        if(hint) hint.textContent = pct > 0.7 ? 'Release to cancel' : 'Swipe left to cancel';
+        if(cancelZone){ cancelZone.style.background='rgba(255,59,48,'+(0.12+pct*0.5)+')'; cancelZone.style.transform='scale('+(1+pct*0.3)+')'; }
+        if(dx < -120){
+            waMicCancel(e);
+        }
+    } else {
+        if(hint) hint.textContent='Swipe left to cancel';
+        if(cancelZone){ cancelZone.style.background='rgba(255,59,48,.12)'; cancelZone.style.transform=''; }
+    }
+}
+
+// Keep toggleVoiceRecording as a no-op so nothing breaks
+function toggleVoiceRecording(){}
+
 
 async function uploadAndSendVoice(blob){
     toast('Sending voice message… 🎙️');
@@ -4422,15 +4515,6 @@ function closeVideoLightbox(){
     lb.style.display='none';
 }
 
-// ── Video Chat ─────────────────────────────────────────────
-function openVideoChat(){ document.getElementById('videoChatModal').classList.add('active'); }
-
-function joinWhatsAppCall(){
-    if(!meetLink){ toast('No call link yet! Host: go to ⚙️ Settings → Hub Settings to add a WhatsApp call link.','warn'); return; }
-    window.open(meetLink,'_blank','noopener');
-    closeModal('videoChatModal');
-    toast('Opening WhatsApp call! 📱');
-}
 
 // ── Global events ─────────────────────────────────────────
 // Handle image load errors for link-type cards
@@ -6202,7 +6286,6 @@ function _webSpeechFallback(btn, text, originalEmoji){
 }
 
 window.readAloud = readAloud;
-window.joinWhatsAppCall=joinWhatsAppCall;
 window.kickUser=kickUser;
 window.openComments=openComments;
 
@@ -6321,7 +6404,6 @@ window.closeCardLightbox = closeCardLightbox;
 
 window.openSearch=openSearch;
 window.openStreamableLightbox=openStreamableLightbox;
-window.openVideoChat=openVideoChat;
 window.openVideoLightbox=openVideoLightbox;
 window.postComment=postComment;
 window.aiEnhanceText=aiEnhanceText;
@@ -8093,7 +8175,9 @@ async function aiClearHistory(){
     }
     const sugg = document.getElementById('aiSuggestions');
     if(sugg) sugg.style.display = 'flex';
-    toast('Conversation cleared 🗑');
+    // Go back to centered empty mode
+    if(typeof naiShowEmptyMode === 'function') naiShowEmptyMode();
+    toast('Conversation cleared ✦');
 }
 
 async function loadFamilyFacts(){
@@ -8122,12 +8206,74 @@ async function loadFamilyFacts(){
 
 // Load history when tab opens, but only once per session
 function onAskAITabOpen(){
-    _familyFacts = null; // refresh facts in case host updated them
+    _familyFacts = null;
     if(!_aiHistoryLoaded){
         _aiHistoryLoaded = true;
         _loadAIHistory();
     }
 }
+
+/* ── neumAI fullscreen open/close ── */
+window.openNeumAI = function(){
+    var overlay = document.getElementById('naiOverlay');
+    if(overlay){ overlay.style.display='flex'; }
+    document.querySelectorAll('.feature-tab').forEach(function(b){ b.classList.remove('active'); });
+    var btn = document.getElementById('askaiTabBtn');
+    if(btn) btn.classList.add('active');
+    onAskAITabOpen();
+    // If history exists, go straight to chat mode
+    if(_aiChatHistory && _aiChatHistory.length > 0){ naiShowChatMode(); }
+    else { naiShowEmptyMode(); }
+};
+
+/* Switch to centered empty-state mode */
+function naiShowEmptyMode(){
+    var empty = document.getElementById('naiEmptyState');
+    var msgs  = document.getElementById('aiChatMessages');
+    var bot   = document.getElementById('naiBottomBar');
+    if(empty){ empty.style.display='flex'; }
+    if(msgs){  msgs.style.display='none'; }
+    if(bot){   bot.style.display='none'; }
+    // Focus the centered textarea
+    setTimeout(function(){
+        var ta = document.getElementById('aiQuestionInput');
+        if(ta) ta.focus();
+    }, 150);
+}
+
+/* Switch to bottom-bar chat mode */
+function naiShowChatMode(){
+    var empty = document.getElementById('naiEmptyState');
+    var msgs  = document.getElementById('aiChatMessages');
+    var bot   = document.getElementById('naiBottomBar');
+    if(empty){ empty.style.display='none'; }
+    if(msgs){  msgs.style.display='flex'; msgs.style.flex='1'; }
+    if(bot){   bot.style.display='block'; }
+    // Move text from centered textarea to bottom textarea
+    var centeredTa = document.getElementById('aiQuestionInput');
+    var bottomTa   = document.getElementById('aiQuestionInputBottom');
+    if(centeredTa && bottomTa && centeredTa.value){
+        bottomTa.value = centeredTa.value;
+        centeredTa.value = '';
+    }
+    setTimeout(function(){
+        var ta = document.getElementById('aiQuestionInputBottom');
+        if(ta) ta.focus();
+        var wrap = document.getElementById('aiChatMessages');
+        if(wrap) wrap.scrollTop = wrap.scrollHeight;
+    }, 50);
+}
+
+window.closeNeumAI = function(){
+    var overlay = document.getElementById('naiOverlay');
+    if(overlay){ overlay.style.display='none'; }
+    // Re-activate whatever was the last real panel
+    document.querySelectorAll('.feature-tab').forEach(function(b){ b.classList.remove('active'); });
+    var homeBtn = document.querySelector('.feature-tab[data-panel="cards"]');
+    if(homeBtn){ homeBtn.classList.add('active'); }
+    if(typeof switchFeatureTab === 'function') switchFeatureTab('cards', homeBtn);
+};
+
 
 function aiRenderBubble(role, text, isLoading=false){
     const wrap = document.getElementById('aiChatMessages');
@@ -8158,112 +8304,166 @@ function aiRenderBubble(role, text, isLoading=false){
 
 async function aiSendQuestion(){
     if(_aiThinking) return;
-    const input = document.getElementById('aiQuestionInput');
-    const sendBtn = document.getElementById('aiSendBtn');
-    const question = input?.value?.trim();
-    if(!question) return;
 
-    // Hide suggestions and welcome after first question
-    const sugg = document.getElementById('aiSuggestions');
+    // ── Read from whichever input is visible ──────────────────────────
+    var inputCentered = document.getElementById('aiQuestionInput');
+    var inputBottom   = document.getElementById('aiQuestionInputBottom');
+    var emptyState    = document.getElementById('naiEmptyState');
+    var isCentered    = emptyState && emptyState.style.display !== 'none';
+    var activeInput   = isCentered ? inputCentered : (inputBottom || inputCentered);
+
+    // ── Handle file attachment ──────────────────────────────────────
+    if(window._naiAttachedContent && window._naiAttachedFile){
+        var baseQ = (activeInput && activeInput.value.trim()) || 'Please analyse this.';
+        var isImg = window._naiAttachedFile.type.startsWith('image/');
+        if(activeInput) activeInput.value = isImg
+            ? baseQ + ' [Image: ' + window._naiAttachedFile.name + ']'
+            : baseQ + '\n\n[File: ' + window._naiAttachedFile.name + ']\n' + window._naiAttachedContent.slice(0,4000);
+        window.naiClearFile && window.naiClearFile();
+    }
+
+    var question = (activeInput && activeInput.value.trim()) || '';
+    if(!question){ return; }
+
+    const sendBtn = document.getElementById('aiSendBtn');
+
+    // Switch to chat mode if needed
+    if(isCentered && typeof naiShowChatMode === 'function') naiShowChatMode();
+
+    // Hide welcome / suggestions
+    var sugg = document.getElementById('aiSuggestions');
     if(sugg) sugg.style.display = 'none';
-    const welcome = document.getElementById('aiWelcomeBubble');
+    var welcome = document.getElementById('aiWelcomeBubble');
     if(welcome) welcome.style.display = 'none';
 
-    input.value = '';
-    input.style.height = 'auto';
+    // Clear inputs
+    if(inputCentered){ inputCentered.value=''; inputCentered.style.height='auto'; }
+    if(inputBottom){   inputBottom.value='';   inputBottom.style.height='auto'; }
+
+    // ── Detect image generation request ────────────────────────────
+    var IMAGE_RE = /\b(generate|create|make|draw|paint|render|design|picture|image|photo|illustration|artwork|sketch|visuali[sz]e|imagine)\b/i;
+    var hasAttachedImage = window._naiAttachedFile && window._naiAttachedFile.type && window._naiAttachedFile.type.startsWith('image/');
+    var isImageReq = IMAGE_RE.test(question) && !hasAttachedImage;
 
     aiRenderBubble('user', question);
-
     _aiThinking = true;
     if(sendBtn) sendBtn.style.opacity = '0.5';
     const thinkBubble = aiRenderBubble('ai', '', true);
 
-    const facts = await loadFamilyFacts();
+    try {
+        if(isImageReq){
+            // ── Image generation path ───────────────────────────────
+            var promptEl = document.getElementById('imgGenPrompt');
+            if(promptEl) promptEl.value = question;
+            await window.generateImage();
+            var gallery = document.getElementById('imgGenGallery');
+            var imgs = gallery && gallery.querySelectorAll('.img-gen-card img');
+            if(imgs && imgs.length > 0){
+                var latestUrl = imgs[0].src;
+                if(thinkBubble){
+                    thinkBubble.innerHTML = '';
+                    thinkBubble.style.padding = '6px';
+                    thinkBubble.style.background = 'transparent';
+                    thinkBubble.style.border = 'none';
+                    var img = document.createElement('img');
+                    img.src = latestUrl;
+                    img.style.cssText = 'max-width:260px;width:100%;border-radius:14px;display:block;box-shadow:0 4px 20px rgba(99,102,241,.3);cursor:pointer;';
+                    img.onclick = function(){ window.open(latestUrl,'_blank'); };
+                    var cap = document.createElement('div');
+                    cap.style.cssText = 'margin-top:8px;font-size:11px;color:rgba(100,116,139,.6);font-family:"DM Mono",monospace;padding:0 4px;';
+                    cap.textContent = 'Tap to open full size';
+                    thinkBubble.appendChild(img);
+                    thinkBubble.appendChild(cap);
+                }
+            } else {
+                if(thinkBubble){ thinkBubble.innerHTML=''; thinkBubble.textContent='Image generated.'; }
+            }
+            // Speak result if voice mode
+            if(window._naiVoiceMode) naiSpeak('Here is your image.');
 
-    // Load this user's own memory
-    const userKey = (currentUser||'guest').replace(/[.#$[\]]/g,'_');
-    let myMemory = '';
-    try{
-        const mySnap = await window.dbGet(window.dbRef(window.db,'aiBrain/userFacts/'+userKey));
-        if(mySnap.exists() && mySnap.val() && mySnap.val().facts) myMemory = mySnap.val().facts;
-    }catch(e){}
+        } else {
+            // ── Text AI path ─────────────────────────────────────────
+            const facts = await loadFamilyFacts();
+            const uKey = (currentUser||'guest').replace(/[.#$[\]]/g,'_');
+            let myMemory = '';
+            try{
+                const mySnap = await window.dbGet(window.dbRef(window.db,'aiBrain/userFacts/'+uKey));
+                if(mySnap.exists()&&mySnap.val()&&mySnap.val().facts) myMemory=mySnap.val().facts;
+            }catch(e){}
 
-    const systemPrompt = `You are neumAI — the intelligent AI assistant for this family's private app.
-The user currently talking to you is: ${currentUser||'Unknown'}.
+            // Voice mode suffix
+            const voiceSuffix = window._naiVoiceMode
+                ? '\n\nVOICE MODE: Keep answers SHORT (2-4 sentences max). When user asks you to do something in the app, embed silent [ACTION:] tags — they are NEVER read aloud, only executed. Examples: [ACTION: open chat], [ACTION: go to Dad group], [ACTION: send message Good morning!], [ACTION: navigate to calendar]. Say what you did naturally, do NOT say the tag text. Example response: \'Sure! Opening the chat for you.\' (with [ACTION: open chat] embedded silently).'
+                : '';
+
+            const systemPrompt = `You are neumAI — the intelligent AI assistant for this family's private app.
+The user talking to you is: ${currentUser||'Unknown'}.
 
 ━━━ FAMILY KNOWLEDGE BASE ━━━
 ${facts && facts.trim() ? facts.trim() : '(No family facts added yet)'}
 
 ━━━ ${currentUser||'This user'}'s PERSONAL MEMORY ━━━
-${myMemory.trim() || '(No personal notes from this user yet)'}
+${myMemory.trim() || '(No personal notes yet)'}
 
 ━━━ RULES ━━━
-- You know who is talking to you: ${currentUser||'Unknown'}. Use their name naturally.
-- For questions about the family, ALWAYS use the facts above — they are 100% accurate.
-- HOST FACTS OVERRIDE USER FACTS if there is any conflict. The host is the source of truth.
-- For general knowledge, use your own knowledge.
+- You know who is talking: ${currentUser||'Unknown'}. Use their name naturally.
+- For family questions, use the facts above — 100% accurate.
+- HOST FACTS OVERRIDE USER FACTS if there is any conflict.
 - Be warm, concise and intelligent.
-- After answering, if the conversation reveals new family information (birthdays, addresses, preferences, relationships, events, etc.) that is NOT already saved, end your reply with a gentle question to confirm it — for example: "By the way, should I remember that for you?"
-- When user confirms, reply with: [REMEMBER: <the fact>] at the end of your message (the app will save it automatically).
-- Never fabricate facts about the family.`;
+- If conversation reveals new family info, ask to save it and use [REMEMBER: fact].
+- Never fabricate facts.${voiceSuffix}`;
 
-    try {
-        const messages = [
-            { role: 'system', content: systemPrompt },
-            ..._aiChatHistory.slice(-8),
-            { role: 'user', content: question }
-        ];
+            const messages = [
+                { role:'system', content:systemPrompt },
+                ..._aiChatHistory.slice(-8),
+                { role:'user', content:question }
+            ];
+            const answer = await _aiChatMulti(messages) || 'Hmm, I had trouble with that. Try rephrasing!';
 
-        const answer = await _aiChatMulti(messages) || 'Hmm, I had trouble answering that. Try rephrasing!';
+            // Save [REMEMBER:] facts
+            // Strip all tags from what the user sees and hears
+            let displayAnswer = answer
+                .replace(/\[ACTION:[^\]]*\]/gi, '')   // remove action tags
+                .replace(/\[REMEMBER:\s*.+?\]/gi, '')  // remove remember tags (handled below)
+                .trim();
+            const rememberMatches = [...answer.matchAll(/\[REMEMBER:\s*(.+?)\]/gi)];
+            if(rememberMatches.length > 0){
+                try{
+                    const snap = await window.dbGet(window.dbRef(window.db,'aiBrain/userFacts/'+uKey));
+                    const existing = snap.exists()&&snap.val()? (snap.val().facts||'') : '';
+                    const newFacts = rememberMatches.map(m=>m[1].trim()).join('\n');
+                    const merged = [existing, newFacts].filter(Boolean).join('\n');
+                    await window.dbSet(window.dbRef(window.db,'aiBrain/userFacts/'+uKey),{name:currentUser||'Unknown',facts:merged,updatedAt:Date.now()});
+                    _familyFacts = null;
+                    toast('✦ neumAI remembered that!','info');
+                }catch(e){ console.warn('Memory save failed',e); }
+            }
 
-        // Extract and save any [REMEMBER: ...] facts the AI wants to store
-        let displayAnswer = answer;
-        const rememberMatches = [...answer.matchAll(/\[REMEMBER:\s*(.+?)\]/gi)];
-        if(rememberMatches.length > 0){
-            displayAnswer = answer.replace(/\[REMEMBER:\s*.+?\]/gi,'').trim();
-            // Save each fact to this user's personal memory in Firebase
-            const uKey = (currentUser||'guest').replace(/[.#$[\]]/g,'_');
-            try{
-                const snap = await window.dbGet(window.dbRef(window.db,'aiBrain/userFacts/'+uKey));
-                const existing = snap.exists() && snap.val() ? (snap.val().facts||'') : '';
-                const newFacts = rememberMatches.map(m=>m[1].trim()).join('\n');
-                const merged = [existing, newFacts].filter(Boolean).join('\n');
-                await window.dbSet(window.dbRef(window.db,'aiBrain/userFacts/'+uKey),{
-                    name: currentUser||'Unknown',
-                    facts: merged,
-                    updatedAt: Date.now()
-                });
-                _familyFacts = null; // invalidate cache so next question picks up new facts
-                toast('✦ neumAI remembered that!','info');
-            }catch(e){ console.warn('Memory save failed',e); }
+            if(thinkBubble){ thinkBubble.innerHTML=''; thinkBubble.textContent=displayAnswer; }
+            _aiChatHistory.push({role:'user',content:question});
+            _aiChatHistory.push({role:'assistant',content:displayAnswer});
+            if(_aiChatHistory.length>40) _aiChatHistory=_aiChatHistory.slice(-40);
+            _saveAIHistory();
+
+            // Speak if voice mode
+            if(window._naiVoiceMode) naiSpeak(displayAnswer);
+            // Execute any [ACTION:] commands
+            if(window._naiVoiceMode || window._naiLastInputWasVoice) naiExecuteActions(displayAnswer);
+            window._naiLastInputWasVoice = false;
         }
-
-        if(thinkBubble){
-            thinkBubble.innerHTML = '';
-            thinkBubble.textContent = displayAnswer;
-        }
-
-        // Save to rolling history and persist to Firebase
-        _aiChatHistory.push({ role: 'user', content: question });
-        _aiChatHistory.push({ role: 'assistant', content: displayAnswer });
-        if(_aiChatHistory.length > 40) _aiChatHistory = _aiChatHistory.slice(-40);
-        _saveAIHistory(); // async, don't await
-
     } catch(err){
         console.error('AI error:', err);
         if(thinkBubble){
-            thinkBubble.innerHTML = '';
-            thinkBubble.style.background = 'rgba(235,87,87,.1)';
-            thinkBubble.style.borderColor = 'var(--danger)';
-            thinkBubble.style.color = 'var(--danger)';
-            thinkBubble.textContent = '⚠️ Couldn\'t get an answer right now. Check your connection and try again.';
+            thinkBubble.innerHTML='';
+            thinkBubble.style.color='var(--danger)';
+            thinkBubble.textContent='Could not get an answer. Check your connection and try again.';
         }
     }
 
     _aiThinking = false;
-    if(sendBtn) sendBtn.style.opacity = '1';
-    if(input) input.focus();
+    if(sendBtn) sendBtn.style.opacity='1';
 }
+
 
 function aiAskQuestion(q){
     const input = document.getElementById('aiQuestionInput');
@@ -9696,9 +9896,10 @@ window.switchToHumanGame=switchToHumanGame;
         <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         Chat
     </button>
-    <button class="bottom-nav-btn" onclick="openVideoChat()" title="Video Chat">
-        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-        Video Chat
+    <button class="bottom-nav-btn" id="liveNavBtn" onclick="openLiveEntry()" title="Live / Call" style="position:relative;">
+        <span id="livePulseDot" style="display:none;position:absolute;top:6px;right:14px;width:8px;height:8px;background:#ff3b30;border-radius:50%;"></span>
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/><path d="M6.3 6.3a8 8 0 0 0 0 11.4"/><path d="M17.7 6.3a8 8 0 0 1 0 11.4"/><path d="M3.5 3.5a13 13 0 0 0 0 17"/><path d="M20.5 3.5a13 13 0 0 1 0 17"/></svg>
+        Live
     </button>
     <button class="bottom-nav-btn" onclick="openSearch()" title="Search">
         <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -9910,5 +10111,785 @@ window.aiSendQuestion = async function(){
 };
 </script>
 
+
+<!-- ═══════════════════════════════════════════════════
+     LIVE + VIDEO CALL + MEMBER LIST — clean rebuild
+═══════════════════════════════════════════════════ -->
+<style>
+.lv-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:10100;align-items:center;justify-content:center;}
+.lv-ov.on{display:flex;}
+.lv-box{background:#1c1c1e;border-radius:22px;padding:28px 22px;max-width:400px;width:92%;color:#fff;box-shadow:0 12px 48px #0009;}
+.lv-h1{font-size:20px;font-weight:800;text-align:center;margin-bottom:6px;}
+.lv-sub{font-size:13px;color:rgba(255,255,255,.5);text-align:center;margin-bottom:20px;}
+.lv-row{display:flex;gap:12px;margin-bottom:12px;}
+.lv-card{flex:1;padding:20px 10px 16px;border-radius:16px;border:2px solid rgba(255,255,255,.12);cursor:pointer;text-align:center;background:rgba(255,255,255,.05);}
+.lv-card:active{border-color:#ff3b30;background:rgba(255,59,48,.15);}
+.lv-card.blue:active{border-color:#30a0ff;background:rgba(48,160,255,.15);}
+.lv-card svg{display:block;margin:0 auto 8px;}
+.lv-card-lbl{font-size:13px;font-weight:700;margin-bottom:3px;}
+.lv-card-hint{font-size:11px;color:rgba(255,255,255,.4);line-height:1.4;}
+.lv-rbadge{display:inline-flex;align-items:center;gap:5px;background:#ff3b30;color:#fff;font-weight:800;font-size:12px;padding:3px 10px;border-radius:99px;}
+.lv-rdot{width:7px;height:7px;background:#fff;border-radius:50%;animation:lvblink 1.1s infinite;}
+@keyframes lvblink{0%,100%{opacity:1}50%{opacity:.3}}
+.lv-btn{display:block;width:100%;padding:14px;font-size:15px;font-weight:700;font-family:inherit;border:none;border-radius:12px;cursor:pointer;margin-top:9px;}
+.lv-btn-red{background:#ff3b30;color:#fff;}
+.lv-btn-blue{background:#30a0ff;color:#fff;}
+.lv-btn-ghost{background:rgba(255,255,255,.12);color:#fff;}
+#lvRoom{display:none;position:fixed;inset:0;background:#111;z-index:10200;flex-direction:column;}
+#lvRoom.on{display:flex;}
+.lv-rh{display:flex;align-items:center;padding:12px 14px 8px;background:#000a;gap:10px;flex-shrink:0;}
+.lv-rt{flex:1;font-weight:700;font-size:15px;color:#fff;}
+.lv-rc{font-size:12px;color:rgba(255,255,255,.5);background:rgba(255,255,255,.1);padding:2px 10px;border-radius:99px;}
+.lv-endbtn{background:#ff3b30;color:#fff;border:none;border-radius:9px;padding:5px 13px;font-size:13px;font-weight:700;cursor:pointer;display:none;}
+.lv-grid{flex:1;overflow-y:auto;display:grid;gap:6px;padding:8px;align-content:start;}
+.lv-grid.s1{grid-template-columns:1fr;}
+.lv-grid.s2,.lv-grid.s3,.lv-grid.s4{grid-template-columns:1fr 1fr;}
+.lv-grid.s5,.lv-grid.s6{grid-template-columns:1fr 1fr 1fr;}
+.lv-tile{position:relative;border-radius:13px;overflow:hidden;background:#222;aspect-ratio:4/3;cursor:pointer;}
+.lv-tile video{width:100%;height:100%;object-fit:cover;display:block;background:#000;}
+.lv-tname{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,#000c);color:#fff;font-size:12px;font-weight:700;padding:18px 8px 5px;pointer-events:none;}
+.lv-tyou{position:absolute;top:6px;left:6px;background:rgba(48,160,255,.9);color:#fff;border-radius:5px;font-size:9px;padding:2px 5px;font-weight:800;pointer-events:none;}
+.lv-tlive{position:absolute;top:6px;right:6px;background:rgba(255,48,48,.9);color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:5px;pointer-events:none;}
+.lv-tkick{position:absolute;top:5px;right:5px;background:rgba(200,20,20,.9);color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:800;cursor:pointer;padding:2px 8px;z-index:3;}
+.lv-tmuted{position:absolute;top:6px;left:6px;background:#0009;color:#fff;border-radius:5px;font-size:9px;padding:2px 5px;display:none;pointer-events:none;}
+.lv-tnovid{display:none;position:absolute;inset:0;align-items:center;justify-content:center;background:#2a2a2a;font-size:40px;pointer-events:none;}
+.lv-thint{position:absolute;bottom:20px;left:0;right:0;text-align:center;color:rgba(255,255,255,.3);font-size:9px;pointer-events:none;}
+.lv-ctrlbar{display:flex;align-items:center;justify-content:center;gap:16px;padding:14px 0 22px;background:#000a;flex-shrink:0;}
+.lv-ctrl{width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.15);color:#fff;font-size:22px;}
+.lv-ctrl.off{background:rgba(255,48,48,.3);}
+.lv-ctrl.leave{background:#ff3b30;width:60px;height:60px;font-size:26px;}
+#lvFs{display:none;position:fixed;inset:0;background:#000;z-index:10500;flex-direction:column;align-items:center;justify-content:center;}
+
+/* ── Picture-in-Picture overlay ── */
+#lvPip{
+  display:none;position:fixed;
+  bottom:80px;right:12px;  /* above bottom nav */
+  width:160px;height:120px;
+  border-radius:16px;overflow:hidden;
+  background:#111;
+  box-shadow:0 8px 32px rgba(0,0,0,.7),0 0 0 2px rgba(99,102,241,.5);
+  z-index:10050;  /* above app, below live overlays */
+  cursor:grab;
+  touch-action:none;
+}
+#lvPip.dragging{cursor:grabbing;}
+#lvPip video{width:100%;height:100%;object-fit:cover;display:block;}
+.lvpip-bar{
+  position:absolute;top:0;left:0;right:0;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:4px 6px;
+  background:linear-gradient(#000c,transparent);
+}
+.lvpip-count{font-size:10px;color:rgba(255,255,255,.8);font-weight:700;font-family:'Outfit',sans-serif;}
+.lvpip-expand{background:none;border:none;color:#fff;cursor:pointer;font-size:14px;opacity:.8;padding:2px;line-height:1;}
+.lvpip-expand:hover{opacity:1;}
+.lvpip-dot{
+  position:absolute;top:6px;left:6px;
+  width:7px;height:7px;border-radius:50%;background:#ff3b30;
+  box-shadow:0 0 5px rgba(255,59,48,.7);
+}
+.lvpip-leave{
+  position:absolute;bottom:4px;right:5px;
+  background:rgba(255,59,48,.85);color:#fff;border:none;
+  border-radius:8px;font-size:10px;font-weight:700;cursor:pointer;padding:2px 7px;
+}
+.lvpip-leave:hover{background:#ff3b30;}
+#lvFs.on{display:flex;}
+#lvFs video{width:100%;height:100%;object-fit:contain;}
+.lv-fsx{position:absolute;top:14px;right:14px;background:#0008;color:#fff;border:none;border-radius:50%;width:40px;height:40px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;}
+.lv-fslbl{position:absolute;bottom:80px;left:0;right:0;text-align:center;color:#fff;font-size:15px;font-weight:700;pointer-events:none;}
+#lvMemModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:10002;align-items:flex-end;justify-content:center;}
+#lvMemModal.on{display:flex;}
+.lv-msheet{background:var(--card,#1c1c1e);border-radius:22px 22px 0 0;width:100%;max-width:480px;padding:0 0 30px;max-height:72vh;display:flex;flex-direction:column;}
+.lv-mhandle{width:40px;height:4px;background:rgba(255,255,255,.2);border-radius:2px;margin:12px auto 0;}
+.lv-mhdr{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 10px;}
+.lv-mtitle{font-size:16px;font-weight:800;color:var(--text,#fff);}
+.lv-mx{background:rgba(255,255,255,.1);color:var(--text,#fff);border:none;border-radius:50%;width:30px;height:30px;font-size:16px;cursor:pointer;}
+.lv-mlist{overflow-y:auto;padding:4px 12px 8px;flex:1;}
+.lv-mitem{display:flex;align-items:center;gap:12px;padding:10px 8px;border-radius:12px;}
+.lv-mavatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#e8834a,#c05a25);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;flex-shrink:0;}
+.lv-mname{font-size:14px;font-weight:600;color:var(--text,#fff);}
+.lv-mseen{font-size:11px;color:var(--muted,#888);}
+.lv-mempty{text-align:center;color:var(--muted,#888);padding:30px;font-size:13px;}
+</style>
+
+<!-- Entry modal -->
+<div class="lv-ov" id="lvEntry">
+  <div class="lv-box">
+    <div class="lv-h1">📡 Live &amp; Calls</div>
+    <div id="lvEntryNew">
+      <div class="lv-sub">What do you want to do?</div>
+      <div class="lv-row">
+        <div class="lv-card" onclick="lvJoin('live')">
+          <svg width="34" height="34" fill="none" stroke="#ff3b30" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="#ff3b30" stroke="none"/><path d="M6.3 6.3a8 8 0 0 0 0 11.4"/><path d="M17.7 6.3a8 8 0 0 1 0 11.4"/><path d="M3.5 3.5a13 13 0 0 0 0 17"/><path d="M20.5 3.5a13 13 0 0 1 0 17"/></svg>
+          <div class="lv-card-lbl">🔴 Go Live</div>
+          <div class="lv-card-hint">Share your camera. Anyone can join.</div>
+        </div>
+        <div class="lv-card blue" onclick="lvJoin('call')">
+          <svg width="34" height="34" fill="none" stroke="#30a0ff" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 2.09 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <div class="lv-card-lbl">📞 Video Call</div>
+          <div class="lv-card-hint">Group call, everyone joins together.</div>
+        </div>
+      </div>
+    </div>
+    <div id="lvEntryJoin" style="display:none;text-align:center;">
+      <div class="lv-rbadge" style="margin:0 auto 12px;width:fit-content;"><span class="lv-rdot"></span><span id="lvJoinType">LIVE</span></div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:4px;" id="lvJoinWho">Someone is live!</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:16px;" id="lvJoinCount"></div>
+      <button class="lv-btn lv-btn-red" id="lvJoinBtn" onclick="lvJoin(window._lvType)">📺 Join Now</button>
+    </div>
+    <button class="lv-btn lv-btn-ghost" onclick="lvDismiss()">Not now</button>
+  </div>
+</div>
+
+<!-- Room -->
+<div id="lvRoom">
+  <div class="lv-rh">
+    <div class="lv-rt" id="lvRoomTitle">🔴 Live</div>
+    <div class="lv-rc" id="lvRoomCount">0 in room</div>
+    <button class="lv-endbtn" id="lvEndBtn" onclick="lvEndRoom()">End for All</button>
+  </div>
+  <div class="lv-grid s1" id="lvGrid"></div>
+  <div class="lv-ctrlbar">
+    <button class="lv-ctrl" id="lvMicBtn" onclick="lvMicToggle()">🎙️</button>
+    <button class="lv-ctrl" id="lvPipBtn" onclick="lvEnterPip()" title="Minimise — browse while on call">
+      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><rect x="12" y="10" width="8" height="6" rx="1" fill="currentColor" stroke="none"/></svg>
+    </button>
+    <button class="lv-ctrl leave" onclick="lvLeave()">📵</button>
+    <button class="lv-ctrl" id="lvCamBtn" onclick="lvCamToggle()">📷</button>
+  </div>
+</div>
+
+<!-- Fullscreen -->
+<div id="lvFs">
+  <button class="lv-fsx" onclick="lvFsClose()">✕</button>
+  <video id="lvFsVid" autoplay playsinline></video>
+  <div class="lv-fslbl" id="lvFsLbl"></div>
+</div>
+
+<!-- Member list -->
+<div id="lvMemModal" onclick="if(event.target===this)lvMemClose()">
+  <div class="lv-msheet">
+    <div class="lv-mhandle"></div>
+    <div class="lv-mhdr">
+      <div class="lv-mtitle">Family Members</div>
+      <button class="lv-mx" onclick="lvMemClose()">x</button>
+    </div>
+    <div class="lv-mlist" id="lvMemList"><div class="lv-mempty">Loading...</div></div>
+  </div>
+</div>
+
+<script>
+var _lvStream=null,_lvUid=null,_lvPeers={},_lvUnsubs=[],_lvIn=false,_lvType=null,_lvMic=true,_lvCam=true,_lvDismiss=false,_lvReady=false;
+var STUN={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]};
+
+function _esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function _show(id){document.getElementById(id).classList.add('on');}
+function _hide(id){document.getElementById(id).classList.remove('on');}
+function _dot(on){var d=document.getElementById('livePulseDot');if(d)d.style.display=on?'block':'none';}
+function _db(p){return window.dbRef(window.db,'live/'+p);}
+
+waitForFirebase(function(){
+    _lvReady=true;
+    window.dbOnValue(window.dbRef(window.db,'familyMembers'),function(snap){
+        var data=snap.val()||{};
+        var names=Object.values(data).map(function(m){return m&&m.name||'';}).filter(Boolean);
+        var cnt=names.length;
+        // Chat header
+        var el=document.getElementById('chatMemberCountText');
+        if(el){
+            if(!cnt)el.textContent='No members yet';
+            else if(cnt===1)el.textContent='1 member — '+names[0];
+            else{var show=cnt<=3?names.join(', '):names.slice(0,2).join(', ')+' + '+(cnt-2)+' more';el.textContent=cnt+' members — '+show;}
+        }
+        // Clock pill
+        var ct=document.getElementById('clockMemberText');
+        if(ct)ct.textContent=(cnt||0)+' member'+(cnt===1?'':'s');
+    });
+    window.dbOnValue(window.dbRef(window.db,'live/room'),function(snap){
+        var room=snap.val();
+        _dot(!!room);
+        if(!room){_lvDismiss=false;return;}
+        if(_lvIn||_lvDismiss)return;
+        _setJoinView(room);
+        var em=document.getElementById('lvEntry');
+        if(!em.classList.contains('on'))em.classList.add('on');
+    });
+});
+
+function _setJoinView(room){
+    window._lvType=room.type;
+    var isCall=room.type==='call';
+    document.getElementById('lvJoinType').textContent=isCall?'VIDEO CALL':'LIVE';
+    document.getElementById('lvJoinBtn').className='lv-btn '+(isCall?'lv-btn-blue':'lv-btn-red');
+    document.getElementById('lvJoinWho').textContent=(room.createdBy||'Someone')+(isCall?' started a call!':' is live!');
+    if(_lvReady&&window.db){
+        try{window.dbGet(_db('peers')).then(function(ps){
+            var c=ps.val()?Object.keys(ps.val()).length:0;
+            document.getElementById('lvJoinCount').textContent=c+' participant'+(c===1?'':'s');
+        }).catch(function(){});}catch(e){}
+    }
+    document.getElementById('lvEntryNew').style.display='none';
+    document.getElementById('lvEntryJoin').style.display='block';
+}
+
+window.openLiveEntry=function(){
+    _lvDismiss=false;
+    document.getElementById('lvEntryNew').style.display='block';
+    document.getElementById('lvEntryJoin').style.display='none';
+    if(_lvReady&&window.db){
+        try{window.dbGet(_db('room')).then(function(snap){
+            if(snap.val())_setJoinView(snap.val());
+        }).catch(function(){});}catch(e){}
+    }
+    _show('lvEntry');
+};
+
+window.lvDismiss=function(){_lvDismiss=true;_hide('lvEntry');};
+
+window.lvJoin=async function(type){
+    _hide('lvEntry');
+    if(!currentUser){toast('Please set your name first.','warn');return;}
+    if(!_lvReady||!window.db){toast('Still connecting, try again in a moment.','warn');return;}
+    _lvType=type;
+    _lvUid=(currentUser||'u').replace(/[^a-zA-Z0-9]/g,'_')+'_'+Math.random().toString(36).slice(2,7);
+    try{
+        var rs=await window.dbGet(_db('room'));
+        if(!rs.val())await window.dbSet(_db('room'),{type:type,createdBy:currentUser,startedAt:Date.now()});
+    }catch(e){toast('Could not connect to room.','warn');return;}
+    try{
+        _lvStream=await navigator.mediaDevices.getUserMedia({video:{width:640,height:480,facingMode:'user'},audio:true});
+        _lvCam=true;
+    }catch(e){
+        try{_lvStream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});_lvCam=false;}
+        catch(e2){toast('Please allow camera/mic access.','warn');return;}
+    }
+    _lvIn=true;_lvMic=true;_lvCtrlUpdate();
+    try{await window.dbSet(_db('peers/'+_lvUid),{name:currentUser,joinedAt:Date.now(),audio:true,video:_lvCam});}catch(e){}
+    document.getElementById('lvRoom').classList.add('on');
+    document.getElementById('lvRoomTitle').textContent=type==='call'?'Video Call':'Live';
+    var eb=document.getElementById('lvEndBtn');if(eb)eb.style.display=isHost?'block':'none';
+    var st=_buildTile(_lvUid,currentUser,true);
+    st.querySelector('video').srcObject=_lvStream;
+    st.querySelector('video').muted=true;
+    document.getElementById('lvGrid').appendChild(st);
+    _reflow();
+    _watch('peers',function(snap){
+        var ps=snap.val()||{};
+        var el=document.getElementById('lvRoomCount');if(el)el.textContent=Object.keys(ps).length+' in room';
+        Object.keys(ps).forEach(function(uid){if(uid!==_lvUid&&!_lvPeers[uid])_connect(uid,true);});
+        Object.keys(ps).forEach(function(uid){
+            var p=ps[uid];
+            var mb=document.getElementById('lvm-'+uid),nv=document.getElementById('lvn-'+uid);
+            if(mb)mb.style.display=p.audio===false?'block':'none';
+            if(nv)nv.style.display=p.video===false?'flex':'none';
+        });
+    });
+    _watch('sig/'+_lvUid,function(snap){
+        var sigs=snap.val()||{};
+        Object.keys(sigs).forEach(function(from){
+            var msg=sigs[from];if(!msg)return;
+            if(msg.type==='offer')_handleOffer(from,msg);
+            else if(msg.type==='answer')_handleAnswer(from,msg);
+        });
+    });
+    _watch('ice/'+_lvUid,function(snap){
+        var all=snap.val()||{};
+        Object.keys(all).forEach(function(from){
+            var pc=_lvPeers[from];if(!pc)return;
+            Object.values(all[from]).forEach(function(c){if(c)pc.addIceCandidate(new RTCIceCandidate(c)).catch(function(){});});
+        });
+    });
+    _watch('kicked/'+_lvUid,function(snap){if(snap.val()){lvLeave();toast('You were removed from the room.','warn');}});
+    _watch('room',function(snap){if(!snap.val()&&_lvIn){lvLeave();toast('The room has ended.','info');}});
+};
+
+function _watch(path,cb){var u=window.dbOnValue(_db(path),cb);_lvUnsubs.push(u);return u;}
+
+function _buildTile(uid,name,isMe){
+    var tile=document.createElement('div');tile.className='lv-tile';tile.id='lvt-'+uid;
+    var vid=document.createElement('video');vid.autoplay=true;vid.playsInline=true;tile.appendChild(vid);
+    var nv=document.createElement('div');nv.className='lv-tnovid';nv.id='lvn-'+uid;nv.textContent='X';tile.appendChild(nv);
+    var nm=document.createElement('div');nm.className='lv-tname';nm.textContent=name;tile.appendChild(nm);
+    var h=document.createElement('div');h.className='lv-thint';h.textContent='tap to fullscreen';tile.appendChild(h);
+    if(isMe){var y=document.createElement('div');y.className='lv-tyou';y.textContent='You';tile.appendChild(y);}
+    else if(_lvType==='live'){var lb=document.createElement('div');lb.className='lv-tlive';lb.textContent='LIVE';tile.appendChild(lb);}
+    var mb=document.createElement('div');mb.className='lv-tmuted';mb.id='lvm-'+uid;mb.textContent='Muted';tile.appendChild(mb);
+    if(isHost&&!isMe){
+        var kb=document.createElement('button');kb.className='lv-tkick';kb.textContent='X';
+        (function(u,n){kb.onclick=function(e){e.stopPropagation();lvKick(u,n);};})(uid,name);
+        tile.appendChild(kb);
+    }
+    tile.addEventListener('click',function(e){if(e.target.classList.contains('lv-tkick'))return;lvFsOpen(uid,name,isMe);});
+    return tile;
+}
+
+function _reflow(){var g=document.getElementById('lvGrid'),c=g.children.length;g.className='lv-grid s'+(c||1);}
+
+function _makePc(uid){
+    var pc=new RTCPeerConnection(STUN);_lvPeers[uid]=pc;
+    _lvStream.getTracks().forEach(function(t){pc.addTrack(t,_lvStream);});
+    pc.onicecandidate=function(e){if(e.candidate)window.dbPush(_db('ice/'+uid+'/'+_lvUid),e.candidate.toJSON());};
+    pc.ontrack=function(e){
+        var tile=document.getElementById('lvt-'+uid);
+        if(!tile){tile=_buildTile(uid,pc._name||'Family',false);document.getElementById('lvGrid').appendChild(tile);_reflow();}
+        var v=tile.querySelector('video');if(e.streams[0])v.srcObject=e.streams[0];
+        var nv=document.getElementById('lvn-'+uid);if(nv)nv.style.display='none';
+    };
+    pc.onconnectionstatechange=function(){if(['disconnected','failed','closed'].indexOf(pc.connectionState)>-1)_rmTile(uid);};
+    return pc;
+}
+
+function _connect(uid,offer){
+    if(_lvPeers[uid])return;
+    window.dbGet(_db('peers/'+uid)).then(function(snap){
+        var pd=snap.val()||{};var pc=_makePc(uid);pc._name=pd.name||'Family';
+        if(!document.getElementById('lvt-'+uid)){var t=_buildTile(uid,pd.name||'Family',false);document.getElementById('lvGrid').appendChild(t);_reflow();}
+        if(offer)pc.createOffer().then(function(o){return pc.setLocalDescription(o).then(function(){return window.dbSet(_db('sig/'+uid+'/'+_lvUid),{type:'offer',sdp:o.sdp});});}).catch(function(){});
+    }).catch(function(){});
+}
+
+function _handleOffer(from,msg){
+    if(_lvPeers[from]&&_lvPeers[from]._oh)return;
+    var go=function(pc){pc._oh=true;pc.setRemoteDescription(new RTCSessionDescription(msg)).then(function(){return pc.createAnswer();}).then(function(a){return pc.setLocalDescription(a).then(function(){return window.dbSet(_db('sig/'+from+'/'+_lvUid),{type:'answer',sdp:a.sdp});});}).catch(function(){});};
+    if(!_lvPeers[from]){window.dbGet(_db('peers/'+from)).then(function(snap){var pd=snap.val()||{};var pc=_makePc(from);pc._name=pd.name||'Family';if(!document.getElementById('lvt-'+from)){var t=_buildTile(from,pd.name||'Family',false);document.getElementById('lvGrid').appendChild(t);_reflow();}go(pc);}).catch(function(){});}
+    else{go(_lvPeers[from]);}
+}
+
+function _handleAnswer(from,msg){var pc=_lvPeers[from];if(!pc||pc._ah)return;pc._ah=true;pc.setRemoteDescription(new RTCSessionDescription(msg)).catch(function(){});}
+function _rmTile(uid){var t=document.getElementById('lvt-'+uid);if(t)t.remove();if(_lvPeers[uid]){_lvPeers[uid].close();delete _lvPeers[uid];}_reflow();}
+
+function _lvCtrlUpdate(){
+    var m=document.getElementById('lvMicBtn'),c=document.getElementById('lvCamBtn');
+    if(m){m.textContent=_lvMic?'mic':'muted';m.className='lv-ctrl'+(_lvMic?'':' off');}
+    if(c){c.textContent=_lvCam?'cam':'off';c.className='lv-ctrl'+(_lvCam?'':' off');}
+}
+
+window.lvMicToggle=function(){if(!_lvStream)return;_lvMic=!_lvMic;_lvStream.getAudioTracks().forEach(function(t){t.enabled=_lvMic;});try{window.dbSet(_db('peers/'+_lvUid+'/audio'),_lvMic);}catch(e){}_lvCtrlUpdate();};
+window.lvCamToggle=function(){if(!_lvStream)return;_lvCam=!_lvCam;_lvStream.getVideoTracks().forEach(function(t){t.enabled=_lvCam;});try{window.dbSet(_db('peers/'+_lvUid+'/video'),_lvCam);}catch(e){}var nv=document.getElementById('lvn-'+_lvUid);if(nv)nv.style.display=_lvCam?'none':'flex';_lvCtrlUpdate();};
+window.lvKick=function(uid,name){if(!isHost){toast('Only host can remove people.','warn');return;}if(!confirm('Remove '+name+'?'))return;try{window.dbSet(_db('kicked/'+uid),Date.now());}catch(e){}try{window.dbRemove(_db('peers/'+uid));}catch(e){}  _rmTile(uid);toast(name+' removed.','warn');};
+window.lvLeave=function(){_lvIn=false;if(_lvStream){_lvStream.getTracks().forEach(function(t){t.stop();});_lvStream=null;}Object.values(_lvPeers).forEach(function(pc){pc.close();});_lvPeers={};_lvUnsubs.forEach(function(u){u();});_lvUnsubs=[];if(_lvUid){['peers/'+_lvUid,'sig/'+_lvUid,'ice/'+_lvUid,'kicked/'+_lvUid].forEach(function(p){try{window.dbRemove(_db(p));}catch(e){}});_lvUid=null;}var g=document.getElementById('lvGrid');if(g)g.innerHTML='';document.getElementById('lvRoom').classList.remove('on');lvFsClose();_lvDismiss=false;};
+window.lvEndRoom=function(){if(!isHost){toast('Only host can end room.','warn');return;}if(!confirm('End room for everyone?'))return;try{window.dbRemove(_db('room'));}catch(e){}['peers','sig','ice','kicked'].forEach(function(p){try{window.dbRemove(_db(p));}catch(e){}});lvLeave();toast('Room ended.','info');};
+
+window.lvFsOpen=function(uid,name,isMe){var tile=document.getElementById('lvt-'+uid);if(!tile)return;var sv=tile.querySelector('video');if(!sv||!sv.srcObject)return;var ov=document.getElementById('lvFs'),fv=document.getElementById('lvFsVid');fv.srcObject=sv.srcObject;fv.muted=!!isMe;document.getElementById('lvFsLbl').textContent=name+(isMe?' (You)':'');ov.classList.add('on');try{if(ov.requestFullscreen)ov.requestFullscreen();else if(ov.webkitRequestFullscreen)ov.webkitRequestFullscreen();}catch(e){};};
+window.lvFsClose=function(){var ov=document.getElementById('lvFs'),fv=document.getElementById('lvFsVid');if(!ov)return;ov.classList.remove('on');if(fv)fv.srcObject=null;try{if(document.exitFullscreen&&document.fullscreenElement)document.exitFullscreen();}catch(e){}try{if(document.webkitExitFullscreen&&document.webkitFullscreenElement)document.webkitExitFullscreen();}catch(e){};};
+document.addEventListener('fullscreenchange',function(){if(!document.fullscreenElement)window.lvFsClose();});
+document.addEventListener('webkitfullscreenchange',function(){if(!document.webkitFullscreenElement)window.lvFsClose();});
+
+window.openMemberList=function(){
+    var modal=document.getElementById('lvMemModal');
+    modal.classList.add('on');
+    var el=document.getElementById('lvMemList');
+    el.innerHTML='<div class="lv-mempty">Loading…</div>';
+    if(!_lvReady||!window.db){el.innerHTML='<div class="lv-mempty">Not connected.</div>';return;}
+    var TWO_MIN=2*60*1000;
+    Promise.all([
+        window.dbGet(window.dbRef(window.db,'familyMembers')),
+        window.dbGet(window.dbRef(window.db,'onlineUsers'))
+    ]).then(function(results){
+        var fmData=results[0].val()||{};
+        var ouData=results[1].val()||{};
+        var now=Date.now();
+        // Build online set
+        var onlineKeys=new Set();
+        Object.entries(ouData).forEach(function(e){
+            var key=e[0],u=e[1];
+            if(u&&u.timestamp&&(now-u.timestamp)<TWO_MIN)onlineKeys.add(key);
+        });
+        // Build member list
+        var members=Object.entries(fmData).filter(function(e){return e[1]&&e[1].name;}).map(function(e){
+            var key=e[0],m=e[1];
+            var lastSeen=m.lastSeen||0;
+            if(ouData[key]&&ouData[key].timestamp>lastSeen)lastSeen=ouData[key].timestamp;
+            return {key:key,name:m.name,lastSeen:lastSeen,online:onlineKeys.has(key)};
+        });
+        // Add anyone online but not in familyMembers yet
+        Object.entries(ouData).forEach(function(e){
+            var key=e[0],u=e[1];
+            if(!u||!u.name)return;
+            if(!members.find(function(m){return m.key===key;}))
+                members.push({key:key,name:u.name,lastSeen:u.timestamp||now,online:onlineKeys.has(key)});
+        });
+        // Sort: online first, then by lastSeen
+        members.sort(function(a,b){
+            if(a.online&&!b.online)return -1;
+            if(!a.online&&b.online)return 1;
+            return (b.lastSeen||0)-(a.lastSeen||0);
+        });
+        if(!members.length){el.innerHTML='<div class="lv-mempty">No members yet.</div>';return;}
+        var html=members.map(function(m){
+            var init=(m.name||'?')[0].toUpperCase();
+            var diff=now-(m.lastSeen||0);
+            var ts='';
+            if(m.online)ts='<span style="color:#22c55e;font-weight:700;">Active now</span>';
+            else if(m.lastSeen){
+                var mins=Math.floor(diff/60000);
+                if(mins<2)ts='just now';
+                else if(mins<60)ts=mins+'m ago';
+                else if(Math.floor(mins/60)<24)ts=Math.floor(mins/60)+'h ago';
+                else ts=Math.floor(mins/1440)+'d ago';
+            }
+            var dot=m.online
+                ?'<span style="width:9px;height:9px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px rgba(34,197,94,.7);display:inline-block;flex-shrink:0;"></span>'
+                :'<span style="width:9px;height:9px;border-radius:50%;background:#ef4444;display:inline-block;flex-shrink:0;"></span>';
+            return '<div class="lv-mitem" style="align-items:center;">'+dot+'<div class="lv-mavatar" style="margin-left:4px;">'+init+'</div><div><div class="lv-mname">'+_esc(m.name)+'</div>'+(ts?'<div class="lv-mseen">'+ts+'</div>':'')+'</div></div>';
+        }).join('');
+        el.innerHTML=html;
+    }).catch(function(){el.innerHTML='<div class="lv-mempty">Could not load.</div>';});
+};
+window.lvMemClose=function(){document.getElementById('lvMemModal').classList.remove('on');};
+
+window.addEventListener('beforeunload',function(){if(_lvIn)lvLeave();});
+</script>
+<!-- ═══════════════════ END LIVE FEATURE ═══════════════════ -->
+
+
+<!-- ── Picture-in-Picture floating window ── -->
+<div id="lvPip">
+  <div class="lvpip-bar">
+    <div class="lvpip-count" id="lvPipCount">0</div>
+    <button class="lvpip-expand" onclick="lvExitPip()" title="Expand back to full">⤢</button>
+  </div>
+  <video id="lvPipVideo" autoplay playsinline muted></video>
+  <div class="lvpip-dot"></div>
+  <button class="lvpip-leave" onclick="lvLeave()">End</button>
+</div>
+
+
+<script>
+/* ── Picture-in-Picture ─────────────────────────────────────────────
+   Composites all video tiles onto a canvas → streams into the PiP
+   video element. Allows user to drag it anywhere on screen.
+──────────────────────────────────────────────────────────────────── */
+(function(){
+    var pip = null;
+    var pipVideo = null;
+    var pipCanvas = null;
+    var pipCtx = null;
+    var pipStream = null;
+    var pipRAF = null;
+    var dragging = false;
+    var dragOX = 0, dragOY = 0;
+
+    function init(){
+        pip = document.getElementById('lvPip');
+        pipVideo = document.getElementById('lvPipVideo');
+        if(!pip || !pipVideo) return;
+        pipCanvas = document.createElement('canvas');
+        pipCanvas.width  = 320;
+        pipCanvas.height = 240;
+        pipCtx = pipCanvas.getContext('2d');
+        // Make the canvas stream
+        try {
+            pipStream = pipCanvas.captureStream(15);  // 15fps — smooth enough
+            pipVideo.srcObject = pipStream;
+        } catch(e){ console.warn('PiP canvas stream not supported', e); }
+
+        // Drag support — touch and mouse
+        pip.addEventListener('mousedown',  startDrag);
+        pip.addEventListener('touchstart', startDrag, {passive:true});
+        document.addEventListener('mousemove',  doDrag);
+        document.addEventListener('touchmove',  doDrag, {passive:false});
+        document.addEventListener('mouseup',    stopDrag);
+        document.addEventListener('touchend',   stopDrag);
+    }
+
+    function startDrag(e){
+        if(e.target.tagName==='BUTTON') return; // don't drag on button clicks
+        dragging = true;
+        pip.classList.add('dragging');
+        var touch = e.touches ? e.touches[0] : e;
+        var rect = pip.getBoundingClientRect();
+        dragOX = touch.clientX - rect.left;
+        dragOY = touch.clientY - rect.top;
+        if(e.cancelable) e.preventDefault();
+    }
+    function doDrag(e){
+        if(!dragging) return;
+        var touch = e.touches ? e.touches[0] : e;
+        var x = touch.clientX - dragOX;
+        var y = touch.clientY - dragOY;
+        // Clamp to screen
+        var maxX = window.innerWidth  - pip.offsetWidth;
+        var maxY = window.innerHeight - pip.offsetHeight;
+        pip.style.right  = 'auto';
+        pip.style.bottom = 'auto';
+        pip.style.left   = Math.max(0, Math.min(x, maxX)) + 'px';
+        pip.style.top    = Math.max(0, Math.min(y, maxY)) + 'px';
+        if(e.cancelable) e.preventDefault();
+    }
+    function stopDrag(){ dragging=false; if(pip)pip.classList.remove('dragging'); }
+
+    function renderFrame(){
+        if(!pipCtx) return;
+        var grid = document.getElementById('lvGrid');
+        if(!grid){ pipRAF = requestAnimationFrame(renderFrame); return; }
+        var tiles = grid.querySelectorAll('.lv-tile');
+        var n = tiles.length;
+        if(!n){ pipRAF = requestAnimationFrame(renderFrame); return; }
+        var cols = n <= 1 ? 1 : n <= 4 ? 2 : 3;
+        var rows = Math.ceil(n / cols);
+        var tw = pipCanvas.width  / cols;
+        var th = pipCanvas.height / rows;
+        pipCtx.fillStyle = '#111';
+        pipCtx.fillRect(0, 0, pipCanvas.width, pipCanvas.height);
+        tiles.forEach(function(tile, i){
+            var vid = tile.querySelector('video');
+            var col = i % cols;
+            var row = Math.floor(i / cols);
+            var x = col * tw, y = row * th;
+            if(vid && vid.readyState >= 2 && vid.videoWidth > 0){
+                try { pipCtx.drawImage(vid, x, y, tw, th); }
+                catch(e){}
+            } else {
+                // No video — draw name initial
+                pipCtx.fillStyle = '#2a2a3e';
+                pipCtx.fillRect(x, y, tw, th);
+                var nameEl = tile.querySelector('.lv-tname');
+                if(nameEl){
+                    pipCtx.fillStyle = 'rgba(255,255,255,.5)';
+                    pipCtx.font = 'bold '+ Math.round(th*0.35) +'px Outfit,sans-serif';
+                    pipCtx.textAlign = 'center';
+                    pipCtx.textBaseline = 'middle';
+                    pipCtx.fillText((nameEl.textContent||'?')[0].toUpperCase(), x+tw/2, y+th/2);
+                }
+            }
+        });
+        // Update count badge
+        var countEl = document.getElementById('lvPipCount');
+        if(countEl) countEl.textContent = n + ' in call';
+        pipRAF = requestAnimationFrame(renderFrame);
+    }
+
+    window.lvEnterPip = function(){
+        if(!pip) init();
+        if(!pip) return;
+        // Hide the full room
+        var room = document.getElementById('lvRoom');
+        if(room) room.classList.remove('on');
+        // Show the PiP
+        pip.style.display = 'block';
+        // Reset position to default bottom-right
+        pip.style.left = pip.style.top = '';
+        pip.style.right  = '12px';
+        pip.style.bottom = '80px';
+        // Start rendering
+        if(pipRAF) cancelAnimationFrame(pipRAF);
+        renderFrame();
+        // Nav bar: make Live button pulse orange to show call is active
+        var navBtn = document.getElementById('liveNavBtn');
+        if(navBtn) navBtn.style.color = 'var(--accent)';
+        toast('Browsing while on call 📱');
+    };
+
+    window.lvExitPip = function(){
+        if(!pip) return;
+        pip.style.display = 'none';
+        if(pipRAF){ cancelAnimationFrame(pipRAF); pipRAF = null; }
+        // Restore full room
+        var room = document.getElementById('lvRoom');
+        if(room) room.classList.add('on');
+        // Reset nav button colour
+        var navBtn = document.getElementById('liveNavBtn');
+        if(navBtn) navBtn.style.color = '';
+    };
+
+    // When user taps the Live nav button while PiP is active → expand back
+    var origOpenLiveEntry = window.openLiveEntry;
+    window.openLiveEntry = function(){
+        var pip2 = document.getElementById('lvPip');
+        if(pip2 && pip2.style.display !== 'none'){
+            lvExitPip();
+            return;
+        }
+        origOpenLiveEntry && origOpenLiveEntry();
+    };
+
+    // When lvLeave is called, also hide PiP
+    var origLvLeave = window.lvLeave;
+    window.lvLeave = function(){
+        if(pip) pip.style.display = 'none';
+        if(pipRAF){ cancelAnimationFrame(pipRAF); pipRAF = null; }
+        var navBtn = document.getElementById('liveNavBtn');
+        if(navBtn) navBtn.style.color = '';
+        origLvLeave && origLvLeave();
+    };
+
+    // Tap the PiP window itself to expand (except buttons)
+    document.addEventListener('click', function(e){
+        var pip2 = document.getElementById('lvPip');
+        if(!pip2 || pip2.style.display==='none') return;
+        if(e.target===pip2 || e.target===document.getElementById('lvPipVideo')){
+            lvExitPip();
+        }
+    });
+})();
+</script>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   neumAI ALWAYS-ON VOICE ASSISTANT
+   - Tap mic once → enters voice mode (stays on, even when
+     you leave neumAI and browse the app)
+   - Tap mic again → exits voice mode
+   - In voice mode: speaks every response, listens after
+     each answer, executes app commands
+═══════════════════════════════════════════════════════════ */
+(function(){
+'use strict';
+
+var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+var _rec       = null;
+var _speaking  = false;
+var _audio     = null;
+var _stopAfter = false;  // stop listening after this utterance
+
+window._naiVoiceMode         = false;
+window._naiLastInputWasVoice = false;
+
+/* ── Speak ── */
+window.naiSpeak = function(text){
+    if(_audio){ _audio.pause(); _audio=null; }
+    _speaking = true;
+    var clean = text.replace(/\[ACTION:[^\]]*\]/gi,'').replace(/\*\*/g,'').replace(/\*/g,'').trim().slice(0,600);
+    var url = 'https://audio.pollinations.ai/tts?text=' + encodeURIComponent(clean) + '&voice=alloy&model=openai-audio';
+    _audio = new Audio(url);
+    _audio.onended  = function(){ _speaking=false; _audio=null; if(window._naiVoiceMode && !_stopAfter) _startListening(); };
+    _audio.onerror  = function(){ _speaking=false; _audio=null; if(window._naiVoiceMode && !_stopAfter) _startListening(); };
+    _audio.play().catch(function(){ _speaking=false; if(window._naiVoiceMode && !_stopAfter) _startListening(); });
+};
+
+function _stopAudio(){ if(_audio){ _audio.pause(); _audio=null; } _speaking=false; }
+
+/* ── Execute app commands ── */
+window.naiExecuteActions = function(text){
+    var re = /\[ACTION:\s*([^\]]+)\]/gi, m;
+    while((m=re.exec(text))!==null){
+        var a = m[1].trim().toLowerCase();
+        var tabMap = {home:'cards',cards:'cards',calendar:'calendar',recipes:'recipes',
+            games:'games',discover:'discover',ai:'askai',neumai:'askai',
+            poll:'poll',finance:'finance',torah:'torah'};
+        var foundTab = null;
+        for(var t in tabMap){ if(a.includes(t)){ foundTab=tabMap[t]; break; } }
+        if(foundTab && a.includes('navigat') || a.includes('open') || a.includes('go to')){
+            if(typeof window.switchFeatureTab==='function'){
+                var btn=document.querySelector('[data-panel="'+foundTab+'"]');
+                window.switchFeatureTab(foundTab,btn);
+            }
+            continue;
+        }
+        if(a.includes('chat') && !a.includes('send')){
+            if(typeof window.openComments==='function') window.openComments();
+            var gm=a.match(/(?:go to|open|switch to)\s+(.+?)\s+(?:group|chat)/i);
+            if(gm && typeof chatGroups!=='undefined'){
+                var tg=gm[1].trim();
+                var found=chatGroups.find(function(g){return g.toLowerCase().includes(tg);});
+                if(found && typeof switchChatGroup==='function') switchChatGroup(found);
+            }
+            continue;
+        }
+        var sendM=m[1].trim().match(/^send(?:\s+message)?[:\s]+(.+)$/i);
+        if(sendM){
+            var msg=sendM[1].trim();
+            if(typeof window.openComments==='function') window.openComments();
+            setTimeout(function(){
+                var ta=document.getElementById('newComment');
+                if(ta){ta.value=msg;ta.dispatchEvent(new Event('input'));}
+                if(typeof window.postComment==='function') window.postComment();
+            },400);
+        }
+    }
+};
+
+/* ── Update mic button visual state ── */
+function _setMicUI(active){
+    ['naiVoiceBtn','naiVoiceBtnBottom'].forEach(function(id){
+        var b=document.getElementById(id); if(!b) return;
+        if(active){
+            b.style.background='rgba(255,59,48,.3)';
+            b.style.borderColor='#ff3b30';
+            b.style.color='#ff6b6b';
+            b.title='Voice mode ON — tap to turn off';
+        } else {
+            b.style.background=''; b.style.borderColor=''; b.style.color='';
+            b.title='Talk to neumAI';
+        }
+    });
+    // Also pulse the Live-style dot on the nav button
+    var navBtn=document.getElementById('liveNavBtn');
+    // (Don't touch liveNavBtn — that's for live calls)
+}
+
+/* ── Start listening ── */
+function _startListening(){
+    if(!SR || !window._naiVoiceMode || _speaking) return;
+    if(_rec){ try{_rec.abort();}catch(e){} _rec=null; }
+    _rec = new SR();
+    _rec.continuous = false;
+    _rec.interimResults = false;
+    _rec.lang = 'en-US';
+    _rec.onresult = function(e){
+        var t = e.results[0][0].transcript.trim();
+        if(!t) return;
+        _sendVoiceInput(t);
+    };
+    _rec.onend = function(){
+        // Auto-restart after a short gap if still in voice mode and not speaking
+        if(window._naiVoiceMode && !_speaking && !_stopAfter){
+            setTimeout(function(){ if(window._naiVoiceMode && !_speaking) _startListening(); }, 300);
+        }
+    };
+    _rec.onerror = function(e){
+        if(e.error==='not-allowed'){ window.naiVoiceToggle(); toast('Microphone denied.','warn'); return; }
+        if(e.error!=='no-speech' && window._naiVoiceMode){
+            setTimeout(function(){ if(window._naiVoiceMode && !_speaking) _startListening(); }, 800);
+        }
+    };
+    try{ _rec.start(); }catch(e){}
+}
+
+function _sendVoiceInput(transcript){
+    // Stop listening while AI thinks + speaks
+    if(_rec){ try{_rec.stop();}catch(e){} _rec=null; }
+
+    // Switch neumAI to chat mode if needed
+    var empty=document.getElementById('naiEmptyState');
+    var isCentered=empty&&empty.style.display!=='none';
+    if(isCentered && typeof naiShowChatMode==='function') naiShowChatMode();
+
+    // Put transcript in the input and send
+    window._naiLastInputWasVoice = true;
+    var inp = document.getElementById('aiQuestionInputBottom') || document.getElementById('aiQuestionInput');
+    if(inp){ inp.value=transcript; }
+    if(typeof aiSendQuestion==='function') aiSendQuestion();
+}
+
+/* ── Toggle voice mode on/off ── */
+window.naiVoiceToggle = function(){
+    if(!SR){ toast('Voice not supported on this browser. Try Chrome.','warn'); return; }
+
+    if(window._naiVoiceMode){
+        // Turn OFF
+        window._naiVoiceMode = false;
+        _stopAfter = true;
+        _stopAudio();
+        if(_rec){ try{_rec.abort();}catch(e){} _rec=null; }
+        _setMicUI(false);
+        toast('Voice mode off');
+    } else {
+        // Turn ON
+        window._naiVoiceMode = true;
+        _stopAfter = false;
+        _setMicUI(true);
+        toast('Voice mode on — I\'m listening!');
+        _startListening();
+    }
+};
+
+// Open neumAI when voice mode is on and user asks something from elsewhere
+// (voice is global — works from any screen in the app)
+
+})();
+</script>
 </body>
 </html>
