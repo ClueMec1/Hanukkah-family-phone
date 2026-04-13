@@ -1087,19 +1087,25 @@ function removeHostMemory() {
 <div class="nai-root" style="height:100dvh;height:100vh;">
 
   <!-- Header -->
-  <div class="nai-header">
-    <div class="nai-logo-mark">✦</div>
-    <div class="nai-wordmark">
-      <div class="nai-wordmark-top">neum<span class="nai-ai">AI</span></div>
-      <div class="nai-wordmark-sub">Family Intelligence · v2</div>
+  <div class="nai-header" style="padding:12px 14px;">
+    <!-- Hamburger — opens sidebar -->
+    <button onclick="naiSidebarOpen()" style="width:38px;height:38px;flex-shrink:0;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.25);border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(148,163,184,.8);padding:0;">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <!-- New chat -->
+    <button onclick="naiNewChat()" style="width:38px;height:38px;flex-shrink:0;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.25);border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(148,163,184,.8);padding:0;" title="New chat">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+    <div class="nai-wordmark" style="flex:1;text-align:center;">
+      <div class="nai-wordmark-top" id="naiChatTitle" style="font-size:16px;">neum<span class="nai-ai">AI</span></div>
+      <div class="nai-wordmark-sub" id="naiModeLabel" style="font-size:10px;">General Assistant</div>
     </div>
-    <div class="nai-hdr-btns">
-      <button class="nai-hdr-btn" onclick="openAIMemory()" title="What neumAI remembers about you">🧠 Memory</button>
-      <button class="nai-hdr-btn" onclick="aiClearHistory()">↺ Clear</button>
-    </div>
-    <button onclick="closeNeumAI()" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.3);color:#a5b4fc;border-radius:12px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;display:flex;align-items:center;gap:6px;white-space:nowrap;" title="Back">
+    <!-- Mode picker -->
+    <button onclick="naiModePickerOpen()" id="naiModeBtn" style="height:32px;padding:0 10px;flex-shrink:0;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.25);border-radius:10px;color:#a5b4fc;font-size:12px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;display:flex;align-items:center;gap:5px;white-space:nowrap;">
+      <span id="naiModeEmoji">✦</span><span id="naiModeName">General</span>
+    </button>
+    <button onclick="closeNeumAI()" style="width:38px;height:38px;flex-shrink:0;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.3);border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#a5b4fc;padding:0;" title="Back">
       <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/></svg>
-      Back
     </button>
   </div>
 
@@ -1118,12 +1124,16 @@ function removeHostMemory() {
 
     <!-- Centered input — bigger, more prominent -->
     <div style="width:100%;max-width:660px;">
-      <div id="naiFilePreview" style="display:none;background:rgba(20,20,35,.8);border:1px solid rgba(99,102,241,.2);border-radius:12px;padding:8px 12px;margin-bottom:8px;align-items:center;gap:10px;">
-        <span id="naiFileName" style="flex:1;font-size:12px;color:#a5b4fc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'DM Mono',monospace;"></span>
-        <button onclick="naiClearFile()" style="background:none;border:none;color:rgba(100,116,139,.7);cursor:pointer;font-size:18px;padding:0;line-height:1;">&#x2715;</button>
+      <div id="naiFilePreview" style="display:none;background:rgba(20,20,35,.9);border:1px solid rgba(99,102,241,.3);border-radius:14px;padding:10px 14px;margin-bottom:8px;align-items:center;gap:10px;">
+        <div id="naiFileThumb" style="width:40px;height:40px;border-radius:8px;background:rgba(99,102,241,.15);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;overflow:hidden;"></div>
+        <div style="flex:1;min-width:0;">
+          <div id="naiFileName" style="font-size:13px;font-weight:600;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+          <div id="naiFileSize" style="font-size:11px;color:rgba(100,116,139,.6);margin-top:1px;font-family:'DM Mono',monospace;"></div>
+        </div>
+        <button onclick="naiClearFile()" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#ef4444;width:28px;height:28px;border-radius:8px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;line-height:1;">✕</button>
       </div>
       <div class="nai-input-wrap" style="padding:12px 12px 12px 14px;border-radius:20px;border:1.5px solid rgba(99,102,241,.3);box-shadow:0 0 0 0 rgba(99,102,241,0),0 4px 30px rgba(0,0,0,.4);">
-        <input type="file" id="naiFileInput" accept="image/*,.pdf,.txt,.doc,.docx" style="display:none;" onchange="naiHandleFile(this)">
+        <input type="file" id="naiFileInput" accept="image/*,.pdf,.txt,.doc,.docx,.xlsx,.csv,.json,.mp3,.mp4,.mov,.zip" style="display:none;" onchange="naiHandleFile(this)">
         <button id="naiVoiceBtn" onclick="naiVoiceToggle()" title="Talk to neumAI" style="width:38px;height:38px;flex-shrink:0;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.25);border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(148,163,184,.8);transition:all .18s;padding:0;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:16px;height:16px;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
         </button>
@@ -1149,6 +1159,15 @@ function removeHostMemory() {
 
   <!-- Bottom bar — appears after conversation starts -->
   <div class="nai-input-bar" id="naiBottomBar" style="display:none;">
+    <!-- File preview — shown above input when a file is attached in chat mode -->
+    <div id="naiFilePreviewBottom" style="display:none;background:rgba(20,20,35,.9);border:1px solid rgba(99,102,241,.3);border-radius:14px;padding:10px 14px;margin-bottom:8px;align-items:center;gap:10px;">
+      <div id="naiFileThumbBottom" style="width:40px;height:40px;border-radius:8px;background:rgba(99,102,241,.15);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;overflow:hidden;"></div>
+      <div style="flex:1;min-width:0;">
+        <div id="naiFileNameBottom" style="font-size:13px;font-weight:600;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+        <div id="naiFileSizeBottom" style="font-size:11px;color:rgba(100,116,139,.6);margin-top:1px;font-family:'DM Mono',monospace;"></div>
+      </div>
+      <button onclick="naiClearFile()" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#ef4444;width:28px;height:28px;border-radius:8px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;line-height:1;">✕</button>
+    </div>
     <div class="nai-input-wrap">
       <button id="naiVoiceBtnBottom" onclick="naiVoiceToggle()" title="Talk to neumAI" style="width:34px;height:34px;flex-shrink:0;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.25);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(148,163,184,.8);transition:all .18s;padding:0;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:15px;height:15px;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
@@ -1994,17 +2013,68 @@ Family emergency contact is Uncle David: 555-1234"
     <div class="modal-content">
         <h2>📅 Add Event</h2>
         <label>Event Name</label>
-        <input type="text" id="evtTitle" placeholder="e.g. Mom's Birthday 🎂" maxlength="50">
-        <label>Date</label>
-        <input type="date" id="evtDate">
+        <input type="text" id="evtTitle" placeholder="e.g. Mom's Birthday 🎂" maxlength="60">
+
+        <label>Date type</label>
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+            <button type="button" id="evtCalEngBtn"
+                onclick="evtSetCalType('english')"
+                style="flex:1;padding:9px;border-radius:10px;border:1.5px solid var(--accent);background:var(--accent);color:#fff;font-weight:700;font-family:inherit;cursor:pointer;font-size:13px;">
+                🗓️ English
+            </button>
+            <button type="button" id="evtCalHebBtn"
+                onclick="evtSetCalType('hebrew')"
+                style="flex:1;padding:9px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-weight:700;font-family:inherit;cursor:pointer;font-size:13px;">
+                ✡️ Jewish
+            </button>
+        </div>
+
+        <!-- English date picker -->
+        <div id="evtEnglishDateRow">
+            <label>Date</label>
+            <input type="date" id="evtDate">
+        </div>
+
+        <!-- Hebrew date picker -->
+        <div id="evtHebrewDateRow" style="display:none;">
+            <label>Jewish Month</label>
+            <select id="evtHebMonth" style="margin-bottom:8px;">
+                <option value="1">1 – Nissan</option>
+                <option value="2">2 – Iyar</option>
+                <option value="3">3 – Sivan</option>
+                <option value="4">4 – Tammuz</option>
+                <option value="5">5 – Av</option>
+                <option value="6">6 – Elul</option>
+                <option value="7" selected>7 – Tishrei</option>
+                <option value="8">8 – Cheshvan</option>
+                <option value="9">9 – Kislev</option>
+                <option value="10">10 – Tevet</option>
+                <option value="11">11 – Shevat</option>
+                <option value="12">12 – Adar / Adar I</option>
+                <option value="13">13 – Adar II (leap year)</option>
+            </select>
+            <label>Jewish Day</label>
+            <input type="number" id="evtHebDay" min="1" max="30" value="1" placeholder="Day (1–30)">
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5;">
+                💡 The English date shown in the calendar is calculated automatically each year from this Jewish date.
+            </div>
+        </div>
+
         <label>Type</label>
         <select id="evtType">
             <option value="birthday">🎂 Birthday</option>
+            <option value="yahrzeit">🕯️ Yahrzeit</option>
             <option value="holiday">🎉 Holiday</option>
             <option value="gathering">👨‍👩‍👧 Family Gathering</option>
             <option value="appointment">🏥 Appointment</option>
             <option value="other">📌 Other</option>
         </select>
+
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-top:4px;">
+            <input type="checkbox" id="evtRepeat" checked style="width:18px;height:18px;accent-color:var(--accent);">
+            <span style="font-size:13px;font-weight:600;">Repeat every year automatically</span>
+        </label>
+
         <label>Added by</label>
         <input type="text" id="evtAuthor" placeholder="Your name" readonly style="opacity:.6;">
         <div class="modal-buttons">
@@ -5259,12 +5329,123 @@ function checkBirthdays(){
 }
 
 // ══════════════════════════════════════════════════════════
-//  CALENDAR
+//  CALENDAR — with English + Hebrew recurring events
 // ══════════════════════════════════════════════════════════
-let calYear = new Date().getFullYear();
+let calYear  = new Date().getFullYear();
 let calMonth = new Date().getMonth();
-const EVENT_COLORS = {birthday:'#f87171',holiday:'#fbbf24',gathering:'#7c6af7',appointment:'#4fd1c5',other:'#34d399'};
-const EVENT_EMOJIS = {birthday:'🎂',holiday:'🎉',gathering:'👨‍👩‍👧',appointment:'🏥',other:'📌'};
+let _evtCalType = 'english'; // 'english' or 'hebrew'
+
+const EVENT_COLORS = {birthday:'#f87171',yahrzeit:'#a78bfa',holiday:'#fbbf24',gathering:'#7c6af7',appointment:'#4fd1c5',other:'#34d399'};
+const EVENT_EMOJIS = {birthday:'🎂',yahrzeit:'🕯️',holiday:'🎉',gathering:'👨‍👩‍👧',appointment:'🏥',other:'📌'};
+
+// ── Hebrew calendar helpers ─────────────────────────────────────────────────
+// Convert Hebrew year/month/day → Gregorian date using Intl API
+function hebrewToGregorian(hebYear, hebMonth, hebDay){
+    // We iterate dates near expected range to find the Hebrew date match
+    // hebMonth: 1=Nissan … 7=Tishrei … 13=Adar II
+    const monthNames = ['','ניסן','אייר','סיוון','תמוז','אב','אלול','תשרי','חשוון','כסלו','טבת','שבט','אדר','אדר ב'];
+    const targetMonth = monthNames[hebMonth];
+    // Search window: Hebrew year starts in Sept/Oct of Gregorian year (hebYear-1)
+    const startYear = hebYear - 3761; // rough Gregorian equivalent
+    for(let y = startYear - 1; y <= startYear + 1; y++){
+        for(let m = 0; m < 12; m++){
+            for(let d = 1; d <= 31; d++){
+                const dt = new Date(y, m, d);
+                if(dt.getMonth() !== m) break; // overflow
+                try{
+                    const hd = new Intl.DateTimeFormat('he-IL-u-ca-hebrew',{day:'numeric'}).format(dt);
+                    const hm = new Intl.DateTimeFormat('he-IL-u-ca-hebrew',{month:'long'}).format(dt);
+                    if(parseInt(hd) === hebDay && hm === targetMonth) return dt;
+                }catch(e){}
+            }
+        }
+    }
+    return null;
+}
+
+// Get Hebrew date string for a Gregorian JS Date
+function getHebrewDate(date){
+    try{
+        const day = new Intl.DateTimeFormat('he-IL-u-ca-hebrew',{day:'numeric'}).format(date);
+        const month = new Intl.DateTimeFormat('he-IL-u-ca-hebrew',{month:'long'}).format(date);
+        const year = new Intl.DateTimeFormat('he-IL-u-ca-hebrew',{year:'numeric'}).format(date);
+        return day + ' ' + month + ' ' + year;
+    }catch(e){ return ''; }
+}
+
+// Get the Hebrew month + day of a Gregorian date (for recurring Hebrew events)
+function getHebMonthDay(date){
+    try{
+        const day = parseInt(new Intl.DateTimeFormat('he-IL-u-ca-hebrew',{day:'numeric'}).format(date));
+        const month = new Intl.DateTimeFormat('he-IL-u-ca-hebrew',{month:'long'}).format(date);
+        return {day, month};
+    }catch(e){ return null; }
+}
+
+// For a Hebrew month/day, find the Gregorian date in a given Gregorian year
+function hebDateInYear(hebMonthIndex, hebDay, gregYear){
+    const monthNames = ['','ניסן','אייר','סיוון','תמוז','אב','אלול','תשרי','חשוון','כסלו','טבת','שבט','אדר','אדר ב'];
+    const targetMonth = monthNames[hebMonthIndex];
+    // Search through the Gregorian year (and small overlap around it)
+    for(let m = 0; m < 14; m++){
+        const baseMonth = (m % 12);
+        const y = gregYear + (m >= 12 ? 1 : 0);
+        for(let d = 1; d <= 31; d++){
+            const dt = new Date(y, baseMonth, d);
+            if(dt.getMonth() !== baseMonth) break;
+            try{
+                const hd = parseInt(new Intl.DateTimeFormat('he-IL-u-ca-hebrew',{day:'numeric'}).format(dt));
+                const hm = new Intl.DateTimeFormat('he-IL-u-ca-hebrew',{month:'long'}).format(dt);
+                if(hd === hebDay && hm === targetMonth) return dt;
+            }catch(e){}
+        }
+    }
+    return null;
+}
+
+// ── Expand events for a given year (handles recurring English + Hebrew) ──────
+function expandEventsForYear(rawEvents, year){
+    // rawEvents: array of event objects from Firebase
+    // Returns: Map of dateStr (YYYY-MM-DD) → [event, ...]
+    const map = {};
+    const today = new Date();
+
+    rawEvents.forEach(ev => {
+        const addDate = (dateStr, extraProps) => {
+            if(!dateStr) return;
+            map[dateStr] = map[dateStr] || [];
+            map[dateStr].push(Object.assign({}, ev, extraProps||{}, {_dateStr: dateStr}));
+        };
+
+        if(ev.calType === 'hebrew'){
+            // Hebrew recurring: find this year's Gregorian date for the Hebrew date
+            const hebMonth = parseInt(ev.hebMonth) || 7;
+            const hebDay   = parseInt(ev.hebDay)   || 1;
+            const dt = hebDateInYear(hebMonth, hebDay, year);
+            if(dt){
+                const ds = dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
+                addDate(ds, {_resolvedEnglishDate: ds});
+            }
+        } else {
+            // English date
+            if(!ev.date) return;
+            if(ev.repeat){
+                // Recurring: replace year with current year
+                const parts = ev.date.split('-');
+                const ds = year + '-' + parts[1] + '-' + parts[2];
+                // Validate the date exists (e.g. Feb 29 in non-leap years)
+                const dt = new Date(ds + 'T12:00:00');
+                if(!isNaN(dt.getTime()) && String(dt.getMonth()+1).padStart(2,'0') === parts[1]){
+                    addDate(ds);
+                }
+            } else {
+                // One-time: only show if in this year
+                if(ev.date.startsWith(year+'')) addDate(ev.date);
+            }
+        }
+    });
+    return map;
+}
 
 function calNav(dir){
     calMonth += dir;
@@ -5273,131 +5454,212 @@ function calNav(dir){
     renderCalendar();
 }
 
-// Get Hebrew date string for a given JS Date
-function getHebrewDate(date){
-    try{
-        const day = new Intl.DateTimeFormat('he-IL-u-ca-hebrew',{day:'numeric'}).format(date);
-        const month = new Intl.DateTimeFormat('he-IL-u-ca-hebrew',{month:'long'}).format(date);
-        return day + ' ' + month;
-    }catch(e){ return ''; }
-}
-
 async function renderCalendar(){
     const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
     document.getElementById('calMonthLabel').textContent = monthNames[calMonth] + ' ' + calYear;
     const grid = document.getElementById('calGrid');
     grid.innerHTML = '';
-    // Day name headers — English + Hebrew
     const dayNames = [
-        {en:'Sun', he:'א׳'},
-        {en:'Mon', he:'ב׳'},
-        {en:'Tue', he:'ג׳'},
-        {en:'Wed', he:'ד׳'},
-        {en:'Thu', he:'ה׳'},
-        {en:'Fri', he:'ש׳'},
-        {en:'Sat', he:'שבת'}
+        {en:'Sun',he:'א׳'},{en:'Mon',he:'ב׳'},{en:'Tue',he:'ג׳'},{en:'Wed',he:'ד׳'},
+        {en:'Thu',he:'ה׳'},{en:'Fri',he:'ש׳'},{en:'Sat',he:'שבת'}
     ];
     dayNames.forEach(d => {
         const el = document.createElement('div');
         el.className = 'cal-day-name';
-        el.innerHTML = '<span style="display:block;font-size:11px;">' + d.en + '</span>'
-            + '<span style="display:block;font-size:9px;color:var(--accent2);direction:rtl;">' + d.he + '</span>';
+        el.innerHTML = '<span style="display:block;font-size:11px;">'+d.en+'</span>'
+            +'<span style="display:block;font-size:9px;color:var(--accent2);direction:rtl;">'+d.he+'</span>';
         grid.appendChild(el);
     });
-    // Load events
-    let eventsMap = {};
+
+    // Load raw events from Firebase
+    let rawEvents = [];
     try{
         const snap = await window.dbGet(window.dbRef(window.db,'events'));
-        if(snap.exists()) Object.values(snap.val()).forEach(e => {
-            if(e.date){ eventsMap[e.date] = eventsMap[e.date]||[]; eventsMap[e.date].push(e); }
-        });
+        if(snap.exists()){
+            const val = snap.val();
+            rawEvents = Object.entries(val).map(([k,v])=>Object.assign({},v,{_key:k}));
+        }
     }catch(ex){}
+
+    const eventsMap = expandEventsForYear(rawEvents, calYear);
 
     const firstDay = new Date(calYear, calMonth, 1).getDay();
     const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
-    const daysInPrev = new Date(calYear, calMonth, 0).getDate();
+    const daysInPrev  = new Date(calYear, calMonth, 0).getDate();
     const today = new Date();
 
-    // Prev month padding
     for(let i=firstDay-1; i>=0; i--){
         const d = document.createElement('div');
         d.className = 'cal-day other-month';
         d.innerHTML = '<div class="cal-day-num">'+(daysInPrev-i)+'</div>';
         grid.appendChild(d);
     }
-    // Current month days
     for(let d=1; d<=daysInMonth; d++){
         const dateStr = calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-        const isToday = d===today.getDate() && calMonth===today.getMonth() && calYear===today.getFullYear();
+        const isToday = d===today.getDate()&&calMonth===today.getMonth()&&calYear===today.getFullYear();
         const dayEl = document.createElement('div');
-        dayEl.className = 'cal-day' + (isToday?' today':'') + (eventsMap[dateStr]?' has-event':'');
+        dayEl.className = 'cal-day'+(isToday?' today':'')+(eventsMap[dateStr]?' has-event':'');
         const jsDate = new Date(calYear, calMonth, d);
         const hebStr = getHebrewDate(jsDate);
+        const hebParts = hebStr.split(' ');
+        const hebShort = hebParts.length >= 2 ? hebParts[0]+' '+hebParts[1] : hebStr;
         let dotsHtml = (eventsMap[dateStr]||[]).slice(0,3).map(e=>
             '<div class="cal-dot" style="background:'+EVENT_COLORS[e.type||'other']+'"></div>').join('');
         dayEl.innerHTML = '<div class="cal-day-num">'+d+'</div>'
-            + (hebStr ? '<div class="cal-day-heb">'+hebStr+'</div>' : '')
-            + dotsHtml;
+            +(hebShort?'<div class="cal-day-heb" style="font-size:8px;direction:rtl;">'+hebShort+'</div>':'')
+            +dotsHtml;
         grid.appendChild(dayEl);
     }
-    // Next month padding
     const total = firstDay + daysInMonth;
-    const remaining = total % 7 === 0 ? 0 : 7 - (total % 7);
+    const remaining = total%7===0 ? 0 : 7-(total%7);
     for(let i=1; i<=remaining; i++){
         const d = document.createElement('div');
         d.className = 'cal-day other-month';
         d.innerHTML = '<div class="cal-day-num">'+i+'</div>';
         grid.appendChild(d);
     }
-    // Render upcoming events list
-    renderUpcomingEvents(eventsMap);
+
+    renderUpcomingEvents(rawEvents, eventsMap);
 }
 
-function renderUpcomingEvents(eventsMap){
+// ── Upcoming events — next 30 days only ────────────────────────────────────
+function renderUpcomingEvents(rawEvents, eventsMapCurrentYear){
     const list = document.getElementById('calEventsList');
     list.innerHTML = '';
-    const allEvents = [];
-    Object.entries(eventsMap).forEach(([date, evts]) => evts.forEach(e => allEvents.push({...e, date})));
-    allEvents.sort((a,b) => a.date.localeCompare(b.date));
-    if(!allEvents.length){
-        list.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">No events yet — add one!</div>';
+
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const nextMonth = new Date(today);
+    nextMonth.setDate(nextMonth.getDate() + 30);
+
+    // Build events for today and the next 30 days (may span two years)
+    const years = [today.getFullYear()];
+    if(nextMonth.getFullYear() !== today.getFullYear()) years.push(nextMonth.getFullYear());
+
+    const upcoming = [];
+    years.forEach(yr => {
+        const map = expandEventsForYear(rawEvents, yr);
+        Object.entries(map).forEach(([ds, evts]) => {
+            const dt = new Date(ds+'T12:00:00');
+            if(dt >= today && dt <= nextMonth){
+                evts.forEach(e => upcoming.push({...e, _dateStr: ds, _dt: dt}));
+            }
+        });
+    });
+
+    upcoming.sort((a,b) => a._dateStr.localeCompare(b._dateStr));
+
+    if(!upcoming.length){
+        list.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">No events in the next 30 days</div>';
         return;
     }
-    allEvents.forEach(e => {
+
+    // Section label
+    const hdr = document.createElement('div');
+    hdr.style.cssText='font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;padding:0 2px;';
+    hdr.textContent = 'Next 30 days';
+    list.appendChild(hdr);
+
+    upcoming.forEach(e => {
         const el = document.createElement('div');
         el.className = 'cal-event-item';
         const color = EVENT_COLORS[e.type||'other'];
         const emoji = EVENT_EMOJIS[e.type||'other'];
-        const dateObj = new Date(e.date+'T12:00:00');
+        const dateObj = e._dt;
         const dateStr = dateObj.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
-        const hebDateStr = getHebrewDate(dateObj);
-        el.innerHTML = `<div class="cal-event-dot" style="background:${color}"></div>
-            <div class="cal-event-info">
-                <div class="cal-event-title">${emoji} ${esc(e.title)}</div>
-                <div class="cal-event-date">${dateStr}${hebDateStr?' · <span style="direction:rtl;color:var(--accent2);">'+hebDateStr+'</span>':''} · added by ${esc(e.author||'Family')}</div>
-            </div>
-            ${isHost ? '<button class="cal-event-del" data-key="'+esc(e._key||'')+'" onclick="deleteEvent(this.dataset.key)">🗑</button>' : ''}`;
+        const hebFull = getHebrewDate(dateObj);
+        const hebParts = hebFull.split(' ');
+        const hebShort = hebParts.length >= 2 ? hebParts[0]+' '+hebParts[1] : hebFull;
+
+        // Compute days until
+        const daysUntil = Math.round((dateObj - today) / 86400000);
+        const duLabel = daysUntil === 0 ? '🔴 Today!'
+            : daysUntil === 1 ? '🟡 Tomorrow'
+            : '🟢 In ' + daysUntil + ' days';
+
+        const repeatBadge = e.repeat||e.calType==='hebrew'
+            ? '<span style="font-size:10px;background:rgba(99,102,241,.15);color:var(--accent);border-radius:5px;padding:1px 5px;margin-left:4px;">🔁 yearly</span>'
+            : '';
+        const hebBadge = e.calType==='hebrew'
+            ? '<span style="font-size:10px;background:rgba(251,191,36,.12);color:#fbbf24;border-radius:5px;padding:1px 5px;margin-left:4px;direction:rtl;">✡️ Jewish date</span>'
+            : '';
+
+        el.innerHTML = '<div class="cal-event-dot" style="background:'+color+';flex-shrink:0;"></div>'
+            +'<div class="cal-event-info" style="min-width:0;">'
+              +'<div class="cal-event-title">'+emoji+' '+esc(e.title)+repeatBadge+hebBadge+'</div>'
+              +'<div class="cal-event-date">'+dateStr
+                +(hebShort?' <span style="direction:rtl;color:var(--accent2);font-size:10px;">'+hebShort+'</span>':'')
+                +' · '+duLabel
+                +' · <span style="opacity:.6;">'+esc(e.author||'Family')+'</span>'
+              +'</div>'
+            +'</div>'
+            +(isHost?'<button class="cal-event-del" data-key="'+esc(e._key||'')+'" onclick="deleteEvent(this.dataset.key)">🗑</button>':'');
         list.appendChild(el);
     });
+}
+
+// ── Add event modal helpers ─────────────────────────────────────────────────
+function evtSetCalType(type){
+    _evtCalType = type;
+    const engRow = document.getElementById('evtEnglishDateRow');
+    const hebRow = document.getElementById('evtHebrewDateRow');
+    const engBtn = document.getElementById('evtCalEngBtn');
+    const hebBtn = document.getElementById('evtCalHebBtn');
+    if(type==='english'){
+        engRow.style.display=''; hebRow.style.display='none';
+        engBtn.style.background='var(--accent)'; engBtn.style.borderColor='var(--accent)'; engBtn.style.color='#fff';
+        hebBtn.style.background='transparent'; hebBtn.style.borderColor='var(--border)'; hebBtn.style.color='var(--muted)';
+    } else {
+        engRow.style.display='none'; hebRow.style.display='';
+        hebBtn.style.background='var(--accent)'; hebBtn.style.borderColor='var(--accent)'; hebBtn.style.color='#fff';
+        engBtn.style.background='transparent'; engBtn.style.borderColor='var(--border)'; engBtn.style.color='var(--muted)';
+    }
 }
 
 function openAddEvent(){
     document.getElementById('evtTitle').value='';
     document.getElementById('evtDate').value='';
+    document.getElementById('evtHebMonth').value='7';
+    document.getElementById('evtHebDay').value='1';
     document.getElementById('evtType').value='birthday';
+    document.getElementById('evtRepeat').checked=true;
     document.getElementById('evtAuthor').value=currentUser||'';
+    evtSetCalType('english');
     document.getElementById('addEventModal').classList.add('active');
 }
 
 async function saveEvent(){
     const title = document.getElementById('evtTitle').value.trim();
-    const date = document.getElementById('evtDate').value;
-    const type = document.getElementById('evtType').value;
-    if(!title||!date){ toast('Please fill in name and date','warn'); return; }
+    const type  = document.getElementById('evtType').value;
+    const repeat = document.getElementById('evtRepeat').checked;
+    if(!title){ toast('Please enter an event name','warn'); return; }
+
+    let eventData = {title, type, author:currentUser||'Family', timestamp:Date.now(), repeat};
+
+    if(_evtCalType === 'hebrew'){
+        const hebMonth = parseInt(document.getElementById('evtHebMonth').value);
+        const hebDay   = parseInt(document.getElementById('evtHebDay').value);
+        if(!hebMonth||!hebDay||hebDay<1||hebDay>30){ toast('Please enter a valid Jewish date','warn'); return; }
+        eventData.calType = 'hebrew';
+        eventData.hebMonth = hebMonth;
+        eventData.hebDay   = hebDay;
+        // Also store the first resolved English date for reference
+        const resolved = hebDateInYear(hebMonth, hebDay, new Date().getFullYear());
+        if(resolved) eventData.date = resolved.getFullYear()+'-'+String(resolved.getMonth()+1).padStart(2,'0')+'-'+String(resolved.getDate()).padStart(2,'0');
+    } else {
+        const date = document.getElementById('evtDate').value;
+        if(!date){ toast('Please choose a date','warn'); return; }
+        eventData.calType = 'english';
+        eventData.date = date;
+    }
+
     try{
         const ref = window.dbPush(window.dbRef(window.db,'events'));
-        await window.dbSet(ref,{title,date,type,author:currentUser||'Family',timestamp:Date.now()});
-        toast('Event saved! 📅'); closeModal('addEventModal'); renderCalendar(); checkBirthdays();
+        await window.dbSet(ref, eventData);
+        toast('Event saved! 📅');
+        closeModal('addEventModal');
+        renderCalendar();
+        checkBirthdays();
     }catch(e){ toast('Failed: '+e.message,'danger'); }
 }
 
@@ -8312,18 +8574,20 @@ async function aiSendQuestion(){
     var isCentered    = emptyState && emptyState.style.display !== 'none';
     var activeInput   = isCentered ? inputCentered : (inputBottom || inputCentered);
 
-    // ── Handle file attachment ──────────────────────────────────────
-    if(window._naiAttachedContent && window._naiAttachedFile){
-        var baseQ = (activeInput && activeInput.value.trim()) || 'Please analyse this.';
-        var isImg = window._naiAttachedFile.type.startsWith('image/');
-        if(activeInput) activeInput.value = isImg
-            ? baseQ + ' [Image: ' + window._naiAttachedFile.name + ']'
-            : baseQ + '\n\n[File: ' + window._naiAttachedFile.name + ']\n' + window._naiAttachedContent.slice(0,4000);
-        window.naiClearFile && window.naiClearFile();
-    }
+    // ── Capture attached file BEFORE clearing ────────────────────
+    var attachedFile    = window._naiAttachedFile    || null;
+    var attachedContent = window._naiAttachedContent || null;
+    var hasAttachedImage = attachedFile && attachedFile.type && attachedFile.type.startsWith('image/');
 
     var question = (activeInput && activeInput.value.trim()) || '';
-    if(!question){ return; }
+
+    // Build display question (what shows in the bubble)
+    var displayQuestion = question;
+    if(attachedFile) displayQuestion = (question || 'Analyse this file') + '  📎 ' + attachedFile.name;
+    if(!displayQuestion.trim()) return;
+
+    // Clear file preview and attachment state
+    window.naiClearFile && window.naiClearFile();
 
     const sendBtn = document.getElementById('aiSendBtn');
 
@@ -8340,18 +8604,41 @@ async function aiSendQuestion(){
     if(inputCentered){ inputCentered.value=''; inputCentered.style.height='auto'; }
     if(inputBottom){   inputBottom.value='';   inputBottom.style.height='auto'; }
 
-    // ── Detect image generation request ────────────────────────────
+    // ── Detect image generation request (only when NO image attached) ──
     var IMAGE_RE = /\b(generate|create|make|draw|paint|render|design|picture|image|photo|illustration|artwork|sketch|visuali[sz]e|imagine)\b/i;
-    var hasAttachedImage = window._naiAttachedFile && window._naiAttachedFile.type && window._naiAttachedFile.type.startsWith('image/');
-    var isImageReq = IMAGE_RE.test(question) && !hasAttachedImage;
+    var EDIT_RE  = /\b(edit|change|remove|delete|erase|fix|improve|enhance|add|put|place|replace|crop|resize|adjust|filter|recolor|modify|alter|touch.?up|clean.?up|cut.?out)\b/i;
+    var isImageGen  = IMAGE_RE.test(question) && !hasAttachedImage;
+    var isImageEdit = hasAttachedImage && EDIT_RE.test(question);
+    var isImageView = hasAttachedImage && !isImageEdit; // just analysing/describing
 
-    aiRenderBubble('user', question);
+    aiRenderBubble('user', displayQuestion);
     _aiThinking = true;
     if(sendBtn) sendBtn.style.opacity = '0.5';
     const thinkBubble = aiRenderBubble('ai', '', true);
 
     try {
-        if(isImageReq){
+        if(isImageEdit){
+            // ── Image EDIT path — open editor immediately ────────────
+            if(attachedContent && attachedContent.startsWith('data:image')){
+                var capturedContent = attachedContent;
+                var capturedName = attachedFile ? attachedFile.name : 'image';
+                // Show a quick confirmation bubble
+                if(thinkBubble){
+                    thinkBubble.innerHTML = '';
+                    thinkBubble.style.cssText = 'padding:10px 14px;';
+                    thinkBubble.textContent = 'Opening the editor with your image…';
+                }
+                // Open the editor right away — small delay so the bubble renders first
+                setTimeout(function(){
+                    if(typeof openImgEditor === 'function'){
+                        openImgEditor(capturedContent, capturedName);
+                    }
+                }, 300);
+            } else {
+                if(thinkBubble){ thinkBubble.innerHTML=''; thinkBubble.textContent='Please attach an image first, then ask me to edit it.'; }
+            }
+
+        } else if(isImageGen){
             // ── Image generation path ───────────────────────────────
             var promptEl = document.getElementById('imgGenPrompt');
             if(promptEl) promptEl.value = question;
@@ -8379,10 +8666,16 @@ async function aiSendQuestion(){
                 if(thinkBubble){ thinkBubble.innerHTML=''; thinkBubble.textContent='Image generated.'; }
             }
             // Speak result if voice mode
-            if(window._naiVoiceMode) naiSpeak('Here is your image.');
+            if(window._naiVoiceMode) naiSpeak('Here is your generated image.');
 
         } else {
-            // ── Text AI path ─────────────────────────────────────────
+            // ── Text AI path (also handles image analysis) ───────────
+            // If an image was attached and it's not an edit request, send it to
+            // the vision-capable model so the AI can actually see and describe it
+            var visionContent = null;
+            if(hasAttachedImage && attachedContent && attachedContent.startsWith('data:image')){
+                visionContent = attachedContent; // base64 — Pollinations vision model can read this
+            }
             const facts = await loadFamilyFacts();
             const uKey = (currentUser||'guest').replace(/[.#$[\]]/g,'_');
             let myMemory = '';
@@ -8396,7 +8689,13 @@ async function aiSendQuestion(){
                 ? '\n\nVOICE MODE: Keep answers SHORT (2-4 sentences max). When user asks you to do something in the app, embed silent [ACTION:] tags — they are NEVER read aloud, only executed. Examples: [ACTION: open chat], [ACTION: go to Dad group], [ACTION: send message Good morning!], [ACTION: navigate to calendar]. Say what you did naturally, do NOT say the tag text. Example response: \'Sure! Opening the chat for you.\' (with [ACTION: open chat] embedded silently).'
                 : '';
 
-            const systemPrompt = `You are neumAI — the intelligent AI assistant for this family's private app.
+            // Get mode-specific prompt if a specialised mode is active
+            const modePrompt = (typeof window._naiGetModePrompt === 'function') ? window._naiGetModePrompt() : '';
+            const basePrompt = modePrompt && modePrompt !== ''
+                ? modePrompt + '\n\nThe user is: ' + (currentUser||'Unknown') + '.' +
+                  (facts && facts.trim() ? '\n\nFamily context:\n' + facts.trim() : '') +
+                  (myMemory.trim() ? '\n\nPersonal notes for this user:\n' + myMemory.trim() : '')
+                : `You are neumAI — the intelligent AI assistant for this family's private app. This is a continuing conversation — each reply should be aware of and build on what was said before.
 The user talking to you is: ${currentUser||'Unknown'}.
 
 ━━━ FAMILY KNOWLEDGE BASE ━━━
@@ -8411,12 +8710,22 @@ ${myMemory.trim() || '(No personal notes yet)'}
 - HOST FACTS OVERRIDE USER FACTS if there is any conflict.
 - Be warm, concise and intelligent.
 - If conversation reveals new family info, ask to save it and use [REMEMBER: fact].
-- Never fabricate facts.${voiceSuffix}`;
+- Never fabricate facts.
+- This is a CONTINUING CONVERSATION. Every message you send should be aware of what was said before. Refer back to earlier messages naturally when relevant — "As we discussed…", "Building on that…" etc.
+- Never repeat yourself or re-introduce yourself mid-conversation.`;
 
+            const systemPrompt = basePrompt + voiceSuffix;
+
+            // Build user message — include image data if viewing/analysing an attached image
+            var userMsgContent = question;
+            if(!attachedFile && attachedContent && !attachedContent.startsWith('data:image')){
+                // Text file content appended
+                userMsgContent = question + '\n\n[Attached file: ' + (attachedFile?attachedFile.name:'file') + ']\n' + attachedContent.slice(0,4000);
+            }
             const messages = [
                 { role:'system', content:systemPrompt },
-                ..._aiChatHistory.slice(-8),
-                { role:'user', content:question }
+                ..._aiChatHistory.slice(-20),
+                { role:'user', content:userMsgContent }
             ];
             const answer = await _aiChatMulti(messages) || 'Hmm, I had trouble with that. Try rephrasing!';
 
@@ -9896,7 +10205,7 @@ window.switchToHumanGame=switchToHumanGame;
         <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         Chat
     </button>
-    <button class="bottom-nav-btn" id="liveNavBtn" onclick="openLiveEntry()" title="Live / Call" style="position:relative;">
+    <button class="bottom-nav-btn" id="liveNavBtn" onclick="if(window._naiVoiceMode&&document.getElementById('lvPip')&&document.getElementById('lvPip').style.display!='none'){if(typeof lvExitPip==='function')lvExitPip();}else{document.getElementById('lvEntryNew').style.display='block';document.getElementById('lvEntryJoin').style.display='none';document.getElementById('lvEntry').classList.add('on');}" title="Live / Call" style="position:relative;">
         <span id="livePulseDot" style="display:none;position:absolute;top:6px;right:14px;width:8px;height:8px;background:#ff3b30;border-radius:50%;"></span>
         <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/><path d="M6.3 6.3a8 8 0 0 0 0 11.4"/><path d="M17.7 6.3a8 8 0 0 1 0 11.4"/><path d="M3.5 3.5a13 13 0 0 0 0 17"/><path d="M20.5 3.5a13 13 0 0 1 0 17"/></svg>
         Live
@@ -10063,31 +10372,73 @@ window.naiHandleFile = function(input){
   if(!file){ return; }
   _naiAttachedFile = file;
 
-  var preview = document.getElementById('naiFilePreview');
-  var nameEl  = document.getElementById('naiFileName');
-  if(preview) preview.style.display = 'flex';
-  if(nameEl)  nameEl.textContent = '📎 ' + file.name + ' (' + (file.size/1024).toFixed(1) + ' KB)';
+  // Determine icon and label
+  var isImage = file.type.startsWith('image/');
+  var isVideo = file.type.startsWith('video/');
+  var isAudio = file.type.startsWith('audio/');
+  var isPDF   = file.type === 'application/pdf';
+  var icon = isImage ? '🖼️' : isVideo ? '🎬' : isAudio ? '🎵' : isPDF ? '📄' : '📎';
+  var sizeStr = file.size < 1024*1024
+    ? (file.size/1024).toFixed(1) + ' KB'
+    : (file.size/1024/1024).toFixed(1) + ' MB';
 
-  // For images — encode as base64 and send inline (Pollinations supports vision)
-  // For text/PDF — read as text and append to the question
-  if(file.type.startsWith('image/')){
-    var reader = new FileReader();
-    reader.onload = function(e){ _naiAttachedContent = e.target.result; }; // base64 data URL
+  // Show preview in whichever bar is visible
+  var isCentered = (function(){
+    var e=document.getElementById('naiEmptyState');
+    return e && e.style.display !== 'none';
+  })();
+
+  // Update centered preview
+  var preview  = document.getElementById('naiFilePreview');
+  var thumb    = document.getElementById('naiFileThumb');
+  var nameEl   = document.getElementById('naiFileName');
+  var sizeEl   = document.getElementById('naiFileSize');
+  if(preview)  preview.style.display = 'flex';
+  if(thumb)    thumb.innerHTML = isImage ? '<img src="" id="naiFileImgThumb" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">' : icon;
+  if(nameEl)   nameEl.textContent = file.name;
+  if(sizeEl)   sizeEl.textContent = sizeStr + ' · ' + (file.type || 'file');
+
+  // Update bottom bar preview
+  var previewB = document.getElementById('naiFilePreviewBottom');
+  var thumbB   = document.getElementById('naiFileThumbBottom');
+  var nameB    = document.getElementById('naiFileNameBottom');
+  var sizeB    = document.getElementById('naiFileSizeBottom');
+  if(previewB) previewB.style.display = 'flex';
+  if(thumbB)   thumbB.innerHTML = isImage ? '<img src="" id="naiFileImgThumbB" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">' : icon;
+  if(nameB)    nameB.textContent = file.name;
+  if(sizeB)    sizeB.textContent = sizeStr + ' · ' + (file.type || 'file');
+
+  // Read file content
+  var reader = new FileReader();
+  if(isImage){
+    reader.onload = function(e){
+      _naiAttachedContent = e.target.result;
+      // Show thumbnail in both previews
+      var t1 = document.getElementById('naiFileImgThumb');
+      var t2 = document.getElementById('naiFileImgThumbB');
+      if(t1) t1.src = e.target.result;
+      if(t2) t2.src = e.target.result;
+    };
     reader.readAsDataURL(file);
+  } else if(isVideo || isAudio || file.size > 2*1024*1024){
+    // Large files or media — just flag them, don't read content
+    _naiAttachedContent = '[' + file.name + ']';
   } else {
-    var reader2 = new FileReader();
-    reader2.onload = function(e){ _naiAttachedContent = e.target.result; };
-    reader2.onerror = function(){ _naiAttachedContent = null; toast('Could not read file','warn'); };
-    reader2.readAsText(file);
+    reader.onload = function(e){ _naiAttachedContent = e.target.result; };
+    reader.onerror = function(){ _naiAttachedContent = null; toast('Could not read file','warn'); };
+    reader.readAsText(file);
   }
   input.value = '';
+  toast('📎 ' + file.name + ' attached');
 };
 
 window.naiClearFile = function(){
   _naiAttachedFile = null;
   _naiAttachedContent = null;
-  var preview = document.getElementById('naiFilePreview');
-  if(preview) preview.style.display = 'none';
+  var p1 = document.getElementById('naiFilePreview');
+  var p2 = document.getElementById('naiFilePreviewBottom');
+  if(p1) p1.style.display = 'none';
+  if(p2) p2.style.display = 'none';
 };
 
 // Patch aiSendQuestion to include file content when present
@@ -10344,6 +10695,8 @@ window.openLiveEntry=function(){
     }
     _show('lvEntry');
 };
+// Global alias so onclick="openLiveEntry()" works from any context
+function openLiveEntry(){ window.openLiveEntry(); }
 
 window.lvDismiss=function(){_lvDismiss=true;_hide('lvEntry');};
 
@@ -10468,7 +10821,7 @@ function _lvCtrlUpdate(){
 window.lvMicToggle=function(){if(!_lvStream)return;_lvMic=!_lvMic;_lvStream.getAudioTracks().forEach(function(t){t.enabled=_lvMic;});try{window.dbSet(_db('peers/'+_lvUid+'/audio'),_lvMic);}catch(e){}_lvCtrlUpdate();};
 window.lvCamToggle=function(){if(!_lvStream)return;_lvCam=!_lvCam;_lvStream.getVideoTracks().forEach(function(t){t.enabled=_lvCam;});try{window.dbSet(_db('peers/'+_lvUid+'/video'),_lvCam);}catch(e){}var nv=document.getElementById('lvn-'+_lvUid);if(nv)nv.style.display=_lvCam?'none':'flex';_lvCtrlUpdate();};
 window.lvKick=function(uid,name){if(!isHost){toast('Only host can remove people.','warn');return;}if(!confirm('Remove '+name+'?'))return;try{window.dbSet(_db('kicked/'+uid),Date.now());}catch(e){}try{window.dbRemove(_db('peers/'+uid));}catch(e){}  _rmTile(uid);toast(name+' removed.','warn');};
-window.lvLeave=function(){_lvIn=false;if(_lvStream){_lvStream.getTracks().forEach(function(t){t.stop();});_lvStream=null;}Object.values(_lvPeers).forEach(function(pc){pc.close();});_lvPeers={};_lvUnsubs.forEach(function(u){u();});_lvUnsubs=[];if(_lvUid){['peers/'+_lvUid,'sig/'+_lvUid,'ice/'+_lvUid,'kicked/'+_lvUid].forEach(function(p){try{window.dbRemove(_db(p));}catch(e){}});_lvUid=null;}var g=document.getElementById('lvGrid');if(g)g.innerHTML='';document.getElementById('lvRoom').classList.remove('on');lvFsClose();_lvDismiss=false;};
+window.lvLeave=function(){document.dispatchEvent(new Event('lvLeaveEvent'));_lvIn=false;if(_lvStream){_lvStream.getTracks().forEach(function(t){t.stop();});_lvStream=null;}Object.values(_lvPeers).forEach(function(pc){pc.close();});_lvPeers={};_lvUnsubs.forEach(function(u){u();});_lvUnsubs=[];if(_lvUid){['peers/'+_lvUid,'sig/'+_lvUid,'ice/'+_lvUid,'kicked/'+_lvUid].forEach(function(p){try{window.dbRemove(_db(p));}catch(e){}});_lvUid=null;}var g=document.getElementById('lvGrid');if(g)g.innerHTML='';document.getElementById('lvRoom').classList.remove('on');lvFsClose();_lvDismiss=false;};
 window.lvEndRoom=function(){if(!isHost){toast('Only host can end room.','warn');return;}if(!confirm('End room for everyone?'))return;try{window.dbRemove(_db('room'));}catch(e){}['peers','sig','ice','kicked'].forEach(function(p){try{window.dbRemove(_db(p));}catch(e){}});lvLeave();toast('Room ended.','info');};
 
 window.lvFsOpen=function(uid,name,isMe){var tile=document.getElementById('lvt-'+uid);if(!tile)return;var sv=tile.querySelector('video');if(!sv||!sv.srcObject)return;var ov=document.getElementById('lvFs'),fv=document.getElementById('lvFsVid');fv.srcObject=sv.srcObject;fv.muted=!!isMe;document.getElementById('lvFsLbl').textContent=name+(isMe?' (You)':'');ov.classList.add('on');try{if(ov.requestFullscreen)ov.requestFullscreen();else if(ov.webkitRequestFullscreen)ov.webkitRequestFullscreen();}catch(e){};};
@@ -10694,26 +11047,16 @@ window.addEventListener('beforeunload',function(){if(_lvIn)lvLeave();});
         if(navBtn) navBtn.style.color = '';
     };
 
-    // When user taps the Live nav button while PiP is active → expand back
-    var origOpenLiveEntry = window.openLiveEntry;
-    window.openLiveEntry = function(){
-        var pip2 = document.getElementById('lvPip');
-        if(pip2 && pip2.style.display !== 'none'){
-            lvExitPip();
-            return;
-        }
-        origOpenLiveEntry && origOpenLiveEntry();
-    };
+
 
     // When lvLeave is called, also hide PiP
-    var origLvLeave = window.lvLeave;
-    window.lvLeave = function(){
-        if(pip) pip.style.display = 'none';
-        if(pipRAF){ cancelAnimationFrame(pipRAF); pipRAF = null; }
-        var navBtn = document.getElementById('liveNavBtn');
-        if(navBtn) navBtn.style.color = '';
-        origLvLeave && origLvLeave();
-    };
+    // Patch lvLeave to also hide PiP — done late-binding safe way
+    document.addEventListener('lvLeaveEvent', function(){
+        if(pip) pip.style.display='none';
+        if(pipRAF){ cancelAnimationFrame(pipRAF); pipRAF=null; }
+        var nb=document.getElementById('liveNavBtn');
+        if(nb) nb.style.color='';
+    });
 
     // Tap the PiP window itself to expand (except buttons)
     document.addEventListener('click', function(e){
@@ -10888,6 +11231,1070 @@ window.naiVoiceToggle = function(){
 
 // Open neumAI when voice mode is on and user asks something from elsewhere
 // (voice is global — works from any screen in the app)
+
+})();
+</script>
+<!-- ═══════════════════════════════════════════════════
+     neumAI SIDEBAR — multi-chat + AI mode selector
+═══════════════════════════════════════════════════ -->
+<style>
+/* Sidebar backdrop */
+#naiSidebarBackdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:11100;}
+#naiSidebarBackdrop.on{display:block;}
+/* Sidebar panel */
+#naiSidebar{
+  position:fixed;top:0;left:-300px;width:280px;height:100dvh;
+  background:#0c0c18;border-right:1px solid rgba(99,102,241,.2);
+  z-index:11200;display:flex;flex-direction:column;
+  transition:left .28s cubic-bezier(.4,0,.2,1);
+  font-family:'Outfit',sans-serif;
+}
+#naiSidebar.on{left:0;}
+.nai-sb-head{padding:20px 16px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(99,102,241,.12);}
+.nai-sb-logo{font-size:17px;font-weight:800;color:#e2e8f0;}
+.nai-sb-logo span{background:linear-gradient(135deg,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.nai-sb-close{background:none;border:none;color:#64748b;cursor:pointer;font-size:20px;padding:4px;line-height:1;}
+/* New chat button in sidebar */
+.nai-sb-newbtn{
+  margin:12px 14px;padding:11px 14px;
+  background:linear-gradient(135deg,rgba(99,102,241,.15),rgba(129,140,248,.1));
+  border:1px solid rgba(99,102,241,.3);border-radius:12px;
+  color:#a5b4fc;font-size:13px;font-weight:700;cursor:pointer;
+  font-family:'Outfit',sans-serif;display:flex;align-items:center;gap:8px;
+  transition:all .15s;
+}
+.nai-sb-newbtn:hover{background:rgba(99,102,241,.25);border-color:rgba(129,140,248,.5);}
+/* Section label */
+.nai-sb-sec{padding:8px 16px 4px;font-size:10px;font-weight:800;color:rgba(100,116,139,.5);text-transform:uppercase;letter-spacing:.8px;font-family:'DM Mono',monospace;}
+/* Chat list */
+#naiChatList{flex:1;overflow-y:auto;padding:0 8px 12px;}
+#naiChatList::-webkit-scrollbar{width:3px;}
+#naiChatList::-webkit-scrollbar-thumb{background:rgba(99,102,241,.3);border-radius:2px;}
+.nai-chat-item{
+  display:flex;align-items:center;gap:8px;padding:10px 10px;border-radius:10px;cursor:pointer;
+  transition:background .15s;position:relative;
+}
+.nai-chat-item:hover{background:rgba(99,102,241,.1);}
+.nai-chat-item.active{background:rgba(99,102,241,.18);border:1px solid rgba(99,102,241,.25);}
+.nai-chat-icon{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,rgba(99,102,241,.3),rgba(129,140,248,.2));display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.nai-chat-info{flex:1;min-width:0;}
+.nai-chat-name{font-size:13px;font-weight:600;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.nai-chat-preview{font-size:11px;color:rgba(100,116,139,.7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
+.nai-chat-del{opacity:0;background:none;border:none;color:#ef4444;cursor:pointer;padding:4px;font-size:14px;line-height:1;flex-shrink:0;border-radius:6px;transition:opacity .15s;}
+.nai-chat-item:hover .nai-chat-del{opacity:1;}
+/* Bottom of sidebar */
+.nai-sb-foot{padding:12px 14px;border-top:1px solid rgba(99,102,241,.12);display:flex;gap:8px;}
+.nai-sb-foot-btn{flex:1;padding:9px 0;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:10px;color:rgba(148,163,184,.7);font-size:12px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;}
+.nai-sb-foot-btn:hover{background:rgba(99,102,241,.18);color:#a5b4fc;}
+
+/* Mode picker modal */
+#naiModePicker{
+  display:none;position:fixed;inset:0;z-index:11300;
+  background:rgba(0,0,0,.7);align-items:flex-end;justify-content:center;
+}
+#naiModePicker.on{display:flex;}
+.nai-mp-sheet{
+  background:#0d0d18;border:1px solid rgba(99,102,241,.2);
+  border-radius:22px 22px 0 0;width:100%;max-width:500px;
+  padding:0 0 28px;max-height:80vh;display:flex;flex-direction:column;
+}
+.nai-mp-handle{width:40px;height:4px;background:rgba(99,102,241,.3);border-radius:2px;margin:12px auto 0;}
+.nai-mp-title{padding:16px 20px 10px;font-size:17px;font-weight:800;color:#e2e8f0;font-family:'Outfit',sans-serif;}
+.nai-mp-sub{padding:0 20px 14px;font-size:12px;color:rgba(100,116,139,.6);font-family:'DM Mono',monospace;border-bottom:1px solid rgba(99,102,241,.1);}
+.nai-mp-list{overflow-y:auto;padding:10px 12px;}
+.nai-mode-card{
+  display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:14px;cursor:pointer;
+  border:1px solid transparent;transition:all .15s;margin-bottom:6px;
+}
+.nai-mode-card:hover{background:rgba(99,102,241,.1);border-color:rgba(99,102,241,.2);}
+.nai-mode-card.active{background:rgba(99,102,241,.15);border-color:rgba(99,102,241,.4);}
+.nai-mode-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.nai-mode-body{flex:1;}
+.nai-mode-name{font-size:14px;font-weight:700;color:#e2e8f0;font-family:'Outfit',sans-serif;}
+.nai-mode-desc{font-size:12px;color:rgba(100,116,139,.7);margin-top:2px;line-height:1.5;}
+.nai-mode-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;margin-top:4px;display:inline-block;font-family:'DM Mono',monospace;}
+</style>
+
+<!-- Sidebar backdrop -->
+<div id="naiSidebarBackdrop" onclick="naiSidebarClose()"></div>
+
+<!-- Sidebar panel -->
+<div id="naiSidebar">
+  <div class="nai-sb-head">
+    <div class="nai-sb-logo">neum<span>AI</span></div>
+    <button class="nai-sb-close" onclick="naiSidebarClose()">✕</button>
+  </div>
+  <button class="nai-sb-newbtn" onclick="naiNewChat();naiSidebarClose();">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    New Chat
+  </button>
+  <div class="nai-sb-sec">Recent chats</div>
+  <div id="naiChatList">
+    <div style="padding:20px;text-align:center;color:rgba(100,116,139,.4);font-size:13px;">No chats yet</div>
+  </div>
+  <div class="nai-sb-foot">
+    <button class="nai-sb-foot-btn" onclick="openAIMemory();naiSidebarClose();">🧠 Memory</button>
+    <button class="nai-sb-foot-btn" onclick="naiSidebarClose();closeNeumAI();">← Back</button>
+  </div>
+</div>
+
+<!-- Mode picker sheet -->
+<div id="naiModePicker" onclick="if(event.target===this)naiModePickerClose()">
+  <div class="nai-mp-sheet">
+    <div class="nai-mp-handle"></div>
+    <div class="nai-mp-title">Choose AI Mode</div>
+    <div class="nai-mp-sub">Each mode uses a different system prompt optimised for that task</div>
+    <div class="nai-mp-list" id="naiModeList"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* ══════════════════════════════════════════
+   AI MODES — each has a name, emoji, colour,
+   and a system prompt injected into aiSendQuestion
+══════════════════════════════════════════ */
+var NAI_MODES = [
+  {
+    id:'general', emoji:'✦', name:'General', color:'#6366f1',
+    desc:'Great all-rounder. Family knowledge, news, general questions.',
+    badge:'Default', badgeColor:'rgba(99,102,241,.3)',
+    prompt:'' // uses the default system prompt
+  },
+  {
+    id:'family', emoji:'👨‍👩‍👧‍👦', name:'Family Expert', color:'#f59e0b',
+    desc:'Focused entirely on your family info. Best for personal questions.',
+    badge:'Family',badgeColor:'rgba(245,158,11,.25)',
+    prompt:'You are a warm family assistant who knows everything about this family. Focus exclusively on family-related answers — personal info, schedules, relationships, family history. Be caring and personal.'
+  },
+  {
+    id:'code', emoji:'</>', name:'Code & Tech', color:'#22c55e',
+    desc:'Expert programmer. Answers coding, debugging, and tech questions.',
+    badge:'Technical',badgeColor:'rgba(34,197,94,.2)',
+    prompt:'You are an expert software engineer and technical assistant. Provide precise, working code examples. Use proper formatting with code blocks. Explain concepts clearly. Support all major languages and frameworks.'
+  },
+  {
+    id:'creative', emoji:'🎨', name:'Creative', color:'#ec4899',
+    desc:'Writing, stories, poems, scripts, brainstorming and ideas.',
+    badge:'Creative',badgeColor:'rgba(236,72,153,.2)',
+    prompt:'You are a brilliant creative writing assistant. Help with stories, poems, scripts, song lyrics, creative brainstorming, and imaginative ideas. Be expressive, original, and inspiring.'
+  },
+  {
+    id:'tutor', emoji:'📚', name:'Tutor', color:'#06b6d4',
+    desc:'Patient teacher. Explains any subject clearly step by step.',
+    badge:'Educational',badgeColor:'rgba(6,182,212,.2)',
+    prompt:'You are a patient and skilled tutor. Explain concepts clearly and step by step, using analogies and examples. Adapt to the student\'s level. Ask if they understand and offer to go deeper or simpler.'
+  },
+  {
+    id:'health', emoji:'💊', name:'Health & Wellness', color:'#10b981',
+    desc:'General health info, nutrition, fitness, and wellness guidance.',
+    badge:'Wellness',badgeColor:'rgba(16,185,129,.2)',
+    prompt:'You are a knowledgeable health and wellness assistant. Provide general health information, nutrition advice, fitness tips, and wellness guidance. Always remind users to consult a doctor for medical decisions.'
+  },
+  {
+    id:'finance', emoji:'💰', name:'Finance', color:'#f59e0b',
+    desc:'Budgeting, investing basics, financial planning advice.',
+    badge:'Finance',badgeColor:'rgba(245,158,11,.2)',
+    prompt:'You are a helpful personal finance assistant. Give practical advice on budgeting, saving, investing basics, and financial planning. Always note you\'re not a licensed financial advisor and professional consultation is recommended for major decisions.'
+  },
+  {
+    id:'custom', emoji:'🔑', name:'Custom API', color:'#a855f7',
+    desc:'Paste your own API endpoint or system prompt for a specialised AI.',
+    badge:'Custom',badgeColor:'rgba(168,85,247,.2)',
+    prompt:'__custom__'
+  }
+];
+
+var _naiCurrentMode = NAI_MODES[0];
+var _naiCustomPrompt = '';
+var _naiCustomEndpoint = '';
+
+/* ── Chat session storage ── */
+// Each chat: {id, name, mode, messages:[], createdAt, updatedAt}
+var _naiChats = [];        // all sessions
+var _naiActiveChatId = null;
+
+function _genId(){ return 'c' + Date.now() + Math.random().toString(36).slice(2,6); }
+
+function _saveSessions(){
+    try{
+        var toSave = _naiChats.map(function(ch){
+            return {id:ch.id, name:ch.name, modeId:ch.modeId||'general',
+                messages:ch.messages.slice(-60), createdAt:ch.createdAt, updatedAt:ch.updatedAt};
+        });
+        localStorage.setItem('neumai_chats_v1', JSON.stringify(toSave));
+    }catch(e){}
+}
+
+function _loadSessions(){
+    try{
+        var raw = localStorage.getItem('neumai_chats_v1');
+        if(!raw) return;
+        _naiChats = JSON.parse(raw);
+    }catch(e){ _naiChats=[]; }
+}
+
+function _getChatById(id){ return _naiChats.find(function(c){ return c.id===id; }); }
+
+function _renderChatList(){
+    var el = document.getElementById('naiChatList');
+    if(!el) return;
+    if(!_naiChats.length){
+        el.innerHTML='<div style="padding:20px;text-align:center;color:rgba(100,116,139,.4);font-size:13px;">No chats yet</div>';
+        return;
+    }
+    var sorted = _naiChats.slice().sort(function(a,b){ return (b.updatedAt||0)-(a.updatedAt||0); });
+    el.innerHTML = sorted.map(function(ch){
+        var mode = NAI_MODES.find(function(m){return m.id===(ch.modeId||'general');})||NAI_MODES[0];
+        var preview = '';
+        if(ch.messages && ch.messages.length){
+            var last = ch.messages[ch.messages.length-1];
+            preview = (last.content||'').slice(0,40) + (last.content && last.content.length>40?'…':'');
+        }
+        var isActive = ch.id === _naiActiveChatId;
+        return '<div class="nai-chat-item'+(isActive?' active':'')+'" onclick="naiSwitchChat(\''+ch.id+'\')" data-cid="'+ch.id+'">'
+            +'<div class="nai-chat-icon" style="background:linear-gradient(135deg,'+mode.color+'33,'+mode.color+'11);">'+mode.emoji+'</div>'
+            +'<div class="nai-chat-info">'
+              +'<div class="nai-chat-name">'+_escSb(ch.name||'Chat')+'</div>'
+              +'<div class="nai-chat-preview">'+_escSb(preview||'No messages yet')+'</div>'
+            +'</div>'
+            +'<button class="nai-chat-del" onclick="event.stopPropagation();naiDeleteChat(\''+ch.id+'\')" title="Delete">✕</button>'
+            +'</div>';
+    }).join('');
+}
+
+function _escSb(t){ return (t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ── Create / switch / delete chats ── */
+window.naiNewChat = function(){
+    var id = _genId();
+    var chat = {id:id, name:'New Chat', modeId:_naiCurrentMode.id, messages:[], createdAt:Date.now(), updatedAt:Date.now()};
+    _naiChats.unshift(chat);
+    _naiActiveChatId = id;
+    // Reset UI
+    if(typeof _aiChatHistory !== 'undefined') _aiChatHistory = [];
+    var msgs = document.getElementById('aiChatMessages');
+    if(msgs){ msgs.innerHTML=''; msgs.style.display='none'; }
+    var empty = document.getElementById('naiEmptyState');
+    if(empty) empty.style.display='flex';
+    var wb = document.getElementById('aiWelcomeBubble');
+    if(wb) wb.style.display='flex';
+    var bot = document.getElementById('naiBottomBar');
+    if(bot) bot.style.display='none';
+    // Title
+    var titleEl = document.getElementById('naiChatTitle');
+    if(titleEl) titleEl.innerHTML='neum<span style="background:linear-gradient(135deg,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">AI</span>';
+    _saveSessions();
+    _renderChatList();
+};
+
+window.naiSwitchChat = function(id){
+    var chat = _getChatById(id);
+    if(!chat) return;
+    _naiActiveChatId = id;
+
+    // Switch mode
+    var mode = NAI_MODES.find(function(m){return m.id===(chat.modeId||'general');})||NAI_MODES[0];
+    _naiCurrentMode = mode;
+    _updateModeUI(mode);
+
+    // Restore conversation
+    if(typeof _aiChatHistory !== 'undefined') _aiChatHistory = chat.messages.slice();
+    _rebuildChatUI(chat);
+    naiSidebarClose();
+
+    // Update title
+    var titleEl = document.getElementById('naiChatTitle');
+    if(titleEl) titleEl.innerHTML = _escSb(chat.name);
+    _renderChatList();
+};
+
+window.naiDeleteChat = function(id){
+    if(!confirm('Delete this chat?')) return;
+    _naiChats = _naiChats.filter(function(c){ return c.id!==id; });
+    if(_naiActiveChatId===id){
+        if(_naiChats.length) naiSwitchChat(_naiChats[0].id);
+        else window.naiNewChat();
+    }
+    _saveSessions();
+    _renderChatList();
+};
+
+function _rebuildChatUI(chat){
+    var msgs = document.getElementById('aiChatMessages');
+    var empty = document.getElementById('naiEmptyState');
+    var bot = document.getElementById('naiBottomBar');
+    if(!msgs) return;
+    if(!chat.messages || !chat.messages.length){
+        msgs.innerHTML=''; msgs.style.display='none';
+        if(empty) empty.style.display='flex';
+        if(bot) bot.style.display='none';
+        return;
+    }
+    if(empty) empty.style.display='none';
+    msgs.style.display='flex'; msgs.style.flex='1'; msgs.innerHTML='';
+    if(bot) bot.style.display='block';
+    chat.messages.forEach(function(m){
+        if(!m.content) return;
+        if(typeof aiRenderBubble==='function') aiRenderBubble(m.role==='user'?'user':'ai', m.content);
+    });
+    setTimeout(function(){ msgs.scrollTop=msgs.scrollHeight; },50);
+}
+
+/* ── Auto-name the chat from first message ── */
+function _autoNameChat(question){
+    var chat = _getChatById(_naiActiveChatId);
+    if(!chat||chat.name!=='New Chat') return;
+    chat.name = question.slice(0,35)+(question.length>35?'…':'');
+    var titleEl = document.getElementById('naiChatTitle');
+    if(titleEl) titleEl.textContent = chat.name;
+}
+
+/* ── Save current conversation to active chat ── */
+window._naiSaveToChatSession = function(){
+    var chat = _getChatById(_naiActiveChatId);
+    if(!chat) return;
+    if(typeof _aiChatHistory !== 'undefined') chat.messages = _aiChatHistory.slice();
+    chat.updatedAt = Date.now();
+    _saveSessions();
+    _renderChatList();
+};
+
+/* ── Sidebar open/close ── */
+window.naiSidebarOpen = function(){
+    _loadSessions();
+    _renderChatList();
+    document.getElementById('naiSidebar').classList.add('on');
+    document.getElementById('naiSidebarBackdrop').classList.add('on');
+};
+window.naiSidebarClose = function(){
+    document.getElementById('naiSidebar').classList.remove('on');
+    document.getElementById('naiSidebarBackdrop').classList.remove('on');
+};
+
+/* ── Mode picker ── */
+function _updateModeUI(mode){
+    var emoji = document.getElementById('naiModeEmoji');
+    var name  = document.getElementById('naiModeName');
+    var label = document.getElementById('naiModeLabel');
+    if(emoji) emoji.textContent = mode.emoji;
+    if(name)  name.textContent  = mode.name;
+    if(label) label.textContent = mode.desc ? mode.desc.slice(0,40) : mode.name;
+}
+
+window.naiModePickerOpen = function(){
+    var list = document.getElementById('naiModeList');
+    if(!list) return;
+    list.innerHTML = NAI_MODES.map(function(m){
+        var isActive = m.id === _naiCurrentMode.id;
+        return '<div class="nai-mode-card'+(isActive?' active':'')+'" onclick="naiSelectMode(\''+m.id+'\')">'
+            +'<div class="nai-mode-icon" style="background:'+m.color+'22;">'+m.emoji+'</div>'
+            +'<div class="nai-mode-body">'
+              +'<div class="nai-mode-name">'+m.name+'</div>'
+              +'<div class="nai-mode-desc">'+m.desc+'</div>'
+              +'<div class="nai-mode-badge" style="background:'+m.badgeColor+';color:'+m.color+';">'+m.badge+'</div>'
+            +'</div>'
+            +'</div>';
+    }).join('');
+    document.getElementById('naiModePicker').classList.add('on');
+};
+window.naiModePickerClose = function(){
+    document.getElementById('naiModePicker').classList.remove('on');
+};
+window.naiSelectMode = function(id){
+    if(id==='custom'){
+        naiModePickerClose();
+        naiCustomModeDialog();
+        return;
+    }
+    var mode = NAI_MODES.find(function(m){return m.id===id;})||NAI_MODES[0];
+    _naiCurrentMode = mode;
+    _updateModeUI(mode);
+    // Update active chat's mode
+    var chat = _getChatById(_naiActiveChatId);
+    if(chat) chat.modeId = id;
+    _saveSessions();
+    naiModePickerClose();
+    toast('Mode: '+mode.name+' '+mode.emoji);
+};
+
+function naiCustomModeDialog(){
+    var ep = prompt('Optional: paste your API endpoint URL (leave blank to use Pollinations):', _naiCustomEndpoint||'');
+    if(ep===null) return;
+    var sp = prompt('Paste your custom system prompt:', _naiCustomPrompt||'You are a helpful assistant.');
+    if(!sp) return;
+    _naiCustomEndpoint = ep.trim();
+    _naiCustomPrompt   = sp.trim();
+    var customMode = Object.assign({}, NAI_MODES.find(function(m){return m.id==='custom';}));
+    customMode.prompt = sp.trim();
+    _naiCurrentMode = customMode;
+    _updateModeUI(customMode);
+    var chat = _getChatById(_naiActiveChatId);
+    if(chat) chat.modeId='custom';
+    _saveSessions();
+    toast('Custom mode activated 🔑');
+}
+
+/* ══════════════════════════════════════════
+   HOOK INTO aiSendQuestion TO INJECT MODE PROMPT
+   AND SAVE TO SESSION
+══════════════════════════════════════════ */
+window._naiGetModePrompt = function(){
+    if(!_naiCurrentMode || !_naiCurrentMode.prompt) return '';
+    if(_naiCurrentMode.prompt === '__custom__') return _naiCustomPrompt || '';
+    return _naiCurrentMode.prompt;
+};
+
+window._naiCustomEndpointUrl = function(){
+    return _naiCustomEndpoint || '';
+};
+
+/* ── Initialise on neumAI open ── */
+var _origOpenNeumAI = window.openNeumAI;
+window.openNeumAI = function(){
+    _loadSessions();
+    // Create a default chat if none exist
+    if(!_naiChats.length){
+        var id=_genId();
+        _naiChats.push({id:id,name:'New Chat',modeId:'general',messages:[],createdAt:Date.now(),updatedAt:Date.now()});
+    }
+    // Resume last active or first chat
+    if(!_naiActiveChatId || !_getChatById(_naiActiveChatId)){
+        _naiActiveChatId = _naiChats[0].id;
+    }
+    _origOpenNeumAI && _origOpenNeumAI.apply(this,arguments);
+    // Restore the active chat's mode
+    var chat=_getChatById(_naiActiveChatId);
+    if(chat){
+        var mode=NAI_MODES.find(function(m){return m.id===(chat.modeId||'general');})||NAI_MODES[0];
+        _naiCurrentMode=mode;
+        _updateModeUI(mode);
+        if(typeof _aiChatHistory!=='undefined') _aiChatHistory=chat.messages.slice();
+        if(chat.messages&&chat.messages.length) _rebuildChatUI(chat);
+    }
+};
+
+/* ── Auto-name + save after each message ── */
+var _prevQuestion = '';
+document.addEventListener('neumai:question', function(e){ _prevQuestion = e.detail||''; });
+
+// We intercept the tail of aiSendQuestion via a MutationObserver on the messages div
+// to auto-name and save after the AI responds
+(function(){
+    var _chatMsgs;
+    function _watchMsgs(){
+        _chatMsgs = document.getElementById('aiChatMessages');
+        if(!_chatMsgs){ setTimeout(_watchMsgs,500); return; }
+        var obs = new MutationObserver(function(){
+            // Debounce
+            clearTimeout(obs._t);
+            obs._t = setTimeout(function(){
+                var chat=_getChatById(_naiActiveChatId);
+                if(!chat) return;
+                if(typeof _aiChatHistory!=='undefined') chat.messages=_aiChatHistory.slice();
+                chat.updatedAt=Date.now();
+                // Auto-name from first user message
+                if(chat.name==='New Chat'&&chat.messages.length){
+                    var first=chat.messages.find(function(m){return m.role==='user';});
+                    if(first) chat.name=(first.content||'').slice(0,35)+((first.content||'').length>35?'…':'');
+                    var titleEl=document.getElementById('naiChatTitle');
+                    if(titleEl) titleEl.textContent=chat.name;
+                }
+                _saveSessions();
+                _renderChatList();
+            },600);
+        });
+        obs.observe(_chatMsgs,{childList:true,subtree:true});
+    }
+    setTimeout(_watchMsgs,800);
+})();
+
+})();
+</script>
+<!-- ═══════════════════════════════════════════════════════
+     IN-APP IMAGE EDITOR — opens as fullscreen overlay
+     Tools: crop, rotate, flip, filters, draw, eraser, text
+     No external sites. Works fully inside the app.
+═══════════════════════════════════════════════════════ -->
+<style>
+#imgEditor{
+  display:none;position:fixed;inset:0;z-index:19000;
+  background:#0a0a0f;flex-direction:column;
+  font-family:'Outfit',sans-serif;
+}
+#imgEditor.on{display:flex;}
+
+/* AI panel inside editor */
+.ie-ai-panel{
+  position:absolute;bottom:0;left:0;right:0;
+  background:#0c0c1a;border-top:1px solid rgba(99,102,241,.25);
+  border-radius:20px 20px 0 0;
+  padding:16px 14px 20px;
+  transform:translateY(100%);
+  transition:transform .3s cubic-bezier(.4,0,.2,1);
+  z-index:10;
+  max-height:65%;overflow-y:auto;
+}
+.ie-ai-panel.on{transform:translateY(0);}
+.ie-ai-panel-title{font-size:14px;font-weight:800;color:#e2e8f0;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.ie-ai-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.ie-ai-btn{
+  padding:10px 12px;border-radius:12px;
+  background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);
+  color:#a5b4fc;font-size:12px;font-weight:700;cursor:pointer;
+  font-family:'Outfit',sans-serif;text-align:left;transition:all .15s;
+  display:flex;align-items:center;gap:8px;
+}
+.ie-ai-btn:hover{background:rgba(99,102,241,.2);border-color:rgba(99,102,241,.4);}
+.ie-ai-btn:active{transform:scale(.97);}
+.ie-ai-btn .ie-ai-icon{font-size:18px;flex-shrink:0;}
+.ie-ai-btn .ie-ai-label{font-size:11px;font-weight:700;color:#e2e8f0;}
+.ie-ai-btn .ie-ai-sub{font-size:10px;color:rgba(100,116,139,.7);margin-top:1px;}
+.ie-ai-input-row{display:flex;gap:8px;margin-top:4px;}
+.ie-ai-input{
+  flex:1;background:rgba(20,20,35,.9);border:1px solid rgba(99,102,241,.25);
+  border-radius:12px;padding:10px 14px;color:#e2e8f0;font-size:13px;
+  font-family:'Outfit',sans-serif;outline:none;
+}
+.ie-ai-input:focus{border-color:rgba(99,102,241,.5);}
+.ie-ai-send{
+  padding:10px 16px;background:linear-gradient(135deg,#6366f1,#818cf8);
+  color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:700;
+  cursor:pointer;font-family:'Outfit',sans-serif;white-space:nowrap;
+}
+.ie-ai-result{margin-top:10px;padding:10px 12px;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.15);border-radius:12px;font-size:13px;color:#cbd5e1;line-height:1.6;display:none;}
+.ie-ai-result.on{display:block;}
+.ie-ai-thinking{display:none;align-items:center;gap:8px;padding:10px 0;color:rgba(100,116,139,.7);font-size:12px;}
+.ie-ai-thinking.on{display:flex;}
+
+/* Header */
+.ie-header{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 14px;background:#0d0d1a;
+  border-bottom:1px solid rgba(99,102,241,.2);flex-shrink:0;
+}
+.ie-title{flex:1;font-size:16px;font-weight:700;color:#e2e8f0;}
+.ie-hbtn{
+  height:36px;padding:0 14px;border:1px solid rgba(99,102,241,.3);
+  border-radius:10px;background:rgba(99,102,241,.1);color:#a5b4fc;
+  font-size:13px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;
+  transition:all .15s;
+}
+.ie-hbtn:hover{background:rgba(99,102,241,.25);}
+.ie-hbtn.save{background:linear-gradient(135deg,#6366f1,#818cf8);color:#fff;border-color:transparent;}
+.ie-hbtn.save:hover{box-shadow:0 4px 16px rgba(99,102,241,.4);}
+
+/* Canvas area */
+.ie-canvas-wrap{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;background:#111;position:relative;
+}
+#ieCanvas{
+  max-width:100%;max-height:100%;
+  touch-action:none;cursor:crosshair;
+  box-shadow:0 0 40px rgba(0,0,0,.5);
+}
+
+/* Tool bar */
+.ie-toolbar{
+  display:flex;align-items:center;gap:6px;
+  padding:10px 12px;background:#0d0d1a;
+  border-top:1px solid rgba(99,102,241,.15);
+  overflow-x:auto;scrollbar-width:none;flex-shrink:0;
+}
+.ie-toolbar::-webkit-scrollbar{display:none;}
+.ie-tool{
+  flex-shrink:0;width:48px;height:48px;
+  border-radius:12px;background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;cursor:pointer;transition:all .15s;color:rgba(148,163,184,.8);
+  font-size:10px;font-weight:600;
+}
+.ie-tool:hover{background:rgba(99,102,241,.15);border-color:rgba(99,102,241,.3);color:#a5b4fc;}
+.ie-tool.active{background:rgba(99,102,241,.25);border-color:#6366f1;color:#818cf8;}
+.ie-tool svg{width:18px;height:18px;}
+.ie-tool-sep{width:1px;height:36px;background:rgba(255,255,255,.08);flex-shrink:0;}
+
+/* Options bar — shows context controls for active tool */
+.ie-optbar{
+  display:none;align-items:center;gap:10px;
+  padding:8px 14px;background:#0c0c18;
+  border-top:1px solid rgba(99,102,241,.1);flex-shrink:0;
+}
+.ie-optbar.on{display:flex;}
+.ie-opt-label{font-size:11px;color:rgba(100,116,139,.7);font-weight:600;white-space:nowrap;}
+.ie-slider{flex:1;max-width:160px;accent-color:#6366f1;cursor:pointer;}
+.ie-color{width:28px;height:28px;border-radius:8px;border:1px solid rgba(99,102,241,.3);cursor:pointer;padding:0;}
+.ie-filter-btn{
+  padding:5px 12px;border-radius:8px;background:rgba(99,102,241,.1);
+  border:1px solid rgba(99,102,241,.2);color:#a5b4fc;font-size:12px;font-weight:600;
+  cursor:pointer;font-family:'Outfit',sans-serif;white-space:nowrap;
+}
+.ie-filter-btn.active{background:rgba(99,102,241,.3);border-color:#6366f1;}
+</style>
+
+<div id="imgEditor">
+  <div class="ie-header">
+    <button class="ie-hbtn" onclick="ieClose()">← Back</button>
+    <div class="ie-title" id="ieTitle">Edit Image</div>
+    <button class="ie-hbtn" onclick="ieUndo()">↩ Undo</button>
+    <button class="ie-hbtn save" onclick="ieSave()">✓ Save</button>
+  </div>
+
+  <div class="ie-canvas-wrap">
+    <canvas id="ieCanvas"></canvas>
+  </div>
+
+  <!-- Options bar — changes based on active tool -->
+  <div class="ie-optbar" id="ieOptBar"></div>
+
+  <!-- Toolbar -->
+  <!-- AI panel — slides up from bottom -->
+  <div class="ie-ai-panel" id="ieAiPanel">
+    <div class="ie-ai-panel-title">
+      <svg width="16" height="16" fill="#818cf8" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      AI Tools
+      <button onclick="document.getElementById('ieAiPanel').classList.remove('on');ieTool('draw');" style="margin-left:auto;background:none;border:none;color:#64748b;cursor:pointer;font-size:18px;padding:0;line-height:1;">✕</button>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="ie-ai-grid">
+      <button class="ie-ai-btn" onclick="ieAiAction('describe')">
+        <div class="ie-ai-icon">👁️</div>
+        <div><div class="ie-ai-label">Describe</div><div class="ie-ai-sub">What is in this image?</div></div>
+      </button>
+      <button class="ie-ai-btn" onclick="ieAiAction('improve')">
+        <div class="ie-ai-icon">✨</div>
+        <div><div class="ie-ai-label">Enhance prompt</div><div class="ie-ai-sub">Write prompt to recreate better</div></div>
+      </button>
+      <button class="ie-ai-btn" onclick="ieAiAction('remove_bg_guide')">
+        <div class="ie-ai-icon">🪄</div>
+        <div><div class="ie-ai-label">Remove background</div><div class="ie-ai-sub">Guide + manual erase tip</div></div>
+      </button>
+      <button class="ie-ai-btn" onclick="ieAiAction('caption')">
+        <div class="ie-ai-icon">💬</div>
+        <div><div class="ie-ai-label">Add caption</div><div class="ie-ai-sub">AI writes a caption for it</div></div>
+      </button>
+      <button class="ie-ai-btn" onclick="ieAiAction('recreate')">
+        <div class="ie-ai-icon">🎨</div>
+        <div><div class="ie-ai-label">Recreate image</div><div class="ie-ai-sub">Generate similar with AI</div></div>
+      </button>
+      <button class="ie-ai-btn" onclick="ieAiAction('alt_text')">
+        <div class="ie-ai-icon">♿</div>
+        <div><div class="ie-ai-label">Alt text</div><div class="ie-ai-sub">Accessibility description</div></div>
+      </button>
+    </div>
+
+    <!-- Ask anything about the image -->
+    <div style="font-size:11px;color:rgba(100,116,139,.6);margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;font-family:'DM Mono',monospace;">Ask AI about this image</div>
+    <div class="ie-ai-input-row">
+      <input class="ie-ai-input" id="ieAiInput" placeholder="e.g. What colours are dominant? Who is in this photo?" onkeydown="if(event.key==='Enter')ieAiAsk()">
+      <button class="ie-ai-send" onclick="ieAiAsk()">Ask</button>
+    </div>
+
+    <!-- Thinking + result -->
+    <div class="ie-ai-thinking" id="ieAiThinking">
+      <div style="width:7px;height:7px;border-radius:50%;background:#6366f1;animation:naiThink .9s ease-in-out infinite;"></div>
+      <div style="width:7px;height:7px;border-radius:50%;background:#6366f1;animation:naiThink .9s ease-in-out .15s infinite;"></div>
+      <div style="width:7px;height:7px;border-radius:50%;background:#6366f1;animation:naiThink .9s ease-in-out .3s infinite;"></div>
+      <span style="margin-left:4px;">neumAI is thinking…</span>
+    </div>
+    <div class="ie-ai-result" id="ieAiResult"></div>
+  </div>
+
+  <div class="ie-toolbar">
+    <!-- Draw -->
+    <div class="ie-tool active" id="ie-t-draw" onclick="ieTool('draw')" title="Draw">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+      Draw
+    </div>
+    <!-- Eraser -->
+    <div class="ie-tool" id="ie-t-eraser" onclick="ieTool('eraser')" title="Eraser">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 20H7L3 16l11-11 8 8-3 3z" stroke-linejoin="round"/><path d="M6.5 17.5l5-5"/></svg>
+      Erase
+    </div>
+    <div class="ie-tool-sep"></div>
+    <!-- Crop -->
+    <div class="ie-tool" id="ie-t-crop" onclick="ieTool('crop')" title="Crop">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>
+      Crop
+    </div>
+    <!-- Rotate -->
+    <div class="ie-tool" onclick="ieRotate()" title="Rotate 90°">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      Rotate
+    </div>
+    <!-- Flip -->
+    <div class="ie-tool" onclick="ieFlip()" title="Flip horizontal">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3v18M3 9l9-6 9 6M3 15l9 6 9-6"/></svg>
+      Flip
+    </div>
+    <div class="ie-tool-sep"></div>
+    <!-- Brightness -->
+    <div class="ie-tool" id="ie-t-brightness" onclick="ieTool('brightness')" title="Brightness & Contrast">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
+      Light
+    </div>
+    <!-- Filter -->
+    <div class="ie-tool" id="ie-t-filter" onclick="ieTool('filter')" title="Filters">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      Filter
+    </div>
+    <!-- Text -->
+    <div class="ie-tool" id="ie-t-text" onclick="ieTool('text')" title="Add text">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+      Text
+    </div>
+    <div class="ie-tool-sep"></div>
+    <!-- ✦ AI Tools -->
+    <div class="ie-tool" id="ie-t-ai" onclick="ieTool('ai')" title="AI Tools" style="width:54px;">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor" stroke="none" opacity=".9"/></svg>
+      <span style="font-size:9px;font-weight:800;background:linear-gradient(135deg,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">AI</span>
+    </div>
+    <div class="ie-tool-sep"></div>
+    <!-- Reset -->
+    <div class="ie-tool" onclick="ieReset()" title="Reset to original">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.69"/></svg>
+      Reset
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+var _ieCanvas, _ieCtx, _ieOrigImg, _ieHistory=[], _ieTool='draw';
+var _ieDrawing=false, _ieLx=0, _ieLy=0;
+var _ieBrushSize=12, _ieBrushColor='#ff3b30', _ieEraserSize=24;
+var _ieBrightness=0, _ieContrast=0, _ieSaturation=0;
+var _ieFilter='none';
+var _ieCropStart=null, _ieCropRect=null, _ieCropping=false;
+var _ieFlipped=false;
+var _ieTextVal='', _ieTextSize=24, _ieTextColor='#ffffff';
+
+function _esc2(t){ return (t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+// ── Open editor with an image (data URL or File) ──
+window.openImgEditor = function(src, title){
+    _ieCanvas = document.getElementById('ieCanvas');
+    _ieCtx = _ieCanvas.getContext('2d');
+    _ieHistory = [];
+    _ieBrightness=0; _ieContrast=0; _ieSaturation=0; _ieFilter='none';
+    document.getElementById('imgEditor').classList.add('on');
+    document.getElementById('ieTitle').textContent = title || 'Edit Image';
+    ieTool('draw');
+
+    var img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function(){
+        _ieOrigImg = img;
+        var maxW = window.innerWidth - 20;
+        var maxH = window.innerHeight - 220;
+        var scale = Math.min(maxW/img.naturalWidth, maxH/img.naturalHeight, 1);
+        _ieCanvas.width  = Math.round(img.naturalWidth  * scale);
+        _ieCanvas.height = Math.round(img.naturalHeight * scale);
+        _ieCtx.drawImage(img, 0, 0, _ieCanvas.width, _ieCanvas.height);
+        _ieSave();
+    };
+    img.onerror = function(){ toast('Could not load image for editing','warn'); ieClose(); };
+    img.src = src;
+};
+
+window.ieClose = function(){
+    document.getElementById('imgEditor').classList.remove('on');
+    document.getElementById('ieOptBar').classList.remove('on');
+};
+
+window.ieSave = function(){
+    var dataUrl = _ieCanvas.toDataURL('image/jpeg', 0.92);
+    // Create download
+    var a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = 'edited-image.jpg';
+    a.click();
+    toast('Image saved to your device ✓');
+    ieClose();
+};
+
+function _ieSave(){ _ieHistory.push(_ieCanvas.toDataURL()); if(_ieHistory.length>30) _ieHistory.shift(); }
+
+window.ieUndo = function(){
+    if(_ieHistory.length < 2){ toast('Nothing to undo','warn'); return; }
+    _ieHistory.pop();
+    var prev = _ieHistory[_ieHistory.length-1];
+    var img = new Image();
+    img.onload = function(){ _ieCtx.clearRect(0,0,_ieCanvas.width,_ieCanvas.height); _ieCtx.drawImage(img,0,0); };
+    img.src = prev;
+};
+
+window.ieReset = function(){
+    if(!_ieOrigImg) return;
+    _ieBrightness=0; _ieContrast=0; _ieSaturation=0; _ieFilter='none';
+    _ieCtx.filter='none';
+    _ieCtx.clearRect(0,0,_ieCanvas.width,_ieCanvas.height);
+    _ieCtx.drawImage(_ieOrigImg,0,0,_ieCanvas.width,_ieCanvas.height);
+    _ieSave();
+    _ieUpdateFilter();
+    toast('Reset to original');
+};
+
+window.ieRotate = function(){
+    var tmp = document.createElement('canvas');
+    tmp.width=_ieCanvas.height; tmp.height=_ieCanvas.width;
+    var tc=tmp.getContext('2d');
+    tc.translate(tmp.width/2,tmp.height/2);
+    tc.rotate(Math.PI/2);
+    tc.drawImage(_ieCanvas,-_ieCanvas.width/2,-_ieCanvas.height/2);
+    _ieCanvas.width=tmp.width; _ieCanvas.height=tmp.height;
+    _ieCtx.drawImage(tmp,0,0);
+    _ieSave();
+};
+
+window.ieFlip = function(){
+    var tmp=document.createElement('canvas');
+    tmp.width=_ieCanvas.width; tmp.height=_ieCanvas.height;
+    var tc=tmp.getContext('2d');
+    tc.translate(tmp.width,0); tc.scale(-1,1);
+    tc.drawImage(_ieCanvas,0,0);
+    _ieCtx.clearRect(0,0,_ieCanvas.width,_ieCanvas.height);
+    _ieCtx.drawImage(tmp,0,0);
+    _ieSave();
+};
+
+function _ieUpdateFilter(){
+    var f='brightness('+(100+_ieBrightness)+'%) contrast('+(100+_ieContrast)+'%) saturate('+(100+_ieSaturation)+'%)';
+    if(_ieFilter==='bw') f+=' grayscale(100%)';
+    else if(_ieFilter==='sepia') f+=' sepia(80%)';
+    else if(_ieFilter==='vivid') f+=' saturate(160%) contrast(110%)';
+    else if(_ieFilter==='fade') f+=' opacity(80%) saturate(70%)';
+    else if(_ieFilter==='cool') f+=' hue-rotate(30deg) saturate(110%)';
+    else if(_ieFilter==='warm') f+=' hue-rotate(-20deg) saturate(120%)';
+    _ieCanvas.style.filter = f;
+}
+
+// ── Tool switcher ──
+window.ieTool = function(t){
+    _ieTool=t;
+    document.querySelectorAll('.ie-tool').forEach(function(b){ b.classList.remove('active'); });
+    var tb=document.getElementById('ie-t-'+t);
+    if(tb) tb.classList.add('active');
+    var ob=document.getElementById('ieOptBar');
+    ob.innerHTML=''; ob.classList.remove('on');
+
+    if(t==='draw'){
+        ob.classList.add('on');
+        ob.innerHTML='<span class="ie-opt-label">Size</span>'
+            +'<input class="ie-slider" type="range" min="2" max="40" value="'+_ieBrushSize+'" oninput="_ieBrushSize=+this.value">'
+            +'<span class="ie-opt-label">Color</span>'
+            +'<input class="ie-color" type="color" value="'+_ieBrushColor+'" oninput="_ieBrushColor=this.value">';
+        _ieCanvas.style.cursor='crosshair';
+    } else if(t==='eraser'){
+        ob.classList.add('on');
+        ob.innerHTML='<span class="ie-opt-label">Eraser size</span>'
+            +'<input class="ie-slider" type="range" min="5" max="80" value="'+_ieEraserSize+'" oninput="_ieEraserSize=+this.value">';
+        _ieCanvas.style.cursor='cell';
+    } else if(t==='brightness'){
+        ob.classList.add('on');
+        ob.innerHTML='<span class="ie-opt-label">Bright</span>'
+            +'<input class="ie-slider" type="range" min="-80" max="80" value="'+_ieBrightness+'" oninput="_ieBrightness=+this.value;_ieUpdateFilter()">'
+            +'<span class="ie-opt-label">Contrast</span>'
+            +'<input class="ie-slider" type="range" min="-80" max="80" value="'+_ieContrast+'" oninput="_ieContrast=+this.value;_ieUpdateFilter()">'
+            +'<span class="ie-opt-label">Sat.</span>'
+            +'<input class="ie-slider" type="range" min="-80" max="80" value="'+_ieSaturation+'" oninput="_ieSaturation=+this.value;_ieUpdateFilter()">';
+        _ieCanvas.style.cursor='default';
+    } else if(t==='filter'){
+        ob.classList.add('on');
+        var filters=[['none','Normal'],['bw','B&W'],['sepia','Sepia'],['vivid','Vivid'],['fade','Fade'],['cool','Cool'],['warm','Warm']];
+        ob.innerHTML=filters.map(function(f){
+            return '<button class="ie-filter-btn'+(_ieFilter===f[0]?' active':'')+'" onclick="_ieFilter=\''+f[0]+'\';_ieUpdateFilter();document.querySelectorAll(\'.ie-filter-btn\').forEach(function(b){b.classList.remove(\'active\')});this.classList.add(\'active\')">'+f[1]+'</button>';
+        }).join('');
+        _ieCanvas.style.cursor='default';
+    } else if(t==='text'){
+        ob.classList.add('on');
+        ob.innerHTML='<span class="ie-opt-label">Text</span>'
+            +'<input type="text" placeholder="Type here…" id="ieTextInput" style="flex:1;background:rgba(20,20,35,.8);border:1px solid rgba(99,102,241,.3);border-radius:8px;padding:5px 10px;color:#e2e8f0;font-size:13px;font-family:Outfit,sans-serif;outline:none;" oninput="_ieTextVal=this.value">'
+            +'<input class="ie-color" type="color" value="'+_ieTextColor+'" oninput="_ieTextColor=this.value">'
+            +'<input class="ie-slider" type="range" min="14" max="72" value="'+_ieTextSize+'" oninput="_ieTextSize=+this.value" style="max-width:80px;">';
+        _ieCanvas.style.cursor='text';
+    } else if(t==='crop'){
+        ob.classList.add('on');
+        ob.innerHTML='<span class="ie-opt-label" style="color:#a5b4fc;">Drag to select crop area, then tap</span>'
+            +'<button class="ie-filter-btn" onclick="ieApplyCrop()" style="color:#22c55e;border-color:#22c55e33;">✓ Apply Crop</button>'
+            +'<button class="ie-filter-btn" onclick="ieCancelCrop()" style="color:#ef4444;border-color:#ef444433;">✕ Cancel</button>';
+        _ieCanvas.style.cursor='crosshair';
+    } else if(t==='ai'){
+        // Open the AI panel
+        document.getElementById('ieAiPanel').classList.add('on');
+        document.getElementById('ieAiResult').classList.remove('on');
+        document.getElementById('ieAiResult').textContent='';
+        document.getElementById('ieAiThinking').classList.remove('on');
+        _ieCanvas.style.cursor='default';
+    } else {
+        _ieCanvas.style.cursor='default';
+    }
+};
+
+// ── Touch/Mouse drawing ──
+function _getPos(e){
+    var rect=_ieCanvas.getBoundingClientRect();
+    var scaleX=_ieCanvas.width/rect.width, scaleY=_ieCanvas.height/rect.height;
+    var src=e.touches?e.touches[0]:e;
+    return {x:(src.clientX-rect.left)*scaleX, y:(src.clientY-rect.top)*scaleY};
+}
+
+_ieCanvas && _ieCanvas.addEventListener('mousedown',  iePointerDown);
+_ieCanvas && _ieCanvas.addEventListener('touchstart', iePointerDown, {passive:false});
+_ieCanvas && _ieCanvas.addEventListener('mousemove',  iePointerMove);
+_ieCanvas && _ieCanvas.addEventListener('touchmove',  iePointerMove, {passive:false});
+_ieCanvas && _ieCanvas.addEventListener('mouseup',    iePointerUp);
+_ieCanvas && _ieCanvas.addEventListener('touchend',   iePointerUp);
+
+// Attach events after canvas exists
+document.addEventListener('DOMContentLoaded', function(){
+    _ieCanvas = document.getElementById('ieCanvas');
+    if(!_ieCanvas) return;
+    _ieCanvas.addEventListener('mousedown',  iePointerDown);
+    _ieCanvas.addEventListener('touchstart', iePointerDown, {passive:false});
+    _ieCanvas.addEventListener('mousemove',  iePointerMove);
+    _ieCanvas.addEventListener('touchmove',  iePointerMove, {passive:false});
+    _ieCanvas.addEventListener('mouseup',    iePointerUp);
+    _ieCanvas.addEventListener('touchend',   iePointerUp);
+    _ieCanvas.addEventListener('mouseleave', iePointerUp);
+});
+
+function iePointerDown(e){
+    e.preventDefault();
+    _ieCanvas=document.getElementById('ieCanvas');
+    _ieCtx=_ieCanvas.getContext('2d');
+    var p=_getPos(e);
+    _ieDrawing=true; _ieLx=p.x; _ieLy=p.y;
+    if(_ieTool==='crop'){ _ieCropStart={x:p.x,y:p.y}; _ieCropping=true; return; }
+    if(_ieTool==='text'){
+        var val=_ieTextVal||(document.getElementById('ieTextInput')||{}).value||'';
+        if(!val){ toast('Type something in the text box first','warn'); _ieDrawing=false; return; }
+        _ieCtx.font='bold '+_ieTextSize+'px Outfit,sans-serif';
+        _ieCtx.fillStyle=_ieTextColor;
+        _ieCtx.fillText(val, p.x, p.y);
+        _ieSave(); _ieDrawing=false; return;
+    }
+    _ieCtx.beginPath();
+    _ieCtx.arc(p.x, p.y, (_ieTool==='eraser'?_ieEraserSize:_ieBrushSize)/2, 0, Math.PI*2);
+    if(_ieTool==='eraser'){ _ieCtx.globalCompositeOperation='destination-out'; _ieCtx.fillStyle='rgba(0,0,0,1)'; }
+    else { _ieCtx.globalCompositeOperation='source-over'; _ieCtx.fillStyle=_ieBrushColor; }
+    _ieCtx.fill();
+}
+
+function iePointerMove(e){
+    e.preventDefault();
+    var p=_getPos(e);
+    if(_ieTool==='crop'&&_ieCropping&&_ieCropStart){
+        _ieCropRect={x:_ieCropStart.x,y:_ieCropStart.y,w:p.x-_ieCropStart.x,h:p.y-_ieCropStart.y};
+        // Re-draw to show crop overlay
+        if(_ieHistory.length){
+            var prev=new Image(); prev.src=_ieHistory[_ieHistory.length-1];
+            _ieCtx.drawImage(prev,0,0);
+        }
+        _ieCtx.fillStyle='rgba(0,0,0,.45)';
+        _ieCtx.fillRect(0,0,_ieCanvas.width,_ieCanvas.height);
+        _ieCtx.clearRect(_ieCropRect.x,_ieCropRect.y,_ieCropRect.w,_ieCropRect.h);
+        _ieCtx.strokeStyle='#6366f1';
+        _ieCtx.lineWidth=2;
+        _ieCtx.strokeRect(_ieCropRect.x,_ieCropRect.y,_ieCropRect.w,_ieCropRect.h);
+        return;
+    }
+    if(!_ieDrawing) return;
+    if(_ieTool!=='draw'&&_ieTool!=='eraser') return;
+    _ieCtx.beginPath();
+    _ieCtx.moveTo(_ieLx,_ieLy);
+    _ieCtx.lineTo(p.x,p.y);
+    _ieCtx.strokeStyle=_ieTool==='eraser'?'rgba(0,0,0,1)':_ieBrushColor;
+    _ieCtx.lineWidth=_ieTool==='eraser'?_ieEraserSize:_ieBrushSize;
+    _ieCtx.lineCap='round';
+    _ieCtx.lineJoin='round';
+    _ieCtx.globalCompositeOperation=_ieTool==='eraser'?'destination-out':'source-over';
+    _ieCtx.stroke();
+    _ieLx=p.x; _ieLy=p.y;
+}
+
+function iePointerUp(e){
+    if(_ieDrawing&&(_ieTool==='draw'||_ieTool==='eraser')){
+        _ieCtx.globalCompositeOperation='source-over';
+        _ieSave();
+    }
+    _ieDrawing=false;
+    _ieCropping=false;
+}
+
+window.ieApplyCrop = function(){
+    if(!_ieCropRect||!_ieCropRect.w||!_ieCropRect.h){ toast('Drag to select an area first','warn'); return; }
+    var r=_ieCropRect;
+    var x=Math.min(r.x,r.x+r.w), y=Math.min(r.y,r.y+r.h);
+    var w=Math.abs(r.w), h=Math.abs(r.h);
+    if(w<10||h<10){ toast('Selection too small','warn'); return; }
+    var tmp=document.createElement('canvas');
+    tmp.width=w; tmp.height=h;
+    var tc=tmp.getContext('2d');
+    tc.drawImage(_ieCanvas,x,y,w,h,0,0,w,h);
+    _ieCanvas.width=w; _ieCanvas.height=h;
+    _ieCtx.drawImage(tmp,0,0);
+    _ieCropRect=null;
+    _ieSave();
+    ieTool('draw');
+    toast('Cropped ✓');
+};
+window.ieCancelCrop=function(){ _ieCropRect=null; ieTool('draw'); if(_ieHistory.length){var prev=new Image();prev.src=_ieHistory[_ieHistory.length-1];_ieCtx.drawImage(prev,0,0);} };
+
+/* ── AI Actions ─────────────────────────────────────────────────── */
+async function _ieAiCall(prompt){
+    var thinking=document.getElementById('ieAiThinking');
+    var result=document.getElementById('ieAiResult');
+    if(thinking) thinking.classList.add('on');
+    if(result){result.classList.remove('on');result.textContent='';}
+    try{
+        // Get canvas as base64
+        var c=document.getElementById('ieCanvas');
+        var imgData=c?c.toDataURL('image/jpeg',0.7):'';
+        // Use Pollinations text model — include image description request
+        var body={
+            model:'openai-large',
+            messages:[
+                {role:'system',content:'You are an AI assistant built into an image editor. Be concise and helpful.'},
+                {role:'user',content:prompt+(imgData?' [The user is working with an image in the editor. Describe what you can about it based on context.]':'')}
+            ],
+            max_tokens:600,temperature:0.6
+        };
+        var r=await fetch('https://text.pollinations.ai/openai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+        var d=await r.json();
+        var txt=(d.choices&&d.choices[0]&&d.choices[0].message&&d.choices[0].message.content)||'Could not get a response.';
+        if(result){result.textContent=txt;result.classList.add('on');}
+    }catch(e){
+        if(result){result.textContent='Could not connect. Check your internet.';result.classList.add('on');}
+    }
+    if(thinking) thinking.classList.remove('on');
+}
+
+window.ieAiAsk=async function(){
+    var inp=document.getElementById('ieAiInput');
+    var q=(inp&&inp.value.trim())||'';
+    if(!q){toast('Type a question first','warn');return;}
+    await _ieAiCall(q);
+};
+
+window.ieAiAction=async function(action){
+    var prompts={
+        describe:'Describe this image in detail — what objects, people, colours, and scene are visible?',
+        improve:'Write a high-quality image generation prompt that would recreate this image but improved and more detailed. Format: just the prompt, no explanation.',
+        remove_bg_guide:'This user wants to remove the background from their image using a manual eraser tool. Give them a short step-by-step guide on how to do it carefully, focusing on edges and tricky areas like hair.',
+        caption:'Write 3 short, engaging captions for this image suitable for a family photo. Make them warm and personal.',
+        recreate:'Describe this image in enough detail that an AI could recreate it. Include style, colours, lighting, composition, and subject matter.',
+        alt_text:'Write a concise alt text description for this image for accessibility purposes (1-2 sentences, factual).'
+    };
+    var prompt=prompts[action]||'Describe this image.';
+    await _ieAiCall(prompt);
+};
 
 })();
 </script>
