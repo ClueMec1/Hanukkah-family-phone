@@ -2196,7 +2196,8 @@ import { getDatabase, ref, set, get, onValue, push, remove, update, onDisconnect
 import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 
-const cfg = {
+// ── OLD account: sections, cards, events, recipes, polls, settings, etc. ──
+const cfgMain = {
     apiKey:"AIzaSyByh09evolR8lCvwWZ160zLUJdGXIzPXIk",
     authDomain:"family-phone-game.firebaseapp.com",
     databaseURL:"https://family-phone-game-default-rtdb.firebaseio.com",
@@ -2205,10 +2206,30 @@ const cfg = {
     messagingSenderId:"933908338610",
     appId:"1:933908338610:web:ca5ce26b24118b833bb6ab"
 };
-const app = initializeApp(cfg);
-window.db = getDatabase(app);
-window.storage = getStorage(app);
-window.messaging = getMessaging(app);
+
+// ── NEW account: chat messages, voice, images, videos (Firebase Storage) ──
+const cfgChat = {
+    apiKey:"AIzaSyCiP4nM9OQ-56H3CeoKb3yf7CReagfadIc",
+    authDomain:"family-phone-game-3.firebaseapp.com",
+    databaseURL:"https://family-phone-game-3-default-rtdb.firebaseio.com",
+    projectId:"family-phone-game-3",
+    storageBucket:"family-phone-game-3.firebasestorage.app",
+    messagingSenderId:"285934732338",
+    appId:"1:285934732338:web:e16e01649eebbe3c9fa82b",
+    measurementId:"G-5H3WD99ZZV"
+};
+
+const appMain = initializeApp(cfgMain, 'main');
+const appChat = initializeApp(cfgChat, 'chat');
+
+// Main DB — all app content (sections, cards, events, recipes, polls, settings…)
+window.db       = getDatabase(appMain);
+// Chat DB — messages, typing, pinned, chatGroups, pushNotif, live
+window.chatDb   = getDatabase(appChat);
+// Storage on new account — for chat images, videos, audio
+window.storage  = getStorage(appChat);
+
+window.messaging = getMessaging(appMain);
 window.dbRef = ref; window.dbSet = set; window.dbGet = get;
 window.dbOnValue = onValue; window.dbPush = push; window.dbRemove = remove; window.dbUpdate = update;
 window.dbOnDisconnect = onDisconnect;
@@ -2865,7 +2886,7 @@ function showCardPopup(card,cardData,sectionIndex,cardId){
             allCards[sectionIndex][cardId] = cd;
             // Trigger content notification for all subscribers
             if(typeof notifSettings !== 'undefined' && notifSettings.content !== false){
-                window.dbSet(window.dbRef(window.db,'pushNotif'),{
+                window.dbSet(window.dbRef(window.chatDb,'pushNotif'),{
                     title:'🆕 New content added!',
                     body: (name || 'A card') + ' was updated.',
                     sentBy: currentUser||'Host',
@@ -2976,7 +2997,7 @@ async function uploadToCard(file,sectionIndex,cardId,cardEl,existingData,bar,fil
 
         // Trigger content notification for all subscribers
         if(typeof notifSettings !== 'undefined' && notifSettings.content !== false){
-            window.dbSet(window.dbRef(window.db,'pushNotif'),{
+            window.dbSet(window.dbRef(window.chatDb,'pushNotif'),{
                 title:'🆕 New content added!',
                 body:(existingName||'A card')+' was updated.',
                 sentBy:currentUser||'Host',
@@ -3288,9 +3309,9 @@ function openComments(){
 }
 
 function loadChatGroups(){
-    window.dbOnValue(window.dbRef(window.db,'chatGroups'), snap=>{
+    window.dbOnValue(window.dbRef(window.chatDb,'chatGroups'), snap=>{
         if(snap.exists()) chatGroups = snap.val();
-        else { chatGroups=['General']; window.dbSet(window.dbRef(window.db,'chatGroups'),chatGroups); }
+        else { chatGroups=['General']; window.dbSet(window.dbRef(window.chatDb,'chatGroups'),chatGroups); }
         renderGroupTabs();
     });
     window.dbOnValue(window.dbRef(window.db,'chatGroupMeta'), snap=>{
@@ -3357,12 +3378,12 @@ async function deleteChatGroup(groupName){
     try{
         // Remove from groups list
         const newGroups = chatGroups.filter(g => g !== groupName);
-        await window.dbSet(window.dbRef(window.db,'chatGroups'), newGroups);
+        await window.dbSet(window.dbRef(window.chatDb,'chatGroups'), newGroups);
         // Remove metadata
         const metaKey = groupName.replace(/\s+/g,'_');
         await window.dbRemove(window.dbRef(window.db,'chatGroupMeta/'+metaKey));
         // Remove all messages in the group
-        await window.dbRemove(window.dbRef(window.db,'messages/'+metaKey));
+        await window.dbRemove(window.dbRef(window.chatDb,'messages/'+metaKey));
         // Remove typing data
         await window.dbRemove(window.dbRef(window.db,'typing/'+metaKey));
         // Switch back to General if we were in this group
@@ -3430,7 +3451,7 @@ async function saveNewGroup(){
     chatGroups.push(name);
     const metaKey = name.replace(/\s+/g,'_');
     try{
-        await window.dbSet(window.dbRef(window.db,'chatGroups'), chatGroups);
+        await window.dbSet(window.dbRef(window.chatDb,'chatGroups'), chatGroups);
         await window.dbSet(window.dbRef(window.db,'chatGroupMeta/'+metaKey), {type, members});
         closeModal('newGroupModal');
         switchChatGroup(name);
@@ -3446,7 +3467,7 @@ function loadMessages(group){
     let _knownKeys = [];   // ordered list of message keys we have rendered
     let _firstLoad  = true;
 
-    window.dbOnValue(window.dbRef(window.db, msgPath(group)), snap=>{
+    window.dbOnValue(window.dbRef(window.chatDb, msgPath(group)), snap=>{
         const container = document.getElementById('waMessages');
 
         // How far from the bottom before this update
@@ -3735,19 +3756,82 @@ async function toggleReaction(key, emoji){
     const userKey = currentUser.replace(/[.#$[\]]/g,'_');
     const path = `messages/${currentGroup.replace(/\s+/g,'_')}/${key}/reactions/${userKey}`;
     try{
-        const snap = await window.dbGet(window.dbRef(window.db, path));
+        const snap = await window.dbGet(window.dbRef(window.chatDb, path));
         if(snap.exists() && snap.val() === emoji){
-            await window.dbRemove(window.dbRef(window.db, path));
+            await window.dbRemove(window.dbRef(window.chatDb, path));
         } else {
-            await window.dbSet(window.dbRef(window.db, path), emoji);
+            await window.dbSet(window.dbRef(window.chatDb, path), emoji);
         }
     }catch(e){ console.log('Reaction error',e); }
 }
 
-// ── Media sending (image + video → Cloudinary URL → Firebase only stores URL) ──
-let _pendingImageData = null;   // holds the Cloudinary URL (NOT base64)
+// ── Media sending — upload to Firebase Storage, store URL in database ──
+let _pendingImageData = null;   // Firebase Storage download URL
 let _pendingMediaType = null;   // 'image' or 'video'
-let _pendingFile = null;        // raw File object waiting for upload
+let _pendingFile = null;
+
+// Compress image to JPEG blob under maxKB before uploading
+function _compressToBlob(file, maxKB){
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = reject;
+        reader.onload = e => {
+            const img = new Image();
+            img.onerror = reject;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let w = img.width, h = img.height;
+                const maxPx = 1200;
+                if(w > maxPx || h > maxPx){
+                    if(w > h){ h = Math.round(h * maxPx / w); w = maxPx; }
+                    else      { w = Math.round(w * maxPx / h); h = maxPx; }
+                }
+                canvas.width = w; canvas.height = h;
+                canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                let quality = 0.82;
+                const tryBlob = (q) => {
+                    canvas.toBlob(blob => {
+                        if(!blob) return reject(new Error('toBlob failed'));
+                        if(blob.size > maxKB*1024 && q > 0.25){
+                            tryBlob(q - 0.08);
+                        } else {
+                            resolve(blob);
+                        }
+                    }, 'image/jpeg', q);
+                };
+                tryBlob(quality);
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+// Upload a Blob/File to Firebase Storage and return the public download URL
+function _uploadToFirebaseStorage(blob, folder, filename){
+    return new Promise((resolve, reject) => {
+        if(!window.storage || !window.storageRef || !window.uploadBytesResumable || !window.getDownloadURL){
+            return reject(new Error('Firebase Storage not ready'));
+        }
+        const path = folder + '/' + Date.now() + '_' + filename;
+        const sRef = window.storageRef(window.storage, path);
+        const task = window.uploadBytesResumable(sRef, blob);
+        task.on('state_changed',
+            snap => {
+                const pct = Math.round(snap.bytesTransferred / snap.totalBytes * 100);
+                const progress = document.getElementById('mediaUploadProgress');
+                if(progress) progress.textContent = 'Uploading… ' + pct + '%';
+            },
+            err => reject(err),
+            async () => {
+                try{
+                    const url = await window.getDownloadURL(task.snapshot.ref);
+                    resolve(url);
+                } catch(e){ reject(e); }
+            }
+        );
+    });
+}
 
 function handleImagePick(input){
     const file = input.files?.[0];
@@ -3758,101 +3842,75 @@ function handleImagePick(input){
     const isImage = file.type.startsWith('image/');
     if(!isVideo && !isImage){ toast('Only images and videos are supported','warn'); return; }
 
-    // Size guard — warn but still allow (Cloudinary handles large files fine)
     const mb = file.size / (1024*1024);
-    if(mb > 100){ toast('File too large — max 100MB','warn'); return; }
+    if(mb > 200){ toast('File too large — max 200MB','warn'); return; }
 
     _pendingFile = file;
     _pendingMediaType = isVideo ? 'video' : 'image';
 
-    // Show local preview while uploading
-    const strip = document.getElementById('imgPreviewStrip');
+    const strip    = document.getElementById('imgPreviewStrip');
     const imgThumb = document.getElementById('imgPreviewThumb');
     const vidThumb = document.getElementById('vidPreviewThumb');
-    const label   = document.getElementById('mediaPreviewLabel');
+    const label    = document.getElementById('mediaPreviewLabel');
     const progress = document.getElementById('mediaUploadProgress');
 
     imgThumb.style.display = 'none';
     vidThumb.style.display = 'none';
-    progress.style.display = 'none';
+    if(progress) progress.style.display = 'none';
     strip.style.display = 'flex';
 
     if(isImage){
-        const reader = new FileReader();
-        reader.onload = e => { imgThumb.src = e.target.result; imgThumb.style.display = 'block'; };
-        reader.readAsDataURL(file);
-        label.textContent = '📷 Image — tap send or type a caption';
-    } else {
-        // Video thumbnail via object URL
-        const objUrl = URL.createObjectURL(file);
-        vidThumb.src = objUrl;
-        vidThumb.style.display = 'block';
-        label.textContent = '🎬 Video (' + mb.toFixed(1) + 'MB) — tap send';
-    }
-
-    // Start uploading to Cloudinary immediately in the background
-    _uploadMediaToCloudinary(file);
-}
-
-async function _uploadMediaToCloudinary(file){
-    // Uses 0x0.st — completely free anonymous file host, no signup needed.
-    // Files up to 512MB, stay up for months. No account required.
-    const progress = document.getElementById('mediaUploadProgress');
-    const label    = document.getElementById('mediaPreviewLabel');
-
-    if(progress){ progress.style.display='block'; progress.textContent='Uploading…'; }
-
-    try{
-        const fd = new FormData();
-        fd.append('file', file);
-
-        // Try 0x0.st first
-        let url = null;
-        try{
-            const r = await fetch('https://0x0.st', { method:'POST', body:fd });
-            if(r.ok){
-                const text = (await r.text()).trim();
-                if(text.startsWith('http')) url = text;
-            }
-        } catch(e1){ console.warn('0x0.st failed, trying fallback', e1); }
-
-        // Fallback: tmpfiles.org
-        if(!url){
-            const fd2 = new FormData();
-            fd2.append('file', file);
-            const r2 = await fetch('https://tmpfiles.org/api/v1/upload', { method:'POST', body:fd2 });
-            if(r2.ok){
-                const j = await r2.json();
-                if(j && j.data && j.data.url){
-                    // tmpfiles returns a viewer URL — convert to direct download URL
-                    url = j.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
-                }
-            }
-        }
-
-        // Last resort for images only — base64 (small files)
-        if(!url && file.type.startsWith('image/') && file.size < 2*1024*1024){
-            url = await new Promise(res => {
-                const reader = new FileReader();
-                reader.onload = e => res(e.target.result);
-                reader.readAsDataURL(file);
+        // Show local preview immediately
+        const prevReader = new FileReader();
+        prevReader.onload = e => { imgThumb.src = e.target.result; imgThumb.style.display = 'block'; };
+        prevReader.readAsDataURL(file);
+        label.textContent = '📷 Compressing…';
+        if(progress){ progress.style.display='block'; progress.textContent='Compressing…'; }
+        // Compress to ~200KB then upload to Firebase Storage
+        _compressToBlob(file, 200).then(blob => {
+            label.textContent = '📷 Uploading…';
+            return _uploadToFirebaseStorage(blob, 'chat_images', 'photo.jpg');
+        }).then(url => {
+            _pendingImageData = url;
+            if(progress) progress.style.display = 'none';
+            label.textContent = '📷 Image ready — tap send!';
+            toast('Image ready ✓');
+        }).catch(err => {
+            console.warn('Storage upload failed, falling back to base64', err);
+            // Fallback — compress to base64 and store directly
+            _compressToBlob(file, 200).then(blob => {
+                const r = new FileReader();
+                r.onload = e => {
+                    _pendingImageData = e.target.result;
+                    if(progress) progress.style.display = 'none';
+                    label.textContent = '📷 Image ready — tap send!';
+                };
+                r.readAsDataURL(blob);
             });
-        }
-
-        if(!url) throw new Error('All upload services failed. Check your internet connection.');
-
-        _pendingImageData = url;
-        if(progress) progress.style.display = 'none';
-        if(label) label.textContent = (file.type.startsWith('video/') ? '🎬 Video' : '📷 Image') + ' ready to send ✓';
-        toast('Ready to send ✓');
-
-    } catch(e){
-        console.error('Upload failed:', e);
-        toast('Upload failed — ' + e.message, 'danger');
-        clearImagePreview();
-        if(progress) progress.style.display = 'none';
+        });
+    } else {
+        // Video — upload directly to Firebase Storage (handles large files)
+        const objUrl = URL.createObjectURL(file);
+        vidThumb.src = objUrl; vidThumb.style.display = 'block';
+        label.textContent = '🎬 Uploading ' + mb.toFixed(1) + 'MB…';
+        if(progress){ progress.style.display='block'; progress.textContent='Uploading… 0%'; }
+        _uploadToFirebaseStorage(file, 'chat_videos', 'video.' + (file.type.includes('mp4')?'mp4':'webm'))
+        .then(url => {
+            _pendingImageData = url;
+            if(progress) progress.style.display = 'none';
+            label.textContent = '🎬 Video ready — tap send!';
+            toast('Video ready ✓');
+        }).catch(err => {
+            console.warn('Video upload failed', err);
+            toast('Video upload failed — try a shorter clip','danger');
+            clearImagePreview();
+            if(progress) progress.style.display = 'none';
+        });
     }
 }
+
+// Kept for compatibility
+async function _uploadMediaToCloudinary(file){ handleImagePick({files:[file],value:''}); }
 
 function handleChatPaste(e){
     const items = e.clipboardData?.items;
@@ -3943,15 +4001,15 @@ function searchMessages(query){
 let pinnedMsgKey = null;
 
 async function pinMessage(key, text){
-    if(!isHost || !window.db) return;
+    if(!isHost || !window.chatDb) return;
     const path = 'chatPin/'+currentGroup.replace(/\s+/g,'_');
     try{
-        const snap = await window.dbGet(window.dbRef(window.db, path));
+        const snap = await window.dbGet(window.dbRef(window.chatDb, path));
         if(snap.exists() && snap.val().key === key){
-            await window.dbRemove(window.dbRef(window.db, path));
+            await window.dbRemove(window.dbRef(window.chatDb, path));
             toast('Message unpinned');
         } else {
-            await window.dbSet(window.dbRef(window.db, path), {key, text});
+            await window.dbSet(window.dbRef(window.chatDb, path), {key, text});
             toast('Message pinned! 📌');
         }
     }catch(e){}
@@ -3959,7 +4017,7 @@ async function pinMessage(key, text){
 
 function listenPinnedMessage(group){
     const path = 'chatPin/'+group.replace(/\s+/g,'_');
-    window.dbOnValue(window.dbRef(window.db, path), snap=>{
+    window.dbOnValue(window.dbRef(window.chatDb, path), snap=>{
         const bar = document.getElementById('pinnedMsgBar');
         if(!snap.exists()){ bar.style.display='none'; pinnedMsgKey=null; return; }
         const d = snap.val();
@@ -3984,7 +4042,7 @@ function onTypingInput(){
     if(!isTypingActive){
         isTypingActive = true;
         try{
-            window.dbSet(window.dbRef(window.db, typingPath(currentGroup) + '/' + currentUser.replace(/[.#$[\]]/g,'_')), {
+            window.dbSet(window.dbRef(window.chatDb, typingPath(currentGroup) + '/' + currentUser.replace(/[.#$[\]]/g,'_')), {
                 name: currentUser,
                 ts: Date.now()
             });
@@ -3999,14 +4057,14 @@ function stopTyping(){
     if(!currentUser || !window.db) return;
     isTypingActive = false;
     try{
-        window.dbRemove(window.dbRef(window.db, typingPath(currentGroup) + '/' + currentUser.replace(/[.#$[\]]/g,'_')));
+        window.dbRemove(window.dbRef(window.chatDb, typingPath(currentGroup) + '/' + currentUser.replace(/[.#$[\]]/g,'_')));
     }catch(e){}
 }
 
 function listenTyping(group){
     // Detach previous listener
     if(typingListener){ try{ typingListener(); }catch(e){} typingListener = null; }
-    const ref = window.dbRef(window.db, typingPath(group));
+    const ref = window.dbRef(window.chatDb, typingPath(group));
     const unsub = window.dbOnValue(ref, snap => {
         const indicator = document.getElementById('typingIndicator');
         const namesEl   = document.getElementById('typingNames');
@@ -4050,7 +4108,7 @@ function clearTypingOnLeave(){
 function updateCommentBadge(){ /* badge removed */ }
 
 async function deleteComment(key){
-    try{ await window.dbRemove(window.dbRef(window.db, msgPath(currentGroup)+'/'+key)); toast('Message deleted','warn'); }
+    try{ await window.dbRemove(window.dbRef(window.chatDb, msgPath(currentGroup)+'/'+key)); toast('Message deleted','warn'); }
     catch(e){ toast('Failed','danger'); }
 }
 
@@ -4064,7 +4122,7 @@ function setLastRead(group){
 
 function loadCommentsCount(){
     // Listen to ALL message groups and count unread across all of them
-    window.dbOnValue(window.dbRef(window.db,'messages'), snap=>{
+    window.dbOnValue(window.dbRef(window.chatDb,'messages'), snap=>{
         if(!snap.exists()){ updateUnreadBadge(0); return; }
         let totalUnread = 0;
         const allGroups = snap.val();
@@ -4269,60 +4327,34 @@ function toggleVoiceRecording(){}
 
 
 async function uploadAndSendVoice(blob){
-    // Uploads to 0x0.st — free, no signup, no Cloudinary needed.
+    // Upload to Firebase Storage — works on every device, no size limit issues.
     toast('Sending voice message… 🎙️');
     try{
-        let audioUrl = '';
         const ext = blob.type.includes('mp4') || blob.type.includes('aac') ? 'mp4'
                   : blob.type.includes('ogg') ? 'ogg' : 'webm';
-
-        // Try 0x0.st
+        let audioUrl = '';
         try{
-            const fd = new FormData();
-            fd.append('file', blob, 'voice.' + ext);
-            const r = await fetch('https://0x0.st', { method:'POST', body:fd });
-            if(r.ok){
-                const text = (await r.text()).trim();
-                if(text.startsWith('http')) audioUrl = text;
-            }
-        } catch(e1){ console.warn('0x0.st voice upload failed', e1); }
-
-        // Fallback: tmpfiles.org
-        if(!audioUrl){
-            try{
-                const fd2 = new FormData();
-                fd2.append('file', blob, 'voice.' + ext);
-                const r2 = await fetch('https://tmpfiles.org/api/v1/upload', { method:'POST', body:fd2 });
-                if(r2.ok){
-                    const j = await r2.json();
-                    if(j && j.data && j.data.url){
-                        audioUrl = j.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
-                    }
-                }
-            } catch(e2){ console.warn('tmpfiles voice upload failed', e2); }
-        }
-
-        // Last fallback: base64 (short clips only)
-        if(!audioUrl){
-            const reader = new FileReader();
-            audioUrl = await new Promise((res, rej) => {
-                reader.onload = () => res(reader.result);
-                reader.onerror = () => rej(new Error('FileReader failed'));
-                reader.readAsDataURL(blob);
-            });
-            if(audioUrl.length > 900000){
-                toast('Voice clip too long — keep clips under 20 seconds','warn');
+            audioUrl = await _uploadToFirebaseStorage(blob, 'chat_audio', 'voice.' + ext);
+        } catch(storageErr){
+            console.warn('Storage upload failed, falling back to base64', storageErr);
+            // Fallback: base64 for short clips
+            if(blob.size > 800000){
+                toast('Voice clip too long — keep it under 30 seconds','warn');
                 return;
             }
+            const reader = new FileReader();
+            audioUrl = await new Promise((res, rej) => {
+                reader.onload  = () => res(reader.result);
+                reader.onerror = () => rej(new Error('Could not read audio'));
+                reader.readAsDataURL(blob);
+            });
         }
-
-        // Send the message
         const data = {author:currentUser, text:'🎙️ Voice message', audioUrl, timestamp:Date.now(), isHostMsg: isHost===true};
-        await window.dbSet(window.dbPush(window.dbRef(window.db, msgPath(currentGroup))), data);
+        await window.dbSet(window.dbPush(window.dbRef(window.chatDb, msgPath(currentGroup))), data);
         toast('Voice message sent! 🎙️');
         if(notifSettings.chat !== false && window.db){
             try{
-                await window.dbSet(window.dbRef(window.db,'pushNotif'),{
+                await window.dbSet(window.dbRef(window.chatDb,'pushNotif'),{
                     title: '💬 ' + (currentUser || 'Someone'),
                     body: '🎙️ Sent a voice message',
                     sentBy: currentUser || '',
@@ -4456,14 +4488,14 @@ async function postComment(){
     if(replyTo) data.replyTo = replyTo;
     if(_pendingImageData){ data.imageUrl = _pendingImageData; clearImagePreview(); }
     try{
-        await window.dbSet(window.dbPush(window.dbRef(window.db, msgPath(currentGroup))), data);
+        await window.dbSet(window.dbPush(window.dbRef(window.chatDb, msgPath(currentGroup))), data);
         input.value = ''; input.style.height = 'auto';
         document.getElementById('chatEmojiPicker').style.display = 'none';
         cancelReply();
         // Notify all other family members via pushNotif
         if(notifSettings.chat !== false && window.db){
             try{
-                await window.dbSet(window.dbRef(window.db,'pushNotif'),{
+                await window.dbSet(window.dbRef(window.chatDb,'pushNotif'),{
                     title: '💬 ' + (currentUser || 'Someone'),
                     body: (data.text || (data.imageUrl ? (_pendingMediaType==='video' ? '🎬 Video' : '📷 Photo') : '🎙️ Voice message')).slice(0,80),
                     sentBy: currentUser || '',
@@ -4651,7 +4683,7 @@ async function loadWelcomePopupEditor(){
 
 async function clearAllComments(){
     if(!confirm('Delete ALL messages in ALL groups?')) return;
-    try{ await window.dbRemove(window.dbRef(window.db,'messages')); toast('All messages cleared','warn'); }
+    try{ await window.dbRemove(window.dbRef(window.chatDb,'messages')); toast('All messages cleared','warn'); }
     catch(e){ toast('Failed','danger'); }
 }
 
@@ -6352,7 +6384,7 @@ async function sendHostPushNotification() {
 
     try {
         // Write to Firebase — all open clients listen and show notification
-        await window.dbSet(window.dbRef(window.db, 'pushNotif'), {
+        await window.dbSet(window.dbRef(window.chatDb, 'pushNotif'), {
             title,
             body,
             sentBy: currentUser || 'Host',
@@ -6374,7 +6406,7 @@ let lastNotifTimestamp = Date.now(); // ignore old ones on boot
 
 function listenPushNotifications() {
     if (!window.db) return; // removed isHost guard — ALL users listen
-    window.dbOnValue(window.dbRef(window.db, 'pushNotif'), snap => {
+    window.dbOnValue(window.dbRef(window.chatDb, 'pushNotif'), snap => {
         if (!snap.exists()) return;
         const d = snap.val();
         if (!d.timestamp || d.timestamp <= lastNotifTimestamp) return;
@@ -6445,7 +6477,7 @@ function listenChatGroupForNotif(group) {
     listenedChatGroups.add(key);
     lastChatTs[key] = Date.now();
 
-    window.dbOnValue(window.dbRef(window.db, 'messages/' + key), snap => {
+    window.dbOnValue(window.dbRef(window.chatDb, 'messages/' + key), snap => {
         if (!snap.exists()) return;
 
         // Check host-level setting for chat notifications
@@ -6540,7 +6572,7 @@ async function sendAnnouncement() {
         await window.dbSet(window.dbRef(window.db, 'announcement'), { text: msg, timestamp: Date.now() });
         // Also write to pushNotif so all devices get a push
         if (notifSettings.announce !== false) {
-            await window.dbSet(window.dbRef(window.db, 'pushNotif'), {
+            await window.dbSet(window.dbRef(window.chatDb, 'pushNotif'), {
                 title: '📢 Announcement from Host',
                 body: msg,
                 sentBy: currentUser || 'Host',
@@ -10891,7 +10923,7 @@ function _esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replac
 function _show(id){document.getElementById(id).classList.add('on');}
 function _hide(id){document.getElementById(id).classList.remove('on');}
 function _dot(on){var d=document.getElementById('livePulseDot');if(d)d.style.display=on?'block':'none';}
-function _db(p){return window.dbRef(window.db,'live/'+p);}
+function _db(p){return window.dbRef(window.chatDb,'live/'+p);}
 
 waitForFirebase(function(){
     _lvReady=true;
@@ -10910,7 +10942,7 @@ waitForFirebase(function(){
         var ct=document.getElementById('clockMemberText');
         if(ct)ct.textContent=(cnt||0)+' member'+(cnt===1?'':'s');
     });
-    window.dbOnValue(window.dbRef(window.db,'live/room'),function(snap){
+    window.dbOnValue(window.dbRef(window.chatDb,'live/room'),function(snap){
         var room=snap.val();
         _dot(!!room);
         if(!room){_lvDismiss=false;return;}
