@@ -3314,19 +3314,26 @@ let chatGroupMeta = {}; // { groupName: { type: 'announce'|'private'|'public', m
 
 function openComments(){
     document.getElementById('commentsModal').classList.add('active');
-    setLastRead(currentGroup);  // mark current group as read
+    setLastRead(currentGroup);
+    // loadChatGroups fetches groups once and then calls loadMessages
     loadChatGroups();
 }
 
 function loadChatGroups(){
-    window.dbOnValue(window.dbRef(window.chatDb,'chatGroups'), snap=>{
+    // Fetch once — don't use persistent listeners here to avoid
+    // triggering renderGroupTabs (and loadMessages) on every Firebase change
+    window.dbGet(window.dbRef(window.chatDb,'chatGroups')).then(snap=>{
         if(snap.exists()) chatGroups = snap.val();
         else { chatGroups=['General']; window.dbSet(window.dbRef(window.chatDb,'chatGroups'),chatGroups); }
-        renderGroupTabs();
-    });
-    window.dbOnValue(window.dbRef(window.db,'chatGroupMeta'), snap=>{
+        return window.dbGet(window.dbRef(window.db,'chatGroupMeta'));
+    }).then(snap=>{
         chatGroupMeta = snap.exists() ? snap.val() : {};
         renderGroupTabs();
+        // Now load messages for the current group (only once after groups are ready)
+        loadMessages(currentGroup);
+    }).catch(()=>{
+        renderGroupTabs();
+        loadMessages(currentGroup);
     });
 }
 
@@ -3379,7 +3386,8 @@ function renderGroupTabs(){
     document.getElementById('waChatSub').textContent = currentGroup;
     // Update input area based on current group type
     updateChatInputForGroup(currentGroup);
-    loadMessages(currentGroup);
+    // NOTE: do NOT call loadMessages here — it is called only from
+    // openComments() and switchChatGroup() to avoid duplicate listeners
 }
 
 async function deleteChatGroup(groupName){
@@ -3417,10 +3425,11 @@ function updateChatInputForGroup(group){
 }
 
 function switchChatGroup(name){
-    clearTypingOnLeave();   // stop typing in old group
+    clearTypingOnLeave();
     currentGroup = name;
-    setLastRead(name);  // mark newly opened group as read
-    renderGroupTabs();
+    setLastRead(name);
+    renderGroupTabs();      // re-renders tabs (does NOT call loadMessages)
+    loadMessages(name);     // load messages for the new group
     cancelReply();
 }
 
