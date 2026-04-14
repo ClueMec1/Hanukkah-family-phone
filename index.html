@@ -1896,18 +1896,11 @@ function removeHostMemory() {
             </div>
             <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
                 <div>
-                    <div class="setting-label">☁️ Cloudinary Setup</div>
-                    <div class="setting-desc">Needed to upload photos, videos &amp; audio that work on all devices</div>
+                    <div class="setting-label">📤 Photo & Audio Uploads</div>
+                    <div class="setting-desc">Photos, videos and voice messages upload automatically — no setup needed!</div>
                 </div>
-                <div style="width:100%;display:flex;flex-direction:column;gap:7px;">
-                    <input type="text" id="cloudNameInput" placeholder="Cloud Name  (e.g. myfamilyhub)" style="width:100%;padding:8px 10px;font-size:12px;">
-                    <input type="text" id="uploadPresetInput" placeholder="Upload Preset  (e.g. family_hub_uploads)" style="width:100%;padding:8px 10px;font-size:12px;">
-                </div>
-                <div style="font-size:11px;color:var(--muted);line-height:1.6;">
-                    1. Go to <strong style="color:var(--accent);">cloudinary.com</strong> → sign up free (no credit card)<br>
-                    2. Dashboard → top-left shows your <strong>Cloud Name</strong><br>
-                    3. Settings → Upload → Add upload preset → set to <strong>Unsigned</strong> → copy name<br>
-                    4. Paste both above → Save
+                <div style="font-size:11px;color:var(--accent2);background:rgba(91,171,111,.1);border:1px solid rgba(91,171,111,.25);border-radius:10px;padding:10px 12px;line-height:1.7;width:100%;">
+                    ✅ <strong>Ready to use</strong> — photos and voice messages upload instantly using free anonymous file hosting. No account, no signup, no settings needed!
                 </div>
             </div>
             <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
@@ -3220,8 +3213,8 @@ function openSettings(){
     }
     document.getElementById('hubNameInput').value=document.getElementById('appName').textContent;
     document.getElementById('meetLinkInput').value=meetLink||'';
-    document.getElementById('cloudNameInput').value=CLOUDINARY_CLOUD_NAME!=='YOUR_CLOUD_NAME'?CLOUDINARY_CLOUD_NAME:'';
-    document.getElementById('uploadPresetInput').value=CLOUDINARY_UPLOAD_PRESET!=='YOUR_UPLOAD_PRESET'?CLOUDINARY_UPLOAD_PRESET:'';
+    // cloudNameInput removed
+    // uploadPresetInput removed
 }
 function switchHostTab(name,btn){
     document.querySelectorAll('.host-tab').forEach(t=>t.classList.remove('active'));
@@ -3266,8 +3259,7 @@ async function saveHubSettings(){
     const name=document.getElementById('hubNameInput').value.trim();
     const count=parseInt(document.getElementById('defaultCardsInput').value)||20;
     const link=document.getElementById('meetLinkInput').value.trim();
-    const cloudName=document.getElementById('cloudNameInput').value.trim();
-    const uploadPreset=document.getElementById('uploadPresetInput').value.trim();
+    const cloudName=''; const uploadPreset='';
     try{
         if(name)await window.dbSet(window.dbRef(window.db,'appName'),name);
         await window.dbSet(window.dbRef(window.db,'defaultCardCount'),count);
@@ -3277,8 +3269,7 @@ async function saveHubSettings(){
         document.getElementById('appName').textContent=name||'Family Hub';
         defaultCardCount=count;
         meetLink=link;
-        if(cloudName)CLOUDINARY_CLOUD_NAME=cloudName;
-        if(uploadPreset)CLOUDINARY_UPLOAD_PRESET=uploadPreset;
+
         toast('Saved! ✓');
     }catch(e){toast('Failed','danger');}
 }
@@ -3722,67 +3713,62 @@ function handleImagePick(input){
 }
 
 async function _uploadMediaToCloudinary(file){
+    // Uses 0x0.st — completely free anonymous file host, no signup needed.
+    // Files up to 512MB, stay up for months. No account required.
     const progress = document.getElementById('mediaUploadProgress');
     const label    = document.getElementById('mediaPreviewLabel');
 
-    if(CLOUDINARY_CLOUD_NAME === 'YOUR_CLOUD_NAME'){
-        // Fallback: store base64 for images only (small images, no Cloudinary)
-        if(file.type.startsWith('image/') && file.size < 3*1024*1024){
-            const reader = new FileReader();
-            reader.onload = e => {
-                _pendingImageData = e.target.result;
-                if(label) label.textContent = '📷 Image ready to send';
-            };
-            reader.readAsDataURL(file);
-        } else {
-            toast('Set up Cloudinary in Host → Settings to send large images & videos', 'warn');
-            clearImagePreview();
-        }
-        return;
-    }
+    if(progress){ progress.style.display='block'; progress.textContent='Uploading…'; }
 
-    if(progress) { progress.style.display = 'block'; progress.textContent = 'Uploading… 0%'; }
-
-    try {
+    try{
         const fd = new FormData();
         fd.append('file', file);
-        fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-        fd.append('folder', 'family_chat');
 
-        // Use XMLHttpRequest for upload progress
-        const url = await new Promise((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-            const resourceType = file.type.startsWith('video/') ? 'video' : 'image';
-            xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`);
+        // Try 0x0.st first
+        let url = null;
+        try{
+            const r = await fetch('https://0x0.st', { method:'POST', body:fd });
+            if(r.ok){
+                const text = (await r.text()).trim();
+                if(text.startsWith('http')) url = text;
+            }
+        } catch(e1){ console.warn('0x0.st failed, trying fallback', e1); }
 
-            xhr.upload.onprogress = e => {
-                if(e.lengthComputable && progress){
-                    const pct = Math.round(e.loaded / e.total * 100);
-                    progress.textContent = 'Uploading… ' + pct + '%';
+        // Fallback: tmpfiles.org
+        if(!url){
+            const fd2 = new FormData();
+            fd2.append('file', file);
+            const r2 = await fetch('https://tmpfiles.org/api/v1/upload', { method:'POST', body:fd2 });
+            if(r2.ok){
+                const j = await r2.json();
+                if(j && j.data && j.data.url){
+                    // tmpfiles returns a viewer URL — convert to direct download URL
+                    url = j.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
                 }
-            };
-            xhr.onload = () => {
-                if(xhr.status === 200){
-                    const r = JSON.parse(xhr.responseText);
-                    resolve(r.secure_url);
-                } else {
-                    reject(new Error('Upload failed: ' + xhr.status));
-                }
-            };
-            xhr.onerror = () => reject(new Error('Network error'));
-            xhr.send(fd);
-        });
+            }
+        }
 
-        // Upload done — store URL (NOT the file data)
+        // Last resort for images only — base64 (small files)
+        if(!url && file.type.startsWith('image/') && file.size < 2*1024*1024){
+            url = await new Promise(res => {
+                const reader = new FileReader();
+                reader.onload = e => res(e.target.result);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        if(!url) throw new Error('All upload services failed. Check your internet connection.');
+
         _pendingImageData = url;
         if(progress) progress.style.display = 'none';
         if(label) label.textContent = (file.type.startsWith('video/') ? '🎬 Video' : '📷 Image') + ' ready to send ✓';
-        toast('Upload complete! Tap send ✓');
+        toast('Ready to send ✓');
 
-    } catch(e) {
-        console.error('Cloudinary upload failed:', e);
+    } catch(e){
+        console.error('Upload failed:', e);
         toast('Upload failed — ' + e.message, 'danger');
         clearImagePreview();
+        if(progress) progress.style.display = 'none';
     }
 }
 
@@ -4198,38 +4184,49 @@ function toggleVoiceRecording(){}
 
 
 async function uploadAndSendVoice(blob){
+    // Uploads to 0x0.st — free, no signup, no Cloudinary needed.
     toast('Sending voice message… 🎙️');
     try{
         let audioUrl = '';
+        const ext = blob.type.includes('mp4') || blob.type.includes('aac') ? 'mp4'
+                  : blob.type.includes('ogg') ? 'ogg' : 'webm';
 
-        // Strategy 1: Cloudinary (free, no Firebase Storage needed)
-        if(CLOUDINARY_CLOUD_NAME && CLOUDINARY_CLOUD_NAME !== 'YOUR_CLOUD_NAME' &&
-           CLOUDINARY_UPLOAD_PRESET && CLOUDINARY_UPLOAD_PRESET !== 'YOUR_UPLOAD_PRESET'){
+        // Try 0x0.st
+        try{
             const fd = new FormData();
-            // iOS records as mp4/aac — name the file accordingly so Cloudinary accepts it
-            const ext = blob.type.includes('mp4') || blob.type.includes('aac') ? 'mp4'
-                      : blob.type.includes('ogg') ? 'ogg' : 'webm';
             fd.append('file', blob, 'voice.' + ext);
-            fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-            fd.append('resource_type', 'auto'); // Use 'auto' to handle audio properly
-            const res = await fetch('https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD_NAME + '/auto/upload', {method:'POST', body:fd});
-            if(!res.ok) throw new Error('Cloudinary upload failed: ' + res.status + ' ' + res.statusText);
-            const cData = await res.json();
-            if(cData.error) throw new Error('Cloudinary error: ' + cData.error.message);
-            audioUrl = cData.secure_url;
+            const r = await fetch('https://0x0.st', { method:'POST', body:fd });
+            if(r.ok){
+                const text = (await r.text()).trim();
+                if(text.startsWith('http')) audioUrl = text;
+            }
+        } catch(e1){ console.warn('0x0.st voice upload failed', e1); }
 
-        // Strategy 2: Base64 in Firebase RTDB (free plan — works for short clips up to ~1MB)
-        } else {
-            toast('No Cloudinary set up — storing voice note in database (keep clips under 30s)', 'warn');
+        // Fallback: tmpfiles.org
+        if(!audioUrl){
+            try{
+                const fd2 = new FormData();
+                fd2.append('file', blob, 'voice.' + ext);
+                const r2 = await fetch('https://tmpfiles.org/api/v1/upload', { method:'POST', body:fd2 });
+                if(r2.ok){
+                    const j = await r2.json();
+                    if(j && j.data && j.data.url){
+                        audioUrl = j.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
+                    }
+                }
+            } catch(e2){ console.warn('tmpfiles voice upload failed', e2); }
+        }
+
+        // Last fallback: base64 (short clips only)
+        if(!audioUrl){
             const reader = new FileReader();
             audioUrl = await new Promise((res, rej) => {
-                reader.onload = () => res(reader.result); // data:audio/... base64 URI
+                reader.onload = () => res(reader.result);
                 reader.onerror = () => rej(new Error('FileReader failed'));
                 reader.readAsDataURL(blob);
             });
-            // Check size for RTDB (>900KB base64 ≈ ~675KB binary)
             if(audioUrl.length > 900000){
-                toast('Voice clip too long for free plan — please set up Cloudinary or keep clips under 20s', 'warn');
+                toast('Voice clip too long — keep clips under 20 seconds','warn');
                 return;
             }
         }
@@ -4238,7 +4235,6 @@ async function uploadAndSendVoice(blob){
         const data = {author:currentUser, text:'🎙️ Voice message', audioUrl, timestamp:Date.now(), isHostMsg: isHost===true};
         await window.dbSet(window.dbPush(window.dbRef(window.db, msgPath(currentGroup))), data);
         toast('Voice message sent! 🎙️');
-        // Notify all other family members
         if(notifSettings.chat !== false && window.db){
             try{
                 await window.dbSet(window.dbRef(window.db,'pushNotif'),{
@@ -4250,9 +4246,9 @@ async function uploadAndSendVoice(blob){
                 });
             }catch(e2){ console.warn('Voice notif failed:',e2); }
         }
-    }catch(e){ 
+    }catch(e){
         console.error('Voice message error:', e);
-        toast('Failed to send voice message: '+(e.message||e),'danger'); 
+        toast('Failed to send voice message: '+(e.message||e),'danger');
     }
 }
 
@@ -12175,91 +12171,55 @@ document.addEventListener('neumai:question', function(e){ _prevQuestion = e.deta
 
   </div><!-- /.ie-toolbar -->
 
-  <!-- AI Panel (slides up) — full Claude chat with image vision -->
+  <!-- AI Panel (slides up) -->
   <div class="ie-ai-panel" id="ieAiPanel">
     <div class="ie-ai-panel-title">
       <span style="font-size:20px;">✦</span>
-      AI Assistant
+      Ask AI — anything about this image
       <button onclick="document.getElementById('ieAiPanel').classList.remove('on');ieTool('draw');"
         style="margin-left:auto;background:none;border:none;color:#64748b;cursor:pointer;font-size:20px;padding:0;line-height:1;">✕</button>
     </div>
 
-    <!-- Tab switcher -->
-    <div style="display:flex;gap:6px;margin-bottom:14px;">
-      <button id="ieTabEditBtn" onclick="ieAiTab('edit')" style="flex:1;padding:8px;border-radius:10px;border:1.5px solid #6366f1;background:rgba(99,102,241,.2);color:#a5b4fc;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">✏️ AI Edit</button>
-      <button id="ieTabChatBtn" onclick="ieAiTab('chat')" style="flex:1;padding:8px;border-radius:10px;border:1.5px solid rgba(99,102,241,.2);background:transparent;color:#64748b;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">💬 Ask AI</button>
-      <button id="ieTabGenBtn"  onclick="ieAiTab('gen')"  style="flex:1;padding:8px;border-radius:10px;border:1.5px solid rgba(99,102,241,.2);background:transparent;color:#64748b;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">🎨 Generate</button>
+    <!-- Quick chips -->
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">
+      <button class="ie-chip" onclick="ieAiAction('describe')">👁 Describe</button>
+      <button class="ie-chip" onclick="ieAiAction('outfit')">👗 Outfit advice</button>
+      <button class="ie-chip" onclick="ieAiAction('caption')">💬 Caption</button>
+      <button class="ie-chip" onclick="ieAiAction('colors')">🎨 Colors</button>
+      <button class="ie-chip" onclick="ieAiAction('mood')">✨ Mood & vibe</button>
+      <button class="ie-chip" onclick="ieAiAction('people')">👤 Who's in it</button>
+      <button class="ie-chip" onclick="ieAiAction('food')">🍽 Describe food</button>
+      <button class="ie-chip" onclick="ieAiAction('location')">📍 Where is this</button>
+      <button class="ie-chip" onclick="ieAiAction('enhance_prompt')">🚀 Gen prompt</button>
     </div>
 
-    <!-- ══ TAB: AI EDIT ══ -->
-    <div id="ieTabEdit">
-      <div style="font-size:12px;color:#94a3b8;margin-bottom:10px;line-height:1.5;">Tell the AI what to do with this image — it will apply the edits for you automatically.</div>
+    <!-- Chat history -->
+    <div id="ieAiChat" style="max-height:240px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:8px;"></div>
 
-      <!-- Edit command chips -->
-      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">
-        <button class="ie-chip" onclick="ieDoEdit('make it brighter')">☀️ Brighter</button>
-        <button class="ie-chip" onclick="ieDoEdit('make it darker')">🌑 Darker</button>
-        <button class="ie-chip" onclick="ieDoEdit('more contrast')">◐ More contrast</button>
-        <button class="ie-chip" onclick="ieDoEdit('make it black and white')">⬛ Black & white</button>
-        <button class="ie-chip" onclick="ieDoEdit('make it look warm and golden')">🌅 Warm tone</button>
-        <button class="ie-chip" onclick="ieDoEdit('make it look cool and blue')">❄️ Cool tone</button>
-        <button class="ie-chip" onclick="ieDoEdit('make it more vibrant and colorful')">🌈 Vivid</button>
-        <button class="ie-chip" onclick="ieDoEdit('make it look vintage and faded')">📷 Vintage</button>
-        <button class="ie-chip" onclick="ieDoEdit('make it look cinematic and dramatic')">🎬 Cinematic</button>
-        <button class="ie-chip" onclick="ieDoEdit('add a soft vignette around the edges')">🔵 Vignette</button>
-        <button class="ie-chip" onclick="ieDoEdit('sharpen it so it looks crisper')">🔪 Sharpen</button>
-        <button class="ie-chip" onclick="ieDoEdit('make the colors more muted and soft')">🎨 Matte</button>
-      </div>
-
-      <!-- Custom edit input -->
-      <div style="font-size:11px;font-weight:700;color:#64748b;margin-bottom:6px;">Or describe your own edit:</div>
-      <div class="ie-ai-input-row">
-        <input class="ie-ai-input" id="ieEditInput"
-          placeholder="e.g. make the sky more blue, boost the sunset colors, soften the shadows…"
-          onkeydown="if(event.key==='Enter')ieDoEdit(this.value)">
-        <button class="ie-ai-send" id="ieEditSendBtn" onclick="ieDoEdit(document.getElementById('ieEditInput').value)">Edit ✦</button>
-      </div>
-
-      <!-- Edit status -->
-      <div id="ieEditStatus" style="display:none;margin-top:10px;padding:10px 12px;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:10px;font-size:12px;color:#a5b4fc;line-height:1.6;"></div>
+    <!-- Thinking -->
+    <div class="ie-ai-thinking" id="ieAiThinking">
+      <div class="ie-ai-spinner"></div>
+      AI is thinking…
     </div>
 
-    <!-- ══ TAB: CHAT ══ -->
-    <div id="ieTabChat" style="display:none;">
-      <!-- Quick chips -->
-      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">
-        <button class="ie-chip" onclick="ieAiAction('describe')">👁 Describe</button>
-        <button class="ie-chip" onclick="ieAiAction('outfit')">👗 Outfit advice</button>
-        <button class="ie-chip" onclick="ieAiAction('caption')">💬 Caption</button>
-        <button class="ie-chip" onclick="ieAiAction('colors')">🎨 Colors</button>
-        <button class="ie-chip" onclick="ieAiAction('mood')">✨ Mood & vibe</button>
-        <button class="ie-chip" onclick="ieAiAction('people')">👤 Who's in it</button>
-        <button class="ie-chip" onclick="ieAiAction('food')">🍽 Describe food</button>
-        <button class="ie-chip" onclick="ieAiAction('location')">📍 Where is this</button>
-      </div>
-      <div id="ieAiChat" style="max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:8px;"></div>
-      <div class="ie-ai-thinking" id="ieAiThinking">
-        <div class="ie-ai-spinner"></div>
-        AI is thinking…
-      </div>
-      <div class="ie-ai-input-row">
-        <input class="ie-ai-input" id="ieAiInput"
-          placeholder="Ask anything about this photo…"
-          onkeydown="if(event.key==='Enter')ieAiAsk()">
-        <button class="ie-ai-send" onclick="ieAiAsk()">Send ✦</button>
-      </div>
-      <button onclick="ieAiClearChat()" style="margin-top:5px;background:none;border:none;color:#475569;font-size:11px;cursor:pointer;font-family:inherit;padding:2px 0;">🗑 Clear chat</button>
+    <!-- Input -->
+    <div class="ie-ai-input-row">
+      <input class="ie-ai-input" id="ieAiInput"
+        placeholder="Ask anything — outfit, food, editing tips, mood, who's in the photo…"
+        onkeydown="if(event.key==='Enter')ieAiAsk()">
+      <button class="ie-ai-send" onclick="ieAiAsk()">Send ✦</button>
     </div>
+    <button onclick="ieAiClearChat()" style="margin-top:5px;background:none;border:none;color:#475569;font-size:11px;cursor:pointer;font-family:inherit;padding:2px 0;">🗑 Clear chat</button>
 
-    <!-- ══ TAB: GENERATE ══ -->
-    <div id="ieTabGen" style="display:none;">
-      <div style="font-size:12px;color:#94a3b8;margin-bottom:10px;">Generate a brand new AI image and load it into the editor.</div>
-      <div class="ie-gen-row">
-        <input class="ie-gen-input" id="ieGenPrompt" placeholder="Describe the image you want to create…" onkeydown="if(event.key==='Enter')ieGenerate()">
-        <button class="ie-gen-btn" id="ieGenBtn" onclick="ieGenerate()">Create</button>
-      </div>
-      <div class="ie-ai-result" id="ieAiResult" style="margin-top:8px;"></div>
+    <div style="height:1px;background:rgba(99,102,241,.12);margin:12px 0;"></div>
+
+    <!-- Generate new image -->
+    <div style="font-size:11px;font-weight:700;color:#64748b;margin-bottom:6px;">✦ Generate a new AI image</div>
+    <div class="ie-gen-row">
+      <input class="ie-gen-input" id="ieGenPrompt" placeholder="Describe the image you want to create…" onkeydown="if(event.key==='Enter')ieGenerate()">
+      <button class="ie-gen-btn" id="ieGenBtn" onclick="ieGenerate()">Create</button>
     </div>
+    <div class="ie-ai-result" id="ieAiResult" style="margin-top:8px;"></div>
   </div>
 
 </div><!-- /#imgEditor -->
@@ -12666,8 +12626,7 @@ window.ieTool = function(t){
         if(res){ res.classList.remove('on'); res.textContent=''; }
         var th = document.getElementById('ieAiThinking');
         if(th) th.classList.remove('on');
-        // Always open to AI Edit tab
-        if(typeof ieAiTab === 'function') ieAiTab('edit');
+
         _c.style.cursor='default';
     } else {
         _c.style.cursor='default';
@@ -12956,159 +12915,6 @@ window.ieAiClearChat = function(){
     if(r){ r.classList.remove('on'); r.textContent=''; }
 };
 
-// ── Tab switcher ──
-window.ieAiTab = function(tab){
-    ['edit','chat','gen'].forEach(function(t){
-        var el = document.getElementById('ieTab'+t.charAt(0).toUpperCase()+t.slice(1));
-        var btn = document.getElementById('ieTab'+t.charAt(0).toUpperCase()+t.slice(1)+'Btn');
-        if(el) el.style.display = t===tab ? 'block' : 'none';
-        if(btn){
-            if(t===tab){
-                btn.style.background = 'rgba(99,102,241,.2)';
-                btn.style.borderColor = '#6366f1';
-                btn.style.color = '#a5b4fc';
-            } else {
-                btn.style.background = 'transparent';
-                btn.style.borderColor = 'rgba(99,102,241,.2)';
-                btn.style.color = '#64748b';
-            }
-        }
-    });
-};
-
-// ── AI Edit — parse instruction, apply real canvas edits ──
-window.ieDoEdit = async function(instruction){
-    if(!instruction || !instruction.trim()){ toast('Describe what you want to change','warn'); return; }
-
-    var inp = document.getElementById('ieEditInput');
-    var btn = document.getElementById('ieEditSendBtn');
-    var status = document.getElementById('ieEditStatus');
-
-    if(inp) inp.value = '';
-    if(btn){ btn.disabled=true; btn.textContent='Editing…'; }
-    if(status){ status.style.display='block'; status.textContent='⏳ AI is figuring out the edits…'; }
-
-    var thinking = document.getElementById('ieAiThinking');
-    // don't use the shared thinking indicator since it's on the chat tab
-
-    try{
-        // Ask AI to return a JSON edit plan
-        var systemPrompt =
-            'You are an image editing AI. The user gives you a plain-english instruction for how to edit a photo. ' +
-            'You must respond with ONLY a valid JSON object — no explanation, no markdown, no extra text. ' +
-            'The JSON can contain any of these keys (all optional, use only what fits the instruction):\n' +
-            '{ ' +
-            '"brightness": number -80 to 80, ' +
-            '"contrast": number -80 to 80, ' +
-            '"saturation": number -80 to 80, ' +
-            '"hue": number -180 to 180, ' +
-            '"blur": number 0 to 8, ' +
-            '"vignette": number 0 to 80, ' +
-            '"sharpen": true, ' +
-            '"filter": one of "none"|"bw"|"sepia"|"vivid"|"fade"|"cool"|"warm"|"dramatic"|"matte"|"chrome"|"noir", ' +
-            '"text": "string to overlay on image", ' +
-            '"textColor": "#hexcolor", ' +
-            '"textSize": 20-120, ' +
-            '"textX": 0-100 (% from left), ' +
-            '"textY": 0-100 (% from top)' +
-            ' }\n\n' +
-            'Examples:\n' +
-            'Instruction: "make it brighter and warmer" → {"brightness":40,"filter":"warm"}\n' +
-            'Instruction: "black and white with high contrast" → {"filter":"bw","contrast":40}\n' +
-            'Instruction: "make it look vintage" → {"filter":"sepia","brightness":-10,"vignette":40}\n' +
-            'Instruction: "soften and add vignette" → {"blur":1.5,"vignette":35,"contrast":-15}\n' +
-            'Instruction: "cinematic dramatic look" → {"filter":"dramatic","vignette":50,"contrast":20}\n' +
-            'Instruction: "add caption Happy Birthday" → {"text":"Happy Birthday! 🎂","textColor":"#ffffff","textSize":48,"textX":50,"textY":90}\n' +
-            'Only return the JSON. Nothing else.';
-
-        var resp = await fetch('https://text.pollinations.ai/openai', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                model: 'openai-large',
-                messages: [
-                    { role:'system', content: systemPrompt },
-                    { role:'user', content: 'Instruction: "' + instruction + '"' }
-                ],
-                max_tokens: 200,
-                temperature: 0.3
-            })
-        });
-
-        if(!resp.ok) throw new Error('HTTP ' + resp.status);
-        var data = await resp.json();
-        var raw = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
-
-        // Strip markdown fences if present
-        raw = raw.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
-
-        // Parse JSON
-        var edits;
-        try{ edits = JSON.parse(raw); }
-        catch(pe){ throw new Error('AI returned unexpected format: ' + raw.slice(0,80)); }
-
-        // Apply edits to canvas
-        var applied = [];
-
-        if(typeof edits.brightness === 'number'){ _brightness = Math.max(-80,Math.min(80,edits.brightness)); applied.push('brightness '+(_brightness>0?'+':'')+_brightness); }
-        if(typeof edits.contrast   === 'number'){ _contrast   = Math.max(-80,Math.min(80,edits.contrast));   applied.push('contrast '+(_contrast>0?'+':'')+_contrast); }
-        if(typeof edits.saturation === 'number'){ _saturation = Math.max(-80,Math.min(80,edits.saturation)); applied.push('saturation '+(_saturation>0?'+':'')+_saturation); }
-        if(typeof edits.hue        === 'number'){ _hue        = Math.max(-180,Math.min(180,edits.hue));       applied.push('hue '+(_hue>0?'+':'')+_hue+'°'); }
-        if(typeof edits.blur       === 'number'){ _blur       = Math.max(0,Math.min(8,edits.blur));           if(_blur>0) applied.push('blur '+_blur+'px'); }
-        if(typeof edits.vignette   === 'number'){ _vignette   = Math.max(0,Math.min(100,edits.vignette));     if(_vignette>0) applied.push('vignette '+_vignette+'%'); }
-
-        if(edits.filter && edits.filter !== 'none'){
-            var validFilters = ['bw','sepia','vivid','fade','cool','warm','dramatic','matte','chrome','noir'];
-            if(validFilters.indexOf(edits.filter) > -1){
-                _filter = edits.filter;
-                applied.push('filter: '+edits.filter);
-            }
-        }
-
-        // Apply CSS adjustments
-        _updateCanvasFilter();
-
-        // Apply sharpen (baked into pixels)
-        if(edits.sharpen === true){
-            ieSharpen(1);
-            applied.push('sharpened');
-        }
-
-        // Apply text overlay
-        if(edits.text && edits.text.trim()){
-            _c = document.getElementById('ieCanvas');
-            _ctx = _c.getContext('2d');
-            var tSize  = edits.textSize  || 48;
-            var tColor = edits.textColor || '#ffffff';
-            var tX     = typeof edits.textX === 'number' ? (_c.width  * edits.textX  / 100) : _c.width/2;
-            var tY     = typeof edits.textY === 'number' ? (_c.height * edits.textY  / 100) : _c.height * 0.85;
-            _ctx.save();
-            _ctx.font = 'bold '+tSize+'px Nunito,sans-serif';
-            _ctx.fillStyle = tColor;
-            _ctx.textAlign = 'center';
-            _ctx.textBaseline = 'middle';
-            _ctx.shadowColor = 'rgba(0,0,0,0.7)';
-            _ctx.shadowBlur = 6;
-            _ctx.fillText(edits.text, tX, tY);
-            _ctx.restore();
-            _pushHistory();
-            applied.push('text: "'+edits.text+'"');
-        }
-
-        // Update opt bar sliders if adjust tool is active
-        if(_tool === 'adjust') ieTool('adjust');
-
-        var msg = '✓ Applied: ' + (applied.length ? applied.join(', ') : 'no changes') + '.';
-        if(status){ status.textContent = msg; }
-        toast('✓ Edits applied!');
-
-    } catch(e){
-        console.warn('ieDoEdit error:', e);
-        if(status){ status.textContent = '✗ Could not apply edits: ' + e.message + '. Try rephrasing.'; }
-    }
-
-    if(btn){ btn.disabled=false; btn.textContent='Edit ✦'; }
-};
 
 // ── Core Claude call — always sends image + full chat history ──
 async function _ieClaudeCall(userText){
