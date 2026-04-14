@@ -1896,11 +1896,18 @@ function removeHostMemory() {
             </div>
             <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
                 <div>
-                    <div class="setting-label">📤 Photo & Audio Uploads</div>
-                    <div class="setting-desc">Photos, videos and voice messages upload automatically — no setup needed!</div>
+                    <div class="setting-label">☁️ Cloudinary Setup</div>
+                    <div class="setting-desc">Needed to upload photos, videos &amp; audio that work on all devices</div>
                 </div>
-                <div style="font-size:11px;color:var(--accent2);background:rgba(91,171,111,.1);border:1px solid rgba(91,171,111,.25);border-radius:10px;padding:10px 12px;line-height:1.7;width:100%;">
-                    ✅ <strong>Ready to use</strong> — photos and voice messages upload instantly using free anonymous file hosting. No account, no signup, no settings needed!
+                <div style="width:100%;display:flex;flex-direction:column;gap:7px;">
+                    <input type="text" id="cloudNameInput" placeholder="Cloud Name  (e.g. myfamilyhub)" style="width:100%;padding:8px 10px;font-size:12px;">
+                    <input type="text" id="uploadPresetInput" placeholder="Upload Preset  (e.g. family_hub_uploads)" style="width:100%;padding:8px 10px;font-size:12px;">
+                </div>
+                <div style="font-size:11px;color:var(--muted);line-height:1.6;">
+                    1. Go to <strong style="color:var(--accent);">cloudinary.com</strong> → sign up free (no credit card)<br>
+                    2. Dashboard → top-left shows your <strong>Cloud Name</strong><br>
+                    3. Settings → Upload → Add upload preset → set to <strong>Unsigned</strong> → copy name<br>
+                    4. Paste both above → Save
                 </div>
             </div>
             <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
@@ -3234,8 +3241,8 @@ function openSettings(){
     }
     document.getElementById('hubNameInput').value=document.getElementById('appName').textContent;
     document.getElementById('meetLinkInput').value=meetLink||'';
-    // cloudNameInput removed
-    // uploadPresetInput removed
+    document.getElementById('cloudNameInput').value=CLOUDINARY_CLOUD_NAME!=='YOUR_CLOUD_NAME'?CLOUDINARY_CLOUD_NAME:'';
+    document.getElementById('uploadPresetInput').value=CLOUDINARY_UPLOAD_PRESET!=='YOUR_UPLOAD_PRESET'?CLOUDINARY_UPLOAD_PRESET:'';
 }
 function switchHostTab(name,btn){
     document.querySelectorAll('.host-tab').forEach(t=>t.classList.remove('active'));
@@ -3280,13 +3287,16 @@ async function saveHubSettings(){
     const name=document.getElementById('hubNameInput').value.trim();
     const count=parseInt(document.getElementById('defaultCardsInput').value)||20;
     const link=document.getElementById('meetLinkInput').value.trim();
-    const cloudName=''; const uploadPreset='';
+    const cloudName=document.getElementById('cloudNameInput').value.trim();
+    const uploadPreset=document.getElementById('uploadPresetInput').value.trim();
     try{
         if(name)await window.dbSet(window.dbRef(window.db,'appName'),name);
         await window.dbSet(window.dbRef(window.db,'defaultCardCount'),count);
         await window.dbSet(window.dbRef(window.db,'meetLink'),link);
         if(cloudName)await window.dbSet(window.dbRef(window.db,'cloudinaryName'),cloudName);
         if(uploadPreset)await window.dbSet(window.dbRef(window.db,'cloudinaryPreset'),uploadPreset);
+        if(cloudName) CLOUDINARY_CLOUD_NAME = cloudName;
+        if(uploadPreset) CLOUDINARY_UPLOAD_PRESET = uploadPreset;
         document.getElementById('appName').textContent=name||'Family Hub';
         defaultCardCount=count;
         meetLink=link;
@@ -3765,73 +3775,13 @@ async function toggleReaction(key, emoji){
     }catch(e){ console.log('Reaction error',e); }
 }
 
-// ── Media sending — upload to Firebase Storage, store URL in database ──
-let _pendingImageData = null;   // Firebase Storage download URL
-let _pendingMediaType = null;   // 'image' or 'video'
+// ── Media sending (image + video) ──
+let _pendingImageData = null;
+let _pendingMediaType = null;
 let _pendingFile = null;
 
-// Compress image to JPEG blob under maxKB before uploading
-function _compressToBlob(file, maxKB){
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onerror = reject;
-        reader.onload = e => {
-            const img = new Image();
-            img.onerror = reject;
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                let w = img.width, h = img.height;
-                const maxPx = 1200;
-                if(w > maxPx || h > maxPx){
-                    if(w > h){ h = Math.round(h * maxPx / w); w = maxPx; }
-                    else      { w = Math.round(w * maxPx / h); h = maxPx; }
-                }
-                canvas.width = w; canvas.height = h;
-                canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                let quality = 0.82;
-                const tryBlob = (q) => {
-                    canvas.toBlob(blob => {
-                        if(!blob) return reject(new Error('toBlob failed'));
-                        if(blob.size > maxKB*1024 && q > 0.25){
-                            tryBlob(q - 0.08);
-                        } else {
-                            resolve(blob);
-                        }
-                    }, 'image/jpeg', q);
-                };
-                tryBlob(quality);
-            };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    });
-}
-
-// Upload a Blob/File to Firebase Storage and return the public download URL
-function _uploadToFirebaseStorage(blob, folder, filename){
-    return new Promise((resolve, reject) => {
-        if(!window.storage || !window.storageRef || !window.uploadBytesResumable || !window.getDownloadURL){
-            return reject(new Error('Firebase Storage not ready'));
-        }
-        const path = folder + '/' + Date.now() + '_' + filename;
-        const sRef = window.storageRef(window.storage, path);
-        const task = window.uploadBytesResumable(sRef, blob);
-        task.on('state_changed',
-            snap => {
-                const pct = Math.round(snap.bytesTransferred / snap.totalBytes * 100);
-                const progress = document.getElementById('mediaUploadProgress');
-                if(progress) progress.textContent = 'Uploading… ' + pct + '%';
-            },
-            err => reject(err),
-            async () => {
-                try{
-                    const url = await window.getDownloadURL(task.snapshot.ref);
-                    resolve(url);
-                } catch(e){ reject(e); }
-            }
-        );
-    });
-}
+let CLOUDINARY_CLOUD_NAME   = 'YOUR_CLOUD_NAME';
+let CLOUDINARY_UPLOAD_PRESET = 'YOUR_UPLOAD_PRESET';
 
 function handleImagePick(input){
     const file = input.files?.[0];
@@ -3843,7 +3793,7 @@ function handleImagePick(input){
     if(!isVideo && !isImage){ toast('Only images and videos are supported','warn'); return; }
 
     const mb = file.size / (1024*1024);
-    if(mb > 200){ toast('File too large — max 200MB','warn'); return; }
+    if(mb > 100){ toast('File too large — max 100MB','warn'); return; }
 
     _pendingFile = file;
     _pendingMediaType = isVideo ? 'video' : 'image';
@@ -3856,61 +3806,123 @@ function handleImagePick(input){
 
     imgThumb.style.display = 'none';
     vidThumb.style.display = 'none';
-    if(progress) progress.style.display = 'none';
+    progress.style.display = 'none';
     strip.style.display = 'flex';
 
     if(isImage){
-        // Show local preview immediately
-        const prevReader = new FileReader();
-        prevReader.onload = e => { imgThumb.src = e.target.result; imgThumb.style.display = 'block'; };
-        prevReader.readAsDataURL(file);
-        label.textContent = '📷 Compressing…';
-        if(progress){ progress.style.display='block'; progress.textContent='Compressing…'; }
-        // Compress to ~200KB then upload to Firebase Storage
-        _compressToBlob(file, 200).then(blob => {
-            label.textContent = '📷 Uploading…';
-            return _uploadToFirebaseStorage(blob, 'chat_images', 'photo.jpg');
-        }).then(url => {
-            _pendingImageData = url;
-            if(progress) progress.style.display = 'none';
-            label.textContent = '📷 Image ready — tap send!';
-            toast('Image ready ✓');
-        }).catch(err => {
-            console.warn('Storage upload failed, falling back to base64', err);
-            // Fallback — compress to base64 and store directly
-            _compressToBlob(file, 200).then(blob => {
-                const r = new FileReader();
-                r.onload = e => {
-                    _pendingImageData = e.target.result;
-                    if(progress) progress.style.display = 'none';
-                    label.textContent = '📷 Image ready — tap send!';
-                };
-                r.readAsDataURL(blob);
-            });
-        });
+        const reader = new FileReader();
+        reader.onload = e => { imgThumb.src = e.target.result; imgThumb.style.display = 'block'; };
+        reader.readAsDataURL(file);
+        label.textContent = '📷 Image — tap send or type a caption';
     } else {
-        // Video — upload directly to Firebase Storage (handles large files)
         const objUrl = URL.createObjectURL(file);
-        vidThumb.src = objUrl; vidThumb.style.display = 'block';
-        label.textContent = '🎬 Uploading ' + mb.toFixed(1) + 'MB…';
-        if(progress){ progress.style.display='block'; progress.textContent='Uploading… 0%'; }
-        _uploadToFirebaseStorage(file, 'chat_videos', 'video.' + (file.type.includes('mp4')?'mp4':'webm'))
-        .then(url => {
-            _pendingImageData = url;
-            if(progress) progress.style.display = 'none';
-            label.textContent = '🎬 Video ready — tap send!';
-            toast('Video ready ✓');
-        }).catch(err => {
-            console.warn('Video upload failed', err);
-            toast('Video upload failed — try a shorter clip','danger');
-            clearImagePreview();
-            if(progress) progress.style.display = 'none';
-        });
+        vidThumb.src = objUrl;
+        vidThumb.style.display = 'block';
+        label.textContent = '🎬 Video (' + mb.toFixed(1) + 'MB) — tap send';
     }
+
+    _uploadMediaToCloudinary(file);
 }
 
-// Kept for compatibility
-async function _uploadMediaToCloudinary(file){ handleImagePick({files:[file],value:''}); }
+async function _uploadMediaToCloudinary(file){
+    const progress = document.getElementById('mediaUploadProgress');
+    const label    = document.getElementById('mediaPreviewLabel');
+    const isImage  = file.type.startsWith('image/');
+    const isVideo  = file.type.startsWith('video/');
+
+    // ── If Cloudinary is configured — use it ──
+    if(CLOUDINARY_CLOUD_NAME && CLOUDINARY_CLOUD_NAME !== 'YOUR_CLOUD_NAME'){
+        if(progress){ progress.style.display='block'; progress.textContent='Uploading… 0%'; }
+        try {
+            const fd = new FormData();
+            fd.append('file', file);
+            fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+            fd.append('folder', 'family_chat');
+            const url = await new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                const resourceType = isVideo ? 'video' : 'image';
+                xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`);
+                xhr.upload.onprogress = e => {
+                    if(e.lengthComputable && progress){
+                        const pct = Math.round(e.loaded / e.total * 100);
+                        progress.textContent = 'Uploading… ' + pct + '%';
+                    }
+                };
+                xhr.onload = () => {
+                    if(xhr.status === 200){
+                        resolve(JSON.parse(xhr.responseText).secure_url);
+                    } else {
+                        reject(new Error('Upload failed: ' + xhr.status));
+                    }
+                };
+                xhr.onerror = () => reject(new Error('Network error'));
+                xhr.send(fd);
+            });
+            _pendingImageData = url;
+            if(progress) progress.style.display = 'none';
+            if(label) label.textContent = (isVideo ? '🎬 Video' : '📷 Image') + ' ready to send ✓';
+            toast('Upload complete! Tap send ✓');
+        } catch(e) {
+            console.error('Cloudinary upload failed:', e);
+            toast('Upload failed — ' + e.message, 'danger');
+            clearImagePreview();
+            if(progress) progress.style.display = 'none';
+        }
+        return;
+    }
+
+    // ── No Cloudinary — compress image to base64 (works for everyone) ──
+    if(isImage){
+        if(label) label.textContent = '📷 Preparing…';
+        try{
+            // Compress: resize to max 1200px, JPEG quality stepped down until under 400KB
+            const dataUrl = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onerror = reject;
+                reader.onload = ev => {
+                    const img = new Image();
+                    img.onerror = reject;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let w = img.width, h = img.height;
+                        const maxPx = 1200;
+                        if(w > maxPx || h > maxPx){
+                            if(w > h){ h = Math.round(h * maxPx / w); w = maxPx; }
+                            else      { w = Math.round(w * maxPx / h); h = maxPx; }
+                        }
+                        canvas.width = w; canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                        let q = 0.82;
+                        let result = canvas.toDataURL('image/jpeg', q);
+                        // Step quality down until under ~400KB base64
+                        while(result.length > 400 * 1024 * 1.37 && q > 0.2){
+                            q -= 0.07;
+                            result = canvas.toDataURL('image/jpeg', q);
+                        }
+                        resolve(result);
+                    };
+                    img.src = ev.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+            _pendingImageData = dataUrl;
+            if(label) label.textContent = '📷 Image ready to send';
+        } catch(err){
+            console.warn('Compress failed, using raw base64', err);
+            // Raw fallback
+            const reader = new FileReader();
+            reader.onload = e => {
+                _pendingImageData = e.target.result;
+                if(label) label.textContent = '📷 Image ready to send';
+            };
+            reader.readAsDataURL(file);
+        }
+    } else if(isVideo){
+        // Videos need Cloudinary — show helpful message
+        toast('To send videos, set up Cloudinary in Host → Settings (free)', 'warn');
+        clearImagePreview();
+    }
+}
 
 function handleChatPaste(e){
     const items = e.clipboardData?.items;
@@ -4327,28 +4339,37 @@ function toggleVoiceRecording(){}
 
 
 async function uploadAndSendVoice(blob){
-    // Upload to Firebase Storage — works on every device, no size limit issues.
     toast('Sending voice message… 🎙️');
     try{
-        const ext = blob.type.includes('mp4') || blob.type.includes('aac') ? 'mp4'
-                  : blob.type.includes('ogg') ? 'ogg' : 'webm';
         let audioUrl = '';
-        try{
-            audioUrl = await _uploadToFirebaseStorage(blob, 'chat_audio', 'voice.' + ext);
-        } catch(storageErr){
-            console.warn('Storage upload failed, falling back to base64', storageErr);
-            // Fallback: base64 for short clips
-            if(blob.size > 800000){
-                toast('Voice clip too long — keep it under 30 seconds','warn');
-                return;
-            }
+
+        if(CLOUDINARY_CLOUD_NAME && CLOUDINARY_CLOUD_NAME !== 'YOUR_CLOUD_NAME' &&
+           CLOUDINARY_UPLOAD_PRESET && CLOUDINARY_UPLOAD_PRESET !== 'YOUR_UPLOAD_PRESET'){
+            const fd = new FormData();
+            const ext = blob.type.includes('mp4') || blob.type.includes('aac') ? 'mp4'
+                      : blob.type.includes('ogg') ? 'ogg' : 'webm';
+            fd.append('file', blob, 'voice.' + ext);
+            fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+            fd.append('resource_type', 'auto');
+            const res = await fetch('https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD_NAME + '/auto/upload', {method:'POST', body:fd});
+            if(!res.ok) throw new Error('Cloudinary upload failed: ' + res.status);
+            const cData = await res.json();
+            if(cData.error) throw new Error('Cloudinary error: ' + cData.error.message);
+            audioUrl = cData.secure_url;
+        } else {
+            toast('No Cloudinary set up — storing voice note in database (keep clips under 30s)', 'warn');
             const reader = new FileReader();
             audioUrl = await new Promise((res, rej) => {
                 reader.onload  = () => res(reader.result);
-                reader.onerror = () => rej(new Error('Could not read audio'));
+                reader.onerror = () => rej(new Error('FileReader failed'));
                 reader.readAsDataURL(blob);
             });
+            if(audioUrl.length > 900000){
+                toast('Voice clip too long for free plan — keep clips under 20s', 'warn');
+                return;
+            }
         }
+
         const data = {author:currentUser, text:'🎙️ Voice message', audioUrl, timestamp:Date.now(), isHostMsg: isHost===true};
         await window.dbSet(window.dbPush(window.dbRef(window.chatDb, msgPath(currentGroup))), data);
         toast('Voice message sent! 🎙️');
