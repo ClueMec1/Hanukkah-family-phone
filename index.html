@@ -3443,15 +3443,97 @@ function msgPath(group){ return 'messages/'+group.replace(/\s+/g,'_'); }
 function loadMessages(group){
     listenTyping(group);
     listenPinnedMessage(group);
+    let _knownKeys = [];   // ordered list of message keys we have rendered
+    let _firstLoad  = true;
+
     window.dbOnValue(window.dbRef(window.db, msgPath(group)), snap=>{
         const container = document.getElementById('waMessages');
-        container.innerHTML = '';
+
+        // How far from the bottom before this update
+        const wasAtBottom = (container.scrollHeight - container.scrollTop - container.clientHeight) < 100;
+
         if(!snap.exists()){
             container.innerHTML = '<p style="color:#888;text-align:center;padding:22px;font-size:13px;">No messages yet. Say hello! 👋</p>';
-        } else {
-            Object.entries(snap.val()).forEach(([key,msg])=>container.appendChild(buildBubble(key,msg)));
-            container.scrollTop = container.scrollHeight;
+            _knownKeys = [];
+            _firstLoad = false;
+            updateCommentBadge();
+            return;
         }
+
+        const data    = snap.val();                      // { key: msgObj, … }
+        const newKeys = Object.keys(data);               // current ordered keys from Firebase
+
+        // ── 1. Remove bubbles that no longer exist (deleted messages) ──
+        _knownKeys.forEach(k => {
+            if(!data[k]){
+                const el = document.getElementById('msg-'+k);
+                if(el) el.remove();
+            }
+        });
+
+        // ── 2. Add or update each message ──
+        let prevEl = null; // used to insert in order
+        newKeys.forEach(k => {
+            const existing = document.getElementById('msg-'+k);
+            if(existing){
+                // Message already rendered — only re-render if reactions changed
+                // (reactions are the only thing that fires updates without adding messages)
+                const msg = data[k];
+                const reactionWrap = existing.querySelector('.wa-reactions');
+                const newReactions = msg.reactions || {};
+                const hasReactions = Object.keys(newReactions).length > 0;
+                // Rebuild reaction section cheaply
+                if(reactionWrap) reactionWrap.remove();
+                if(hasReactions){
+                    const counts = {};
+                    const myReactions = new Set();
+                    Object.entries(newReactions).forEach(([user, emoji])=>{
+                        counts[emoji] = (counts[emoji]||0)+1;
+                        if(user === (currentUser||'').replace(/[.#$[\]]/g,'_')) myReactions.add(emoji);
+                    });
+                    const rw = document.createElement('div');
+                    rw.className = 'wa-reactions';
+                    Object.entries(counts).forEach(([emoji,count])=>{
+                        const r = document.createElement('span');
+                        r.className = 'wa-reaction'+(myReactions.has(emoji)?' mine':'');
+                        r.textContent = emoji+(count>1?' '+count:'');
+                        r.onclick = ()=>toggleReaction(k, emoji);
+                        rw.appendChild(r);
+                    });
+                    existing.appendChild(rw);
+                }
+                prevEl = existing;
+            } else {
+                // New message — build and insert after prevEl
+                const bubble = buildBubble(k, data[k]);
+                if(prevEl && prevEl.nextSibling){
+                    container.insertBefore(bubble, prevEl.nextSibling);
+                } else if(prevEl){
+                    container.appendChild(bubble);
+                } else {
+                    container.insertBefore(bubble, container.firstChild);
+                }
+                prevEl = bubble;
+            }
+        });
+
+        _knownKeys = newKeys;
+
+        // ── 3. Scroll only when appropriate ──
+        if(_firstLoad){
+            // First load: jump to bottom
+            container.scrollTop = container.scrollHeight;
+        } else {
+            const countBefore = _knownKeys.length - newKeys.filter(k=>!document.getElementById('msg-'+k)).length;
+            const isNewMessage = newKeys.length > countBefore;
+            if(isNewMessage && wasAtBottom){
+                // New message arrived and user was already at bottom — follow it down
+                container.scrollTop = container.scrollHeight;
+            }
+            // Otherwise: do nothing — keep everyone's scroll position exactly where it was
+        }
+
+        _firstLoad = false;
         updateCommentBadge();
     });
 }
@@ -3548,7 +3630,7 @@ function buildBubble(key, msg){
         } else {
             inner += `<img src="${esc(_mUrl)}" class="wa-img-msg" onclick="openMediaLightbox('${esc(_mUrl)}','image','')" loading="lazy">`;
         }
-        inner += `<div style="margin-top:5px;"><a href="${esc(_mUrl)}" download target="_blank" onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--accent);text-decoration:none;background:rgba(0,0,0,0.06);border-radius:20px;padding:3px 10px;">⬇️ Download</a></div>`;
+        inner += `<div style="margin-top:5px;"><button onclick="event.stopPropagation();saveMediaInApp('${esc(_mUrl)}')" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--accent);text-decoration:none;background:rgba(0,0,0,0.06);border:none;border-radius:20px;padding:4px 12px;cursor:pointer;">⬇️ Save</button></div>`;
         if(msg.text) inner += '<div class="wa-text">'+esc(msg.text)+'</div>';
     } else {
         inner += '<div class="wa-text" style="'+(msgIsFromHost?'font-weight:700;':'')+'">'+esc(msg.text)+'</div>';
@@ -3946,9 +4028,12 @@ function listenTyping(group){
             : names.slice(0,-1).join(', ') + ' & ' + names[names.length-1] + ' are typing';
         namesEl.textContent = label;
         indicator.style.display = 'flex';
-        // Scroll messages down so the indicator is visible
+        // Only scroll to show typing indicator if user is already near the bottom
         const msgs = document.getElementById('waMessages');
-        if(msgs) msgs.scrollTop = msgs.scrollHeight;
+        if(msgs){
+            const nearBottom = msgs.scrollHeight - msgs.scrollTop - msgs.clientHeight < 120;
+            if(nearBottom) msgs.scrollTop = msgs.scrollHeight;
+        }
     });
     typingListener = unsub;
 }
@@ -6604,13 +6689,17 @@ window.openComments=openComments;
 
 // ── Media Fullscreen Lightbox ──────────────────────────────
 function openMediaLightbox(src, type, caption){
-    const lb = document.getElementById('mediaLightbox');
+    const lb    = document.getElementById('mediaLightbox');
     const inner = document.getElementById('mediaLightboxInner');
-    const cap = document.getElementById('mediaLightboxCaption');
+    const cap   = document.getElementById('mediaLightboxCaption');
+    const acts  = document.getElementById('mediaLightboxActions');
     inner.innerHTML = '';
+    if(acts) acts.innerHTML = '';
+
     if(type === 'image'){
         const img = document.createElement('img');
         img.src = src;
+        img.style.cssText = 'max-width:100%;max-height:70vh;border-radius:8px;object-fit:contain;display:block;';
         inner.appendChild(img);
     } else if(type === 'video'){
         const vid = document.createElement('video');
@@ -6618,11 +6707,27 @@ function openMediaLightbox(src, type, caption){
         vid.controls = true;
         vid.autoplay = true;
         vid.playsinline = true;
-        vid.setAttribute('controlsList','nodownload');
-        vid.style.cssText = 'max-width:100%;max-height:100%;border-radius:6px;';
+        vid.style.cssText = 'max-width:100%;max-height:70vh;border-radius:8px;';
         inner.appendChild(vid);
     }
+
     cap.textContent = caption || '';
+
+    // Add in-app Save button (no external browser needed)
+    if(acts){
+        const saveBtn = document.createElement('button');
+        saveBtn.innerHTML = '⬇️ Save to Device';
+        saveBtn.style.cssText = 'background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:12px;padding:11px 24px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;';
+        saveBtn.onclick = function(e){ e.stopPropagation(); saveMediaInApp(src); };
+        acts.appendChild(saveBtn);
+
+        const closeBtn = document.createElement('button');
+        closeBtn.textContent = '✕ Close';
+        closeBtn.style.cssText = 'background:rgba(255,255,255,.1);color:#fff;border:1.5px solid rgba(255,255,255,.2);border-radius:12px;padding:11px 20px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;';
+        closeBtn.onclick = function(e){ e.stopPropagation(); closeMediaLightbox(); };
+        acts.appendChild(closeBtn);
+    }
+
     lb.classList.add('open');
     document.body.style.overflow = 'hidden';
 }
@@ -6630,12 +6735,50 @@ function openMediaLightbox(src, type, caption){
 function closeMediaLightbox(e){
     if(e && e.target !== document.getElementById('mediaLightbox') && !e.target.classList.contains('media-lightbox-close')) return;
     const lb = document.getElementById('mediaLightbox');
-    // stop video playback
     const vid = lb.querySelector('video');
     if(vid){ vid.pause(); vid.src = ''; }
     lb.classList.remove('open');
     document.body.style.overflow = '';
 }
+
+// Save any image or video to device without opening a browser tab
+window.saveMediaInApp = async function(src){
+    try{
+        // If it's already a data URL, download directly
+        if(src.startsWith('data:')){
+            const a = document.createElement('a');
+            a.href = src;
+            a.download = 'family-media-' + Date.now() + '.jpg';
+            a.click();
+            toast('Saving to device… ✓');
+            return;
+        }
+        // Fetch the file as a blob so it downloads inside the app
+        toast('Downloading…');
+        const resp = await fetch(src);
+        if(!resp.ok) throw new Error('Could not fetch file');
+        const blob = await resp.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        // Guess extension from mime type
+        const ext = blob.type.includes('video') ? 'mp4'
+                  : blob.type.includes('audio') ? 'mp3'
+                  : blob.type.includes('png')   ? 'png'
+                  : 'jpg';
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = 'family-media-' + Date.now() + '.' + ext;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(()=>URL.revokeObjectURL(blobUrl), 3000);
+        toast('Saved to device ✓');
+    } catch(e){
+        console.warn('saveMediaInApp failed:', e);
+        // Last resort — open in new tab so they can long-press save
+        window.open(src, '_blank');
+        toast('Tap and hold the image to save it', 'warn');
+    }
+};
 
 function openCardLightbox(cardData){
     const lb = document.getElementById('cardLightbox');
@@ -10296,6 +10439,7 @@ window.switchToHumanGame=switchToHumanGame;
     <button class="media-lightbox-close" onclick="closeMediaLightbox()">✕</button>
     <div class="media-lightbox-inner" id="mediaLightboxInner"></div>
     <div class="media-lightbox-caption" id="mediaLightboxCaption"></div>
+    <div id="mediaLightboxActions" style="display:flex;gap:10px;margin-top:14px;justify-content:center;"></div>
 </div>
 
 <!-- Card Fullscreen Lightbox -->
