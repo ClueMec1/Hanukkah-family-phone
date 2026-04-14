@@ -1205,7 +1205,12 @@ function removeHostMemory() {
       <div style="font-family:'Fredoka One',cursive;font-size:20px;color:#fff;letter-spacing:.5px;">🎨 AI Image Generator</div>
       <div style="font-size:11px;color:rgba(255,255,255,.8);font-weight:600;">Free • No account needed • Powered by Pollinations AI</div>
     </div>
+    <button onclick="iePickPhoto()" style="background:rgba(255,255,255,.22);border:1.5px solid rgba(255,255,255,.4);color:#fff;border-radius:12px;padding:8px 13px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;display:flex;align-items:center;gap:6px;flex-shrink:0;">
+      ✏️ Edit a Photo
+    </button>
   </div>
+  <!-- Hidden file input for photo picker -->
+  <input type="file" id="iePhotoPickerInput" accept="image/*" style="display:none" onchange="ieHandlePhotoPick(this)">
 
   <!-- Style presets -->
   <div style="padding:12px 14px 6px;flex-shrink:0;">
@@ -1242,6 +1247,18 @@ function removeHostMemory() {
       <button class="img-idea-btn" onclick="setImgPrompt('A beautiful sunset over the ocean with a family silhouette')">🌅 Family sunset</button>
       <button class="img-idea-btn" onclick="setImgPrompt('A magical Hanukkah celebration with menorah and gifts')">🕎 Hanukkah</button>
       <button class="img-idea-btn" onclick="setImgPrompt('A grandparent reading a bedtime story to grandchildren')">📖 Bedtime story</button>
+    </div>
+  </div>
+
+  <!-- Edit your own photo card -->
+  <div style="padding:10px 14px 0;flex-shrink:0;">
+    <div onclick="iePickPhoto()" style="display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(99,102,241,.12),rgba(139,92,246,.08));border:1.5px dashed rgba(99,102,241,.35);border-radius:16px;padding:14px 16px;cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='rgba(99,102,241,.7)';this.style.background='linear-gradient(135deg,rgba(99,102,241,.2),rgba(139,92,246,.14))';" onmouseout="this.style.borderColor='rgba(99,102,241,.35)';this.style.background='linear-gradient(135deg,rgba(99,102,241,.12),rgba(139,92,246,.08))';">
+      <div style="width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#6366f1,#818cf8);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">✏️</div>
+      <div>
+        <div style="font-size:14px;font-weight:800;color:var(--text);">Edit a Photo from Your Device</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px;">Pick any photo and open it in the full editor — crop, filters, draw, AI tools & more</div>
+      </div>
+      <svg width="18" height="18" fill="none" stroke="rgba(99,102,241,.6)" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-left:auto;"><polyline points="9 18 15 12 9 6"/></svg>
     </div>
   </div>
 
@@ -1747,9 +1764,8 @@ function removeHostMemory() {
             <button onclick="toggleChatTools()" id="chatPlusBtn" title="More options" style="width:50px;height:50px;background:var(--surface2);border:1.5px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:24px;flex-shrink:0;transition:all .2s;color:var(--accent);font-weight:900;line-height:1;">+</button>
             <button class="wa-voice-btn" id="voiceBtn"
                 title="Hold to record"
-                onmousedown="waMicDown(event)"  onmouseup="waMicUp(event)"   onmouseleave="waMicCancel(event)"
-                ontouchstart="waMicDown(event)" ontouchend="waMicUp(event)"   ontouchcancel="waMicCancel(event)"
-                ontouchmove="waMicMove(event)"
+                onmousedown="waMicDown(event)"  onmouseup="waMicUp(event)"
+                ontouchstart="waMicDown(event)"
                 style="-webkit-user-select:none;user-select:none;touch-action:none;">
                 <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
             </button>
@@ -3541,6 +3557,7 @@ function buildBubble(key, msg){
         } else {
             inner += `<img src="${esc(_mUrl)}" class="wa-img-msg" onclick="openMediaLightbox('${esc(_mUrl)}','image','')" loading="lazy">`;
         }
+        inner += `<div style="margin-top:5px;"><a href="${esc(_mUrl)}" download target="_blank" onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--accent);text-decoration:none;background:rgba(0,0,0,0.06);border-radius:20px;padding:3px 10px;">⬇️ Download</a></div>`;
         if(msg.text) inner += '<div class="wa-text">'+esc(msg.text)+'</div>';
     } else {
         inner += '<div class="wa-text" style="'+(msgIsFromHost?'font-weight:700;':'')+'">'+esc(msg.text)+'</div>';
@@ -4021,6 +4038,54 @@ var _waMicSeconds  = 0;
 var _waMicStartX   = 0;
 var _waMicStartY   = 0;
 var _waMicRecording = false;
+var _waMicCancelled = false;
+
+// Document-level handlers attached while recording so swipe works
+// even after the finger leaves the button
+function _waMicDocMove(e){
+    var touch = e.touches ? e.touches[0] : e;
+    var dx = touch.clientX - _waMicStartX;
+    var hint = document.getElementById('waMicHint');
+    var cancelZone = document.getElementById('waMicCancelZone');
+    if(dx < -30){
+        var pct = Math.min(1, Math.abs(dx) / 100);
+        if(hint) hint.textContent = pct > 0.65 ? '✕ Release to cancel' : '← Swipe left to cancel';
+        if(cancelZone){ cancelZone.style.background='rgba(255,59,48,'+(0.15+pct*0.55)+')'; cancelZone.style.transform='scale('+(1+pct*0.3)+')'; }
+        // Crossed the threshold — cancel immediately
+        if(dx < -100){
+            _waMicCancelled = true;
+            _waMicDetach();
+            waMicCancel(e);
+        }
+    } else {
+        if(hint) hint.textContent = 'Swipe left to cancel';
+        if(cancelZone){ cancelZone.style.background='rgba(255,59,48,.12)'; cancelZone.style.transform=''; }
+    }
+}
+
+function _waMicDocUp(e){
+    _waMicDetach();
+    if(_waMicCancelled) return; // already handled in move
+    waMicUp(e);
+}
+
+function _waMicDocCancel(e){
+    _waMicDetach();
+    waMicCancel(e);
+}
+
+function _waMicAttach(){
+    _waMicCancelled = false;
+    document.addEventListener('touchmove',   _waMicDocMove,   {passive:true});
+    document.addEventListener('touchend',    _waMicDocUp,     {passive:false});
+    document.addEventListener('touchcancel', _waMicDocCancel, {passive:false});
+}
+
+function _waMicDetach(){
+    document.removeEventListener('touchmove',   _waMicDocMove);
+    document.removeEventListener('touchend',    _waMicDocUp);
+    document.removeEventListener('touchcancel', _waMicDocCancel);
+}
 
 async function waMicDown(e){
     if(e.type === 'mousedown' && e.button !== 0) return;
@@ -4055,6 +4120,9 @@ async function waMicDown(e){
     _waMicRecorder.start(250);
     _waMicRecording = true;
 
+    // Attach document-level listeners so swipe works off-button
+    if(e.touches) _waMicAttach();
+
     // Visual feedback
     var btn = document.getElementById('voiceBtn');
     if(btn){ btn.classList.add('recording'); btn.style.transform='scale(1.2)'; }
@@ -4081,10 +4149,15 @@ function _updateMicTimer(){
 function _waMicCleanup(){
     clearInterval(_waMicTimer); _waMicTimer=null;
     _waMicRecording = false;
+    _waMicDetach();
     var btn = document.getElementById('voiceBtn');
     if(btn){ btn.classList.remove('recording'); btn.style.transform=''; }
     var overlay = document.getElementById('waMicOverlay');
     if(overlay){ overlay.style.display='none'; }
+    var hint = document.getElementById('waMicHint');
+    if(hint) hint.textContent = 'Swipe left to cancel';
+    var cancelZone = document.getElementById('waMicCancelZone');
+    if(cancelZone){ cancelZone.style.background='rgba(255,59,48,.12)'; cancelZone.style.transform=''; }
     if(_waMicStream){ _waMicStream.getTracks().forEach(function(t){t.stop();}); _waMicStream=null; }
 }
 
@@ -4107,36 +4180,18 @@ async function waMicUp(e){
 
 function waMicCancel(e){
     if(!_waMicRecording) return;
+    _waMicChunks = []; // discard audio BEFORE stopping so onstop cannot send
     if(_waMicRecorder && _waMicRecorder.state==='recording'){
         _waMicRecorder.onstop = function(){ _waMicCleanup(); };
         _waMicRecorder.stop();
     } else {
         _waMicCleanup();
     }
-    _waMicChunks = []; // discard
-    toast('Recording cancelled');
+    toast('Recording cancelled ✕');
 }
 
-function waMicMove(e){
-    if(!_waMicRecording) return;
-    var touch = e.touches ? e.touches[0] : e;
-    var dx = touch.clientX - _waMicStartX;
-    var dy = touch.clientY - _waMicStartY;
-    var hint = document.getElementById('waMicHint');
-    var cancelZone = document.getElementById('waMicCancelZone');
-    // Swiping left to cancel
-    if(dx < -40){
-        var pct = Math.min(1, Math.abs(dx)/120);
-        if(hint) hint.textContent = pct > 0.7 ? 'Release to cancel' : 'Swipe left to cancel';
-        if(cancelZone){ cancelZone.style.background='rgba(255,59,48,'+(0.12+pct*0.5)+')'; cancelZone.style.transform='scale('+(1+pct*0.3)+')'; }
-        if(dx < -120){
-            waMicCancel(e);
-        }
-    } else {
-        if(hint) hint.textContent='Swipe left to cancel';
-        if(cancelZone){ cancelZone.style.background='rgba(255,59,48,.12)'; cancelZone.style.transform=''; }
-    }
-}
+// waMicMove kept for any legacy callers but real work is in _waMicDocMove
+function waMicMove(e){ _waMicDocMove(e); }
 
 // Keep toggleVoiceRecording as a no-op so nothing breaks
 function toggleVoiceRecording(){}
@@ -8795,10 +8850,55 @@ window.aiClearHistory = aiClearHistory;
 // ══════════════════════════════════════════════════════════
 let _imgStyle = 'realistic';
 let _imgGenHistory = []; // keep session gallery
+const _IMG_GEN_STORAGE_KEY = 'familyHub_imgGenHistory';
+const _IMG_GEN_MAX_SAVED = 30; // max images to remember
+
+function _saveImgHistory(){
+    try{
+        const toSave = _imgGenHistory.slice(0, _IMG_GEN_MAX_SAVED);
+        localStorage.setItem(_IMG_GEN_STORAGE_KEY, JSON.stringify(toSave));
+    }catch(e){ console.warn('Could not save image history', e); }
+}
+
+function _loadImgHistory(){
+    try{
+        const raw = localStorage.getItem(_IMG_GEN_STORAGE_KEY);
+        if(raw) _imgGenHistory = JSON.parse(raw);
+    }catch(e){ _imgGenHistory = []; }
+}
+
+function _rebuildImgGallery(){
+    const gallery = document.getElementById('imgGenGallery');
+    const empty   = document.getElementById('imgGenEmpty');
+    if(!gallery) return;
+    Array.from(gallery.querySelectorAll('.img-gen-card')).forEach(c => c.remove());
+    if(_imgGenHistory.length === 0){
+        if(empty) empty.style.display = 'flex';
+        return;
+    }
+    if(empty) empty.style.display = 'none';
+    _imgGenHistory.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'img-gen-card';
+        const safeUrl    = item.url.replace(/'/g, '%27');
+        const safePrompt = (item.prompt || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        card.innerHTML = `
+            <img src="${item.url}" alt="${safePrompt}" loading="lazy" onclick="openImgViewer('${safeUrl}')">
+            <div class="img-gen-meta">
+                <div style="flex:1;font-size:12px;font-weight:600;color:var(--muted);line-height:1.4;">${safePrompt}</div>
+                <button onclick="openImgEditor('${safeUrl}','AI Image')" title="Edit in Editor" style="background:rgba(99,102,241,.15);color:#818cf8;border:1.5px solid rgba(99,102,241,.3);border-radius:10px;padding:7px 10px;font-size:13px;cursor:pointer;flex-shrink:0;transition:all .2s;" onmouseover="this.style.background='rgba(99,102,241,.3)'" onmouseout="this.style.background='rgba(99,102,241,.15)'">✏️</button>
+                <a href="${item.url}" download="family-ai-image.jpg" style="background:var(--accent);color:#fff;border:none;border-radius:10px;padding:7px 12px;font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;text-decoration:none;flex-shrink:0;">&#11015;</a>
+                <button onclick="deleteImgCard(this)" title="Delete" style="background:rgba(229,57,53,.1);color:var(--danger);border:1.5px solid rgba(229,57,53,.25);border-radius:10px;padding:7px 10px;font-size:13px;cursor:pointer;flex-shrink:0;transition:all .2s;" onmouseover="this.style.background='var(--danger)';this.style.color='#fff'" onmouseout="this.style.background='rgba(229,57,53,.1)';this.style.color='var(--danger)'">&#128465;</button>
+            </div>
+        `;
+        gallery.appendChild(card);
+    });
+}
 
 function openImageGen(){
     document.getElementById('imageGenOverlay').style.display = 'flex';
-    // scroll to top of gallery
+    _loadImgHistory();
+    _rebuildImgGallery();
     const g = document.getElementById('imgGenGallery');
     if(g) g.scrollTop = 0;
 }
@@ -8954,6 +9054,7 @@ async function generateImage(){
             <img src="${url}" alt="${userPrompt}" loading="lazy" onclick="openImgViewer('${url}')">
             <div class="img-gen-meta">
                 <div style="flex:1;font-size:12px;font-weight:600;color:var(--muted);line-height:1.4;">${userPrompt}</div>
+                <button onclick="openImgEditor('${url.replace(/'/g,"\'")}','AI Image')" title="Edit" style="background:rgba(99,102,241,.15);color:#818cf8;border:1.5px solid rgba(99,102,241,.3);border-radius:10px;padding:7px 10px;font-size:13px;cursor:pointer;flex-shrink:0;transition:all .2s;" onmouseover="this.style.background='rgba(99,102,241,.3)'" onmouseout="this.style.background='rgba(99,102,241,.15)'">✏️</button>
                 <a href="${url}" download="family-ai-image.jpg" style="background:var(--accent);color:#fff;border:none;border-radius:10px;padding:7px 12px;font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;text-decoration:none;flex-shrink:0;">⬇</a>
                 <button onclick="deleteImgCard(this)" title="Delete" style="background:rgba(229,57,53,.1);color:var(--danger);border:1.5px solid rgba(229,57,53,.25);border-radius:10px;padding:7px 10px;font-size:13px;cursor:pointer;flex-shrink:0;transition:all .2s;" onmouseover="this.style.background='var(--danger)';this.style.color='#fff'" onmouseout="this.style.background='rgba(229,57,53,.1)';this.style.color='var(--danger)'">🗑</button>
             </div>
@@ -8962,6 +9063,7 @@ async function generateImage(){
 
         // Save to session history
         _imgGenHistory.unshift({ url, prompt: userPrompt });
+        _saveImgHistory();
 
         // Clear the prompt input
         promptEl.value = '';
@@ -9303,6 +9405,13 @@ window.closeImgViewer = closeImgViewer;
 function deleteImgCard(btn){
     const card = btn.closest('.img-gen-card');
     if(!card) return;
+    // Remove from saved history by matching the image URL
+    const imgEl = card.querySelector('img');
+    if(imgEl){
+        const deletedUrl = imgEl.src;
+        _imgGenHistory = _imgGenHistory.filter(item => item.url !== deletedUrl);
+        _saveImgHistory();
+    }
     card.style.transition = 'opacity .25s, transform .25s';
     card.style.opacity = '0';
     card.style.transform = 'scale(.95)';
@@ -10214,6 +10323,10 @@ window.switchToHumanGame=switchToHumanGame;
         <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         Search
     </button>
+    <button class="bottom-nav-btn" onclick="iePickPhoto()" title="Edit a Photo">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Edit Photo
+    </button>
     <button class="bottom-nav-btn" onclick="showHostLogin()" title="Host / Settings" id="bottomHostBtn">
         <span id="bottomRequestBadge" class="bottom-nav-badge"></span>
         <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -10730,7 +10843,7 @@ window.lvJoin=async function(type){
     _watch('peers',function(snap){
         var ps=snap.val()||{};
         var el=document.getElementById('lvRoomCount');if(el)el.textContent=Object.keys(ps).length+' in room';
-        Object.keys(ps).forEach(function(uid){if(uid!==_lvUid&&!_lvPeers[uid])_connect(uid,true);});
+        Object.keys(ps).forEach(function(uid){if(uid!==_lvUid&&!_lvPeers[uid])_connect(uid,_lvUid<uid);});
         Object.keys(ps).forEach(function(uid){
             var p=ps[uid];
             var mb=document.getElementById('lvm-'+uid),nv=document.getElementById('lvn-'+uid);
@@ -10738,10 +10851,14 @@ window.lvJoin=async function(type){
             if(nv)nv.style.display=p.video===false?'flex':'none';
         });
     });
+    var _processedSigs={};
     _watch('sig/'+_lvUid,function(snap){
         var sigs=snap.val()||{};
         Object.keys(sigs).forEach(function(from){
             var msg=sigs[from];if(!msg)return;
+            var key=from+':'+msg.type+':'+(msg.sdp||'').slice(0,20);
+            if(_processedSigs[key])return;
+            _processedSigs[key]=true;
             if(msg.type==='offer')_handleOffer(from,msg);
             else if(msg.type==='answer')_handleAnswer(from,msg);
         });
@@ -10750,7 +10867,14 @@ window.lvJoin=async function(type){
         var all=snap.val()||{};
         Object.keys(all).forEach(function(from){
             var pc=_lvPeers[from];if(!pc)return;
-            Object.values(all[from]).forEach(function(c){if(c)pc.addIceCandidate(new RTCIceCandidate(c)).catch(function(){});});
+            var seen=pc._seenIce=pc._seenIce||{};
+            var candidates=all[from]||{};
+            Object.keys(candidates).forEach(function(key){
+                if(seen[key])return;
+                seen[key]=true;
+                var c=candidates[key];
+                if(c)pc.addIceCandidate(new RTCIceCandidate(c)).catch(function(){});
+            });
         });
     });
     _watch('kicked/'+_lvUid,function(snap){if(snap.val()){lvLeave();toast('You were removed from the room.','warn');}});
@@ -11714,587 +11838,1570 @@ document.addEventListener('neumai:question', function(e){ _prevQuestion = e.deta
 })();
 </script>
 <!-- ═══════════════════════════════════════════════════════
-     IN-APP IMAGE EDITOR — opens as fullscreen overlay
-     Tools: crop, rotate, flip, filters, draw, eraser, text
-     No external sites. Works fully inside the app.
+     FAMILY HUB — AI IMAGE EDITOR v2
+     Full-featured: draw, erase, crop, rotate, flip, text,
+     shapes, stickers, blur, sharpen, vignette, color adj,
+     filters, layers, opacity + Claude AI vision panel.
 ═══════════════════════════════════════════════════════ -->
 <style>
+/* ── Editor shell ── */
 #imgEditor{
   display:none;position:fixed;inset:0;z-index:19000;
-  background:#0a0a0f;flex-direction:column;
-  font-family:'Outfit',sans-serif;
+  background:#07080f;flex-direction:column;
+  font-family:'Nunito',sans-serif;overflow:hidden;
 }
 #imgEditor.on{display:flex;}
 
-/* AI panel inside editor */
-.ie-ai-panel{
-  position:absolute;bottom:0;left:0;right:0;
-  background:#0c0c1a;border-top:1px solid rgba(99,102,241,.25);
-  border-radius:20px 20px 0 0;
-  padding:16px 14px 20px;
-  transform:translateY(100%);
-  transition:transform .3s cubic-bezier(.4,0,.2,1);
-  z-index:10;
-  max-height:65%;overflow-y:auto;
-}
-.ie-ai-panel.on{transform:translateY(0);}
-.ie-ai-panel-title{font-size:14px;font-weight:800;color:#e2e8f0;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
-.ie-ai-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
-.ie-ai-btn{
-  padding:10px 12px;border-radius:12px;
-  background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);
-  color:#a5b4fc;font-size:12px;font-weight:700;cursor:pointer;
-  font-family:'Outfit',sans-serif;text-align:left;transition:all .15s;
-  display:flex;align-items:center;gap:8px;
-}
-.ie-ai-btn:hover{background:rgba(99,102,241,.2);border-color:rgba(99,102,241,.4);}
-.ie-ai-btn:active{transform:scale(.97);}
-.ie-ai-btn .ie-ai-icon{font-size:18px;flex-shrink:0;}
-.ie-ai-btn .ie-ai-label{font-size:11px;font-weight:700;color:#e2e8f0;}
-.ie-ai-btn .ie-ai-sub{font-size:10px;color:rgba(100,116,139,.7);margin-top:1px;}
-.ie-ai-input-row{display:flex;gap:8px;margin-top:4px;}
-.ie-ai-input{
-  flex:1;background:rgba(20,20,35,.9);border:1px solid rgba(99,102,241,.25);
-  border-radius:12px;padding:10px 14px;color:#e2e8f0;font-size:13px;
-  font-family:'Outfit',sans-serif;outline:none;
-}
-.ie-ai-input:focus{border-color:rgba(99,102,241,.5);}
-.ie-ai-send{
-  padding:10px 16px;background:linear-gradient(135deg,#6366f1,#818cf8);
-  color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:700;
-  cursor:pointer;font-family:'Outfit',sans-serif;white-space:nowrap;
-}
-.ie-ai-result{margin-top:10px;padding:10px 12px;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.15);border-radius:12px;font-size:13px;color:#cbd5e1;line-height:1.6;display:none;}
-.ie-ai-result.on{display:block;}
-.ie-ai-thinking{display:none;align-items:center;gap:8px;padding:10px 0;color:rgba(100,116,139,.7);font-size:12px;}
-.ie-ai-thinking.on{display:flex;}
-
-/* Header */
+/* ── Top header bar ── */
 .ie-header{
-  display:flex;align-items:center;gap:10px;
-  padding:12px 14px;background:#0d0d1a;
-  border-bottom:1px solid rgba(99,102,241,.2);flex-shrink:0;
+  display:flex;align-items:center;gap:8px;
+  padding:10px 14px;background:#0d0e1a;
+  border-bottom:1px solid rgba(99,102,241,.18);
+  flex-shrink:0;min-height:54px;
 }
-.ie-title{flex:1;font-size:16px;font-weight:700;color:#e2e8f0;}
+.ie-title{
+  flex:1;font-size:15px;font-weight:800;color:#e2e8f0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
 .ie-hbtn{
-  height:36px;padding:0 14px;border:1px solid rgba(99,102,241,.3);
-  border-radius:10px;background:rgba(99,102,241,.1);color:#a5b4fc;
-  font-size:13px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;
-  transition:all .15s;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+  color:#cbd5e1;border-radius:10px;padding:7px 13px;
+  font-size:12px;font-weight:700;cursor:pointer;
+  font-family:inherit;transition:all .18s;white-space:nowrap;
 }
-.ie-hbtn:hover{background:rgba(99,102,241,.25);}
+.ie-hbtn:hover{background:rgba(99,102,241,.22);border-color:rgba(99,102,241,.4);color:#a5b4fc;}
 .ie-hbtn.save{background:linear-gradient(135deg,#6366f1,#818cf8);color:#fff;border-color:transparent;}
-.ie-hbtn.save:hover{box-shadow:0 4px 16px rgba(99,102,241,.4);}
+.ie-hbtn.save:hover{box-shadow:0 4px 18px rgba(99,102,241,.45);}
+.ie-hbtn.danger{background:rgba(239,68,68,.12);color:#f87171;border-color:rgba(239,68,68,.25);}
 
-/* Canvas area */
+/* ── Canvas area ── */
 .ie-canvas-wrap{
-  flex:1;display:flex;align-items:center;justify-content:center;
-  overflow:hidden;background:#111;position:relative;
+  flex:1;overflow:auto;display:flex;align-items:center;
+  justify-content:center;background:#07080f;
+  position:relative;min-height:0;
 }
 #ieCanvas{
-  max-width:100%;max-height:100%;
-  touch-action:none;cursor:crosshair;
-  box-shadow:0 0 40px rgba(0,0,0,.5);
+  display:block;max-width:100%;
+  box-shadow:0 0 0 1px rgba(99,102,241,.2),0 8px 40px rgba(0,0,0,.6);
+  border-radius:4px;touch-action:none;
 }
 
-/* Tool bar */
+/* ── Side toolbar (horizontal scroll on mobile) ── */
 .ie-toolbar{
-  display:flex;align-items:center;gap:6px;
-  padding:10px 12px;background:#0d0d1a;
-  border-top:1px solid rgba(99,102,241,.15);
+  display:flex;align-items:center;gap:4px;
+  padding:8px 12px;background:#0d0e1a;
+  border-top:1px solid rgba(99,102,241,.12);
   overflow-x:auto;scrollbar-width:none;flex-shrink:0;
 }
 .ie-toolbar::-webkit-scrollbar{display:none;}
 .ie-tool{
-  flex-shrink:0;width:48px;height:48px;
-  border-radius:12px;background:rgba(255,255,255,.05);
-  border:1px solid rgba(255,255,255,.08);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:2px;cursor:pointer;transition:all .15s;color:rgba(148,163,184,.8);
-  font-size:10px;font-weight:600;
+  display:flex;flex-direction:column;align-items:center;
+  gap:2px;padding:7px 9px;border-radius:10px;cursor:pointer;
+  border:1.5px solid transparent;color:#64748b;
+  font-size:10px;font-weight:700;min-width:46px;flex-shrink:0;
+  transition:all .15s;user-select:none;
 }
-.ie-tool:hover{background:rgba(99,102,241,.15);border-color:rgba(99,102,241,.3);color:#a5b4fc;}
-.ie-tool.active{background:rgba(99,102,241,.25);border-color:#6366f1;color:#818cf8;}
+.ie-tool:hover{background:rgba(99,102,241,.14);border-color:rgba(99,102,241,.3);color:#a5b4fc;}
+.ie-tool.active{background:rgba(99,102,241,.22);border-color:#6366f1;color:#818cf8;}
 .ie-tool svg{width:18px;height:18px;}
-.ie-tool-sep{width:1px;height:36px;background:rgba(255,255,255,.08);flex-shrink:0;}
+.ie-tool-sep{width:1px;height:38px;background:rgba(255,255,255,.07);flex-shrink:0;margin:0 2px;}
 
-/* Options bar — shows context controls for active tool */
+/* ── Options bar (below toolbar) ── */
 .ie-optbar{
   display:none;align-items:center;gap:10px;
-  padding:8px 14px;background:#0c0c18;
-  border-top:1px solid rgba(99,102,241,.1);flex-shrink:0;
+  padding:8px 14px;background:#0f1020;
+  border-top:1px solid rgba(99,102,241,.1);
+  overflow-x:auto;scrollbar-width:none;flex-shrink:0;flex-wrap:wrap;
 }
 .ie-optbar.on{display:flex;}
-.ie-opt-label{font-size:11px;color:rgba(100,116,139,.7);font-weight:600;white-space:nowrap;}
-.ie-slider{flex:1;max-width:160px;accent-color:#6366f1;cursor:pointer;}
-.ie-color{width:28px;height:28px;border-radius:8px;border:1px solid rgba(99,102,241,.3);cursor:pointer;padding:0;}
-.ie-filter-btn{
-  padding:5px 12px;border-radius:8px;background:rgba(99,102,241,.1);
-  border:1px solid rgba(99,102,241,.2);color:#a5b4fc;font-size:12px;font-weight:600;
-  cursor:pointer;font-family:'Outfit',sans-serif;white-space:nowrap;
+.ie-optbar::-webkit-scrollbar{display:none;}
+.ie-opt-label{font-size:11px;color:#64748b;font-weight:700;white-space:nowrap;}
+.ie-slider{
+  width:100px;accent-color:#6366f1;cursor:pointer;
+  -webkit-appearance:none;height:4px;border-radius:2px;
+  background:rgba(99,102,241,.25);outline:none;
 }
-.ie-filter-btn.active{background:rgba(99,102,241,.3);border-color:#6366f1;}
+.ie-slider::-webkit-slider-thumb{
+  -webkit-appearance:none;width:16px;height:16px;
+  border-radius:50%;background:#6366f1;cursor:pointer;
+  box-shadow:0 0 6px rgba(99,102,241,.5);
+}
+.ie-color{width:28px;height:28px;border-radius:8px;border:1.5px solid rgba(99,102,241,.3);cursor:pointer;padding:0;background:none;}
+.ie-filter-btn{
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+  color:#94a3b8;border-radius:8px;padding:5px 10px;
+  font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;
+  transition:all .15s;white-space:nowrap;
+}
+.ie-filter-btn.active{background:rgba(99,102,241,.28);border-color:#6366f1;color:#a5b4fc;}
+.ie-filter-btn:hover{background:rgba(99,102,241,.16);}
+.ie-opt-sep{width:1px;height:22px;background:rgba(255,255,255,.08);flex-shrink:0;}
+
+/* ── Shape & sticker picker ── */
+.ie-shape-grid{
+  display:flex;flex-wrap:wrap;gap:6px;padding:2px 0;
+}
+.ie-shape-btn{
+  width:38px;height:38px;display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+  border-radius:8px;cursor:pointer;font-size:18px;transition:all .15s;
+}
+.ie-shape-btn:hover{background:rgba(99,102,241,.22);border-color:rgba(99,102,241,.4);}
+.ie-shape-btn.active{background:rgba(99,102,241,.3);border-color:#6366f1;}
+
+/* ── AI Panel ── */
+.ie-ai-panel{
+  position:absolute;bottom:0;left:0;right:0;
+  background:#0d0e1a;border-top:1px solid rgba(99,102,241,.25);
+  padding:16px 16px 20px;
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.22,1,.36,1);
+  z-index:10;max-height:70vh;overflow-y:auto;
+}
+.ie-ai-panel.on{transform:translateY(0);}
+.ie-ai-panel-title{
+  font-size:14px;font-weight:800;color:#e2e8f0;
+  margin-bottom:12px;display:flex;align-items:center;gap:8px;
+}
+.ie-ai-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.ie-ai-btn{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;background:rgba(99,102,241,.08);
+  border:1px solid rgba(99,102,241,.18);border-radius:12px;
+  cursor:pointer;text-align:left;transition:all .15s;
+}
+.ie-ai-btn:hover{background:rgba(99,102,241,.18);border-color:rgba(99,102,241,.4);}
+.ie-ai-btn .ie-ai-icon{font-size:20px;flex-shrink:0;}
+.ie-ai-btn .ie-ai-label{font-size:11px;font-weight:800;color:#e2e8f0;}
+.ie-ai-btn .ie-ai-sub{font-size:10px;color:#64748b;margin-top:1px;}
+.ie-ai-input-row{display:flex;gap:8px;margin-top:4px;}
+.ie-ai-input{
+  flex:1;background:rgba(20,22,40,.8);border:1px solid rgba(99,102,241,.25);
+  border-radius:10px;padding:9px 12px;color:#e2e8f0;font-size:13px;
+  font-family:inherit;outline:none;
+}
+.ie-ai-input:focus{border-color:rgba(99,102,241,.55);background:rgba(30,32,55,.9);}
+.ie-ai-send{
+  background:linear-gradient(135deg,#6366f1,#818cf8);color:#fff;
+  border:none;border-radius:10px;padding:9px 16px;
+  font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;
+  transition:all .15s;white-space:nowrap;
+}
+.ie-ai-send:hover{box-shadow:0 4px 14px rgba(99,102,241,.4);}
+.ie-ai-result{
+  margin-top:10px;padding:12px 14px;
+  background:rgba(99,102,241,.07);border:1px solid rgba(99,102,241,.15);
+  border-radius:12px;font-size:13px;color:#cbd5e1;line-height:1.7;
+  display:none;white-space:pre-wrap;
+}
+.ie-ai-result.on{display:block;}
+.ie-ai-thinking{
+  display:none;align-items:center;gap:8px;
+  padding:10px 0;color:#64748b;font-size:12px;font-weight:700;
+}
+.ie-ai-thinking.on{display:flex;}
+.ie-ai-spinner{
+  width:16px;height:16px;border:2px solid rgba(99,102,241,.3);
+  border-top-color:#6366f1;border-radius:50%;
+  animation:ie-spin .7s linear infinite;
+}
+@keyframes ie-spin{to{transform:rotate(360deg);}}
+
+/* ── Generate new image section inside AI panel ── */
+.ie-gen-row{display:flex;gap:8px;margin-top:10px;}
+.ie-gen-input{
+  flex:1;background:rgba(20,22,40,.8);border:1px solid rgba(99,102,241,.25);
+  border-radius:10px;padding:9px 12px;color:#e2e8f0;font-size:13px;
+  font-family:inherit;outline:none;
+}
+.ie-gen-input:focus{border-color:rgba(99,102,241,.55);}
+.ie-gen-btn{
+  background:linear-gradient(135deg,#7c3aed,#6366f1);color:#fff;
+  border:none;border-radius:10px;padding:9px 14px;
+  font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;
+  white-space:nowrap;transition:all .15s;
+}
+.ie-gen-btn:hover{box-shadow:0 4px 14px rgba(99,102,241,.4);}
+.ie-gen-btn:disabled{opacity:.5;cursor:not-allowed;}
+
+/* ── Quick action chips ── */
+.ie-chip{
+  background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);
+  color:#94a3b8;border-radius:20px;padding:5px 12px;
+  font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;
+  transition:all .15s;white-space:nowrap;
+}
+.ie-chip:hover{background:rgba(99,102,241,.25);border-color:rgba(99,102,241,.5);color:#c7d2fe;}
+
+/* ── Crop overlay hint ── */
+.ie-crop-hint{
+  position:absolute;top:12px;left:50%;transform:translateX(-50%);
+  background:rgba(10,10,20,.85);border:1px solid rgba(99,102,241,.3);
+  color:#a5b4fc;font-size:12px;font-weight:700;
+  padding:6px 14px;border-radius:20px;pointer-events:none;
+  white-space:nowrap;z-index:5;display:none;
+}
+.ie-crop-hint.on{display:block;}
 </style>
 
+<!-- ══ EDITOR HTML ══════════════════════════════════════════ -->
 <div id="imgEditor">
+
+  <!-- Header -->
   <div class="ie-header">
     <button class="ie-hbtn" onclick="ieClose()">← Back</button>
-    <div class="ie-title" id="ieTitle">Edit Image</div>
-    <button class="ie-hbtn" onclick="ieUndo()">↩ Undo</button>
-    <button class="ie-hbtn save" onclick="ieSave()">✓ Save</button>
+    <div class="ie-title" id="ieTitle">✏️ Edit Image</div>
+    <button class="ie-hbtn" onclick="ieUndo()" title="Undo last action">↩ Undo</button>
+    <button class="ie-hbtn" onclick="ieRedo()" title="Redo">↪ Redo</button>
+    <button class="ie-hbtn save" onclick="ieSave()">⬇ Save</button>
   </div>
 
-  <div class="ie-canvas-wrap">
+  <!-- Canvas -->
+  <div class="ie-canvas-wrap" id="ieCanvasWrap">
+    <div class="ie-crop-hint" id="ieCropHint">Drag to select • Tap ✓ Apply to crop</div>
     <canvas id="ieCanvas"></canvas>
   </div>
 
-  <!-- Options bar — changes based on active tool -->
+  <!-- Options bar (context-sensitive, shown per tool) -->
   <div class="ie-optbar" id="ieOptBar"></div>
 
   <!-- Toolbar -->
-  <!-- AI panel — slides up from bottom -->
-  <div class="ie-ai-panel" id="ieAiPanel">
-    <div class="ie-ai-panel-title">
-      <svg width="16" height="16" fill="#818cf8" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-      AI Tools
-      <button onclick="document.getElementById('ieAiPanel').classList.remove('on');ieTool('draw');" style="margin-left:auto;background:none;border:none;color:#64748b;cursor:pointer;font-size:18px;padding:0;line-height:1;">✕</button>
-    </div>
-
-    <!-- Quick actions -->
-    <div class="ie-ai-grid">
-      <button class="ie-ai-btn" onclick="ieAiAction('describe')">
-        <div class="ie-ai-icon">👁️</div>
-        <div><div class="ie-ai-label">Describe</div><div class="ie-ai-sub">What is in this image?</div></div>
-      </button>
-      <button class="ie-ai-btn" onclick="ieAiAction('improve')">
-        <div class="ie-ai-icon">✨</div>
-        <div><div class="ie-ai-label">Enhance prompt</div><div class="ie-ai-sub">Write prompt to recreate better</div></div>
-      </button>
-      <button class="ie-ai-btn" onclick="ieAiAction('remove_bg_guide')">
-        <div class="ie-ai-icon">🪄</div>
-        <div><div class="ie-ai-label">Remove background</div><div class="ie-ai-sub">Guide + manual erase tip</div></div>
-      </button>
-      <button class="ie-ai-btn" onclick="ieAiAction('caption')">
-        <div class="ie-ai-icon">💬</div>
-        <div><div class="ie-ai-label">Add caption</div><div class="ie-ai-sub">AI writes a caption for it</div></div>
-      </button>
-      <button class="ie-ai-btn" onclick="ieAiAction('recreate')">
-        <div class="ie-ai-icon">🎨</div>
-        <div><div class="ie-ai-label">Recreate image</div><div class="ie-ai-sub">Generate similar with AI</div></div>
-      </button>
-      <button class="ie-ai-btn" onclick="ieAiAction('alt_text')">
-        <div class="ie-ai-icon">♿</div>
-        <div><div class="ie-ai-label">Alt text</div><div class="ie-ai-sub">Accessibility description</div></div>
-      </button>
-    </div>
-
-    <!-- Ask anything about the image -->
-    <div style="font-size:11px;color:rgba(100,116,139,.6);margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;font-family:'DM Mono',monospace;">Ask AI about this image</div>
-    <div class="ie-ai-input-row">
-      <input class="ie-ai-input" id="ieAiInput" placeholder="e.g. What colours are dominant? Who is in this photo?" onkeydown="if(event.key==='Enter')ieAiAsk()">
-      <button class="ie-ai-send" onclick="ieAiAsk()">Ask</button>
-    </div>
-
-    <!-- Thinking + result -->
-    <div class="ie-ai-thinking" id="ieAiThinking">
-      <div style="width:7px;height:7px;border-radius:50%;background:#6366f1;animation:naiThink .9s ease-in-out infinite;"></div>
-      <div style="width:7px;height:7px;border-radius:50%;background:#6366f1;animation:naiThink .9s ease-in-out .15s infinite;"></div>
-      <div style="width:7px;height:7px;border-radius:50%;background:#6366f1;animation:naiThink .9s ease-in-out .3s infinite;"></div>
-      <span style="margin-left:4px;">neumAI is thinking…</span>
-    </div>
-    <div class="ie-ai-result" id="ieAiResult"></div>
-  </div>
-
   <div class="ie-toolbar">
+
     <!-- Draw -->
-    <div class="ie-tool active" id="ie-t-draw" onclick="ieTool('draw')" title="Draw">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+    <div class="ie-tool active" id="ie-t-draw" onclick="ieTool('draw')" title="Freehand draw">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><circle cx="11" cy="11" r="2" fill="currentColor" stroke="none" opacity=".6"/></svg>
       Draw
     </div>
+
     <!-- Eraser -->
     <div class="ie-tool" id="ie-t-eraser" onclick="ieTool('eraser')" title="Eraser">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 20H7L3 16l11-11 8 8-3 3z" stroke-linejoin="round"/><path d="M6.5 17.5l5-5"/></svg>
       Erase
     </div>
+
+    <!-- Shapes -->
+    <div class="ie-tool" id="ie-t-shape" onclick="ieTool('shape')" title="Shapes">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><circle cx="17.5" cy="6.5" r="3.5"/><path d="M12 17l3 4-6 0 3-4z"/></svg>
+      Shape
+    </div>
+
+    <!-- Stickers -->
+    <div class="ie-tool" id="ie-t-sticker" onclick="ieTool('sticker')" title="Stickers & Emoji">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+      Sticker
+    </div>
+
+    <!-- Cutouts -->
+    <div class="ie-tool" id="ie-t-cutout" onclick="ieTool('cutout')" title="Cutout Stickers — people, vehicles, animals & more">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2C10.3 2 9 3.3 9 5s1.3 3 3 3 3-1.3 3-3-1.3-3-3-3zM7 9l-4 9h4l1-3h8l1 3h4L17 9H7zm2.5 4l1.5-3 1.5 3h-3z"/></svg>
+      Cutout
+    </div>
+
     <div class="ie-tool-sep"></div>
-    <!-- Crop -->
-    <div class="ie-tool" id="ie-t-crop" onclick="ieTool('crop')" title="Crop">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>
-      Crop
-    </div>
-    <!-- Rotate -->
-    <div class="ie-tool" onclick="ieRotate()" title="Rotate 90°">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-      Rotate
-    </div>
-    <!-- Flip -->
-    <div class="ie-tool" onclick="ieFlip()" title="Flip horizontal">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3v18M3 9l9-6 9 6M3 15l9 6 9-6"/></svg>
-      Flip
-    </div>
-    <div class="ie-tool-sep"></div>
-    <!-- Brightness -->
-    <div class="ie-tool" id="ie-t-brightness" onclick="ieTool('brightness')" title="Brightness & Contrast">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
-      Light
-    </div>
-    <!-- Filter -->
-    <div class="ie-tool" id="ie-t-filter" onclick="ieTool('filter')" title="Filters">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
-      Filter
-    </div>
+
     <!-- Text -->
     <div class="ie-tool" id="ie-t-text" onclick="ieTool('text')" title="Add text">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
       Text
     </div>
+
     <div class="ie-tool-sep"></div>
-    <!-- ✦ AI Tools -->
-    <div class="ie-tool" id="ie-t-ai" onclick="ieTool('ai')" title="AI Tools" style="width:54px;">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor" stroke="none" opacity=".9"/></svg>
-      <span style="font-size:9px;font-weight:800;background:linear-gradient(135deg,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">AI</span>
+
+    <!-- Crop -->
+    <div class="ie-tool" id="ie-t-crop" onclick="ieTool('crop')" title="Crop">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>
+      Crop
     </div>
+
+    <!-- Rotate -->
+    <div class="ie-tool" onclick="ieRotate()" title="Rotate 90°">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      Rotate
+    </div>
+
+    <!-- Flip -->
+    <div class="ie-tool" onclick="ieFlip('h')" title="Flip horizontal">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3v18M3 9l9-6 9 6M3 15l9 6 9-6"/></svg>
+      Flip H
+    </div>
+
+    <!-- Flip V -->
+    <div class="ie-tool" onclick="ieFlip('v')" title="Flip vertical">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12h18M9 3l6 9-6 0z"/><path d="M9 21l6-9-6 0z"/></svg>
+      Flip V
+    </div>
+
     <div class="ie-tool-sep"></div>
+
+    <!-- Adjust -->
+    <div class="ie-tool" id="ie-t-adjust" onclick="ieTool('adjust')" title="Brightness / Contrast / Saturation">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
+      Adjust
+    </div>
+
+    <!-- Blur / Sharpen -->
+    <div class="ie-tool" id="ie-t-blur" onclick="ieTool('blur')" title="Blur & Sharpen">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12" opacity=".5"/></svg>
+      Blur
+    </div>
+
+    <!-- Vignette -->
+    <div class="ie-tool" id="ie-t-vignette" onclick="ieTool('vignette')" title="Vignette">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="10" ry="10"/><ellipse cx="12" cy="12" rx="6" ry="6" opacity=".4"/></svg>
+      Vignette
+    </div>
+
+    <!-- Filter -->
+    <div class="ie-tool" id="ie-t-filter" onclick="ieTool('filter')" title="Photo filters">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      Filter
+    </div>
+
+    <div class="ie-tool-sep"></div>
+
+    <!-- ✦ AI Panel -->
+    <div class="ie-tool" id="ie-t-ai" onclick="ieTool('ai')" title="AI Tools" style="min-width:52px;">
+      <svg fill="currentColor" viewBox="0 0 24 24" style="width:18px;height:18px;opacity:.9;"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+      <span style="font-size:9px;font-weight:900;background:linear-gradient(135deg,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:block;">AI</span>
+    </div>
+
+    <div class="ie-tool-sep"></div>
+
     <!-- Reset -->
     <div class="ie-tool" onclick="ieReset()" title="Reset to original">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.69"/></svg>
       Reset
     </div>
+
+  </div><!-- /.ie-toolbar -->
+
+  <!-- AI Panel (slides up) — full Claude chat with image vision -->
+  <div class="ie-ai-panel" id="ieAiPanel">
+    <div class="ie-ai-panel-title">
+      <span style="font-size:20px;">✦</span>
+      AI Assistant
+      <button onclick="document.getElementById('ieAiPanel').classList.remove('on');ieTool('draw');"
+        style="margin-left:auto;background:none;border:none;color:#64748b;cursor:pointer;font-size:20px;padding:0;line-height:1;">✕</button>
+    </div>
+
+    <!-- Tab switcher -->
+    <div style="display:flex;gap:6px;margin-bottom:14px;">
+      <button id="ieTabEditBtn" onclick="ieAiTab('edit')" style="flex:1;padding:8px;border-radius:10px;border:1.5px solid #6366f1;background:rgba(99,102,241,.2);color:#a5b4fc;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">✏️ AI Edit</button>
+      <button id="ieTabChatBtn" onclick="ieAiTab('chat')" style="flex:1;padding:8px;border-radius:10px;border:1.5px solid rgba(99,102,241,.2);background:transparent;color:#64748b;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">💬 Ask AI</button>
+      <button id="ieTabGenBtn"  onclick="ieAiTab('gen')"  style="flex:1;padding:8px;border-radius:10px;border:1.5px solid rgba(99,102,241,.2);background:transparent;color:#64748b;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">🎨 Generate</button>
+    </div>
+
+    <!-- ══ TAB: AI EDIT ══ -->
+    <div id="ieTabEdit">
+      <div style="font-size:12px;color:#94a3b8;margin-bottom:10px;line-height:1.5;">Tell the AI what to do with this image — it will apply the edits for you automatically.</div>
+
+      <!-- Edit command chips -->
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">
+        <button class="ie-chip" onclick="ieDoEdit('make it brighter')">☀️ Brighter</button>
+        <button class="ie-chip" onclick="ieDoEdit('make it darker')">🌑 Darker</button>
+        <button class="ie-chip" onclick="ieDoEdit('more contrast')">◐ More contrast</button>
+        <button class="ie-chip" onclick="ieDoEdit('make it black and white')">⬛ Black & white</button>
+        <button class="ie-chip" onclick="ieDoEdit('make it look warm and golden')">🌅 Warm tone</button>
+        <button class="ie-chip" onclick="ieDoEdit('make it look cool and blue')">❄️ Cool tone</button>
+        <button class="ie-chip" onclick="ieDoEdit('make it more vibrant and colorful')">🌈 Vivid</button>
+        <button class="ie-chip" onclick="ieDoEdit('make it look vintage and faded')">📷 Vintage</button>
+        <button class="ie-chip" onclick="ieDoEdit('make it look cinematic and dramatic')">🎬 Cinematic</button>
+        <button class="ie-chip" onclick="ieDoEdit('add a soft vignette around the edges')">🔵 Vignette</button>
+        <button class="ie-chip" onclick="ieDoEdit('sharpen it so it looks crisper')">🔪 Sharpen</button>
+        <button class="ie-chip" onclick="ieDoEdit('make the colors more muted and soft')">🎨 Matte</button>
+      </div>
+
+      <!-- Custom edit input -->
+      <div style="font-size:11px;font-weight:700;color:#64748b;margin-bottom:6px;">Or describe your own edit:</div>
+      <div class="ie-ai-input-row">
+        <input class="ie-ai-input" id="ieEditInput"
+          placeholder="e.g. make the sky more blue, boost the sunset colors, soften the shadows…"
+          onkeydown="if(event.key==='Enter')ieDoEdit(this.value)">
+        <button class="ie-ai-send" id="ieEditSendBtn" onclick="ieDoEdit(document.getElementById('ieEditInput').value)">Edit ✦</button>
+      </div>
+
+      <!-- Edit status -->
+      <div id="ieEditStatus" style="display:none;margin-top:10px;padding:10px 12px;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:10px;font-size:12px;color:#a5b4fc;line-height:1.6;"></div>
+    </div>
+
+    <!-- ══ TAB: CHAT ══ -->
+    <div id="ieTabChat" style="display:none;">
+      <!-- Quick chips -->
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">
+        <button class="ie-chip" onclick="ieAiAction('describe')">👁 Describe</button>
+        <button class="ie-chip" onclick="ieAiAction('outfit')">👗 Outfit advice</button>
+        <button class="ie-chip" onclick="ieAiAction('caption')">💬 Caption</button>
+        <button class="ie-chip" onclick="ieAiAction('colors')">🎨 Colors</button>
+        <button class="ie-chip" onclick="ieAiAction('mood')">✨ Mood & vibe</button>
+        <button class="ie-chip" onclick="ieAiAction('people')">👤 Who's in it</button>
+        <button class="ie-chip" onclick="ieAiAction('food')">🍽 Describe food</button>
+        <button class="ie-chip" onclick="ieAiAction('location')">📍 Where is this</button>
+      </div>
+      <div id="ieAiChat" style="max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:8px;"></div>
+      <div class="ie-ai-thinking" id="ieAiThinking">
+        <div class="ie-ai-spinner"></div>
+        AI is thinking…
+      </div>
+      <div class="ie-ai-input-row">
+        <input class="ie-ai-input" id="ieAiInput"
+          placeholder="Ask anything about this photo…"
+          onkeydown="if(event.key==='Enter')ieAiAsk()">
+        <button class="ie-ai-send" onclick="ieAiAsk()">Send ✦</button>
+      </div>
+      <button onclick="ieAiClearChat()" style="margin-top:5px;background:none;border:none;color:#475569;font-size:11px;cursor:pointer;font-family:inherit;padding:2px 0;">🗑 Clear chat</button>
+    </div>
+
+    <!-- ══ TAB: GENERATE ══ -->
+    <div id="ieTabGen" style="display:none;">
+      <div style="font-size:12px;color:#94a3b8;margin-bottom:10px;">Generate a brand new AI image and load it into the editor.</div>
+      <div class="ie-gen-row">
+        <input class="ie-gen-input" id="ieGenPrompt" placeholder="Describe the image you want to create…" onkeydown="if(event.key==='Enter')ieGenerate()">
+        <button class="ie-gen-btn" id="ieGenBtn" onclick="ieGenerate()">Create</button>
+      </div>
+      <div class="ie-ai-result" id="ieAiResult" style="margin-top:8px;"></div>
+    </div>
   </div>
-</div>
+
+</div><!-- /#imgEditor -->
 
 <script>
 (function(){
 'use strict';
-var _ieCanvas, _ieCtx, _ieOrigImg, _ieHistory=[], _ieTool='draw';
-var _ieDrawing=false, _ieLx=0, _ieLy=0;
-var _ieBrushSize=12, _ieBrushColor='#ff3b30', _ieEraserSize=24;
-var _ieBrightness=0, _ieContrast=0, _ieSaturation=0;
-var _ieFilter='none';
-var _ieCropStart=null, _ieCropRect=null, _ieCropping=false;
-var _ieFlipped=false;
-var _ieTextVal='', _ieTextSize=24, _ieTextColor='#ffffff';
 
-function _esc2(t){ return (t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+/* ═══════════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════════ */
+var _c, _ctx;
+var _origImg = null;
+var _history = [], _redoStack = [];
+var _tool = 'draw';
+var _drawing = false, _lx = 0, _ly = 0;
 
-// ── Open editor with an image (data URL or File) ──
+// Draw
+var _brushSize = 12, _brushColor = '#ff3b30', _brushOpacity = 1;
+// Eraser
+var _eraserSize = 28;
+// Text
+var _textVal = '', _textSize = 28, _textColor = '#ffffff', _textFont = 'Nunito';
+var _textBold = true, _textShadow = true;
+// Shape
+var _shape = 'rect', _shapeFill = true, _shapeColor = '#6366f1', _shapeOpacity = 0.85;
+var _shapeStart = null, _shapeDragging = false;
+// Sticker
+var _sticker = '❤️';
+var _stickerSize = 48;
+// Crop
+var _cropStart = null, _cropRect = null, _cropping = false;
+// Adjustments (stored as CSS filter values)
+var _brightness = 0, _contrast = 0, _saturation = 0, _hue = 0;
+var _blur = 0, _sharpen = 0, _vignette = 0;
+var _filter = 'none';
+// Baked pixel adjustments
+var _blurBaked = 0;
+
+/* ═══════════════════════════════════════════════════════
+   OPEN / CLOSE / SAVE
+═══════════════════════════════════════════════════════ */
 window.openImgEditor = function(src, title){
-    _ieCanvas = document.getElementById('ieCanvas');
-    _ieCtx = _ieCanvas.getContext('2d');
-    _ieHistory = [];
-    _ieBrightness=0; _ieContrast=0; _ieSaturation=0; _ieFilter='none';
+    _c = document.getElementById('ieCanvas');
+    _ctx = _c.getContext('2d');
+    _history = []; _redoStack = [];
+    _brightness=0; _contrast=0; _saturation=0; _hue=0;
+    _blur=0; _sharpen=0; _vignette=0; _filter='none'; _blurBaked=0;
+    _c.style.filter = 'none';
     document.getElementById('imgEditor').classList.add('on');
-    document.getElementById('ieTitle').textContent = title || 'Edit Image';
+    document.getElementById('ieTitle').textContent = (title || 'Edit Image');
     ieTool('draw');
+    document.getElementById('ieAiPanel').classList.remove('on');
+    document.getElementById('ieCropHint').classList.remove('on');
 
     var img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = function(){
-        _ieOrigImg = img;
-        var maxW = window.innerWidth - 20;
-        var maxH = window.innerHeight - 220;
-        var scale = Math.min(maxW/img.naturalWidth, maxH/img.naturalHeight, 1);
-        _ieCanvas.width  = Math.round(img.naturalWidth  * scale);
-        _ieCanvas.height = Math.round(img.naturalHeight * scale);
-        _ieCtx.drawImage(img, 0, 0, _ieCanvas.width, _ieCanvas.height);
-        _ieSave();
+        _origImg = img;
+        var maxW = window.innerWidth - 16;
+        var maxH = window.innerHeight - 230;
+        var scale = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight, 1);
+        _c.width  = Math.round(img.naturalWidth  * scale);
+        _c.height = Math.round(img.naturalHeight * scale);
+        _ctx.drawImage(img, 0, 0, _c.width, _c.height);
+        _pushHistory();
     };
     img.onerror = function(){ toast('Could not load image for editing','warn'); ieClose(); };
     img.src = src;
 };
 
+// ── Pick any photo from device and open in editor ──
+window.iePickPhoto = function(){
+    var inp = document.getElementById('iePhotoPickerInput');
+    if(!inp){
+        // Create it dynamically if not in DOM
+        inp = document.createElement('input');
+        inp.type = 'file';
+        inp.id = 'iePhotoPickerInput';
+        inp.accept = 'image/*';
+        inp.style.display = 'none';
+        inp.onchange = function(){ window.ieHandlePhotoPick(this); };
+        document.body.appendChild(inp);
+    }
+    inp.value = '';
+    inp.click();
+};
+
+window.ieHandlePhotoPick = function(input){
+    var file = input.files && input.files[0];
+    if(!file) return;
+    if(!file.type.startsWith('image/')){
+        toast('Please pick an image file','warn');
+        return;
+    }
+    var reader = new FileReader();
+    reader.onload = function(e){
+        // Close image generator overlay if open
+        var overlay = document.getElementById('imageGenOverlay');
+        if(overlay && overlay.style.display !== 'none'){
+            overlay.style.display = 'none';
+        }
+        openImgEditor(e.target.result, file.name || 'My Photo');
+        toast('Photo loaded — start editing! ✏️');
+    };
+    reader.readAsDataURL(file);
+};
+
 window.ieClose = function(){
     document.getElementById('imgEditor').classList.remove('on');
     document.getElementById('ieOptBar').classList.remove('on');
+    document.getElementById('ieAiPanel').classList.remove('on');
+    document.getElementById('ieCropHint').classList.remove('on');
 };
 
 window.ieSave = function(){
-    var dataUrl = _ieCanvas.toDataURL('image/jpeg', 0.92);
-    // Create download
-    var a = document.createElement('a');
-    a.href = dataUrl;
-    a.download = 'edited-image.jpg';
-    a.click();
-    toast('Image saved to your device ✓');
-    ieClose();
+    // Bake CSS filter into canvas pixels before saving
+    _bakeFilter(function(finalCanvas){
+        var dataUrl = finalCanvas.toDataURL('image/jpeg', 0.93);
+        var a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = 'family-edited-image.jpg';
+        a.click();
+        toast('✓ Image saved to your device!');
+        ieClose();
+    });
 };
 
-function _ieSave(){ _ieHistory.push(_ieCanvas.toDataURL()); if(_ieHistory.length>30) _ieHistory.shift(); }
+function _bakeFilter(cb){
+    var f = _buildCssFilter();
+    if(f === 'none'){cb(_c);return;}
+    var tmp = document.createElement('canvas');
+    tmp.width = _c.width; tmp.height = _c.height;
+    var tc = tmp.getContext('2d');
+    tc.filter = f;
+    tc.drawImage(_c, 0, 0);
+    tc.filter = 'none';
+    // Bake vignette
+    if(_vignette > 0){ _applyVignetteTo(tc, tmp.width, tmp.height); }
+    cb(tmp);
+}
+
+function _buildCssFilter(){
+    var parts = [
+        'brightness('+(100+_brightness)+'%)',
+        'contrast('+(100+_contrast)+'%)',
+        'saturate('+(100+_saturation)+'%)',
+    ];
+    if(_hue !== 0) parts.push('hue-rotate('+_hue+'deg)');
+    if(_blur > 0) parts.push('blur('+_blur+'px)');
+    var filterMap = {
+        bw:'grayscale(100%)',sepia:'sepia(85%)',
+        vivid:'saturate(170%) contrast(115%)',
+        fade:'saturate(60%) brightness(110%)',
+        cool:'hue-rotate(25deg) saturate(115%)',
+        warm:'hue-rotate(-18deg) saturate(125%) brightness(105%)',
+        dramatic:'contrast(130%) saturate(140%) brightness(95%)',
+        matte:'contrast(85%) saturate(80%) brightness(108%)',
+        chrome:'saturate(200%) contrast(105%)',
+        noir:'grayscale(100%) contrast(130%) brightness(90%)',
+    };
+    if(_filter !== 'none' && filterMap[_filter]) parts.push(filterMap[_filter]);
+    var f = parts.join(' ');
+    return f;
+}
+
+function _updateCanvasFilter(){
+    _c.style.filter = _buildCssFilter();
+    // Vignette drawn as overlay (not CSS)
+    _drawVignetteOverlay();
+}
+
+function _drawVignetteOverlay(){
+    var vig = document.getElementById('ieVigOverlay');
+    if(!vig){ vig = document.createElement('canvas'); vig.id='ieVigOverlay'; vig.style.cssText='position:absolute;pointer-events:none;top:0;left:0;'; document.getElementById('ieCanvasWrap').appendChild(vig); }
+    vig.width = _c.offsetWidth; vig.height = _c.offsetHeight;
+    if(_vignette <= 0){ vig.style.display='none'; return; }
+    vig.style.display='block';
+    var r = vig.getContext('2d');
+    var cx=vig.width/2, cy=vig.height/2, rad=Math.max(cx,cy)*1.3;
+    var g = r.createRadialGradient(cx,cy,rad*(1-_vignette/100*0.8),cx,cy,rad);
+    g.addColorStop(0,'rgba(0,0,0,0)');
+    g.addColorStop(1,'rgba(0,0,0,'+(_vignette/100*0.75)+')');
+    r.clearRect(0,0,vig.width,vig.height);
+    r.fillStyle = g;
+    r.fillRect(0,0,vig.width,vig.height);
+}
+
+function _applyVignetteTo(ctx, w, h){
+    var cx=w/2,cy=h/2,rad=Math.max(cx,cy)*1.3;
+    var g = ctx.createRadialGradient(cx,cy,rad*0.3,cx,cy,rad);
+    g.addColorStop(0,'rgba(0,0,0,0)');
+    g.addColorStop(1,'rgba(0,0,0,'+(_vignette/100*0.75)+')');
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,w,h);
+    ctx.globalCompositeOperation = 'source-over';
+}
+
+/* ═══════════════════════════════════════════════════════
+   HISTORY
+═══════════════════════════════════════════════════════ */
+function _pushHistory(){
+    _history.push(_c.toDataURL());
+    if(_history.length > 40) _history.shift();
+    _redoStack = [];
+}
 
 window.ieUndo = function(){
-    if(_ieHistory.length < 2){ toast('Nothing to undo','warn'); return; }
-    _ieHistory.pop();
-    var prev = _ieHistory[_ieHistory.length-1];
-    var img = new Image();
-    img.onload = function(){ _ieCtx.clearRect(0,0,_ieCanvas.width,_ieCanvas.height); _ieCtx.drawImage(img,0,0); };
-    img.src = prev;
+    if(_history.length < 2){ toast('Nothing to undo','warn'); return; }
+    _redoStack.push(_history.pop());
+    var prev = _history[_history.length-1];
+    _restoreDataUrl(prev);
 };
 
+window.ieRedo = function(){
+    if(!_redoStack.length){ toast('Nothing to redo','warn'); return; }
+    var next = _redoStack.pop();
+    _history.push(next);
+    _restoreDataUrl(next);
+};
+
+function _restoreDataUrl(dataUrl){
+    var img = new Image();
+    img.onload = function(){ _ctx.clearRect(0,0,_c.width,_c.height); _ctx.drawImage(img,0,0); };
+    img.src = dataUrl;
+}
+
 window.ieReset = function(){
-    if(!_ieOrigImg) return;
-    _ieBrightness=0; _ieContrast=0; _ieSaturation=0; _ieFilter='none';
-    _ieCtx.filter='none';
-    _ieCtx.clearRect(0,0,_ieCanvas.width,_ieCanvas.height);
-    _ieCtx.drawImage(_ieOrigImg,0,0,_ieCanvas.width,_ieCanvas.height);
-    _ieSave();
-    _ieUpdateFilter();
+    if(!_origImg) return;
+    _brightness=0;_contrast=0;_saturation=0;_hue=0;
+    _blur=0;_sharpen=0;_vignette=0;_filter='none';
+    _c.style.filter='none';
+    var vig = document.getElementById('ieVigOverlay');
+    if(vig) vig.style.display='none';
+    _ctx.clearRect(0,0,_c.width,_c.height);
+    _ctx.drawImage(_origImg,0,0,_c.width,_c.height);
+    _pushHistory();
+    // Rebuild opt bar for current tool
+    ieTool(_tool);
     toast('Reset to original');
 };
 
+/* ═══════════════════════════════════════════════════════
+   TRANSFORMS
+═══════════════════════════════════════════════════════ */
 window.ieRotate = function(){
-    var tmp = document.createElement('canvas');
-    tmp.width=_ieCanvas.height; tmp.height=_ieCanvas.width;
+    var tmp=document.createElement('canvas');
+    tmp.width=_c.height; tmp.height=_c.width;
     var tc=tmp.getContext('2d');
     tc.translate(tmp.width/2,tmp.height/2);
     tc.rotate(Math.PI/2);
-    tc.drawImage(_ieCanvas,-_ieCanvas.width/2,-_ieCanvas.height/2);
-    _ieCanvas.width=tmp.width; _ieCanvas.height=tmp.height;
-    _ieCtx.drawImage(tmp,0,0);
-    _ieSave();
+    tc.drawImage(_c,-_c.width/2,-_c.height/2);
+    _c.width=tmp.width; _c.height=tmp.height;
+    _ctx.drawImage(tmp,0,0);
+    _pushHistory();
 };
 
-window.ieFlip = function(){
+window.ieFlip = function(dir){
     var tmp=document.createElement('canvas');
-    tmp.width=_ieCanvas.width; tmp.height=_ieCanvas.height;
+    tmp.width=_c.width; tmp.height=_c.height;
     var tc=tmp.getContext('2d');
-    tc.translate(tmp.width,0); tc.scale(-1,1);
-    tc.drawImage(_ieCanvas,0,0);
-    _ieCtx.clearRect(0,0,_ieCanvas.width,_ieCanvas.height);
-    _ieCtx.drawImage(tmp,0,0);
-    _ieSave();
+    if(dir==='h'){ tc.translate(tmp.width,0); tc.scale(-1,1); }
+    else { tc.translate(0,tmp.height); tc.scale(1,-1); }
+    tc.drawImage(_c,0,0);
+    _ctx.clearRect(0,0,_c.width,_c.height);
+    _ctx.drawImage(tmp,0,0);
+    _pushHistory();
 };
 
-function _ieUpdateFilter(){
-    var f='brightness('+(100+_ieBrightness)+'%) contrast('+(100+_ieContrast)+'%) saturate('+(100+_ieSaturation)+'%)';
-    if(_ieFilter==='bw') f+=' grayscale(100%)';
-    else if(_ieFilter==='sepia') f+=' sepia(80%)';
-    else if(_ieFilter==='vivid') f+=' saturate(160%) contrast(110%)';
-    else if(_ieFilter==='fade') f+=' opacity(80%) saturate(70%)';
-    else if(_ieFilter==='cool') f+=' hue-rotate(30deg) saturate(110%)';
-    else if(_ieFilter==='warm') f+=' hue-rotate(-20deg) saturate(120%)';
-    _ieCanvas.style.filter = f;
-}
+/* ═══════════════════════════════════════════════════════
+   CROP
+═══════════════════════════════════════════════════════ */
+window.ieApplyCrop = function(){
+    if(!_cropRect||!_cropRect.w||!_cropRect.h){ toast('Drag to select area first','warn'); return; }
+    var r=_cropRect;
+    var x=Math.min(r.x,r.x+r.w), y=Math.min(r.y,r.y+r.h);
+    var w=Math.abs(r.w), h=Math.abs(r.h);
+    if(w<10||h<10){ toast('Selection too small','warn'); return; }
+    var tmp=document.createElement('canvas'); tmp.width=w; tmp.height=h;
+    tmp.getContext('2d').drawImage(_c,x,y,w,h,0,0,w,h);
+    _c.width=w; _c.height=h;
+    _ctx.drawImage(tmp,0,0);
+    _cropRect=null;
+    _pushHistory();
+    ieTool('draw');
+    document.getElementById('ieCropHint').classList.remove('on');
+    toast('Cropped ✓');
+};
 
-// ── Tool switcher ──
+window.ieCancelCrop = function(){
+    _cropRect=null; _cropping=false;
+    document.getElementById('ieCropHint').classList.remove('on');
+    if(_history.length){ _restoreDataUrl(_history[_history.length-1]); }
+    ieTool('draw');
+};
+
+/* ═══════════════════════════════════════════════════════
+   TOOL SWITCHER
+═══════════════════════════════════════════════════════ */
 window.ieTool = function(t){
-    _ieTool=t;
+    _tool = t;
     document.querySelectorAll('.ie-tool').forEach(function(b){ b.classList.remove('active'); });
-    var tb=document.getElementById('ie-t-'+t);
+    var tb = document.getElementById('ie-t-'+t);
     if(tb) tb.classList.add('active');
-    var ob=document.getElementById('ieOptBar');
+    var ob = document.getElementById('ieOptBar');
     ob.innerHTML=''; ob.classList.remove('on');
 
     if(t==='draw'){
         ob.classList.add('on');
-        ob.innerHTML='<span class="ie-opt-label">Size</span>'
-            +'<input class="ie-slider" type="range" min="2" max="40" value="'+_ieBrushSize+'" oninput="_ieBrushSize=+this.value">'
+        ob.innerHTML=
+            '<span class="ie-opt-label">Size</span>'
+            +'<input class="ie-slider" type="range" min="1" max="60" value="'+_brushSize+'" oninput="_ieBrushSize=+this.value;_brushSize=+this.value">'
             +'<span class="ie-opt-label">Color</span>'
-            +'<input class="ie-color" type="color" value="'+_ieBrushColor+'" oninput="_ieBrushColor=this.value">';
-        _ieCanvas.style.cursor='crosshair';
+            +'<input class="ie-color" type="color" value="'+_brushColor+'" oninput="_brushColor=this.value">'
+            +'<span class="ie-opt-label">Opacity</span>'
+            +'<input class="ie-slider" type="range" min="10" max="100" value="'+Math.round(_brushOpacity*100)+'" oninput="_brushOpacity=this.value/100">';
+        _c.style.cursor='crosshair';
     } else if(t==='eraser'){
         ob.classList.add('on');
         ob.innerHTML='<span class="ie-opt-label">Eraser size</span>'
-            +'<input class="ie-slider" type="range" min="5" max="80" value="'+_ieEraserSize+'" oninput="_ieEraserSize=+this.value">';
-        _ieCanvas.style.cursor='cell';
-    } else if(t==='brightness'){
-        ob.classList.add('on');
-        ob.innerHTML='<span class="ie-opt-label">Bright</span>'
-            +'<input class="ie-slider" type="range" min="-80" max="80" value="'+_ieBrightness+'" oninput="_ieBrightness=+this.value;_ieUpdateFilter()">'
-            +'<span class="ie-opt-label">Contrast</span>'
-            +'<input class="ie-slider" type="range" min="-80" max="80" value="'+_ieContrast+'" oninput="_ieContrast=+this.value;_ieUpdateFilter()">'
-            +'<span class="ie-opt-label">Sat.</span>'
-            +'<input class="ie-slider" type="range" min="-80" max="80" value="'+_ieSaturation+'" oninput="_ieSaturation=+this.value;_ieUpdateFilter()">';
-        _ieCanvas.style.cursor='default';
-    } else if(t==='filter'){
-        ob.classList.add('on');
-        var filters=[['none','Normal'],['bw','B&W'],['sepia','Sepia'],['vivid','Vivid'],['fade','Fade'],['cool','Cool'],['warm','Warm']];
-        ob.innerHTML=filters.map(function(f){
-            return '<button class="ie-filter-btn'+(_ieFilter===f[0]?' active':'')+'" onclick="_ieFilter=\''+f[0]+'\';_ieUpdateFilter();document.querySelectorAll(\'.ie-filter-btn\').forEach(function(b){b.classList.remove(\'active\')});this.classList.add(\'active\')">'+f[1]+'</button>';
-        }).join('');
-        _ieCanvas.style.cursor='default';
+            +'<input class="ie-slider" type="range" min="5" max="100" value="'+_eraserSize+'" oninput="_eraserSize=+this.value">';
+        _c.style.cursor='cell';
     } else if(t==='text'){
         ob.classList.add('on');
-        ob.innerHTML='<span class="ie-opt-label">Text</span>'
-            +'<input type="text" placeholder="Type here…" id="ieTextInput" style="flex:1;background:rgba(20,20,35,.8);border:1px solid rgba(99,102,241,.3);border-radius:8px;padding:5px 10px;color:#e2e8f0;font-size:13px;font-family:Outfit,sans-serif;outline:none;" oninput="_ieTextVal=this.value">'
-            +'<input class="ie-color" type="color" value="'+_ieTextColor+'" oninput="_ieTextColor=this.value">'
-            +'<input class="ie-slider" type="range" min="14" max="72" value="'+_ieTextSize+'" oninput="_ieTextSize=+this.value" style="max-width:80px;">';
-        _ieCanvas.style.cursor='text';
+        ob.innerHTML='<input type="text" id="ieTextInput" placeholder="Type here…" value="'+(_textVal||'')+'" style="flex:1;min-width:80px;background:rgba(20,22,40,.85);border:1px solid rgba(99,102,241,.3);border-radius:8px;padding:6px 10px;color:#e2e8f0;font-size:13px;font-family:Nunito,sans-serif;outline:none;" oninput="_textVal=this.value">'
+            +'<input class="ie-color" type="color" value="'+_textColor+'" oninput="_textColor=this.value" title="Text color">'
+            +'<span class="ie-opt-label">Size</span>'
+            +'<input class="ie-slider" type="range" min="12" max="120" value="'+_textSize+'" oninput="_textSize=+this.value" style="width:80px;">'
+            +'<select id="ieFontSel" style="background:#0d0e1a;border:1px solid rgba(99,102,241,.3);color:#cbd5e1;border-radius:8px;padding:5px 8px;font-size:12px;cursor:pointer;" onchange="_textFont=this.value"><option value="Nunito">Nunito</option><option value="Georgia">Georgia</option><option value="Impact">Impact</option><option value="Comic Sans MS">Comic</option><option value="monospace">Mono</option></select>';
+        _c.style.cursor='text';
+    } else if(t==='shape'){
+        ob.classList.add('on');
+        var shapes=[['rect','▭ Rect'],['circle','○ Circle'],['line','╱ Line'],['arrow','→ Arrow'],['star','★ Star'],['heart','♥ Heart']];
+        ob.innerHTML='<div class="ie-shape-grid">'+shapes.map(function(s){
+            return '<div class="ie-shape-btn'+(s[0]===_shape?' active':'')+'" onclick="_shape=\''+s[0]+'\';document.querySelectorAll(\'.ie-shape-btn\').forEach(function(b){b.classList.remove(\'active\')});this.classList.add(\'active\')" title="'+s[0]+'">'+s[1]+'</div>';
+        }).join('')+'</div>'
+        +'<div class="ie-opt-sep"></div>'
+        +'<span class="ie-opt-label">Color</span>'
+        +'<input class="ie-color" type="color" value="'+_shapeColor+'" oninput="_shapeColor=this.value">'
+        +'<button class="ie-filter-btn'+(_shapeFill?' active':'')+'" onclick="_shapeFill=!_shapeFill;this.classList.toggle(\'active\')">Fill</button>'
+        +'<span class="ie-opt-label">Opacity</span>'
+        +'<input class="ie-slider" type="range" min="10" max="100" value="'+Math.round(_shapeOpacity*100)+'" oninput="_shapeOpacity=this.value/100">';
+        _c.style.cursor='crosshair';
+    } else if(t==='sticker'){
+        ob.classList.add('on');
+        var stickers=['❤️','😍','🎉','🌟','🔥','✨','😂','👏','🌈','🦋','🎨','🌸','💫','🎵','🏆','💖','🌺','🍀','🌙','☀️'];
+        ob.innerHTML='<div class="ie-shape-grid">'+stickers.map(function(s){
+            return '<div class="ie-shape-btn'+(s===_sticker?' active':'')+'" onclick="_sticker=\''+s+'\';document.querySelectorAll(\'.ie-shape-btn\').forEach(function(b){b.classList.remove(\'active\')});this.classList.add(\'active\')" style="font-size:20px;">'+s+'</div>';
+        }).join('')+'</div>'
+        +'<div class="ie-opt-sep"></div>'
+        +'<span class="ie-opt-label">Size</span>'
+        +'<input class="ie-slider" type="range" min="20" max="160" value="'+_stickerSize+'" oninput="_stickerSize=+this.value">';
+        _c.style.cursor='copy';
+    } else if(t==='cutout'){
+        if(typeof window._ieCutoutInit === 'function') window._ieCutoutInit();
+        else { ob.classList.add('on'); ob.innerHTML='<span style="color:#64748b;font-size:12px;">Loading cutouts…</span>'; }
     } else if(t==='crop'){
         ob.classList.add('on');
-        ob.innerHTML='<span class="ie-opt-label" style="color:#a5b4fc;">Drag to select crop area, then tap</span>'
-            +'<button class="ie-filter-btn" onclick="ieApplyCrop()" style="color:#22c55e;border-color:#22c55e33;">✓ Apply Crop</button>'
-            +'<button class="ie-filter-btn" onclick="ieCancelCrop()" style="color:#ef4444;border-color:#ef444433;">✕ Cancel</button>';
-        _ieCanvas.style.cursor='crosshair';
+        ob.innerHTML='<button class="ie-filter-btn" onclick="ieApplyCrop()" style="color:#22c55e;border-color:rgba(34,197,94,.3);font-weight:800;">✓ Apply Crop</button>'
+            +'<button class="ie-filter-btn" onclick="ieCancelCrop()" style="color:#ef4444;border-color:rgba(239,68,68,.3);">✕ Cancel</button>';
+        document.getElementById('ieCropHint').classList.add('on');
+        _c.style.cursor='crosshair';
+    } else if(t==='adjust'){
+        ob.classList.add('on');
+        ob.innerHTML=
+            '<span class="ie-opt-label">☀️</span>'
+            +'<input class="ie-slider" type="range" min="-80" max="80" value="'+_brightness+'" oninput="_brightness=+this.value;_updateCanvasFilter()" title="Brightness">'
+            +'<span class="ie-opt-label">◐</span>'
+            +'<input class="ie-slider" type="range" min="-80" max="80" value="'+_contrast+'" oninput="_contrast=+this.value;_updateCanvasFilter()" title="Contrast">'
+            +'<span class="ie-opt-label">🎨</span>'
+            +'<input class="ie-slider" type="range" min="-80" max="80" value="'+_saturation+'" oninput="_saturation=+this.value;_updateCanvasFilter()" title="Saturation">'
+            +'<span class="ie-opt-label">🌈</span>'
+            +'<input class="ie-slider" type="range" min="-180" max="180" value="'+_hue+'" oninput="_hue=+this.value;_updateCanvasFilter()" title="Hue">';
+        _c.style.cursor='default';
+    } else if(t==='blur'){
+        ob.classList.add('on');
+        ob.innerHTML=
+            '<span class="ie-opt-label">Blur</span>'
+            +'<input class="ie-slider" type="range" min="0" max="10" step=".1" value="'+_blur+'" oninput="_blur=+this.value;_updateCanvasFilter()">'
+            +'<button class="ie-filter-btn" onclick="ieSharpen(1)" title="Apply Sharpen pass">Sharpen ✓</button>'
+            +'<button class="ie-filter-btn" onclick="ieGaussian()" title="Bake blur into canvas">Bake Blur ✓</button>';
+        _c.style.cursor='default';
+    } else if(t==='vignette'){
+        ob.classList.add('on');
+        ob.innerHTML=
+            '<span class="ie-opt-label">Vignette strength</span>'
+            +'<input class="ie-slider" type="range" min="0" max="100" value="'+_vignette+'" oninput="_vignette=+this.value;_updateCanvasFilter()">';
+        _c.style.cursor='default';
+    } else if(t==='filter'){
+        ob.classList.add('on');
+        var filters=[
+            ['none','Normal'],['vivid','Vivid'],['warm','Warm'],['cool','Cool'],
+            ['dramatic','Drama'],['matte','Matte'],['bw','B&W'],['noir','Noir'],
+            ['sepia','Sepia'],['fade','Fade'],['chrome','Chrome'],
+        ];
+        ob.innerHTML=filters.map(function(f){
+            return '<button class="ie-filter-btn'+(_filter===f[0]?' active':'')+'" onclick="_filter=\''+f[0]+'\';_updateCanvasFilter();document.querySelectorAll(\'.ie-filter-btn\').forEach(function(b){b.classList.remove(\'active\')});this.classList.add(\'active\')">'+f[1]+'</button>';
+        }).join('');
+        _c.style.cursor='default';
     } else if(t==='ai'){
-        // Open the AI panel
         document.getElementById('ieAiPanel').classList.add('on');
-        document.getElementById('ieAiResult').classList.remove('on');
-        document.getElementById('ieAiResult').textContent='';
-        document.getElementById('ieAiThinking').classList.remove('on');
-        _ieCanvas.style.cursor='default';
+        var res = document.getElementById('ieAiResult');
+        if(res){ res.classList.remove('on'); res.textContent=''; }
+        var th = document.getElementById('ieAiThinking');
+        if(th) th.classList.remove('on');
+        // Always open to AI Edit tab
+        if(typeof ieAiTab === 'function') ieAiTab('edit');
+        _c.style.cursor='default';
     } else {
-        _ieCanvas.style.cursor='default';
+        _c.style.cursor='default';
     }
 };
 
-// ── Touch/Mouse drawing ──
+/* ═══════════════════════════════════════════════════════
+   POINTER EVENTS (draw / erase / shape / crop / sticker / text)
+═══════════════════════════════════════════════════════ */
 function _getPos(e){
-    var rect=_ieCanvas.getBoundingClientRect();
-    var scaleX=_ieCanvas.width/rect.width, scaleY=_ieCanvas.height/rect.height;
+    var rect=_c.getBoundingClientRect();
+    var scaleX=_c.width/rect.width, scaleY=_c.height/rect.height;
     var src=e.touches?e.touches[0]:e;
     return {x:(src.clientX-rect.left)*scaleX, y:(src.clientY-rect.top)*scaleY};
 }
 
-_ieCanvas && _ieCanvas.addEventListener('mousedown',  iePointerDown);
-_ieCanvas && _ieCanvas.addEventListener('touchstart', iePointerDown, {passive:false});
-_ieCanvas && _ieCanvas.addEventListener('mousemove',  iePointerMove);
-_ieCanvas && _ieCanvas.addEventListener('touchmove',  iePointerMove, {passive:false});
-_ieCanvas && _ieCanvas.addEventListener('mouseup',    iePointerUp);
-_ieCanvas && _ieCanvas.addEventListener('touchend',   iePointerUp);
-
-// Attach events after canvas exists
-document.addEventListener('DOMContentLoaded', function(){
-    _ieCanvas = document.getElementById('ieCanvas');
-    if(!_ieCanvas) return;
-    _ieCanvas.addEventListener('mousedown',  iePointerDown);
-    _ieCanvas.addEventListener('touchstart', iePointerDown, {passive:false});
-    _ieCanvas.addEventListener('mousemove',  iePointerMove);
-    _ieCanvas.addEventListener('touchmove',  iePointerMove, {passive:false});
-    _ieCanvas.addEventListener('mouseup',    iePointerUp);
-    _ieCanvas.addEventListener('touchend',   iePointerUp);
-    _ieCanvas.addEventListener('mouseleave', iePointerUp);
-});
-
 function iePointerDown(e){
     e.preventDefault();
-    _ieCanvas=document.getElementById('ieCanvas');
-    _ieCtx=_ieCanvas.getContext('2d');
+    _c=document.getElementById('ieCanvas');
+    _ctx=_c.getContext('2d');
     var p=_getPos(e);
-    _ieDrawing=true; _ieLx=p.x; _ieLy=p.y;
-    if(_ieTool==='crop'){ _ieCropStart={x:p.x,y:p.y}; _ieCropping=true; return; }
-    if(_ieTool==='text'){
-        var val=_ieTextVal||(document.getElementById('ieTextInput')||{}).value||'';
-        if(!val){ toast('Type something in the text box first','warn'); _ieDrawing=false; return; }
-        _ieCtx.font='bold '+_ieTextSize+'px Outfit,sans-serif';
-        _ieCtx.fillStyle=_ieTextColor;
-        _ieCtx.fillText(val, p.x, p.y);
-        _ieSave(); _ieDrawing=false; return;
+    _drawing=true; _lx=p.x; _ly=p.y;
+
+    if(_tool==='crop'){
+        _cropStart={x:p.x,y:p.y}; _cropping=true; return;
     }
-    _ieCtx.beginPath();
-    _ieCtx.arc(p.x, p.y, (_ieTool==='eraser'?_ieEraserSize:_ieBrushSize)/2, 0, Math.PI*2);
-    if(_ieTool==='eraser'){ _ieCtx.globalCompositeOperation='destination-out'; _ieCtx.fillStyle='rgba(0,0,0,1)'; }
-    else { _ieCtx.globalCompositeOperation='source-over'; _ieCtx.fillStyle=_ieBrushColor; }
-    _ieCtx.fill();
+    if(_tool==='text'){
+        var val=_textVal||(document.getElementById('ieTextInput')||{}).value||'';
+        if(!val){ toast('Type text in the box above first','warn'); _drawing=false; return; }
+        _ctx.save();
+        _ctx.font=(_textBold?'bold ':'')+_textSize+'px '+_textFont+',sans-serif';
+        _ctx.fillStyle=_textColor;
+        if(_textShadow){
+            _ctx.shadowColor='rgba(0,0,0,0.6)';
+            _ctx.shadowBlur=4;
+            _ctx.shadowOffsetX=1;
+            _ctx.shadowOffsetY=1;
+        }
+        _ctx.globalAlpha=1;
+        _ctx.fillText(val, p.x, p.y);
+        _ctx.restore();
+        _pushHistory(); _drawing=false; return;
+    }
+    if(_tool==='sticker'){
+        var sz=_stickerSize;
+        _ctx.save();
+        _ctx.font=sz+'px serif';
+        _ctx.textAlign='center';
+        _ctx.textBaseline='middle';
+        _ctx.fillText(_sticker, p.x, p.y);
+        _ctx.restore();
+        _pushHistory(); _drawing=false; return;
+    }
+    if(_tool==='cutout'){
+        if(typeof _stampCutout==='function') _stampCutout(p.x, p.y);
+        _drawing=false; return;
+    }
+    if(_tool==='shape'){
+        _shapeStart={x:p.x,y:p.y}; _shapeDragging=true; return;
+    }
+    // Draw / Erase dot on down
+    _ctx.save();
+    if(_tool==='eraser'){
+        _ctx.globalCompositeOperation='destination-out';
+        _ctx.fillStyle='rgba(0,0,0,1)';
+    } else {
+        _ctx.globalCompositeOperation='source-over';
+        _ctx.globalAlpha=_brushOpacity;
+        _ctx.fillStyle=_brushColor;
+    }
+    _ctx.beginPath();
+    _ctx.arc(p.x,p.y,(_tool==='eraser'?_eraserSize:_brushSize)/2,0,Math.PI*2);
+    _ctx.fill();
+    _ctx.restore();
 }
 
 function iePointerMove(e){
     e.preventDefault();
     var p=_getPos(e);
-    if(_ieTool==='crop'&&_ieCropping&&_ieCropStart){
-        _ieCropRect={x:_ieCropStart.x,y:_ieCropStart.y,w:p.x-_ieCropStart.x,h:p.y-_ieCropStart.y};
-        // Re-draw to show crop overlay
-        if(_ieHistory.length){
-            var prev=new Image(); prev.src=_ieHistory[_ieHistory.length-1];
-            _ieCtx.drawImage(prev,0,0);
-        }
-        _ieCtx.fillStyle='rgba(0,0,0,.45)';
-        _ieCtx.fillRect(0,0,_ieCanvas.width,_ieCanvas.height);
-        _ieCtx.clearRect(_ieCropRect.x,_ieCropRect.y,_ieCropRect.w,_ieCropRect.h);
-        _ieCtx.strokeStyle='#6366f1';
-        _ieCtx.lineWidth=2;
-        _ieCtx.strokeRect(_ieCropRect.x,_ieCropRect.y,_ieCropRect.w,_ieCropRect.h);
+    if(_tool==='crop'&&_cropping&&_cropStart){
+        _cropRect={x:_cropStart.x,y:_cropStart.y,w:p.x-_cropStart.x,h:p.y-_cropStart.y};
+        if(_history.length){ _restoreDataUrl(_history[_history.length-1]); }
+        // Small delay so restoreDataUrl finishes — use a quick draw
+        setTimeout(function(){
+            _ctx.fillStyle='rgba(0,0,0,.5)';
+            _ctx.fillRect(0,0,_c.width,_c.height);
+            _ctx.clearRect(_cropRect.x,_cropRect.y,_cropRect.w,_cropRect.h);
+            _ctx.strokeStyle='#6366f1';
+            _ctx.lineWidth=2;
+            _ctx.setLineDash([6,3]);
+            _ctx.strokeRect(_cropRect.x,_cropRect.y,_cropRect.w,_cropRect.h);
+            _ctx.setLineDash([]);
+            // Rule-of-thirds guides
+            _ctx.strokeStyle='rgba(99,102,241,.4)';
+            _ctx.lineWidth=1;
+            var rw=_cropRect.w, rh=_cropRect.h, rx=_cropRect.x, ry=_cropRect.y;
+            _ctx.beginPath();
+            _ctx.moveTo(rx+rw/3,ry); _ctx.lineTo(rx+rw/3,ry+rh);
+            _ctx.moveTo(rx+rw*2/3,ry); _ctx.lineTo(rx+rw*2/3,ry+rh);
+            _ctx.moveTo(rx,ry+rh/3); _ctx.lineTo(rx+rw,ry+rh/3);
+            _ctx.moveTo(rx,ry+rh*2/3); _ctx.lineTo(rx+rw,ry+rh*2/3);
+            _ctx.stroke();
+        },8);
         return;
     }
-    if(!_ieDrawing) return;
-    if(_ieTool!=='draw'&&_ieTool!=='eraser') return;
-    _ieCtx.beginPath();
-    _ieCtx.moveTo(_ieLx,_ieLy);
-    _ieCtx.lineTo(p.x,p.y);
-    _ieCtx.strokeStyle=_ieTool==='eraser'?'rgba(0,0,0,1)':_ieBrushColor;
-    _ieCtx.lineWidth=_ieTool==='eraser'?_ieEraserSize:_ieBrushSize;
-    _ieCtx.lineCap='round';
-    _ieCtx.lineJoin='round';
-    _ieCtx.globalCompositeOperation=_ieTool==='eraser'?'destination-out':'source-over';
-    _ieCtx.stroke();
-    _ieLx=p.x; _ieLy=p.y;
+    if(_tool==='shape'&&_shapeDragging&&_shapeStart){
+        if(_history.length){ var pi=new Image(); pi.src=_history[_history.length-1]; _ctx.drawImage(pi,0,0); }
+        _drawShape(_shapeStart.x,_shapeStart.y,p.x,p.y,true);
+        return;
+    }
+    if(!_drawing) return;
+    if(_tool!=='draw'&&_tool!=='eraser') return;
+    _ctx.save();
+    _ctx.beginPath();
+    _ctx.moveTo(_lx,_ly);
+    _ctx.lineTo(p.x,p.y);
+    if(_tool==='eraser'){
+        _ctx.globalCompositeOperation='destination-out';
+        _ctx.strokeStyle='rgba(0,0,0,1)';
+    } else {
+        _ctx.globalCompositeOperation='source-over';
+        _ctx.globalAlpha=_brushOpacity;
+        _ctx.strokeStyle=_brushColor;
+    }
+    _ctx.lineWidth=_tool==='eraser'?_eraserSize:_brushSize;
+    _ctx.lineCap='round';
+    _ctx.lineJoin='round';
+    _ctx.stroke();
+    _ctx.restore();
+    _lx=p.x; _ly=p.y;
 }
 
 function iePointerUp(e){
-    if(_ieDrawing&&(_ieTool==='draw'||_ieTool==='eraser')){
-        _ieCtx.globalCompositeOperation='source-over';
-        _ieSave();
+    if(_shapeDragging&&_shapeStart){
+        var p=_getPos(e);
+        _drawShape(_shapeStart.x,_shapeStart.y,p.x,p.y,false);
+        _pushHistory();
     }
-    _ieDrawing=false;
-    _ieCropping=false;
+    if(_drawing&&(_tool==='draw'||_tool==='eraser')){
+        _ctx.globalCompositeOperation='source-over';
+        _pushHistory();
+    }
+    _drawing=false; _shapeDragging=false; _cropping=false;
 }
 
-window.ieApplyCrop = function(){
-    if(!_ieCropRect||!_ieCropRect.w||!_ieCropRect.h){ toast('Drag to select an area first','warn'); return; }
-    var r=_ieCropRect;
-    var x=Math.min(r.x,r.x+r.w), y=Math.min(r.y,r.y+r.h);
-    var w=Math.abs(r.w), h=Math.abs(r.h);
-    if(w<10||h<10){ toast('Selection too small','warn'); return; }
-    var tmp=document.createElement('canvas');
-    tmp.width=w; tmp.height=h;
-    var tc=tmp.getContext('2d');
-    tc.drawImage(_ieCanvas,x,y,w,h,0,0,w,h);
-    _ieCanvas.width=w; _ieCanvas.height=h;
-    _ieCtx.drawImage(tmp,0,0);
-    _ieCropRect=null;
-    _ieSave();
-    ieTool('draw');
-    toast('Cropped ✓');
-};
-window.ieCancelCrop=function(){ _ieCropRect=null; ieTool('draw'); if(_ieHistory.length){var prev=new Image();prev.src=_ieHistory[_ieHistory.length-1];_ieCtx.drawImage(prev,0,0);} };
+function _drawShape(x1,y1,x2,y2,preview){
+    _ctx.save();
+    _ctx.globalAlpha=_shapeOpacity;
+    _ctx.strokeStyle=_shapeColor;
+    _ctx.fillStyle=_shapeColor;
+    _ctx.lineWidth=3;
+    _ctx.lineCap='round';
+    _ctx.lineJoin='round';
+    var w=x2-x1, h=y2-y1;
+    if(_shape==='rect'){
+        if(_shapeFill) _ctx.fillRect(x1,y1,w,h);
+        else _ctx.strokeRect(x1,y1,w,h);
+    } else if(_shape==='circle'){
+        var rx=Math.abs(w)/2, ry=Math.abs(h)/2;
+        _ctx.beginPath();
+        _ctx.ellipse(x1+w/2,y1+h/2,rx,ry,0,0,Math.PI*2);
+        if(_shapeFill) _ctx.fill(); else _ctx.stroke();
+    } else if(_shape==='line'){
+        _ctx.beginPath(); _ctx.moveTo(x1,y1); _ctx.lineTo(x2,y2);
+        _ctx.lineWidth=4; _ctx.stroke();
+    } else if(_shape==='arrow'){
+        var angle=Math.atan2(y2-y1,x2-x1);
+        var headLen=20;
+        _ctx.beginPath(); _ctx.moveTo(x1,y1); _ctx.lineTo(x2,y2); _ctx.lineWidth=4; _ctx.stroke();
+        _ctx.beginPath();
+        _ctx.moveTo(x2,y2);
+        _ctx.lineTo(x2-headLen*Math.cos(angle-Math.PI/6),y2-headLen*Math.sin(angle-Math.PI/6));
+        _ctx.lineTo(x2-headLen*Math.cos(angle+Math.PI/6),y2-headLen*Math.sin(angle+Math.PI/6));
+        _ctx.closePath(); _ctx.fill();
+    } else if(_shape==='star'){
+        var cx=(x1+x2)/2, cy=(y1+y2)/2;
+        var outerR=Math.min(Math.abs(w),Math.abs(h))/2;
+        var innerR=outerR*0.4;
+        _ctx.beginPath();
+        for(var i=0;i<10;i++){
+            var ang=Math.PI/5*i-Math.PI/2;
+            var r2=i%2===0?outerR:innerR;
+            if(i===0) _ctx.moveTo(cx+r2*Math.cos(ang),cy+r2*Math.sin(ang));
+            else _ctx.lineTo(cx+r2*Math.cos(ang),cy+r2*Math.sin(ang));
+        }
+        _ctx.closePath();
+        if(_shapeFill) _ctx.fill(); else _ctx.stroke();
+    } else if(_shape==='heart'){
+        var hx=(x1+x2)/2, hy=(y1+y2)/2;
+        var hs=Math.min(Math.abs(w),Math.abs(h))/2;
+        _ctx.beginPath();
+        _ctx.moveTo(hx,hy+hs*0.9);
+        _ctx.bezierCurveTo(hx-hs*1.5,hy+hs*0.1,hx-hs*1.5,hy-hs,hx,hy-hs*0.5);
+        _ctx.bezierCurveTo(hx+hs*1.5,hy-hs,hx+hs*1.5,hy+hs*0.1,hx,hy+hs*0.9);
+        if(_shapeFill) _ctx.fill(); else _ctx.stroke();
+    }
+    _ctx.restore();
+}
 
-/* ── AI Actions ─────────────────────────────────────────────────── */
-async function _ieAiCall(prompt){
-    var thinking=document.getElementById('ieAiThinking');
-    var result=document.getElementById('ieAiResult');
-    if(thinking) thinking.classList.add('on');
-    if(result){result.classList.remove('on');result.textContent='';}
+/* ═══════════════════════════════════════════════════════
+   BLUR / SHARPEN helpers
+═══════════════════════════════════════════════════════ */
+window.ieGaussian = function(){
+    // Bake CSS blur into pixels
+    var f = 'blur('+_blur+'px)';
+    var tmp=document.createElement('canvas'); tmp.width=_c.width; tmp.height=_c.height;
+    var tc=tmp.getContext('2d'); tc.filter=f; tc.drawImage(_c,0,0); tc.filter='none';
+    _ctx.clearRect(0,0,_c.width,_c.height); _ctx.drawImage(tmp,0,0);
+    _blur=0; _c.style.filter=_buildCssFilter(); _pushHistory();
+    toast('Blur baked ✓');
+};
+
+window.ieSharpen = function(passes){
+    passes=passes||1;
+    for(var p2=0;p2<passes;p2++){
+        var imgData=_ctx.getImageData(0,0,_c.width,_c.height);
+        var d=imgData.data, w=_c.width, h=_c.height;
+        var src=new Uint8ClampedArray(d);
+        var k=[-1,-1,-1,-1,9,-1,-1,-1,-1]; // sharpen kernel
+        for(var y=1;y<h-1;y++){
+            for(var x=1;x<w-1;x++){
+                var idx=(y*w+x)*4;
+                for(var c=0;c<3;c++){
+                    var val=0;
+                    for(var ky=-1;ky<=1;ky++){
+                        for(var kx=-1;kx<=1;kx++){
+                            var si=((y+ky)*w+(x+kx))*4+c;
+                            val+=src[si]*k[(ky+1)*3+(kx+1)];
+                        }
+                    }
+                    d[idx+c]=Math.max(0,Math.min(255,val));
+                }
+            }
+        }
+        _ctx.putImageData(imgData,0,0);
+    }
+    _pushHistory();
+    toast('Sharpened ✓');
+};
+
+/* ═══════════════════════════════════════════════════════
+   EVENT BINDING
+═══════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', function(){
+    _c = document.getElementById('ieCanvas');
+    if(!_c) return;
+    _c.addEventListener('mousedown',  iePointerDown);
+    _c.addEventListener('touchstart', iePointerDown, {passive:false});
+    _c.addEventListener('mousemove',  iePointerMove);
+    _c.addEventListener('touchmove',  iePointerMove, {passive:false});
+    _c.addEventListener('mouseup',    iePointerUp);
+    _c.addEventListener('touchend',   iePointerUp);
+    _c.addEventListener('mouseleave', iePointerUp);
+});
+
+/* ═══════════════════════════════════════════════════════
+   AI PANEL — Full Claude chat with image vision
+   + cutout/sticker tool
+═══════════════════════════════════════════════════════ */
+
+// ── Chat history (shown in panel) ──
+var _ieChat = []; // [{role, text}]
+
+function _ieChatAddMsg(role, text){
+    _ieChat.push({role, text});
+    _ieRenderChat();
+}
+
+function _ieRenderChat(){
+    var box = document.getElementById('ieAiChat');
+    if(!box) return;
+    box.innerHTML = _ieChat.map(function(m){
+        var isMine = m.role === 'user';
+        return '<div style="display:flex;justify-content:'+(isMine?'flex-end':'flex-start')+';">'
+            +'<div style="max-width:88%;padding:9px 12px;border-radius:'+(isMine?'14px 14px 4px 14px':'14px 14px 14px 4px')+';background:'+(isMine?'linear-gradient(135deg,#6366f1,#818cf8)':'rgba(30,33,60,.9)')+';color:#e2e8f0;font-size:13px;line-height:1.6;white-space:pre-wrap;border:1px solid '+(isMine?'transparent':'rgba(99,102,241,.2)')+';">'
+            +m.text.replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            +'</div></div>';
+    }).join('');
+    box.scrollTop = box.scrollHeight;
+}
+
+window.ieAiClearChat = function(){
+    _ieChat = [];
+    _ieRenderChat();
+    var r = document.getElementById('ieAiResult');
+    if(r){ r.classList.remove('on'); r.textContent=''; }
+};
+
+// ── Tab switcher ──
+window.ieAiTab = function(tab){
+    ['edit','chat','gen'].forEach(function(t){
+        var el = document.getElementById('ieTab'+t.charAt(0).toUpperCase()+t.slice(1));
+        var btn = document.getElementById('ieTab'+t.charAt(0).toUpperCase()+t.slice(1)+'Btn');
+        if(el) el.style.display = t===tab ? 'block' : 'none';
+        if(btn){
+            if(t===tab){
+                btn.style.background = 'rgba(99,102,241,.2)';
+                btn.style.borderColor = '#6366f1';
+                btn.style.color = '#a5b4fc';
+            } else {
+                btn.style.background = 'transparent';
+                btn.style.borderColor = 'rgba(99,102,241,.2)';
+                btn.style.color = '#64748b';
+            }
+        }
+    });
+};
+
+// ── AI Edit — parse instruction, apply real canvas edits ──
+window.ieDoEdit = async function(instruction){
+    if(!instruction || !instruction.trim()){ toast('Describe what you want to change','warn'); return; }
+
+    var inp = document.getElementById('ieEditInput');
+    var btn = document.getElementById('ieEditSendBtn');
+    var status = document.getElementById('ieEditStatus');
+
+    if(inp) inp.value = '';
+    if(btn){ btn.disabled=true; btn.textContent='Editing…'; }
+    if(status){ status.style.display='block'; status.textContent='⏳ AI is figuring out the edits…'; }
+
+    var thinking = document.getElementById('ieAiThinking');
+    // don't use the shared thinking indicator since it's on the chat tab
+
     try{
-        // Get canvas as base64
-        var c=document.getElementById('ieCanvas');
-        var imgData=c?c.toDataURL('image/jpeg',0.7):'';
-        // Use Pollinations text model — include image description request
-        var body={
-            model:'openai-large',
-            messages:[
-                {role:'system',content:'You are an AI assistant built into an image editor. Be concise and helpful.'},
-                {role:'user',content:prompt+(imgData?' [The user is working with an image in the editor. Describe what you can about it based on context.]':'')}
-            ],
-            max_tokens:600,temperature:0.6
-        };
-        var r=await fetch('https://text.pollinations.ai/openai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-        var d=await r.json();
-        var txt=(d.choices&&d.choices[0]&&d.choices[0].message&&d.choices[0].message.content)||'Could not get a response.';
-        if(result){result.textContent=txt;result.classList.add('on');}
-    }catch(e){
-        if(result){result.textContent='Could not connect. Check your internet.';result.classList.add('on');}
+        // Ask AI to return a JSON edit plan
+        var systemPrompt =
+            'You are an image editing AI. The user gives you a plain-english instruction for how to edit a photo. ' +
+            'You must respond with ONLY a valid JSON object — no explanation, no markdown, no extra text. ' +
+            'The JSON can contain any of these keys (all optional, use only what fits the instruction):\n' +
+            '{ ' +
+            '"brightness": number -80 to 80, ' +
+            '"contrast": number -80 to 80, ' +
+            '"saturation": number -80 to 80, ' +
+            '"hue": number -180 to 180, ' +
+            '"blur": number 0 to 8, ' +
+            '"vignette": number 0 to 80, ' +
+            '"sharpen": true, ' +
+            '"filter": one of "none"|"bw"|"sepia"|"vivid"|"fade"|"cool"|"warm"|"dramatic"|"matte"|"chrome"|"noir", ' +
+            '"text": "string to overlay on image", ' +
+            '"textColor": "#hexcolor", ' +
+            '"textSize": 20-120, ' +
+            '"textX": 0-100 (% from left), ' +
+            '"textY": 0-100 (% from top)' +
+            ' }\n\n' +
+            'Examples:\n' +
+            'Instruction: "make it brighter and warmer" → {"brightness":40,"filter":"warm"}\n' +
+            'Instruction: "black and white with high contrast" → {"filter":"bw","contrast":40}\n' +
+            'Instruction: "make it look vintage" → {"filter":"sepia","brightness":-10,"vignette":40}\n' +
+            'Instruction: "soften and add vignette" → {"blur":1.5,"vignette":35,"contrast":-15}\n' +
+            'Instruction: "cinematic dramatic look" → {"filter":"dramatic","vignette":50,"contrast":20}\n' +
+            'Instruction: "add caption Happy Birthday" → {"text":"Happy Birthday! 🎂","textColor":"#ffffff","textSize":48,"textX":50,"textY":90}\n' +
+            'Only return the JSON. Nothing else.';
+
+        var resp = await fetch('https://text.pollinations.ai/openai', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: 'openai-large',
+                messages: [
+                    { role:'system', content: systemPrompt },
+                    { role:'user', content: 'Instruction: "' + instruction + '"' }
+                ],
+                max_tokens: 200,
+                temperature: 0.3
+            })
+        });
+
+        if(!resp.ok) throw new Error('HTTP ' + resp.status);
+        var data = await resp.json();
+        var raw = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
+
+        // Strip markdown fences if present
+        raw = raw.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
+
+        // Parse JSON
+        var edits;
+        try{ edits = JSON.parse(raw); }
+        catch(pe){ throw new Error('AI returned unexpected format: ' + raw.slice(0,80)); }
+
+        // Apply edits to canvas
+        var applied = [];
+
+        if(typeof edits.brightness === 'number'){ _brightness = Math.max(-80,Math.min(80,edits.brightness)); applied.push('brightness '+(_brightness>0?'+':'')+_brightness); }
+        if(typeof edits.contrast   === 'number'){ _contrast   = Math.max(-80,Math.min(80,edits.contrast));   applied.push('contrast '+(_contrast>0?'+':'')+_contrast); }
+        if(typeof edits.saturation === 'number'){ _saturation = Math.max(-80,Math.min(80,edits.saturation)); applied.push('saturation '+(_saturation>0?'+':'')+_saturation); }
+        if(typeof edits.hue        === 'number'){ _hue        = Math.max(-180,Math.min(180,edits.hue));       applied.push('hue '+(_hue>0?'+':'')+_hue+'°'); }
+        if(typeof edits.blur       === 'number'){ _blur       = Math.max(0,Math.min(8,edits.blur));           if(_blur>0) applied.push('blur '+_blur+'px'); }
+        if(typeof edits.vignette   === 'number'){ _vignette   = Math.max(0,Math.min(100,edits.vignette));     if(_vignette>0) applied.push('vignette '+_vignette+'%'); }
+
+        if(edits.filter && edits.filter !== 'none'){
+            var validFilters = ['bw','sepia','vivid','fade','cool','warm','dramatic','matte','chrome','noir'];
+            if(validFilters.indexOf(edits.filter) > -1){
+                _filter = edits.filter;
+                applied.push('filter: '+edits.filter);
+            }
+        }
+
+        // Apply CSS adjustments
+        _updateCanvasFilter();
+
+        // Apply sharpen (baked into pixels)
+        if(edits.sharpen === true){
+            ieSharpen(1);
+            applied.push('sharpened');
+        }
+
+        // Apply text overlay
+        if(edits.text && edits.text.trim()){
+            _c = document.getElementById('ieCanvas');
+            _ctx = _c.getContext('2d');
+            var tSize  = edits.textSize  || 48;
+            var tColor = edits.textColor || '#ffffff';
+            var tX     = typeof edits.textX === 'number' ? (_c.width  * edits.textX  / 100) : _c.width/2;
+            var tY     = typeof edits.textY === 'number' ? (_c.height * edits.textY  / 100) : _c.height * 0.85;
+            _ctx.save();
+            _ctx.font = 'bold '+tSize+'px Nunito,sans-serif';
+            _ctx.fillStyle = tColor;
+            _ctx.textAlign = 'center';
+            _ctx.textBaseline = 'middle';
+            _ctx.shadowColor = 'rgba(0,0,0,0.7)';
+            _ctx.shadowBlur = 6;
+            _ctx.fillText(edits.text, tX, tY);
+            _ctx.restore();
+            _pushHistory();
+            applied.push('text: "'+edits.text+'"');
+        }
+
+        // Update opt bar sliders if adjust tool is active
+        if(_tool === 'adjust') ieTool('adjust');
+
+        var msg = '✓ Applied: ' + (applied.length ? applied.join(', ') : 'no changes') + '.';
+        if(status){ status.textContent = msg; }
+        toast('✓ Edits applied!');
+
+    } catch(e){
+        console.warn('ieDoEdit error:', e);
+        if(status){ status.textContent = '✗ Could not apply edits: ' + e.message + '. Try rephrasing.'; }
     }
+
+    if(btn){ btn.disabled=false; btn.textContent='Edit ✦'; }
+};
+
+// ── Core Claude call — always sends image + full chat history ──
+async function _ieClaudeCall(userText){
+    var thinking = document.getElementById('ieAiThinking');
+    if(thinking) thinking.classList.add('on');
+
+    var responseText = '';
+    try{
+        // Grab canvas image for vision
+        var canvas = document.getElementById('ieCanvas');
+        var imgB64 = canvas ? canvas.toDataURL('image/jpeg', 0.55).split(',')[1] : null;
+
+        var sysPrompt = 'You are a helpful, friendly AI assistant built into a family photo editor. ' +
+            'The user shares images and asks you anything — outfit advice, food identification, ' +
+            'editing tips, mood, who is in the photo, location guesses, captions, color advice, and more. ' +
+            'Be warm, specific and practical. When you see an image, describe what you actually see. ' +
+            'Available editor tools: brightness, contrast, saturation, hue, blur, sharpen, vignette, ' +
+            'crop, rotate, flip, draw, eraser, text, shapes, stickers, cutouts, and photo filters.';
+
+        // Build conversation history (text only for prior turns)
+        var priorMsgs = [];
+        for(var i = 0; i < _ieChat.length; i++){
+            priorMsgs.push({ role: _ieChat[i].role, content: _ieChat[i].text });
+        }
+
+        // Current message — use image_url format for vision (Pollinations supports this)
+        var userContent = imgB64
+            ? [
+                { type:'image_url', image_url:{ url:'data:image/jpeg;base64,'+imgB64 } },
+                { type:'text', text: userText }
+              ]
+            : userText;
+
+        var allMessages = [{ role:'system', content: sysPrompt }]
+            .concat(priorMsgs)
+            .concat([{ role:'user', content: userContent }]);
+
+        var resp = await fetch('https://text.pollinations.ai/openai', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: 'openai-large',
+                messages: allMessages,
+                max_tokens: 900,
+                temperature: 0.7
+            })
+        });
+
+        if(!resp.ok) throw new Error('HTTP ' + resp.status);
+        var data = await resp.json();
+        var txt = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+        if(!txt) throw new Error('empty');
+        responseText = txt;
+
+    } catch(e){
+        // Fallback — text only, simpler model
+        try{
+            var r2 = await fetch('https://text.pollinations.ai/openai', {
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({
+                    model: 'openai',
+                    messages:[
+                        {role:'system', content:'You are a helpful AI assistant for a family photo editor.'},
+                        {role:'user',   content: userText}
+                    ],
+                    max_tokens: 500
+                })
+            });
+            if(!r2.ok) throw new Error('fallback failed');
+            var d2 = await r2.json();
+            var t2 = d2.choices && d2.choices[0] && d2.choices[0].message && d2.choices[0].message.content;
+            if(!t2) throw new Error('empty fallback');
+            responseText = t2;
+        } catch(e2){
+            // Last resort — simple GET request
+            try{
+                var r3 = await fetch('https://text.pollinations.ai/' +
+                    encodeURIComponent(userText.slice(0,300)) +
+                    '?model=openai&system=' + encodeURIComponent('You help with photo editing advice.'));
+                responseText = (await r3.text()).trim() || 'Sorry, no response. Try again.';
+            } catch(e3){
+                responseText = 'Could not reach AI right now. Please try again in a moment.';
+            }
+        }
+    }
+
     if(thinking) thinking.classList.remove('on');
+    return responseText;
 }
 
-window.ieAiAsk=async function(){
-    var inp=document.getElementById('ieAiInput');
-    var q=(inp&&inp.value.trim())||'';
-    if(!q){toast('Type a question first','warn');return;}
-    await _ieAiCall(q);
+window.ieAiAsk = async function(){
+    var inp = document.getElementById('ieAiInput');
+    var q = (inp && inp.value.trim()) || '';
+    if(!q){ toast('Type a question first','warn'); return; }
+    inp.value = '';
+    _ieChatAddMsg('user', q);
+    var reply = await _ieClaudeCall(q);
+    _ieChatAddMsg('assistant', reply);
 };
 
-window.ieAiAction=async function(action){
-    var prompts={
-        describe:'Describe this image in detail — what objects, people, colours, and scene are visible?',
-        improve:'Write a high-quality image generation prompt that would recreate this image but improved and more detailed. Format: just the prompt, no explanation.',
-        remove_bg_guide:'This user wants to remove the background from their image using a manual eraser tool. Give them a short step-by-step guide on how to do it carefully, focusing on edges and tricky areas like hair.',
-        caption:'Write 3 short, engaging captions for this image suitable for a family photo. Make them warm and personal.',
-        recreate:'Describe this image in enough detail that an AI could recreate it. Include style, colours, lighting, composition, and subject matter.',
-        alt_text:'Write a concise alt text description for this image for accessibility purposes (1-2 sentences, factual).'
+window.ieAiAction = async function(action){
+    var prompts = {
+        describe:        'Please describe this image in detail — what do you see? People, objects, setting, colors, mood, lighting.',
+        outfit:          'Look at the outfit(s) in this image. Give honest, friendly style advice: what works well, what could be improved, what accessories or colors would complement it, and what occasions it suits.',
+        edit_suggest:    'Look at this image and give me 5 specific, practical editing suggestions using the tools available in this editor (brightness, contrast, saturation, crop, filters, etc). Be specific about what to adjust and by how much.',
+        caption:         'Write 3 different captions for this image — one funny, one heartfelt, one simple. Include relevant emojis.',
+        colors:          'Analyze the color palette of this image. What are the dominant colors? What mood do they create? What color corrections or filter would enhance it?',
+        mood:            'What is the overall mood, vibe, and feeling of this image? What story does it tell? What emotions does it evoke?',
+        people:          'Describe the people in this image — their approximate ages, expressions, what they are doing, and their relationship to each other if you can tell.',
+        food:            'Describe the food in this image in detail — what is it, how does it look, does it look delicious, and how might it taste?',
+        location:        'Based on what you see, where do you think this photo was taken? Describe the setting, environment, and any clues about the location.',
+        enhance_prompt:  'Write a detailed AI image generation prompt that would recreate this image but enhanced and improved. Include style, lighting, composition, colors, and quality modifiers. Return only the prompt itself.'
     };
-    var prompt=prompts[action]||'Describe this image.';
-    await _ieAiCall(prompt);
+    var q = prompts[action] || 'Describe this image.';
+    _ieChatAddMsg('user', q);
+    var reply = await _ieClaudeCall(q);
+    _ieChatAddMsg('assistant', reply);
 };
+
+// ── Generate image ──
+window.ieGenerate = async function(){
+    var inp = document.getElementById('ieGenPrompt');
+    var btn = document.getElementById('ieGenBtn');
+    var result = document.getElementById('ieAiResult');
+    var prompt = (inp && inp.value.trim()) || '';
+    if(!prompt){ toast('Describe the image you want','warn'); return; }
+    if(btn){ btn.disabled=true; btn.textContent='Creating…'; }
+    if(result){ result.classList.remove('on'); result.textContent=''; }
+
+    try{
+        var seed = Math.floor(Math.random()*99999);
+        var models = ['flux-pro','flux-realism','flux'];
+        var url = null;
+        var safePrompt = prompt + ', family-friendly, wholesome, high quality, 8K';
+        for(var i=0; i<models.length && !url; i++){
+            try{
+                var enc = encodeURIComponent(safePrompt);
+                var candidate = 'https://image.pollinations.ai/prompt/'+enc+'?model='+models[i]+'&width=1024&height=1024&seed='+seed+'&nologo=true';
+                var test = await fetch(candidate, {method:'HEAD'});
+                if(test.ok) url = candidate;
+            } catch(ex){}
+        }
+        if(!url) url = 'https://image.pollinations.ai/prompt/'+encodeURIComponent(safePrompt)+'?width=1024&height=1024&seed='+seed+'&nologo=true';
+
+        if(result){
+            result.innerHTML = '✓ Image generated!';
+            result.classList.add('on');
+            var loadBtn = document.createElement('button');
+            loadBtn.textContent = '📥 Load into Editor';
+            loadBtn.style.cssText = 'display:block;margin-top:8px;background:linear-gradient(135deg,#6366f1,#818cf8);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;width:100%;';
+            loadBtn.onclick = function(){ openImgEditor(url,'Generated Image'); toast('Loading…'); };
+            result.appendChild(loadBtn);
+        }
+    } catch(e){
+        if(result){ result.textContent='Generation failed. Try again.'; result.classList.add('on'); }
+    }
+    if(btn){ btn.disabled=false; btn.textContent='Create'; }
+};
+
+/* ═══════════════════════════════════════════════════════
+   CUTOUTS TOOL — SVG-based pre-made cutout stickers
+   Categories: People, Vehicles, Animals, Nature, Objects
+═══════════════════════════════════════════════════════ */
+
+// Each cutout is an SVG path that gets drawn on the canvas
+// using a filled silhouette + optional color
+var _cutoutCategory = 'people';
+var _cutoutItem = 0;
+var _cutoutSize = 80;
+var _cutoutColor = '#000000';
+var _cutoutColorize = false;
+
+var CUTOUTS = {
+    people:[
+        {label:'👤 Person',  svg:'M12,2 C14.2,2 16,3.8 16,6 C16,8.2 14.2,10 12,10 C9.8,10 8,8.2 8,6 C8,3.8 9.8,2 12,2 Z M6,22 L6,18 C6,14.7 8.7,12 12,12 C15.3,12 18,14.7 18,18 L18,22 Z'},
+        {label:'🧍 Standing', svg:'M12,2 C13.1,2 14,2.9 14,4 C14,5.1 13.1,6 12,6 C10.9,6 10,5.1 10,4 C10,2.9 10.9,2 12,2 Z M9,8 L15,8 L15.5,13 L14,13 L14,22 L10,22 L10,13 L8.5,13 Z M7,8.5 L9.5,12 L14.5,12 L17,8.5 Z'},
+        {label:'🤸 Active',  svg:'M12,2 C13.1,2 14,2.9 14,4 C14,5.1 13.1,6 12,6 C10.9,6 10,5.1 10,4 C10,2.9 10.9,2 12,2 Z M7,8 C9,7 11,7.5 12,8.5 C13,7.5 15,7 17,8 L19,14 L15,13 L14,22 L10,22 L9,13 L5,14 Z'},
+        {label:'👶 Child',   svg:'M12,3 C13.7,3 15,4.3 15,6 C15,7.7 13.7,9 12,9 C10.3,9 9,7.7 9,6 C9,4.3 10.3,3 12,3 Z M8,11 L16,11 L16.5,15.5 L15,15.5 L15,22 L9,22 L9,15.5 L7.5,15.5 Z'},
+        {label:'🧑‍🤝‍🧑 Couple', svg:'M7,2 C8.1,2 9,2.9 9,4 C9,5.1 8.1,6 7,6 C5.9,6 5,5.1 5,4 C5,2.9 5.9,2 7,2 Z M4,8 L10,8 L10.5,13 L9,13 L9,20 L5,20 L5,13 L3.5,13 Z M17,2 C18.1,2 19,2.9 19,4 C19,5.1 18.1,6 17,6 C15.9,6 15,5.1 15,4 C15,2.9 15.9,2 17,2 Z M14,8 L20,8 L20.5,13 L19,13 L19,20 L15,20 L15,13 L13.5,13 Z'},
+        {label:'🕺 Dancing', svg:'M12,2 C13.1,2 14,2.9 14,4 C14,5.1 13.1,6 12,6 C10.9,6 10,5.1 10,4 C10,2.9 10.9,2 12,2 Z M8,7 L14,8 L17,12 L14.5,12.5 L12,22 L10,17 L8,22 L6.5,12 L9,11.5 Z'},
+    ],
+    vehicles:[
+        {label:'🚗 Car',     svg:'M3,11 L5,5 L19,5 L21,11 L22,12 L22,16 L20,16 L20,18 L16,18 L16,16 L8,16 L8,18 L4,18 L4,16 L2,16 L2,12 Z M6,8 L7,11 L17,11 L18,8 Z M6,14 C6,14.6 5.6,15 5,15 C4.4,15 4,14.6 4,14 C4,13.4 4.4,13 5,13 C5.6,13 6,13.4 6,14 Z M20,14 C20,14.6 19.6,15 19,15 C18.4,15 18,14.6 18,14 C18,13.4 18.4,13 19,13 C19.6,13 20,13.4 20,14 Z'},
+        {label:'🚌 Bus',     svg:'M4,4 L20,4 L20,18 L18,18 L18,20 L16,20 L16,18 L8,18 L8,20 L6,20 L6,18 L4,18 Z M6,7 L18,7 L18,13 L6,13 Z M7,15.5 C7,16.3 6.3,17 5.5,17 C4.7,17 4,16.3 4,15.5 C4,14.7 4.7,14 5.5,14 C6.3,14 7,14.7 7,15.5 Z M20,15.5 C20,16.3 19.3,17 18.5,17 C17.7,17 17,16.3 17,15.5 C17,14.7 17.7,14 18.5,14 C19.3,14 20,14.7 20,15.5 Z'},
+        {label:'🚛 Truck',   svg:'M1,8 L15,8 L15,16 L1,16 Z M15,10 L22,10 L22,16 L15,16 Z M3,14 C3,15.1 2.1,16 1.5,16 C0.9,16 0,15.1 0,14 C0,12.9 0.9,12 1.5,12 C2.1,12 3,12.9 3,14 Z M14,14 C14,15.1 13.1,16 12.5,16 C11.9,16 11,15.1 11,14 C11,12.9 11.9,12 12.5,12 C13.1,12 14,12.9 14,14 Z M22,14 C22,15.1 21.1,16 20.5,16 C19.9,16 19,15.1 19,14 C19,12.9 19.9,12 20.5,12 C21.1,12 22,12.9 22,14 Z'},
+        {label:'✈️ Plane',   svg:'M21,14 L13,9 L13,4 C13,3.4 12.6,3 12,3 C11.4,3 11,3.4 11,4 L11,9 L3,14 L3,16 L11,13.5 L11,18.5 L9,20 L9,21.5 L12,20.5 L15,21.5 L15,20 L13,18.5 L13,13.5 L21,16 Z'},
+        {label:'⛵ Boat',    svg:'M12,2 L12,8 L4,8 C4,12 7.6,15.4 12,16 C16.4,15.4 20,12 20,8 L12,8 Z M5,17 L19,17 L12,20 Z'},
+        {label:'🏍 Moto',    svg:'M5.5,9 C4.1,9 3,10.1 3,11.5 C3,12.9 4.1,14 5.5,14 C6.9,14 8,12.9 8,11.5 C8,10.1 6.9,9 5.5,9 Z M18.5,9 C17.1,9 16,10.1 16,11.5 C16,12.9 17.1,14 18.5,14 C19.9,14 21,12.9 21,11.5 C21,10.1 19.9,9 18.5,9 Z M8,11.5 L10,8 L14,8 L16,11.5 L12,10 Z M12,7 L13.5,4 L15.5,4 L14,7 Z'},
+    ],
+    animals:[
+        {label:'🐕 Dog',     svg:'M4,7 C4,5.3 5.3,4 7,4 C8.7,4 10,5.3 10,7 L10,9 L14,9 L14,7 C14,5.3 15.3,4 17,4 C18.7,4 20,5.3 20,7 L20,11 C20,14.9 16.9,18 13,18 L11,18 C7.1,18 4,14.9 4,11 Z M7,20 L9,18 M17,20 L15,18'},
+        {label:'🐈 Cat',     svg:'M3,8 L3,5 L6,7 C7.3,6.4 9.1,6 11,6 L13,6 C14.9,6 16.7,6.4 18,7 L21,5 L21,8 C22.3,9.2 23,10.7 23,12 C23,16.4 18,20 12,20 C6,20 1,16.4 1,12 C1,10.7 1.7,9.2 3,8 Z M9,11 C9,11.6 8.6,12 8,12 C7.4,12 7,11.6 7,11 C7,10.4 7.4,10 8,10 C8.6,10 9,10.4 9,11 Z M17,11 C17,11.6 16.6,12 16,12 C15.4,12 15,11.6 15,11 C15,10.4 15.4,10 16,10 C16.6,10 17,10.4 17,11 Z'},
+        {label:'🦁 Lion',    svg:'M12,4 C9,4 7,6 7,9 C5,9 3,10 3,12 C3,14 5,15.5 7,15.5 C7,17.5 9,19 12,19 C15,19 17,17.5 17,15.5 C19,15.5 21,14 21,12 C21,10 19,9 17,9 C17,6 15,4 12,4 Z M9,11 L10,12 L9,13 M15,11 L14,12 L15,13 M12,14 L11,15 L12,16 L13,15 Z'},
+        {label:'🐦 Bird',    svg:'M12,5 C10,5 7,6 5,9 L2,8 L4,11 C4,11 3,13 5,15 C7,17 10,17 12,16 C14,17 17,17 19,15 L22,12 L20,11 L22,8 L18,10 C16,7 14,5 12,5 Z'},
+        {label:'🐟 Fish',    svg:'M3,12 C5,10 7,9 10,9 L14,9 C17,9 19,7 21,5 L21,19 C19,17 17,15 14,15 L10,15 C7,15 5,14 3,12 Z M3,12 L1,9 L1,15 Z'},
+        {label:'🦋 Butterfly',svg:'M12,12 C11,9 8,7 5,8 C2,9 1,12 2,14 C3,16 6,17 9,15 L12,12 Z M12,12 C13,9 16,7 19,8 C22,9 23,12 22,14 C21,16 18,17 15,15 L12,12 Z M12,8 L12,18'},
+    ],
+    nature:[
+        {label:'🌲 Tree',    svg:'M12,2 L5,10 L8,10 L3,18 L9,18 L9,22 L15,22 L15,18 L21,18 L16,10 L19,10 Z'},
+        {label:'🌺 Flower',  svg:'M12,10 C13.1,10 14,10.9 14,12 C14,13.1 13.1,14 12,14 C10.9,14 10,13.1 10,12 C10,10.9 10.9,10 12,10 Z M12,4 C11,4 10,5 10,7 C10,9 11,10 12,10 C13,10 14,9 14,7 C14,5 13,4 12,4 Z M12,14 C13,14 14,15 14,17 C14,19 13,20 12,20 C11,20 10,19 10,17 C10,15 11,14 12,14 Z M5,8 C4,9 4,11 6,12 C8,13 9.5,12.5 10,12 C9.5,11.5 8,11 7,9.5 C6,8 5,8 5,8 Z M19,8 C20,9 20,11 18,12 C16,13 14.5,12.5 14,12 C14.5,11.5 16,11 17,9.5 C18,8 19,8 19,8 Z M5.5,15.5 C4.5,16.5 4.5,18.5 6.5,19 C8.5,19.5 10,18.5 10,12 M18.5,15.5 C19.5,16.5 19.5,18.5 17.5,19 C15.5,19.5 14,18.5 14,12'},
+        {label:'⭐ Star',    svg:'M12,2 L14.4,8.6 L21.5,9 L16.3,13.6 L18,20.9 L12,17.3 L6,20.9 L7.7,13.6 L2.5,9 L9.6,8.6 Z'},
+        {label:'☁️ Cloud',   svg:'M6,11 C4.3,11 3,12.3 3,14 C3,15.7 4.3,17 6,17 L17,17 C19.2,17 21,15.2 21,13 C21,10.8 19.2,9 17,9 C16.6,9 16.2,9.1 15.8,9.2 C15.2,7.9 13.7,7 12,7 C9.8,7 8,8.8 8,11 C7.4,11 6.7,11 6,11 Z'},
+        {label:'🌙 Moon',    svg:'M21,12.1 C21,16.5 17.5,20 13.1,20 C9.7,20 6.8,17.9 5.5,14.9 C6.3,15.3 7.1,15.5 8,15.5 C11.9,15.5 15.1,12.3 15.1,8.4 C15.1,7.5 14.9,6.7 14.5,5.9 C18.2,6.9 21,9.2 21,12.1 Z'},
+        {label:'❄️ Snowflake',svg:'M12,2 L12,22 M2,12 L22,12 M4.9,4.9 L19.1,19.1 M19.1,4.9 L4.9,19.1 M12,7 L14,5 M12,7 L10,5 M12,17 L14,19 M12,17 L10,19 M7,12 L5,14 M7,12 L5,10 M17,12 L19,14 M17,12 L19,10'},
+    ],
+    objects:[
+        {label:'🏠 House',   svg:'M12,3 L22,10 L22,20 L2,20 L2,10 Z M12,3 L2,10 M9,20 L9,14 L15,14 L15,20 M12,7 L14,9 L10,9 Z'},
+        {label:'💎 Diamond', svg:'M5,8 L12,2 L19,8 L12,22 Z M2,11 L5,8 L19,8 L22,11 L12,22 Z'},
+        {label:'🎵 Music',   svg:'M9,17 C9,18.7 7.7,20 6,20 C4.3,20 3,18.7 3,17 C3,15.3 4.3,14 6,14 C7.7,14 9,15.3 9,17 Z M9,17 L9,6 L19,4 L19,15 M19,15 C19,16.7 17.7,18 16,18 C14.3,18 13,16.7 13,15 C13,13.3 14.3,12 16,12 C17.7,12 19,13.3 19,15 Z M9,6 L19,4'},
+        {label:'❤️ Heart',   svg:'M12,21 C12,21 3,14 3,8 C3,5.2 5.2,3 8,3 C9.7,3 11.2,3.8 12,5.1 C12.8,3.8 14.3,3 16,3 C18.8,3 21,5.2 21,8 C21,14 12,21 12,21 Z'},
+        {label:'⚽ Ball',    svg:'M12,2 C6.5,2 2,6.5 2,12 C2,17.5 6.5,22 12,22 C17.5,22 22,17.5 22,12 C22,6.5 17.5,2 12,2 Z M12,2 L8,7 L12,12 L16,7 Z M8,7 L2,9 M16,7 L22,9 M2,15 L8,14 L12,12 M22,15 L16,14 L12,12'},
+        {label:'🎂 Cake',    svg:'M4,14 L20,14 L20,22 L4,22 Z M6,14 L6,10 L18,10 L18,14 M8,10 L8,8 C8,6.3 9.3,5 11,5 C11,5 11,3 12,2 C13,3 13,5 13,5 C14.7,5 16,6.3 16,8 L16,10'},
+    ]
+};
+
+// Cutouts tool isTool handler (called from ieTool)
+window._ieCutoutInit = function(){
+    var ob = document.getElementById('ieOptBar');
+    ob.classList.add('on');
+    ob.innerHTML = _buildCutoutOptBar();
+    document.getElementById('ieCanvas').style.cursor = 'copy';
+};
+
+function _buildCutoutOptBar(){
+    var cats = Object.keys(CUTOUTS);
+    var catBtns = cats.map(function(c){
+        var icons = {people:'👤',vehicles:'🚗',animals:'🐕',nature:'🌲',objects:'🏠'};
+        return '<button class="ie-filter-btn'+(c===_cutoutCategory?' active':'')+'" onclick="ieSetCutoutCat(\''+c+'\')">'+(icons[c]||'')+'  '+c.charAt(0).toUpperCase()+c.slice(1)+'</button>';
+    }).join('');
+
+    var items = CUTOUTS[_cutoutCategory];
+    var itemBtns = items.map(function(item,i){
+        return '<div class="ie-shape-btn'+(i===_cutoutItem?' active':'')+'" onclick="ieSetCutoutItem('+i+')" title="'+item.label+'" style="font-size:14px;min-width:38px;">'+item.label.split(' ')[0]+'</div>';
+    }).join('');
+
+    return '<div style="display:flex;flex-direction:column;gap:8px;width:100%;">'
+        +'<div style="display:flex;gap:4px;flex-wrap:wrap;">'+catBtns+'</div>'
+        +'<div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">'
+        +'<div class="ie-shape-grid">'+itemBtns+'</div>'
+        +'<div class="ie-opt-sep"></div>'
+        +'<span class="ie-opt-label">Size</span>'
+        +'<input class="ie-slider" type="range" min="20" max="300" value="'+_cutoutSize+'" oninput="_cutoutSize=+this.value">'
+        +'<span class="ie-opt-label">Color</span>'
+        +'<input class="ie-color" type="color" value="'+_cutoutColor+'" oninput="_cutoutColor=this.value">'
+        +'<button class="ie-filter-btn'+(_cutoutColorize?' active':'')+'" onclick="_cutoutColorize=!_cutoutColorize;this.classList.toggle(\'active\')">Colorize</button>'
+        +'</div></div>';
+}
+
+window.ieSetCutoutCat = function(cat){
+    _cutoutCategory = cat;
+    _cutoutItem = 0;
+    var ob = document.getElementById('ieOptBar');
+    if(ob) ob.innerHTML = _buildCutoutOptBar();
+};
+
+window.ieSetCutoutItem = function(idx){
+    _cutoutItem = idx;
+    var ob = document.getElementById('ieOptBar');
+    if(ob) ob.innerHTML = _buildCutoutOptBar();
+};
+
+window._stampCutout = function _stampCutout(x, y){
+    var items = CUTOUTS[_cutoutCategory];
+    if(!items || !items[_cutoutItem]) return;
+    var item = items[_cutoutItem];
+    var size = _cutoutSize;
+
+    // Parse the SVG path and draw it scaled to size
+    var p = new Path2D(item.svg);
+    _ctx.save();
+    // SVG viewBox is 0 0 24 24, scale to desired size
+    var scale = size / 24;
+    _ctx.translate(x - size/2, y - size/2);
+    _ctx.scale(scale, scale);
+    _ctx.globalAlpha = 0.95;
+    if(_cutoutColorize){
+        _ctx.fillStyle = _cutoutColor;
+        _ctx.strokeStyle = _cutoutColor;
+    } else {
+        _ctx.fillStyle = '#1a1a2e';
+        _ctx.strokeStyle = '#1a1a2e';
+    }
+    _ctx.lineWidth = 1.5;
+    _ctx.fill(p);
+    _ctx.stroke(p);
+    _ctx.restore();
+    _pushHistory();
+}
+
+// ── Hook cutout into pointer down ──
+// (we patch the existing iePointerDown to handle 'cutout' tool)
+var _origPointerDown = iePointerDown;
 
 })();
 </script>
