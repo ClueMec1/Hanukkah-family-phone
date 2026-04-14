@@ -3471,13 +3471,30 @@ async function saveNewGroup(){
 
 function msgPath(group){ return 'messages/'+group.replace(/\s+/g,'_'); }
 
+// Holds the active unsubscribe function for the current chat listener
+let _msgListenerUnsub = null;
+
 function loadMessages(group){
+    // ── Detach any previous listener so old chats don't bleed into this one ──
+    if(_msgListenerUnsub){
+        try{ _msgListenerUnsub(); } catch(e){}
+        _msgListenerUnsub = null;
+    }
+
     listenTyping(group);
     listenPinnedMessage(group);
-    let _knownKeys = [];   // ordered list of message keys we have rendered
-    let _firstLoad  = true;
 
-    window.dbOnValue(window.dbRef(window.chatDb, msgPath(group)), snap=>{
+    // Clear the container immediately when switching groups
+    const container = document.getElementById('waMessages');
+    container.innerHTML = '<p style="color:#888;text-align:center;padding:22px;font-size:13px;">Loading… 💬</p>';
+
+    let _knownKeys = [];
+    let _firstLoad = true;
+
+    const dbRef = window.dbRef(window.chatDb, msgPath(group));
+
+    // Use onValue and capture the unsubscribe function it returns
+    _msgListenerUnsub = window.dbOnValue(dbRef, snap=>{
         const container = document.getElementById('waMessages');
 
         // How far from the bottom before this update
@@ -3491,10 +3508,11 @@ function loadMessages(group){
             return;
         }
 
-        const data    = snap.val();                      // { key: msgObj, … }
-        const newKeys = Object.keys(data);               // current ordered keys from Firebase
+        const data    = snap.val();
+        const newKeys = Object.keys(data);
+        const prevCount = _knownKeys.length;
 
-        // ── 1. Remove bubbles that no longer exist (deleted messages) ──
+        // ── 1. Remove bubbles deleted from Firebase ──
         _knownKeys.forEach(k => {
             if(!data[k]){
                 const el = document.getElementById('msg-'+k);
@@ -3502,18 +3520,16 @@ function loadMessages(group){
             }
         });
 
-        // ── 2. Add or update each message ──
-        let prevEl = null; // used to insert in order
+        // ── 2. Add new messages or update reactions on existing ones ──
+        let prevEl = null;
         newKeys.forEach(k => {
             const existing = document.getElementById('msg-'+k);
             if(existing){
-                // Message already rendered — only re-render if reactions changed
-                // (reactions are the only thing that fires updates without adding messages)
+                // Already rendered — update reactions only
                 const msg = data[k];
                 const reactionWrap = existing.querySelector('.wa-reactions');
                 const newReactions = msg.reactions || {};
                 const hasReactions = Object.keys(newReactions).length > 0;
-                // Rebuild reaction section cheaply
                 if(reactionWrap) reactionWrap.remove();
                 if(hasReactions){
                     const counts = {};
@@ -3535,14 +3551,14 @@ function loadMessages(group){
                 }
                 prevEl = existing;
             } else {
-                // New message — build and insert after prevEl
+                // New message — always append after prevEl (never insertBefore firstChild)
                 const bubble = buildBubble(k, data[k]);
-                if(prevEl && prevEl.nextSibling){
-                    container.insertBefore(bubble, prevEl.nextSibling);
-                } else if(prevEl){
-                    container.appendChild(bubble);
+                if(prevEl){
+                    // Insert right after prevEl
+                    prevEl.insertAdjacentElement('afterend', bubble);
                 } else {
-                    container.insertBefore(bubble, container.firstChild);
+                    // Very first message in the list
+                    container.appendChild(bubble);
                 }
                 prevEl = bubble;
             }
@@ -3550,18 +3566,10 @@ function loadMessages(group){
 
         _knownKeys = newKeys;
 
-        // ── 3. Scroll only when appropriate ──
-        if(_firstLoad){
-            // First load: jump to bottom
+        // ── 3. Scroll to bottom only when needed ──
+        const isNewMessage = newKeys.length > prevCount;
+        if(_firstLoad || (isNewMessage && wasAtBottom)){
             container.scrollTop = container.scrollHeight;
-        } else {
-            const countBefore = _knownKeys.length - newKeys.filter(k=>!document.getElementById('msg-'+k)).length;
-            const isNewMessage = newKeys.length > countBefore;
-            if(isNewMessage && wasAtBottom){
-                // New message arrived and user was already at bottom — follow it down
-                container.scrollTop = container.scrollHeight;
-            }
-            // Otherwise: do nothing — keep everyone's scroll position exactly where it was
         }
 
         _firstLoad = false;
