@@ -1788,7 +1788,7 @@ function removeHostMemory() {
             </div>
             <textarea class="wa-input" id="newComment" placeholder="Type a message…" rows="1" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,140)+'px';onTypingInput()"
                 onpaste="handleChatPaste(event)"></textarea>
-            <button class="wa-send-btn" onclick="postComment()">
+            <button class="wa-send-btn" id="waSendBtn" onclick="postComment()">
                 <svg width="20" height="20" fill="white" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
         </div>
@@ -1894,20 +1894,60 @@ function removeHostMemory() {
                 <div><div class="setting-label">Default card count</div><div class="setting-desc">Empty cards per section</div></div>
                 <input type="number" id="defaultCardsInput" value="20" min="4" max="50" style="width:70px;padding:8px 10px;font-size:13px;">
             </div>
-            <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
-                <div>
-                    <div class="setting-label">☁️ Cloudinary Setup</div>
-                    <div class="setting-desc">Needed to upload photos, videos &amp; audio that work on all devices</div>
+            <!-- ── Media Upload Setup ── -->
+            <div style="background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(139,92,246,.05));border:1.5px solid rgba(99,102,241,.2);border-radius:14px;padding:14px 16px;margin-bottom:12px;">
+                <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:6px;">📸 Photo &amp; Video Uploads</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:10px;">
+                    Set up <strong style="color:var(--accent);">just one</strong> of the services below — whichever is easiest. The app tries them in order automatically.
                 </div>
-                <div style="width:100%;display:flex;flex-direction:column;gap:7px;">
-                    <input type="text" id="cloudNameInput" placeholder="Cloud Name  (e.g. myfamilyhub)" style="width:100%;padding:8px 10px;font-size:12px;">
-                    <input type="text" id="uploadPresetInput" placeholder="Upload Preset  (e.g. family_hub_uploads)" style="width:100%;padding:8px 10px;font-size:12px;">
+
+                <!-- ThumbSnap -->
+                <div style="border:1px solid rgba(99,102,241,.15);border-radius:10px;padding:12px 14px;margin-bottom:10px;background:rgba(0,0,0,.15);">
+                    <div style="font-size:12px;font-weight:800;color:#a5b4fc;margin-bottom:6px;">1️⃣ ThumbSnap <span style="font-size:10px;font-weight:600;color:var(--accent2);background:rgba(91,171,111,.15);padding:2px 7px;border-radius:6px;margin-left:4px;">Recommended</span></div>
+                    <input type="text" id="thumbsnapKeyInput" placeholder="Paste your ThumbSnap API key here" style="width:100%;padding:8px 10px;font-size:12px;margin-bottom:8px;">
+                    <div style="font-size:11px;color:var(--muted);line-height:1.9;background:rgba(0,0,0,.2);border-radius:8px;padding:8px 10px;">
+                        <strong style="color:#c7d2fe;">How to get your key (2 minutes):</strong><br>
+                        👉 Open your browser and go to: <strong style="color:var(--accent);">thumbsnap.com</strong><br>
+                        👉 Click <strong>Sign Up</strong> — just email &amp; password, no credit card<br>
+                        👉 Once logged in, click your <strong>username</strong> (top right)<br>
+                        👉 Click <strong>"API"</strong> in the menu<br>
+                        👉 You will see a long code — that is your API key<br>
+                        👉 Copy it and paste it in the box above, then tap <strong>Save</strong>
+                    </div>
                 </div>
-                <div style="font-size:11px;color:var(--muted);line-height:1.6;">
-                    1. Go to <strong style="color:var(--accent);">cloudinary.com</strong> → sign up free (no credit card)<br>
-                    2. Dashboard → top-left shows your <strong>Cloud Name</strong><br>
-                    3. Settings → Upload → Add upload preset → set to <strong>Unsigned</strong> → copy name<br>
-                    4. Paste both above → Save
+
+                <!-- Publitio -->
+                <div style="border:1px solid rgba(99,102,241,.15);border-radius:10px;padding:12px 14px;margin-bottom:10px;background:rgba(0,0,0,.15);">
+                    <div style="font-size:12px;font-weight:800;color:#a5b4fc;margin-bottom:6px;">2️⃣ Publitio <span style="font-size:10px;font-weight:600;color:var(--muted);padding:2px 7px;">Backup</span></div>
+                    <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:8px;">
+                        <input type="text" id="publitioKeyInput"    placeholder="Publitio API Key"    style="width:100%;padding:8px 10px;font-size:12px;">
+                        <input type="text" id="publitioSecretInput" placeholder="Publitio API Secret" style="width:100%;padding:8px 10px;font-size:12px;">
+                    </div>
+                    <div style="font-size:11px;color:var(--muted);line-height:1.9;background:rgba(0,0,0,.2);border-radius:8px;padding:8px 10px;">
+                        <strong style="color:#c7d2fe;">How to get your keys (2 minutes):</strong><br>
+                        👉 Go to: <strong style="color:var(--accent);">publit.io</strong><br>
+                        👉 Click <strong>Sign Up Free</strong> — free gives you 5GB storage<br>
+                        👉 After login, look at the left menu → click <strong>"API Credentials"</strong><br>
+                        👉 You will see <strong>API Key</strong> and <strong>API Secret</strong> on that page<br>
+                        👉 Copy each one into the boxes above, then tap <strong>Save</strong>
+                    </div>
+                </div>
+
+                <!-- Cloudinary -->
+                <div style="border:1px solid rgba(99,102,241,.15);border-radius:10px;padding:12px 14px;background:rgba(0,0,0,.15);">
+                    <div style="font-size:12px;font-weight:800;color:#a5b4fc;margin-bottom:6px;">3️⃣ Cloudinary <span style="font-size:10px;font-weight:600;color:var(--muted);padding:2px 7px;">Backup</span></div>
+                    <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:8px;">
+                        <input type="text" id="cloudNameInput"    placeholder="Cloud Name  (e.g. myfamilyhub)"              style="width:100%;padding:8px 10px;font-size:12px;">
+                        <input type="text" id="uploadPresetInput" placeholder="Upload Preset  (e.g. family_hub_uploads)"    style="width:100%;padding:8px 10px;font-size:12px;">
+                    </div>
+                    <div style="font-size:11px;color:var(--muted);line-height:1.9;background:rgba(0,0,0,.2);border-radius:8px;padding:8px 10px;">
+                        <strong style="color:#c7d2fe;">How to get your keys:</strong><br>
+                        👉 Go to: <strong style="color:var(--accent);">cloudinary.com</strong> → Sign up free<br>
+                        👉 After login your <strong>Cloud Name</strong> is shown in the top-left of the dashboard<br>
+                        👉 Go to <strong>Settings → Upload → Add upload preset</strong><br>
+                        👉 Set signing mode to <strong>Unsigned</strong> → Save → copy the preset name<br>
+                        👉 Paste both above → tap <strong>Save</strong>
+                    </div>
                 </div>
             </div>
             <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
@@ -2278,8 +2318,12 @@ const PRIVATE_ROOM = 'FamilyHub-8x4k2m9q7w3j5p1r6n0y';
 
 // ── Cloudinary config ─────────────────────────────────────
 // Replace these with your own values from cloudinary.com → Settings → API Keys
-let CLOUDINARY_CLOUD_NAME = 'YOUR_CLOUD_NAME';   // e.g. 'myfamilyhub'
-let CLOUDINARY_UPLOAD_PRESET = 'YOUR_UPLOAD_PRESET'; // e.g. 'family_hub_uploads'
+// API keys — loaded from localStorage instantly (saved there by saveHubSettings)
+let CLOUDINARY_CLOUD_NAME    = localStorage.getItem('fh_cloudinary_name')   || 'YOUR_CLOUD_NAME';
+let CLOUDINARY_UPLOAD_PRESET = localStorage.getItem('fh_cloudinary_preset') || 'YOUR_UPLOAD_PRESET';
+let THUMBSNAP_API_KEY        = localStorage.getItem('fh_thumbsnap_key')     || '';
+let PUBLITIO_API_KEY         = localStorage.getItem('fh_publitio_key')      || '';
+let PUBLITIO_API_SECRET      = localStorage.getItem('fh_publitio_sec')      || '';
 const EMOJIS = ['📁','📂','🏠','❤️','⭐','🎵','🎬','📸','🎮','📖','🍕','🌟',
                 '🔥','💡','🎯','🎁','🌈','🦁','🐻','🌺','⚽','🎸','🧩','🍎',
                 '🌙','☀️','🎉','💎','🔖','📌'];
@@ -2416,6 +2460,12 @@ async function loadContent(){
         if(cn.exists()&&cn.val())CLOUDINARY_CLOUD_NAME=cn.val();
         const cp=await window.dbGet(window.dbRef(window.db,'cloudinaryPreset'));
         if(cp.exists()&&cp.val())CLOUDINARY_UPLOAD_PRESET=cp.val();
+        const ts=await window.dbGet(window.dbRef(window.db,'thumbsnapKey'));
+        if(ts.exists()&&ts.val())THUMBSNAP_API_KEY=ts.val();
+        const pk=await window.dbGet(window.dbRef(window.db,'publitioKey'));
+        if(pk.exists()&&pk.val())PUBLITIO_API_KEY=pk.val();
+        const ps=await window.dbGet(window.dbRef(window.db,'publitioSecret'));
+        if(ps.exists()&&ps.val())PUBLITIO_API_SECRET=ps.val();
     }catch(e){}
     loadSections();
     loadCards(currentSection); // reload now that we have real defaultCardCount
@@ -3243,6 +3293,9 @@ function openSettings(){
     document.getElementById('meetLinkInput').value=meetLink||'';
     document.getElementById('cloudNameInput').value=CLOUDINARY_CLOUD_NAME!=='YOUR_CLOUD_NAME'?CLOUDINARY_CLOUD_NAME:'';
     document.getElementById('uploadPresetInput').value=CLOUDINARY_UPLOAD_PRESET!=='YOUR_UPLOAD_PRESET'?CLOUDINARY_UPLOAD_PRESET:'';
+    document.getElementById('thumbsnapKeyInput').value=THUMBSNAP_API_KEY||'';
+    document.getElementById('publitioKeyInput').value=PUBLITIO_API_KEY||'';
+    document.getElementById('publitioSecretInput').value=PUBLITIO_API_SECRET||'';
 }
 function switchHostTab(name,btn){
     document.querySelectorAll('.host-tab').forEach(t=>t.classList.remove('active'));
@@ -3284,25 +3337,35 @@ async function clearAnnouncement(){
     catch(e){toast('Failed','danger');}
 }
 async function saveHubSettings(){
-    const name=document.getElementById('hubNameInput').value.trim();
-    const count=parseInt(document.getElementById('defaultCardsInput').value)||20;
-    const link=document.getElementById('meetLinkInput').value.trim();
-    const cloudName=document.getElementById('cloudNameInput').value.trim();
-    const uploadPreset=document.getElementById('uploadPresetInput').value.trim();
-    try{
-        if(name)await window.dbSet(window.dbRef(window.db,'appName'),name);
-        await window.dbSet(window.dbRef(window.db,'defaultCardCount'),count);
-        await window.dbSet(window.dbRef(window.db,'meetLink'),link);
-        if(cloudName)await window.dbSet(window.dbRef(window.db,'cloudinaryName'),cloudName);
-        if(uploadPreset)await window.dbSet(window.dbRef(window.db,'cloudinaryPreset'),uploadPreset);
-        if(cloudName) CLOUDINARY_CLOUD_NAME = cloudName;
-        if(uploadPreset) CLOUDINARY_UPLOAD_PRESET = uploadPreset;
-        document.getElementById('appName').textContent=name||'Family Hub';
-        defaultCardCount=count;
-        meetLink=link;
+    const name        = document.getElementById('hubNameInput').value.trim();
+    const count       = parseInt(document.getElementById('defaultCardsInput').value)||20;
+    const link        = document.getElementById('meetLinkInput').value.trim();
+    const cloudName   = document.getElementById('cloudNameInput').value.trim();
+    const uploadPreset= document.getElementById('uploadPresetInput').value.trim();
+    const tsKey       = document.getElementById('thumbsnapKeyInput').value.trim();
+    const pkKey       = document.getElementById('publitioKeyInput').value.trim();
+    const psKey       = document.getElementById('publitioSecretInput').value.trim();
 
-        toast('Saved! ✓');
-    }catch(e){toast('Failed','danger');}
+    // ── Save API keys to localStorage immediately — no Firebase needed ──
+    // This means they work right away even if Firebase rules block writes
+    if(tsKey){  localStorage.setItem('fh_thumbsnap_key', tsKey);   THUMBSNAP_API_KEY    = tsKey; }
+    if(pkKey){  localStorage.setItem('fh_publitio_key',  pkKey);   PUBLITIO_API_KEY     = pkKey; }
+    if(psKey){  localStorage.setItem('fh_publitio_sec',  psKey);   PUBLITIO_API_SECRET  = psKey; }
+    if(cloudName){    localStorage.setItem('fh_cloudinary_name',   cloudName);    CLOUDINARY_CLOUD_NAME    = cloudName; }
+    if(uploadPreset){ localStorage.setItem('fh_cloudinary_preset', uploadPreset); CLOUDINARY_UPLOAD_PRESET = uploadPreset; }
+
+    // ── Also try to save app settings to Firebase (non-critical) ──
+    try{
+        if(name)  await window.dbSet(window.dbRef(window.db,'appName'),name);
+        if(count) await window.dbSet(window.dbRef(window.db,'defaultCardCount'),count);
+        if(link)  await window.dbSet(window.dbRef(window.db,'meetLink'),link);
+    }catch(e){ console.warn('Firebase settings save failed (keys already saved locally):', e.message); }
+
+    // Update UI
+    if(name){ document.getElementById('appName').textContent = name; }
+    defaultCardCount = count;
+    meetLink = link;
+    toast('Saved! ✓');
 }
 
 // ── Comments ──────────────────────────────────────────────
@@ -3796,6 +3859,7 @@ async function toggleReaction(key, emoji){
 let _pendingImageData = null;
 let _pendingMediaType = null;
 let _pendingFile = null;
+let _uploadInProgress = false;  // true while upload is running — blocks send
 
 function handleImagePick(input){
     const file = input.files?.[0];
@@ -3827,15 +3891,103 @@ function handleImagePick(input){
         const reader = new FileReader();
         reader.onload = e => { imgThumb.src = e.target.result; imgThumb.style.display = 'block'; };
         reader.readAsDataURL(file);
-        label.textContent = '📷 Image — tap send or type a caption';
+        label.textContent = '📷 Uploading…';
     } else {
         const objUrl = URL.createObjectURL(file);
         vidThumb.src = objUrl;
         vidThumb.style.display = 'block';
-        label.textContent = '🎬 Video (' + mb.toFixed(1) + 'MB) — tap send';
+        label.textContent = '🎬 Uploading…';
     }
 
-    _uploadMediaToCloudinary(file);
+    // Disable send button while upload runs
+    _uploadInProgress = true;
+    const sendBtn = document.getElementById('waSendBtn') || document.querySelector('.wa-send-btn');
+    if(sendBtn){ sendBtn.style.opacity='0.4'; sendBtn.style.pointerEvents='none'; }
+
+    _uploadMediaToCloudinary(file).finally(() => {
+        _uploadInProgress = false;
+        if(sendBtn){ sendBtn.style.opacity=''; sendBtn.style.pointerEvents=''; }
+    });
+}
+
+// ── Upload to ThumbSnap (free image + video host, needs API key) ──
+async function _uploadToThumbSnap(file, onProgress){
+    if(!THUMBSNAP_API_KEY) throw new Error('No ThumbSnap key');
+    const fd = new FormData();
+    fd.append('media', file);
+    fd.append('key',   THUMBSNAP_API_KEY);
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST','https://thumbsnap.com/api/upload');
+        xhr.upload.onprogress = e => {
+            if(e.lengthComputable && onProgress)
+                onProgress(Math.round(e.loaded / e.total * 100));
+        };
+        xhr.onload = () => {
+            if(xhr.status === 200){
+                try{
+                    const j = JSON.parse(xhr.responseText);
+                    if(j.success && j.data && j.data.media) resolve(j.data.media);
+                    else reject(new Error(j.error || 'ThumbSnap upload failed'));
+                } catch(e){ reject(new Error('Bad response from ThumbSnap')); }
+            } else {
+                reject(new Error('ThumbSnap HTTP ' + xhr.status));
+            }
+        };
+        xhr.onerror = () => reject(new Error('Network error'));
+        xhr.send(fd);
+    });
+}
+
+// ── Upload to Publitio (free 5GB media host, needs API key + secret) ──
+async function _uploadToPublitio(file, onProgress){
+    if(!PUBLITIO_API_KEY || !PUBLITIO_API_SECRET) throw new Error('No Publitio credentials');
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('folder', '/family_chat');
+    // Publitio uses HTTP Basic Auth
+    const auth = btoa(PUBLITIO_API_KEY + ':' + PUBLITIO_API_SECRET);
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', 'https://api.publit.io/v1/files/create');
+        xhr.setRequestHeader('Authorization', 'Basic ' + auth);
+        xhr.upload.onprogress = e => {
+            if(e.lengthComputable && onProgress)
+                onProgress(Math.round(e.loaded / e.total * 100));
+        };
+        xhr.onload = () => {
+            if(xhr.status === 200){
+                try{
+                    const j = JSON.parse(xhr.responseText);
+                    // Publitio returns url_short or url_preview
+                    const url = j.url_short || j.url_preview || (j.versions && j.versions[0] && j.versions[0].url);
+                    if(url) resolve(url);
+                    else reject(new Error('Publitio: no URL in response'));
+                } catch(e){ reject(new Error('Bad response from Publitio')); }
+            } else {
+                reject(new Error('Publitio HTTP ' + xhr.status));
+            }
+        };
+        xhr.onerror = () => reject(new Error('Network error'));
+        xhr.send(fd);
+    });
+}
+
+// ── Upload via Puter.js (free, no API key — uses Puter cloud storage) ──
+async function _uploadToPuter(file){
+    if(typeof puter === 'undefined' || !puter.fs || !puter.fs.upload)
+        throw new Error('Puter.js not available');
+    // Puter requires sign-in but handles it with a popup automatically
+    const fname = 'family_chat/' + Date.now() + '_' + (file.name || 'media');
+    const result = await puter.fs.upload([file], fname);
+    // Get a public share URL
+    const uploaded = Array.isArray(result) ? result[0] : result;
+    if(!uploaded) throw new Error('Puter upload returned nothing');
+    // Create a public sharing link
+    const shared = await puter.fs.share([uploaded.path || uploaded]);
+    const url = (shared && (shared.url || (Array.isArray(shared) && shared[0] && shared[0].url)));
+    if(!url) throw new Error('Puter: could not get public URL');
+    return url;
 }
 
 async function _uploadMediaToCloudinary(file){
@@ -3844,9 +3996,42 @@ async function _uploadMediaToCloudinary(file){
     const isImage  = file.type.startsWith('image/');
     const isVideo  = file.type.startsWith('video/');
 
-    // ── If Cloudinary is configured — use it ──
+    const showProg = pct => {
+        if(progress){ progress.style.display='block'; progress.textContent='Uploading… '+pct+'%'; }
+    };
+    const hideProg = () => { if(progress) progress.style.display='none'; };
+
+    // ── Priority 1: ThumbSnap ──
+    if(THUMBSNAP_API_KEY){
+        showProg(0);
+        try{
+            const url = await _uploadToThumbSnap(file, showProg);
+            _pendingImageData = url;
+            hideProg();
+            if(label) label.textContent = (isVideo?'🎬 Video':'📷 Image') + ' ready to send ✓';
+            toast('Upload complete! Tap send ✓');
+            return;
+        } catch(e){
+            console.warn('ThumbSnap failed, trying Cloudinary:', e.message);
+        }
+    }
+
+    // ── Priority 2: Publitio ──
+    if(PUBLITIO_API_KEY && PUBLITIO_API_SECRET){
+        showProg(0);
+        try{
+            const url = await _uploadToPublitio(file, showProg);
+            _pendingImageData = url;
+            hideProg();
+            if(label) label.textContent = (isVideo?'🎬 Video':'📷 Image') + ' ready to send ✓';
+            toast('Upload complete! Tap send ✓');
+            return;
+        } catch(e){ console.warn('Publitio failed, trying Cloudinary:', e.message); }
+    }
+
+    // ── Priority 3: Cloudinary ──
     if(CLOUDINARY_CLOUD_NAME && CLOUDINARY_CLOUD_NAME !== 'YOUR_CLOUD_NAME'){
-        if(progress){ progress.style.display='block'; progress.textContent='Uploading… 0%'; }
+        showProg(0);
         try {
             const fd = new FormData();
             fd.append('file', file);
@@ -3854,42 +4039,43 @@ async function _uploadMediaToCloudinary(file){
             fd.append('folder', 'family_chat');
             const url = await new Promise((resolve, reject) => {
                 const xhr = new XMLHttpRequest();
-                const resourceType = isVideo ? 'video' : 'image';
-                xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`);
+                xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${isVideo?'video':'image'}/upload`);
                 xhr.upload.onprogress = e => {
-                    if(e.lengthComputable && progress){
-                        const pct = Math.round(e.loaded / e.total * 100);
-                        progress.textContent = 'Uploading… ' + pct + '%';
-                    }
+                    if(e.lengthComputable) showProg(Math.round(e.loaded/e.total*100));
                 };
                 xhr.onload = () => {
-                    if(xhr.status === 200){
-                        resolve(JSON.parse(xhr.responseText).secure_url);
-                    } else {
-                        reject(new Error('Upload failed: ' + xhr.status));
-                    }
+                    if(xhr.status===200) resolve(JSON.parse(xhr.responseText).secure_url);
+                    else reject(new Error('Cloudinary HTTP ' + xhr.status));
                 };
-                xhr.onerror = () => reject(new Error('Network error'));
+                xhr.onerror = ()=>reject(new Error('Network error'));
                 xhr.send(fd);
             });
             _pendingImageData = url;
-            if(progress) progress.style.display = 'none';
-            if(label) label.textContent = (isVideo ? '🎬 Video' : '📷 Image') + ' ready to send ✓';
+            hideProg();
+            if(label) label.textContent = (isVideo?'🎬 Video':'📷 Image') + ' ready to send ✓';
             toast('Upload complete! Tap send ✓');
-        } catch(e) {
-            console.error('Cloudinary upload failed:', e);
-            toast('Upload failed — ' + e.message, 'danger');
-            clearImagePreview();
-            if(progress) progress.style.display = 'none';
+            return;
+        } catch(e){
+            console.warn('Cloudinary failed, trying Puter:', e.message);
         }
-        return;
     }
 
-    // ── No Cloudinary — compress image to base64 (works for everyone) ──
+    // ── Priority 4: Puter.js (free cloud, auto sign-in popup) ──
+    showProg(0);
+    try{
+        if(label) label.textContent = (isVideo?'🎬 Uploading via Puter…':'📷 Uploading via Puter…');
+        const url = await _uploadToPuter(file);
+        _pendingImageData = url;
+        hideProg();
+        if(label) label.textContent = (isVideo?'🎬 Video':'📷 Image') + ' ready to send ✓';
+        toast('Upload complete! Tap send ✓');
+        return;
+    } catch(e){ console.warn('Puter failed, using base64 fallback:', e.message); hideProg(); }
+
+    // ── Priority 5: base64 fallback (images only) ──
     if(isImage){
         if(label) label.textContent = '📷 Preparing…';
         try{
-            // Compress: resize to max 1200px, JPEG quality stepped down until under 400KB
             const dataUrl = await new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onerror = reject;
@@ -3901,18 +4087,13 @@ async function _uploadMediaToCloudinary(file){
                         let w = img.width, h = img.height;
                         const maxPx = 1200;
                         if(w > maxPx || h > maxPx){
-                            if(w > h){ h = Math.round(h * maxPx / w); w = maxPx; }
-                            else      { w = Math.round(w * maxPx / h); h = maxPx; }
+                            if(w > h){ h = Math.round(h*maxPx/w); w = maxPx; }
+                            else      { w = Math.round(w*maxPx/h); h = maxPx; }
                         }
                         canvas.width = w; canvas.height = h;
                         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                        let q = 0.82;
-                        let result = canvas.toDataURL('image/jpeg', q);
-                        // Step quality down until under ~400KB base64
-                        while(result.length > 400 * 1024 * 1.37 && q > 0.2){
-                            q -= 0.07;
-                            result = canvas.toDataURL('image/jpeg', q);
-                        }
+                        let q = 0.82, result = canvas.toDataURL('image/jpeg', q);
+                        while(result.length > 400*1024*1.37 && q > 0.2){ q -= 0.07; result = canvas.toDataURL('image/jpeg', q); }
                         resolve(result);
                     };
                     img.src = ev.target.result;
@@ -3922,18 +4103,12 @@ async function _uploadMediaToCloudinary(file){
             _pendingImageData = dataUrl;
             if(label) label.textContent = '📷 Image ready to send';
         } catch(err){
-            console.warn('Compress failed, using raw base64', err);
-            // Raw fallback
-            const reader = new FileReader();
-            reader.onload = e => {
-                _pendingImageData = e.target.result;
-                if(label) label.textContent = '📷 Image ready to send';
-            };
-            reader.readAsDataURL(file);
+            const r = new FileReader();
+            r.onload = e => { _pendingImageData = e.target.result; if(label) label.textContent = '📷 Image ready to send'; };
+            r.readAsDataURL(file);
         }
-    } else if(isVideo){
-        // Videos need Cloudinary — show helpful message
-        toast('To send videos, set up Cloudinary in Host → Settings (free)', 'warn');
+    } else {
+        toast('Add a ThumbSnap or Publitio key in Host → Settings to send videos', 'warn');
         clearImagePreview();
     }
 }
@@ -4357,21 +4532,46 @@ async function uploadAndSendVoice(blob){
     try{
         let audioUrl = '';
 
-        if(CLOUDINARY_CLOUD_NAME && CLOUDINARY_CLOUD_NAME !== 'YOUR_CLOUD_NAME' &&
-           CLOUDINARY_UPLOAD_PRESET && CLOUDINARY_UPLOAD_PRESET !== 'YOUR_UPLOAD_PRESET'){
-            const fd = new FormData();
-            const ext = blob.type.includes('mp4') || blob.type.includes('aac') ? 'mp4'
-                      : blob.type.includes('ogg') ? 'ogg' : 'webm';
-            fd.append('file', blob, 'voice.' + ext);
-            fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-            fd.append('resource_type', 'auto');
-            const res = await fetch('https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD_NAME + '/auto/upload', {method:'POST', body:fd});
-            if(!res.ok) throw new Error('Cloudinary upload failed: ' + res.status);
-            const cData = await res.json();
-            if(cData.error) throw new Error('Cloudinary error: ' + cData.error.message);
-            audioUrl = cData.secure_url;
-        } else {
-            toast('No Cloudinary set up — storing voice note in database (keep clips under 30s)', 'warn');
+        const ext = blob.type.includes('mp4') || blob.type.includes('aac') ? 'mp4'
+                  : blob.type.includes('ogg') ? 'ogg' : 'webm';
+        const voiceFile = new File([blob], 'voice.' + ext, {type: blob.type});
+
+        // Priority 1: ThumbSnap
+        if(THUMBSNAP_API_KEY){
+            try{
+                audioUrl = await _uploadToThumbSnap(voiceFile, null);
+            } catch(e){ console.warn('ThumbSnap voice failed:', e.message); }
+        }
+
+        // Priority 2: Publitio
+        if(!audioUrl && PUBLITIO_API_KEY && PUBLITIO_API_SECRET){
+            try{ audioUrl = await _uploadToPublitio(voiceFile, null); }
+            catch(e){ console.warn('Publitio voice failed:', e.message); }
+        }
+
+        // Priority 3: Cloudinary
+        if(!audioUrl && CLOUDINARY_CLOUD_NAME && CLOUDINARY_CLOUD_NAME !== 'YOUR_CLOUD_NAME'){
+            try{
+                const fd = new FormData();
+                fd.append('file', voiceFile);
+                fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+                fd.append('resource_type', 'auto');
+                const res = await fetch('https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD_NAME + '/auto/upload', {method:'POST', body:fd});
+                if(res.ok){
+                    const cData = await res.json();
+                    if(!cData.error) audioUrl = cData.secure_url;
+                }
+            } catch(e){ console.warn('Cloudinary voice failed:', e.message); }
+        }
+
+        // Priority 4: Puter.js
+        if(!audioUrl){
+            try{ audioUrl = await _uploadToPuter(voiceFile); }
+            catch(e){ console.warn('Puter voice failed:', e.message); }
+        }
+
+        // Priority 5: base64 fallback (short clips only)
+        if(!audioUrl){
             const reader = new FileReader();
             audioUrl = await new Promise((res, rej) => {
                 reader.onload  = () => res(reader.result);
@@ -4379,7 +4579,7 @@ async function uploadAndSendVoice(blob){
                 reader.readAsDataURL(blob);
             });
             if(audioUrl.length > 900000){
-                toast('Voice clip too long for free plan — keep clips under 20s', 'warn');
+                toast('Voice clip too long — keep clips under 20s, or add a ThumbSnap key in Settings', 'warn');
                 return;
             }
         }
@@ -4513,6 +4713,7 @@ async function aiEnhanceText(){
 async function postComment(){
     const input = document.getElementById('newComment');
     const text = input.value.trim();
+    if(_uploadInProgress){ toast('Please wait — image is still uploading…','warn'); return; }
     if(!text && !_pendingImageData){ toast('Write something first!','warn'); return; }
     if(!currentUser){ toast('Please sign in first!','warn'); return; }
     const meta = chatGroupMeta[currentGroup.replace(/\s+/g,'_')] || {};
@@ -8868,7 +9069,9 @@ async function aiSendQuestion(){
     // ── Detect image generation request (only when NO image attached) ──
     var IMAGE_RE = /\b(generate|create|make|draw|paint|render|design|picture|image|photo|illustration|artwork|sketch|visuali[sz]e|imagine)\b/i;
     var EDIT_RE  = /\b(edit|change|remove|delete|erase|fix|improve|enhance|add|put|place|replace|crop|resize|adjust|filter|recolor|modify|alter|touch.?up|clean.?up|cut.?out)\b/i;
-    var isImageGen  = IMAGE_RE.test(question) && !hasAttachedImage;
+    // In Picture Mode every message is treated as an image generation request
+    var _inPictureMode = (typeof _naiCurrentMode !== 'undefined' && _naiCurrentMode && _naiCurrentMode.id === 'picture');
+    var isImageGen  = (_inPictureMode || IMAGE_RE.test(question)) && !hasAttachedImage;
     var isImageEdit = hasAttachedImage && EDIT_RE.test(question);
     var isImageView = hasAttachedImage && !isImageEdit; // just analysing/describing
 
@@ -11731,6 +11934,12 @@ var NAI_MODES = [
     prompt:'You are a helpful personal finance assistant. Give practical advice on budgeting, saving, investing basics, and financial planning. Always note you\'re not a licensed financial advisor and professional consultation is recommended for major decisions.'
   },
   {
+    id:'picture', emoji:'🎨', name:'Picture Mode', color:'#f43f5e',
+    desc:'Every message becomes an image. Just describe what you want — no need to say "generate" or "draw".',
+    badge:'Images',badgeColor:'rgba(244,63,94,.22)',
+    prompt:'__picture_mode__'
+  },
+  {
     id:'custom', emoji:'🔑', name:'Custom API', color:'#a855f7',
     desc:'Paste your own API endpoint or system prompt for a specialised AI.',
     badge:'Custom',badgeColor:'rgba(168,85,247,.2)',
@@ -11913,6 +12122,29 @@ function _updateModeUI(mode){
     if(emoji) emoji.textContent = mode.emoji;
     if(name)  name.textContent  = mode.name;
     if(label) label.textContent = mode.desc ? mode.desc.slice(0,40) : mode.name;
+
+    // Show / hide Picture Mode banner on the input areas
+    var existing = document.getElementById('naiPictureBanner');
+    if(existing) existing.remove();
+    if(mode.id === 'picture'){
+        var banner = document.createElement('div');
+        banner.id = 'naiPictureBanner';
+        banner.style.cssText = 'background:linear-gradient(135deg,rgba(244,63,94,.18),rgba(251,113,133,.1));'
+            + 'border:1px solid rgba(244,63,94,.35);border-radius:12px;padding:8px 14px;'
+            + 'font-size:12px;font-weight:700;color:#fb7185;text-align:center;margin:6px 14px 0;'
+            + 'display:flex;align-items:center;justify-content:center;gap:6px;';
+        banner.innerHTML = '🎨 <span>Picture Mode ON — every message creates an image</span>';
+        // Insert banner above the input areas
+        var inputBot = document.getElementById('naiInputBottom');
+        var inputCen = document.getElementById('naiInputCentered');
+        var target = (inputBot && inputBot.closest) ? inputBot.closest('.nai-input-wrap') || inputBot.parentNode : null;
+        if(!target && inputCen) target = inputCen.closest('.nai-input-wrap') || inputCen.parentNode;
+        if(target && target.parentNode) target.parentNode.insertBefore(banner, target);
+        else {
+            var chatArea = document.getElementById('naiChatMessages');
+            if(chatArea && chatArea.parentNode) chatArea.parentNode.appendChild(banner);
+        }
+    }
 }
 
 window.naiModePickerOpen = function(){
@@ -11975,6 +12207,7 @@ function naiCustomModeDialog(){
 window._naiGetModePrompt = function(){
     if(!_naiCurrentMode || !_naiCurrentMode.prompt) return '';
     if(_naiCurrentMode.prompt === '__custom__') return _naiCustomPrompt || '';
+    if(_naiCurrentMode.prompt === '__picture_mode__') return ''; // image gen handles its own prompting
     return _naiCurrentMode.prompt;
 };
 
