@@ -2460,12 +2460,17 @@ async function loadContent(){
         if(cn.exists()&&cn.val())CLOUDINARY_CLOUD_NAME=cn.val();
         const cp=await window.dbGet(window.dbRef(window.db,'cloudinaryPreset'));
         if(cp.exists()&&cp.val())CLOUDINARY_UPLOAD_PRESET=cp.val();
+        // Load upload API keys from Firebase (overrides localStorage — Firebase is the source of truth)
         const ts=await window.dbGet(window.dbRef(window.db,'thumbsnapKey'));
         if(ts.exists()&&ts.val()){ THUMBSNAP_API_KEY=ts.val(); localStorage.setItem('fh_thumbsnap_key',ts.val()); }
         const pk=await window.dbGet(window.dbRef(window.db,'publitioKey'));
         if(pk.exists()&&pk.val()){ PUBLITIO_API_KEY=pk.val(); localStorage.setItem('fh_publitio_key',pk.val()); }
         const ps=await window.dbGet(window.dbRef(window.db,'publitioSecret'));
         if(ps.exists()&&ps.val()){ PUBLITIO_API_SECRET=ps.val(); localStorage.setItem('fh_publitio_sec',ps.val()); }
+        const fc=await window.dbGet(window.dbRef(window.db,'cloudinaryName'));
+        if(fc.exists()&&fc.val()){ CLOUDINARY_CLOUD_NAME=fc.val(); localStorage.setItem('fh_cloudinary_name',fc.val()); }
+        const fp=await window.dbGet(window.dbRef(window.db,'cloudinaryPreset'));
+        if(fp.exists()&&fp.val()){ CLOUDINARY_UPLOAD_PRESET=fp.val(); localStorage.setItem('fh_cloudinary_preset',fp.val()); }
     }catch(e){}
     loadSections();
     loadCards(currentSection); // reload now that we have real defaultCardCount
@@ -3346,29 +3351,41 @@ async function saveHubSettings(){
     const pkKey       = document.getElementById('publitioKeyInput').value.trim();
     const psKey       = document.getElementById('publitioSecretInput').value.trim();
 
-    // ── Save keys to localStorage immediately (works on this device right away) ──
-    if(tsKey){  localStorage.setItem('fh_thumbsnap_key', tsKey);   THUMBSNAP_API_KEY    = tsKey; }
-    if(pkKey){  localStorage.setItem('fh_publitio_key',  pkKey);   PUBLITIO_API_KEY     = pkKey; }
-    if(psKey){  localStorage.setItem('fh_publitio_sec',  psKey);   PUBLITIO_API_SECRET  = psKey; }
-    if(cloudName){    localStorage.setItem('fh_cloudinary_name',   cloudName);    CLOUDINARY_CLOUD_NAME    = cloudName; }
-    if(uploadPreset){ localStorage.setItem('fh_cloudinary_preset', uploadPreset); CLOUDINARY_UPLOAD_PRESET = uploadPreset; }
+    // ── Save keys to localStorage (persists on this device after reload) ──
+    localStorage.setItem('fh_thumbsnap_key',    tsKey);
+    localStorage.setItem('fh_publitio_key',     pkKey);
+    localStorage.setItem('fh_publitio_sec',     psKey);
+    localStorage.setItem('fh_cloudinary_name',  cloudName);
+    localStorage.setItem('fh_cloudinary_preset',uploadPreset);
 
-    // ── Save everything to Firebase so ALL family devices get the keys ──
+    // Update live variables immediately
+    THUMBSNAP_API_KEY    = tsKey;
+    PUBLITIO_API_KEY     = pkKey;
+    PUBLITIO_API_SECRET  = psKey;
+    CLOUDINARY_CLOUD_NAME    = cloudName    || 'YOUR_CLOUD_NAME';
+    CLOUDINARY_UPLOAD_PRESET = uploadPreset || 'YOUR_UPLOAD_PRESET';
+
+    // ── Also save to Firebase so other family devices get the keys ──
     try{
-        if(name)          await window.dbSet(window.dbRef(window.db,'appName'),name);
-        if(count)         await window.dbSet(window.dbRef(window.db,'defaultCardCount'),count);
-        if(link)          await window.dbSet(window.dbRef(window.db,'meetLink'),link);
-        if(tsKey)         await window.dbSet(window.dbRef(window.db,'thumbsnapKey'),tsKey);
-        if(pkKey)         await window.dbSet(window.dbRef(window.db,'publitioKey'),pkKey);
-        if(psKey)         await window.dbSet(window.dbRef(window.db,'publitioSecret'),psKey);
-        if(cloudName)     await window.dbSet(window.dbRef(window.db,'cloudinaryName'),cloudName);
-        if(uploadPreset)  await window.dbSet(window.dbRef(window.db,'cloudinaryPreset'),uploadPreset);
-    }catch(e){ console.warn('Firebase save failed — keys saved locally only:', e.message); }
+        const updates = {};
+        if(name)        updates['appName']          = name;
+        if(count)       updates['defaultCardCount'] = count;
+        updates['meetLink']         = link        || '';
+        updates['thumbsnapKey']     = tsKey       || '';
+        updates['publitioKey']      = pkKey       || '';
+        updates['publitioSecret']   = psKey       || '';
+        updates['cloudinaryName']   = cloudName   || '';
+        updates['cloudinaryPreset'] = uploadPreset|| '';
+        await window.dbUpdate(window.dbRef(window.db), updates);
+    }catch(e){ console.warn('Firebase save failed (keys saved locally):', e.message); }
 
     if(name){ document.getElementById('appName').textContent = name; }
     defaultCardCount = count;
     meetLink = link;
-    toast('Saved! ✓');
+
+    // Show which key is active
+    var activeService = tsKey ? 'ThumbSnap' : pkKey ? 'Publitio' : cloudName ? 'Cloudinary' : 'none';
+    toast('Saved! ✓  Active: ' + activeService);
 }
 
 // ── Comments ──────────────────────────────────────────────
@@ -12690,27 +12707,43 @@ var _history = [], _redoStack = [];
 var _tool = 'draw';
 var _drawing = false, _lx = 0, _ly = 0;
 
-// Draw
+// Editor state — normal local vars
 var _brushSize = 12, _brushColor = '#ff3b30', _brushOpacity = 1;
-// Eraser
 var _eraserSize = 28;
-// Text
 var _textVal = '', _textSize = 28, _textColor = '#ffffff', _textFont = 'Nunito';
 var _textBold = true, _textShadow = true;
-// Shape
 var _shape = 'rect', _shapeFill = true, _shapeColor = '#6366f1', _shapeOpacity = 0.85;
 var _shapeStart = null, _shapeDragging = false;
-// Sticker
-var _sticker = '❤️';
-var _stickerSize = 48;
-// Crop
+var _sticker = '❤️', _stickerSize = 48;
 var _cropStart = null, _cropRect = null, _cropping = false;
-// Adjustments (stored as CSS filter values)
 var _brightness = 0, _contrast = 0, _saturation = 0, _hue = 0;
-var _blur = 0, _sharpen = 0, _vignette = 0;
-var _filter = 'none';
-// Baked pixel adjustments
-var _blurBaked = 0;
+var _blur = 0, _vignette = 0, _filter = 'none', _blurBaked = 0;
+
+// Expose on window._ie so HTML oninput/onclick can set them
+// The draw functions read from window._ie so changes take effect immediately
+window._ie = {
+    get brushSize(){return _brushSize;},    set brushSize(v){_brushSize=+v;},
+    get brushColor(){return _brushColor;},  set brushColor(v){_brushColor=v;},
+    get brushOpacity(){return _brushOpacity;}, set brushOpacity(v){_brushOpacity=+v;},
+    get eraserSize(){return _eraserSize;},  set eraserSize(v){_eraserSize=+v;},
+    get textVal(){return _textVal;},        set textVal(v){_textVal=v;},
+    get textSize(){return _textSize;},      set textSize(v){_textSize=+v;},
+    get textColor(){return _textColor;},    set textColor(v){_textColor=v;},
+    get textFont(){return _textFont;},      set textFont(v){_textFont=v;},
+    get shape(){return _shape;},            set shape(v){_shape=v;},
+    get shapeFill(){return _shapeFill;},    set shapeFill(v){_shapeFill=v;},
+    get shapeColor(){return _shapeColor;},  set shapeColor(v){_shapeColor=v;},
+    get shapeOpacity(){return _shapeOpacity;}, set shapeOpacity(v){_shapeOpacity=+v;},
+    get sticker(){return _sticker;},        set sticker(v){_sticker=v;},
+    get stickerSize(){return _stickerSize;}, set stickerSize(v){_stickerSize=+v;},
+    get brightness(){return _brightness;},  set brightness(v){_brightness=+v;},
+    get contrast(){return _contrast;},      set contrast(v){_contrast=+v;},
+    get saturation(){return _saturation;},  set saturation(v){_saturation=+v;},
+    get hue(){return _hue;},                set hue(v){_hue=+v;},
+    get blur(){return _blur;},              set blur(v){_blur=+v;},
+    get vignette(){return _vignette;},      set vignette(v){_vignette=+v;},
+    get filter(){return _filter;},          set filter(v){_filter=v;},
+};
 
 /* ═══════════════════════════════════════════════════════
    OPEN / CLOSE / SAVE
@@ -12720,7 +12753,9 @@ window.openImgEditor = function(src, title){
     _ctx = _c.getContext('2d');
     _history = []; _redoStack = [];
     _brightness=0; _contrast=0; _saturation=0; _hue=0;
-    _blur=0; _sharpen=0; _vignette=0; _filter='none'; _blurBaked=0;
+    _blur=0; _vignette=0; _filter='none'; _blurBaked=0;
+    if(window._ie){ window._ie.brightness=0; window._ie.contrast=0; window._ie.saturation=0;
+        window._ie.hue=0; window._ie.blur=0; window._ie.vignette=0; window._ie.filter='none'; }
     _c.style.filter = 'none';
     document.getElementById('imgEditor').classList.add('on');
     document.getElementById('ieTitle').textContent = (title || 'Edit Image');
@@ -12904,7 +12939,9 @@ function _restoreDataUrl(dataUrl){
 window.ieReset = function(){
     if(!_origImg) return;
     _brightness=0;_contrast=0;_saturation=0;_hue=0;
-    _blur=0;_sharpen=0;_vignette=0;_filter='none';
+    _blur=0;_vignette=0;_filter='none';
+    if(window._ie){ window._ie.brightness=0; window._ie.contrast=0; window._ie.saturation=0;
+        window._ie.hue=0; window._ie.blur=0; window._ie.vignette=0; window._ie.filter='none'; }
     _c.style.filter='none';
     var vig = document.getElementById('ieVigOverlay');
     if(vig) vig.style.display='none';
@@ -12985,47 +13022,47 @@ window.ieTool = function(t){
         ob.classList.add('on');
         ob.innerHTML=
             '<span class="ie-opt-label">Size</span>'
-            +'<input class="ie-slider" type="range" min="1" max="60" value="'+_brushSize+'" oninput="_ieBrushSize=+this.value;_brushSize=+this.value">'
+            +'<input class="ie-slider" type="range" min="1" max="60" value="'+_brushSize+'" oninput="window._ie.brushSize=+this.value">'
             +'<span class="ie-opt-label">Color</span>'
-            +'<input class="ie-color" type="color" value="'+_brushColor+'" oninput="_brushColor=this.value">'
+            +'<input class="ie-color" type="color" value="'+_brushColor+'" oninput="window._ie.brushColor=this.value">'
             +'<span class="ie-opt-label">Opacity</span>'
-            +'<input class="ie-slider" type="range" min="10" max="100" value="'+Math.round(_brushOpacity*100)+'" oninput="_brushOpacity=this.value/100">';
+            +'<input class="ie-slider" type="range" min="10" max="100" value="'+Math.round(_brushOpacity*100)+'" oninput="window._ie.brushOpacity=this.value/100">';
         _c.style.cursor='crosshair';
     } else if(t==='eraser'){
         ob.classList.add('on');
         ob.innerHTML='<span class="ie-opt-label">Eraser size</span>'
-            +'<input class="ie-slider" type="range" min="5" max="100" value="'+_eraserSize+'" oninput="_eraserSize=+this.value">';
+            +'<input class="ie-slider" type="range" min="5" max="100" value="'+_eraserSize+'" oninput="window._ie.eraserSize=+this.value">';
         _c.style.cursor='cell';
     } else if(t==='text'){
         ob.classList.add('on');
-        ob.innerHTML='<input type="text" id="ieTextInput" placeholder="Type here…" value="'+(_textVal||'')+'" style="flex:1;min-width:80px;background:rgba(20,22,40,.85);border:1px solid rgba(99,102,241,.3);border-radius:8px;padding:6px 10px;color:#e2e8f0;font-size:13px;font-family:Nunito,sans-serif;outline:none;" oninput="_textVal=this.value">'
-            +'<input class="ie-color" type="color" value="'+_textColor+'" oninput="_textColor=this.value" title="Text color">'
+        ob.innerHTML='<input type="text" id="ieTextInput" placeholder="Type here…" value="'+(_textVal||'')+'" style="flex:1;min-width:80px;background:rgba(20,22,40,.85);border:1px solid rgba(99,102,241,.3);border-radius:8px;padding:6px 10px;color:#e2e8f0;font-size:13px;font-family:Nunito,sans-serif;outline:none;" oninput="window._ie.textVal=this.value">'
+            +'<input class="ie-color" type="color" value="'+_textColor+'" oninput="window._ie.textColor=this.value" title="Text color">'
             +'<span class="ie-opt-label">Size</span>'
-            +'<input class="ie-slider" type="range" min="12" max="120" value="'+_textSize+'" oninput="_textSize=+this.value" style="width:80px;">'
-            +'<select id="ieFontSel" style="background:#0d0e1a;border:1px solid rgba(99,102,241,.3);color:#cbd5e1;border-radius:8px;padding:5px 8px;font-size:12px;cursor:pointer;" onchange="_textFont=this.value"><option value="Nunito">Nunito</option><option value="Georgia">Georgia</option><option value="Impact">Impact</option><option value="Comic Sans MS">Comic</option><option value="monospace">Mono</option></select>';
+            +'<input class="ie-slider" type="range" min="12" max="120" value="'+_textSize+'" oninput="window._ie.textSize=+this.value" style="width:80px;">'
+            +'<select id="ieFontSel" style="background:#0d0e1a;border:1px solid rgba(99,102,241,.3);color:#cbd5e1;border-radius:8px;padding:5px 8px;font-size:12px;cursor:pointer;" onchange="window._ie.textFont=this.value"><option value="Nunito">Nunito</option><option value="Georgia">Georgia</option><option value="Impact">Impact</option><option value="Comic Sans MS">Comic</option><option value="monospace">Mono</option></select>';
         _c.style.cursor='text';
     } else if(t==='shape'){
         ob.classList.add('on');
         var shapes=[['rect','▭ Rect'],['circle','○ Circle'],['line','╱ Line'],['arrow','→ Arrow'],['star','★ Star'],['heart','♥ Heart']];
         ob.innerHTML='<div class="ie-shape-grid">'+shapes.map(function(s){
-            return '<div class="ie-shape-btn'+(s[0]===_shape?' active':'')+'" onclick="_shape=\''+s[0]+'\';document.querySelectorAll(\'.ie-shape-btn\').forEach(function(b){b.classList.remove(\'active\')});this.classList.add(\'active\')" title="'+s[0]+'">'+s[1]+'</div>';
+            return '<div class="ie-shape-btn'+(s[0]===_shape?' active':'')+'" onclick="window._ie.shape=\''+s[0]+'\';document.querySelectorAll(\'.ie-shape-btn\').forEach(function(b){b.classList.remove(\'active\')});this.classList.add(\'active\')" title="'+s[0]+'">'+s[1]+'</div>';
         }).join('')+'</div>'
         +'<div class="ie-opt-sep"></div>'
         +'<span class="ie-opt-label">Color</span>'
-        +'<input class="ie-color" type="color" value="'+_shapeColor+'" oninput="_shapeColor=this.value">'
-        +'<button class="ie-filter-btn'+(_shapeFill?' active':'')+'" onclick="_shapeFill=!_shapeFill;this.classList.toggle(\'active\')">Fill</button>'
+        +'<input class="ie-color" type="color" value="'+_shapeColor+'" oninput="window._ie.shapeColor=this.value">'
+        +'<button class="ie-filter-btn'+(_shapeFill?' active':'')+'" onclick="window._ie.shapeFill=!window._ie.shapeFill;this.classList.toggle(\'active\')">Fill</button>'
         +'<span class="ie-opt-label">Opacity</span>'
-        +'<input class="ie-slider" type="range" min="10" max="100" value="'+Math.round(_shapeOpacity*100)+'" oninput="_shapeOpacity=this.value/100">';
+        +'<input class="ie-slider" type="range" min="10" max="100" value="'+Math.round(_shapeOpacity*100)+'" oninput="window._ie.shapeOpacity=this.value/100">';
         _c.style.cursor='crosshair';
     } else if(t==='sticker'){
         ob.classList.add('on');
         var stickers=['❤️','😍','🎉','🌟','🔥','✨','😂','👏','🌈','🦋','🎨','🌸','💫','🎵','🏆','💖','🌺','🍀','🌙','☀️'];
         ob.innerHTML='<div class="ie-shape-grid">'+stickers.map(function(s){
-            return '<div class="ie-shape-btn'+(s===_sticker?' active':'')+'" onclick="_sticker=\''+s+'\';document.querySelectorAll(\'.ie-shape-btn\').forEach(function(b){b.classList.remove(\'active\')});this.classList.add(\'active\')" style="font-size:20px;">'+s+'</div>';
+            return '<div class="ie-shape-btn'+(s===_sticker?' active':'')+'" onclick="window._ie.sticker=\''+s+'\';document.querySelectorAll(\'.ie-shape-btn\').forEach(function(b){b.classList.remove(\'active\')});this.classList.add(\'active\')" style="font-size:20px;">'+s+'</div>';
         }).join('')+'</div>'
         +'<div class="ie-opt-sep"></div>'
         +'<span class="ie-opt-label">Size</span>'
-        +'<input class="ie-slider" type="range" min="20" max="160" value="'+_stickerSize+'" oninput="_stickerSize=+this.value">';
+        +'<input class="ie-slider" type="range" min="20" max="160" value="'+_stickerSize+'" oninput="window._ie.stickerSize=+this.value">';
         _c.style.cursor='copy';
     } else if(t==='cutout'){
         if(typeof window._ieCutoutInit === 'function') window._ieCutoutInit();
@@ -13040,19 +13077,19 @@ window.ieTool = function(t){
         ob.classList.add('on');
         ob.innerHTML=
             '<span class="ie-opt-label">☀️</span>'
-            +'<input class="ie-slider" type="range" min="-80" max="80" value="'+_brightness+'" oninput="_brightness=+this.value;_updateCanvasFilter()" title="Brightness">'
+            +'<input class="ie-slider" type="range" min="-80" max="80" value="'+_brightness+'" oninput="window._ie.brightness=+this.value;_updateCanvasFilter()" title="Brightness">'
             +'<span class="ie-opt-label">◐</span>'
-            +'<input class="ie-slider" type="range" min="-80" max="80" value="'+_contrast+'" oninput="_contrast=+this.value;_updateCanvasFilter()" title="Contrast">'
+            +'<input class="ie-slider" type="range" min="-80" max="80" value="'+_contrast+'" oninput="window._ie.contrast=+this.value;_updateCanvasFilter()" title="Contrast">'
             +'<span class="ie-opt-label">🎨</span>'
-            +'<input class="ie-slider" type="range" min="-80" max="80" value="'+_saturation+'" oninput="_saturation=+this.value;_updateCanvasFilter()" title="Saturation">'
+            +'<input class="ie-slider" type="range" min="-80" max="80" value="'+_saturation+'" oninput="window._ie.saturation=+this.value;_updateCanvasFilter()" title="Saturation">'
             +'<span class="ie-opt-label">🌈</span>'
-            +'<input class="ie-slider" type="range" min="-180" max="180" value="'+_hue+'" oninput="_hue=+this.value;_updateCanvasFilter()" title="Hue">';
+            +'<input class="ie-slider" type="range" min="-180" max="180" value="'+_hue+'" oninput="window._ie.hue=+this.value;_updateCanvasFilter()" title="Hue">';
         _c.style.cursor='default';
     } else if(t==='blur'){
         ob.classList.add('on');
         ob.innerHTML=
             '<span class="ie-opt-label">Blur</span>'
-            +'<input class="ie-slider" type="range" min="0" max="10" step=".1" value="'+_blur+'" oninput="_blur=+this.value;_updateCanvasFilter()">'
+            +'<input class="ie-slider" type="range" min="0" max="10" step=".1" value="'+_blur+'" oninput="window._ie.blur=+this.value;_updateCanvasFilter()">'
             +'<button class="ie-filter-btn" onclick="ieSharpen(1)" title="Apply Sharpen pass">Sharpen ✓</button>'
             +'<button class="ie-filter-btn" onclick="ieGaussian()" title="Bake blur into canvas">Bake Blur ✓</button>';
         _c.style.cursor='default';
@@ -13060,7 +13097,7 @@ window.ieTool = function(t){
         ob.classList.add('on');
         ob.innerHTML=
             '<span class="ie-opt-label">Vignette strength</span>'
-            +'<input class="ie-slider" type="range" min="0" max="100" value="'+_vignette+'" oninput="_vignette=+this.value;_updateCanvasFilter()">';
+            +'<input class="ie-slider" type="range" min="0" max="100" value="'+_vignette+'" oninput="window._ie.vignette=+this.value;_updateCanvasFilter()">';
         _c.style.cursor='default';
     } else if(t==='filter'){
         ob.classList.add('on');
@@ -13070,7 +13107,7 @@ window.ieTool = function(t){
             ['sepia','Sepia'],['fade','Fade'],['chrome','Chrome'],
         ];
         ob.innerHTML=filters.map(function(f){
-            return '<button class="ie-filter-btn'+(_filter===f[0]?' active':'')+'" onclick="_filter=\''+f[0]+'\';_updateCanvasFilter();document.querySelectorAll(\'.ie-filter-btn\').forEach(function(b){b.classList.remove(\'active\')});this.classList.add(\'active\')">'+f[1]+'</button>';
+            return '<button class="ie-filter-btn'+(_filter===f[0]?' active':'')+'" onclick="window._ie.filter=\''+f[0]+'\';_updateCanvasFilter();document.querySelectorAll(\'.ie-filter-btn\').forEach(function(b){b.classList.remove(\'active\')});this.classList.add(\'active\')">'+f[1]+'</button>';
         }).join('');
         _c.style.cursor='default';
     } else if(t==='ai'){
@@ -13126,9 +13163,11 @@ function iePointerDown(e){
     if(_tool==='sticker'){
         var sz=_stickerSize;
         _ctx.save();
-        _ctx.font=sz+'px serif';
+        // Use emoji-specific fonts so they render in colour on all devices
+        _ctx.font=sz+'px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",serif';
         _ctx.textAlign='center';
         _ctx.textBaseline='middle';
+        _ctx.globalAlpha=1;
         _ctx.fillText(_sticker, p.x, p.y);
         _ctx.restore();
         _pushHistory(); _drawing=false; return;
@@ -13376,9 +13415,14 @@ async function _ieClaudeCall(userText){
 
     var responseText = '';
     try{
-        // Grab canvas image for vision
+        // Grab canvas image for vision (may fail if image is cross-origin tainted)
         var canvas = document.getElementById('ieCanvas');
-        var imgB64 = canvas ? canvas.toDataURL('image/jpeg', 0.55).split(',')[1] : null;
+        var imgB64 = null;
+        try{
+            if(canvas) imgB64 = canvas.toDataURL('image/jpeg', 0.55).split(',')[1];
+        } catch(taintErr){
+            console.warn('Canvas tainted (cross-origin image) — sending text only:', taintErr.message);
+        }
 
         var sysPrompt = 'You are a helpful, friendly AI assistant built into a family photo editor. ' +
             'The user shares images and asks you anything — outfit advice, food identification, ' +
