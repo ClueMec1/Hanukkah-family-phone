@@ -1904,7 +1904,11 @@ function removeHostMemory() {
                 <!-- ThumbSnap -->
                 <div style="border:1px solid rgba(99,102,241,.15);border-radius:10px;padding:12px 14px;margin-bottom:10px;background:rgba(0,0,0,.15);">
                     <div style="font-size:12px;font-weight:800;color:#a5b4fc;margin-bottom:6px;">1️⃣ ThumbSnap <span style="font-size:10px;font-weight:600;color:var(--accent2);background:rgba(91,171,111,.15);padding:2px 7px;border-radius:6px;margin-left:4px;">Recommended</span></div>
-                    <input type="text" id="thumbsnapKeyInput" placeholder="Paste your ThumbSnap API key here" style="width:100%;padding:8px 10px;font-size:12px;margin-bottom:8px;">
+                    <div style="display:flex;gap:8px;margin-bottom:8px;">
+                        <input type="text" id="thumbsnapKeyInput" placeholder="Paste your ThumbSnap API key here" style="flex:1;padding:8px 10px;font-size:12px;">
+                        <button onclick="testApiKey('thumbsnap')" style="background:rgba(99,102,241,.2);border:1px solid rgba(99,102,241,.35);color:#a5b4fc;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;">🧪 Test</button>
+                    </div>
+                    <div id="thumbsnapStatus" style="font-size:12px;font-weight:700;padding:8px 12px;border-radius:8px;display:none;margin-bottom:6px;"></div>
                     <div style="font-size:11px;color:var(--muted);line-height:1.9;background:rgba(0,0,0,.2);border-radius:8px;padding:8px 10px;">
                         <strong style="color:#c7d2fe;">How to get your key (2 minutes):</strong><br>
                         👉 Open your browser and go to: <strong style="color:var(--accent);">thumbsnap.com</strong><br>
@@ -1922,7 +1926,9 @@ function removeHostMemory() {
                     <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:8px;">
                         <input type="text" id="publitioKeyInput"    placeholder="Publitio API Key"    style="width:100%;padding:8px 10px;font-size:12px;">
                         <input type="text" id="publitioSecretInput" placeholder="Publitio API Secret" style="width:100%;padding:8px 10px;font-size:12px;">
+                        <button onclick="testApiKey('publitio')" style="background:rgba(99,102,241,.2);border:1px solid rgba(99,102,241,.35);color:#a5b4fc;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">🧪 Test Publitio</button>
                     </div>
+                    <div id="publitioStatus" style="font-size:12px;font-weight:700;padding:8px 12px;border-radius:8px;display:none;margin-bottom:6px;"></div>
                     <div style="font-size:11px;color:var(--muted);line-height:1.9;background:rgba(0,0,0,.2);border-radius:8px;padding:8px 10px;">
                         <strong style="color:#c7d2fe;">How to get your keys (2 minutes):</strong><br>
                         👉 Go to: <strong style="color:var(--accent);">publit.io</strong><br>
@@ -1939,7 +1945,9 @@ function removeHostMemory() {
                     <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:8px;">
                         <input type="text" id="cloudNameInput"    placeholder="Cloud Name  (e.g. myfamilyhub)"              style="width:100%;padding:8px 10px;font-size:12px;">
                         <input type="text" id="uploadPresetInput" placeholder="Upload Preset  (e.g. family_hub_uploads)"    style="width:100%;padding:8px 10px;font-size:12px;">
+                        <button onclick="testApiKey('cloudinary')" style="background:rgba(99,102,241,.2);border:1px solid rgba(99,102,241,.35);color:#a5b4fc;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">🧪 Test Cloudinary</button>
                     </div>
+                    <div id="cloudinaryStatus" style="font-size:12px;font-weight:700;padding:8px 12px;border-radius:8px;display:none;margin-bottom:6px;"></div>
                     <div style="font-size:11px;color:var(--muted);line-height:1.9;background:rgba(0,0,0,.2);border-radius:8px;padding:8px 10px;">
                         <strong style="color:#c7d2fe;">How to get your keys:</strong><br>
                         👉 Go to: <strong style="color:var(--accent);">cloudinary.com</strong> → Sign up free<br>
@@ -2318,10 +2326,10 @@ const PRIVATE_ROOM = 'FamilyHub-8x4k2m9q7w3j5p1r6n0y';
 
 // ── Cloudinary config ─────────────────────────────────────
 // Replace these with your own values from cloudinary.com → Settings → API Keys
-// API keys — loaded from localStorage instantly (saved there by saveHubSettings)
+// API keys — hardcoded so every device works without any setup
 let CLOUDINARY_CLOUD_NAME    = localStorage.getItem('fh_cloudinary_name')   || 'YOUR_CLOUD_NAME';
 let CLOUDINARY_UPLOAD_PRESET = localStorage.getItem('fh_cloudinary_preset') || 'YOUR_UPLOAD_PRESET';
-let THUMBSNAP_API_KEY        = localStorage.getItem('fh_thumbsnap_key')     || '';
+let THUMBSNAP_API_KEY        = '0004716083421ae0159de376874cc818'; // hardcoded — works for everyone
 let PUBLITIO_API_KEY         = localStorage.getItem('fh_publitio_key')      || '';
 let PUBLITIO_API_SECRET      = localStorage.getItem('fh_publitio_sec')      || '';
 const EMOJIS = ['📁','📂','🏠','❤️','⭐','🎵','🎬','📸','🎮','📖','🍕','🌟',
@@ -2462,7 +2470,8 @@ async function loadContent(){
         if(cp.exists()&&cp.val())CLOUDINARY_UPLOAD_PRESET=cp.val();
         // Load upload API keys from Firebase (overrides localStorage — Firebase is the source of truth)
         const ts=await window.dbGet(window.dbRef(window.db,'thumbsnapKey'));
-        if(ts.exists()&&ts.val()){ THUMBSNAP_API_KEY=ts.val(); localStorage.setItem('fh_thumbsnap_key',ts.val()); }
+        if(ts.exists()&&ts.val()){ localStorage.setItem('fh_thumbsnap_key',ts.val()); }
+        // THUMBSNAP_API_KEY stays as the hardcoded value unless localStorage has a newer one
         const pk=await window.dbGet(window.dbRef(window.db,'publitioKey'));
         if(pk.exists()&&pk.val()){ PUBLITIO_API_KEY=pk.val(); localStorage.setItem('fh_publitio_key',pk.val()); }
         const ps=await window.dbGet(window.dbRef(window.db,'publitioSecret'));
@@ -3301,6 +3310,24 @@ function openSettings(){
     document.getElementById('thumbsnapKeyInput').value=THUMBSNAP_API_KEY||'';
     document.getElementById('publitioKeyInput').value=PUBLITIO_API_KEY||'';
     document.getElementById('publitioSecretInput').value=PUBLITIO_API_SECRET||'';
+
+    // Show saved status for each service
+    function _showSaved(elId, active){
+        var el = document.getElementById(elId);
+        if(!el) return;
+        if(active){
+            el.style.display='block';
+            el.style.background='rgba(34,197,94,.12)';
+            el.style.border='1px solid rgba(34,197,94,.3)';
+            el.style.color='#4ade80';
+            el.textContent='✅ Key saved — tap 🧪 Test to confirm it works';
+        } else {
+            el.style.display='none';
+        }
+    }
+    _showSaved('thumbsnapStatus',  !!THUMBSNAP_API_KEY);
+    _showSaved('publitioStatus',   !!(PUBLITIO_API_KEY && PUBLITIO_API_SECRET));
+    _showSaved('cloudinaryStatus', !!(CLOUDINARY_CLOUD_NAME && CLOUDINARY_CLOUD_NAME!=='YOUR_CLOUD_NAME'));
 }
 function switchHostTab(name,btn){
     document.querySelectorAll('.host-tab').forEach(t=>t.classList.remove('active'));
@@ -3341,6 +3368,95 @@ async function clearAnnouncement(){
     try{await window.dbRemove(window.dbRef(window.db,'announcement'));toast('Banner cleared','warn');}
     catch(e){toast('Failed','danger');}
 }
+// ── Test API keys live ──
+window.testApiKey = async function(service){
+    var statusEl, key, key2;
+
+    function showStatus(el, ok, msg){
+        if(!el) return;
+        el.style.display = 'block';
+        el.style.background = ok ? 'rgba(34,197,94,.12)' : 'rgba(239,68,68,.12)';
+        el.style.border = ok ? '1px solid rgba(34,197,94,.3)' : '1px solid rgba(239,68,68,.3)';
+        el.style.color = ok ? '#4ade80' : '#f87171';
+        el.textContent = (ok ? '✅ ' : '❌ ') + msg;
+    }
+
+    if(service === 'thumbsnap'){
+        key = (document.getElementById('thumbsnapKeyInput').value.trim()) || THUMBSNAP_API_KEY;
+        statusEl = document.getElementById('thumbsnapStatus');
+        if(!key){ showStatus(statusEl, false, 'No API key entered'); return; }
+        showStatus(statusEl, true, 'Testing ThumbSnap…');
+        try{
+            // Upload a tiny 1x1 transparent PNG as test
+            var testBlob = await fetch('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==').then(r=>r.blob());
+            var fd = new FormData();
+            fd.append('media', testBlob, 'test.png');
+            fd.append('key', key);
+            var r = await fetch('https://thumbsnap.com/api/upload', {method:'POST', body:fd});
+            var j = await r.json();
+            if(j.success && j.data && j.data.media){
+                showStatus(statusEl, true, 'ThumbSnap works! ✓ Photos & videos will upload here.');
+                THUMBSNAP_API_KEY = key;
+                localStorage.setItem('fh_thumbsnap_key', key);
+            } else {
+                showStatus(statusEl, false, 'ThumbSnap rejected the key: ' + (j.error || 'unknown error'));
+            }
+        } catch(e){
+            showStatus(statusEl, false, 'Could not reach ThumbSnap — check your internet');
+        }
+
+    } else if(service === 'publitio'){
+        key  = (document.getElementById('publitioKeyInput').value.trim())    || PUBLITIO_API_KEY;
+        key2 = (document.getElementById('publitioSecretInput').value.trim()) || PUBLITIO_API_SECRET;
+        statusEl = document.getElementById('publitioStatus');
+        if(!key || !key2){ showStatus(statusEl, false, 'Enter both API Key and API Secret'); return; }
+        showStatus(statusEl, true, 'Testing Publitio…');
+        try{
+            var auth = btoa(key + ':' + key2);
+            var r2 = await fetch('https://api.publit.io/v1/account', {
+                headers:{ 'Authorization': 'Basic ' + auth }
+            });
+            if(r2.ok){
+                var j2 = await r2.json();
+                showStatus(statusEl, true, 'Publitio works! ✓ Account: ' + (j2.username || j2.email || 'connected'));
+                PUBLITIO_API_KEY = key; PUBLITIO_API_SECRET = key2;
+                localStorage.setItem('fh_publitio_key', key);
+                localStorage.setItem('fh_publitio_sec', key2);
+            } else {
+                showStatus(statusEl, false, 'Publitio rejected the credentials (HTTP ' + r2.status + ')');
+            }
+        } catch(e2){
+            showStatus(statusEl, false, 'Could not reach Publitio — check your internet');
+        }
+
+    } else if(service === 'cloudinary'){
+        key  = (document.getElementById('cloudNameInput').value.trim())    || CLOUDINARY_CLOUD_NAME;
+        key2 = (document.getElementById('uploadPresetInput').value.trim()) || CLOUDINARY_UPLOAD_PRESET;
+        statusEl = document.getElementById('cloudinaryStatus');
+        if(!key || key === 'YOUR_CLOUD_NAME'){ showStatus(statusEl, false, 'Enter your Cloud Name first'); return; }
+        if(!key2 || key2 === 'YOUR_UPLOAD_PRESET'){ showStatus(statusEl, false, 'Enter your Upload Preset first'); return; }
+        showStatus(statusEl, true, 'Testing Cloudinary…');
+        try{
+            var testBlob2 = await fetch('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==').then(r=>r.blob());
+            var fd3 = new FormData();
+            fd3.append('file', testBlob2, 'test.png');
+            fd3.append('upload_preset', key2);
+            var r3 = await fetch('https://api.cloudinary.com/v1_1/'+key+'/image/upload', {method:'POST', body:fd3});
+            var j3 = await r3.json();
+            if(j3.secure_url){
+                showStatus(statusEl, true, 'Cloudinary works! ✓ Image uploaded successfully.');
+                CLOUDINARY_CLOUD_NAME = key; CLOUDINARY_UPLOAD_PRESET = key2;
+                localStorage.setItem('fh_cloudinary_name', key);
+                localStorage.setItem('fh_cloudinary_preset', key2);
+            } else {
+                showStatus(statusEl, false, 'Cloudinary error: ' + (j3.error && j3.error.message || 'check your Cloud Name and preset'));
+            }
+        } catch(e3){
+            showStatus(statusEl, false, 'Could not reach Cloudinary — check your internet');
+        }
+    }
+};
+
 async function saveHubSettings(){
     const name        = document.getElementById('hubNameInput').value.trim();
     const count       = parseInt(document.getElementById('defaultCardsInput').value)||20;
@@ -4131,7 +4247,7 @@ async function _uploadMediaToCloudinary(file){
         // A key was set but all uploads failed — show a real error, not a setup message
         const anyKeySet = THUMBSNAP_API_KEY || (PUBLITIO_API_KEY && PUBLITIO_API_SECRET) || (CLOUDINARY_CLOUD_NAME && CLOUDINARY_CLOUD_NAME !== 'YOUR_CLOUD_NAME');
         if(anyKeySet){
-            toast('Video upload failed — check your internet and try again', 'danger');
+            toast('Video upload failed — file may be too large. Try a shorter clip.', 'danger');
         } else {
             toast('To send videos: go to Host → Settings and add a ThumbSnap API key (free)', 'warn');
         }
