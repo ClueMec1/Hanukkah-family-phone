@@ -1208,6 +1208,9 @@ function removeHostMemory() {
     <button onclick="iePickPhoto()" style="background:rgba(255,255,255,.22);border:1.5px solid rgba(255,255,255,.4);color:#fff;border-radius:12px;padding:8px 13px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;display:flex;align-items:center;gap:6px;flex-shrink:0;">
       ✏️ Edit a Photo
     </button>
+    <button onclick="openVideoGen()" style="background:rgba(255,255,255,.22);border:1.5px solid rgba(255,255,255,.4);color:#fff;border-radius:12px;padding:8px 13px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;display:flex;align-items:center;gap:6px;flex-shrink:0;">
+      🎬 AI Video
+    </button>
   </div>
   <!-- Hidden file input for photo picker -->
   <input type="file" id="iePhotoPickerInput" accept="image/*" style="display:none" onchange="ieHandlePhotoPick(this)">
@@ -1269,6 +1272,62 @@ function removeHostMemory() {
       <div style="font-size:64px;opacity:.4;">🎨</div>
       <div style="font-family:'Fredoka One',cursive;font-size:20px;color:var(--muted);text-align:center;">Describe something beautiful</div>
       <div style="font-size:13px;color:var(--muted);font-weight:600;text-align:center;line-height:1.6;">Type a description above and tap ✦ to generate a free AI image — no account needed!</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ AI VIDEO GENERATOR OVERLAY ═══ -->
+<div id="videoGenOverlay" style="display:none;position:fixed;inset:0;z-index:10600;background:var(--bg);flex-direction:column;overflow:hidden;font-family:'Nunito',sans-serif;">
+
+  <!-- Header -->
+  <div style="background:linear-gradient(135deg,#7c3aed,#4f46e5);padding:16px 18px;display:flex;align-items:center;gap:12px;flex-shrink:0;">
+    <button onclick="closeVideoGen()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">←</button>
+    <div style="flex:1;">
+      <div style="font-family:'Fredoka One',cursive;font-size:20px;color:#fff;letter-spacing:.5px;">🎬 AI Video Generator</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.8);font-weight:600;">Powered by Pollinations AI • Seedance model • Free</div>
+    </div>
+  </div>
+
+  <!-- Prompt area -->
+  <div style="padding:14px 16px 0;flex-shrink:0;">
+    <textarea id="videoGenPrompt" placeholder="Describe your video… e.g. A family having a birthday party, confetti flying, warm lighting" rows="3"
+      style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:12px 14px;color:var(--text);font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box;line-height:1.5;"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();generateVideo();}"></textarea>
+
+    <!-- Options row -->
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center;">
+      <select id="videoAspect" style="background:var(--surface);border:1.5px solid var(--border);color:var(--text);border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit;cursor:pointer;">
+        <option value="16:9">📺 16:9 Landscape</option>
+        <option value="9:16">📱 9:16 Portrait</option>
+        <option value="1:1">⬛ 1:1 Square</option>
+      </select>
+      <select id="videoDuration" style="background:var(--surface);border:1.5px solid var(--border);color:var(--text);border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit;cursor:pointer;">
+        <option value="5">5 seconds</option>
+        <option value="8" selected>8 seconds</option>
+        <option value="10">10 seconds</option>
+      </select>
+      <button onclick="generateVideo()" id="videoGenBtn"
+        style="flex:1;min-width:120px;background:linear-gradient(135deg,#7c3aed,#4f46e5);border:none;color:#fff;border-radius:12px;padding:10px 20px;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;">
+        ✦ Generate Video
+      </button>
+    </div>
+
+    <!-- Idea chips -->
+    <div style="display:flex;gap:6px;margin-top:10px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;">
+      <button class="img-idea-btn" onclick="setVideoPrompt('A family laughing together at a dinner table, warm golden lighting')">🍽️ Family dinner</button>
+      <button class="img-idea-btn" onclick="setVideoPrompt('Children playing in a sunny backyard with a dog running around')">🐕 Kids playing</button>
+      <button class="img-idea-btn" onclick="setVideoPrompt('A beautiful sunset over the ocean with waves crashing on the shore')">🌅 Sunset</button>
+      <button class="img-idea-btn" onclick="setVideoPrompt('Birthday party celebration with balloons and cake, people cheering')">🎂 Birthday</button>
+      <button class="img-idea-btn" onclick="setVideoPrompt('Snow falling gently on a cozy house with Christmas lights')">❄️ Winter scene</button>
+    </div>
+  </div>
+
+  <!-- Gallery -->
+  <div id="videoGenGallery" style="flex:1;overflow-y:auto;padding:14px 16px 20px;display:flex;flex-direction:column;gap:16px;">
+    <div id="videoGenEmpty" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:14px;padding:30px;">
+      <div style="font-size:64px;opacity:.4;">🎬</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:20px;color:var(--muted);text-align:center;">Describe a scene to create a video</div>
+      <div style="font-size:13px;color:var(--muted);font-weight:600;text-align:center;line-height:1.6;">Videos take 20–60 seconds to generate. Be patient — good things take time! 🎥</div>
     </div>
   </div>
 </div>
@@ -2326,6 +2385,9 @@ const PRIVATE_ROOM = 'FamilyHub-8x4k2m9q7w3j5p1r6n0y';
 
 // ── Cloudinary config ─────────────────────────────────────
 // Replace these with your own values from cloudinary.com → Settings → API Keys
+// Pollinations publishable key — safe for front-end, powers AI video generation
+const POLLINATIONS_PK = 'pk_JDZbByaZVrjx8Nzl';
+
 // API keys — hardcoded so every device works without any setup
 let CLOUDINARY_CLOUD_NAME    = localStorage.getItem('fh_cloudinary_name')   || 'YOUR_CLOUD_NAME';
 let CLOUDINARY_UPLOAD_PRESET = localStorage.getItem('fh_cloudinary_preset') || 'YOUR_UPLOAD_PRESET';
@@ -9210,10 +9272,15 @@ async function aiSendQuestion(){
 
     // ── Detect image generation request (only when NO image attached) ──
     var IMAGE_RE = /\b(generate|create|make|draw|paint|render|design|picture|image|photo|illustration|artwork|sketch|visuali[sz]e|imagine)\b/i;
+    var VIDEO_RE = /\b(video|clip|animation|animate|movie|film|reel|footage|motion|moving|short film|make.*video|create.*video|generate.*video|record)\b/i;
     var EDIT_RE  = /\b(edit|change|remove|delete|erase|fix|improve|enhance|add|put|place|replace|crop|resize|adjust|filter|recolor|modify|alter|touch.?up|clean.?up|cut.?out)\b/i;
     // In Picture Mode every message is treated as an image generation request
     var _inPictureMode = (typeof _naiCurrentMode !== 'undefined' && _naiCurrentMode && _naiCurrentMode.id === 'picture');
-    var isImageGen  = (_inPictureMode || IMAGE_RE.test(question)) && !hasAttachedImage;
+    // In Video Mode every message becomes a video
+    var _inVideoMode = (typeof _naiCurrentMode !== 'undefined' && _naiCurrentMode && _naiCurrentMode.id === 'video');
+    // Video detection takes priority over image detection
+    var isVideoGen  = (_inVideoMode || VIDEO_RE.test(question)) && !hasAttachedImage;
+    var isImageGen  = !isVideoGen && (_inPictureMode || IMAGE_RE.test(question)) && !hasAttachedImage;
     var isImageEdit = hasAttachedImage && EDIT_RE.test(question);
     var isImageView = hasAttachedImage && !isImageEdit; // just analysing/describing
 
@@ -9242,6 +9309,52 @@ async function aiSendQuestion(){
                 }, 300);
             } else {
                 if(thinkBubble){ thinkBubble.innerHTML=''; thinkBubble.textContent='Please attach an image first, then ask me to edit it.'; }
+            }
+
+        } else if(isVideoGen){
+            // ── Video generation path ────────────────────────────────
+            if(thinkBubble){
+                thinkBubble.innerHTML = '';
+                thinkBubble.style.cssText = 'padding:12px 14px;display:flex;flex-direction:column;align-items:center;gap:10px;';
+                thinkBubble.innerHTML = '<div style="width:40px;height:40px;border:3px solid rgba(124,58,237,.3);border-top-color:#7c3aed;border-radius:50%;animation:spin .8s linear infinite;"></div>'
+                    + '<div style="font-size:13px;font-weight:700;color:var(--muted);text-align:center;" id="naiVideoStatus">🎬 Generating your video…<br><span style="font-size:11px;opacity:.7;">30–90 seconds — please wait</span></div>';
+            }
+
+            // Tick the status message so user knows it's alive
+            var _naiVidTick = 0;
+            var _naiVidTimer = setInterval(function(){
+                _naiVidTick++;
+                var st = document.getElementById('naiVideoStatus');
+                if(st) st.innerHTML = '🎬 Generating your video… ' + _naiVidTick + 's<br><span style="font-size:11px;opacity:.7;">' + (_naiVidTick<30?'starting up…':_naiVidTick<60?'working on it…':'almost there…') + '</span>';
+            }, 1000);
+
+            try{
+                // Pass prompt directly — no need to open the overlay
+                var videoUrl = await window.generateVideo(question);
+                clearInterval(_naiVidTimer);
+
+                if(thinkBubble){
+                    thinkBubble.innerHTML = '';
+                    thinkBubble.style.cssText = 'padding:6px;background:transparent;border:none;';
+                    if(videoUrl){
+                        var vid = document.createElement('video');
+                        vid.src = videoUrl;
+                        vid.controls = true;
+                        vid.setAttribute('playsinline','');
+                        vid.style.cssText = 'max-width:280px;width:100%;border-radius:14px;display:block;box-shadow:0 4px 20px rgba(124,58,237,.3);';
+                        var vcap = document.createElement('div');
+                        vcap.style.cssText = 'margin-top:8px;font-size:11px;color:rgba(100,116,139,.6);font-family:"DM Mono",monospace;padding:0 4px;';
+                        vcap.textContent = 'Your AI video • tap ▶ to play';
+                        thinkBubble.appendChild(vid);
+                        thinkBubble.appendChild(vcap);
+                    } else {
+                        thinkBubble.textContent = '🎬 Video saved to AI Video Generator!';
+                    }
+                }
+                if(window._naiVoiceMode) naiSpeak('Your video is ready!');
+            } catch(vidErr){
+                clearInterval(_naiVidTimer);
+                if(thinkBubble){ thinkBubble.innerHTML=''; thinkBubble.style.cssText='padding:10px 14px;'; thinkBubble.textContent='Sorry, video generation failed — try a shorter or simpler description.'; }
             }
 
         } else if(isImageGen){
@@ -9457,6 +9570,179 @@ function openImageGen(){
 function closeImageGen(){
     document.getElementById('imageGenOverlay').style.display = 'none';
 }
+
+// ═══════════════════════════════════════════════════
+//  AI VIDEO GENERATOR — Pollinations Seedance model
+// ═══════════════════════════════════════════════════
+let _videoHistory = [];
+const _VIDEO_STORAGE_KEY = 'familyHub_videoHistory';
+const _VIDEO_MAX_SAVED = 20;
+
+function _saveVideoHistory(){
+    try{ localStorage.setItem(_VIDEO_STORAGE_KEY, JSON.stringify(_videoHistory.slice(0,_VIDEO_MAX_SAVED))); }catch(e){}
+}
+function _loadVideoHistory(){
+    try{ const r=localStorage.getItem(_VIDEO_STORAGE_KEY); if(r) _videoHistory=JSON.parse(r); }catch(e){ _videoHistory=[]; }
+}
+
+function openVideoGen(){
+    document.getElementById('videoGenOverlay').style.display = 'flex';
+    _loadVideoHistory();
+    _rebuildVideoGallery();
+}
+window.openVideoGen = openVideoGen;
+
+function closeVideoGen(){
+    document.getElementById('videoGenOverlay').style.display = 'none';
+}
+window.closeVideoGen = closeVideoGen;
+
+function setVideoPrompt(text){
+    const ta = document.getElementById('videoGenPrompt');
+    if(ta){ ta.value = text; ta.focus(); }
+}
+window.setVideoPrompt = setVideoPrompt;
+
+function _rebuildVideoGallery(){
+    const gallery = document.getElementById('videoGenGallery');
+    const empty   = document.getElementById('videoGenEmpty');
+    if(!gallery) return;
+    Array.from(gallery.querySelectorAll('.vid-gen-card')).forEach(c=>c.remove());
+    if(_videoHistory.length===0){ if(empty) empty.style.display='flex'; return; }
+    if(empty) empty.style.display='none';
+    _videoHistory.forEach(item => {
+        const card = _buildVideoCard(item.url, item.prompt);
+        gallery.appendChild(card);
+    });
+}
+
+function _buildVideoCard(url, prompt){
+    const card = document.createElement('div');
+    card.className = 'vid-gen-card';
+    card.style.cssText = 'background:var(--surface);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;';
+    const safePrompt = (prompt||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    card.innerHTML = `
+        <video src="${url}" controls playsinline preload="metadata"
+            style="width:100%;display:block;max-height:300px;background:#000;border-radius:16px 16px 0 0;">
+        </video>
+        <div style="padding:10px 14px 12px;display:flex;align-items:center;gap:8px;">
+            <div style="flex:1;font-size:12px;font-weight:600;color:var(--muted);line-height:1.4;">${safePrompt}</div>
+            <a href="${url}" download="family-ai-video.mp4" style="background:var(--accent);color:#fff;border:none;border-radius:10px;padding:7px 12px;font-size:12px;font-weight:800;cursor:pointer;text-decoration:none;flex-shrink:0;">⬇</a>
+            <button onclick="this.closest('.vid-gen-card').remove();_videoHistory=_videoHistory.filter(i=>i.url!=='${url.replace(/'/g,"\'")}');_saveVideoHistory();"
+                style="background:rgba(229,57,53,.1);color:var(--danger);border:1.5px solid rgba(229,57,53,.25);border-radius:10px;padding:7px 10px;font-size:13px;cursor:pointer;flex-shrink:0;">🗑</button>
+        </div>`;
+    return card;
+}
+
+async function generateVideo(promptOverride){
+    const promptEl  = document.getElementById('videoGenPrompt');
+    const btn       = document.getElementById('videoGenBtn');
+    const gallery   = document.getElementById('videoGenGallery');
+    const empty     = document.getElementById('videoGenEmpty');
+    const aspectEl  = document.getElementById('videoAspect');
+    const durEl     = document.getElementById('videoDuration');
+    const aspect    = aspectEl ? aspectEl.value : '16:9';
+    const duration  = durEl ? (parseInt(durEl.value)||8) : 8;
+
+    const userPrompt = (promptOverride || (promptEl&&promptEl.value)||'').trim();
+    if(!userPrompt){ toast('Describe the video you want first!','warn'); return; }
+
+    if(btn){ btn.disabled=true; btn.style.opacity='.5'; btn.textContent='Generating…'; }
+    if(empty) empty.style.display='none';
+
+    // Animated loading card with elapsed timer
+    const loadCard = document.createElement('div');
+    loadCard.style.cssText = 'background:var(--surface);border:1.5px solid rgba(124,58,237,.35);border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:40px;';
+    loadCard.innerHTML = `
+        <div style="width:52px;height:52px;border:4px solid var(--border);border-top-color:#7c3aed;border-radius:50%;animation:spin .8s linear infinite;"></div>
+        <div style="font-size:14px;font-weight:700;color:var(--muted);text-align:center;">
+            🎬 Generating your video…<br>
+            <span id="videoTimer" style="font-size:12px;opacity:.7;">0s — please wait, this takes 30–90 seconds</span>
+        </div>`;
+    if(gallery) gallery.insertBefore(loadCard, gallery.firstChild);
+
+    // Elapsed timer so user knows it's working
+    let elapsed = 0;
+    const timerInterval = setInterval(()=>{
+        elapsed++;
+        const el = document.getElementById('videoTimer');
+        if(el) el.textContent = elapsed+'s — '+( elapsed<30 ? 'starting up…' : elapsed<60 ? 'working on it…' : 'almost there…' );
+    }, 1000);
+
+    try{
+        // Correct Pollinations video endpoint:
+        // image.pollinations.ai/prompt/PROMPT?model=seedance&aspectRatio=16:9&duration=8&key=KEY
+        const seed = Math.floor(Math.random()*99999);
+        const enc  = encodeURIComponent(userPrompt + ', high quality, cinematic, smooth motion, family-friendly');
+        const url  = `https://image.pollinations.ai/prompt/${enc}?model=seedance&aspectRatio=${encodeURIComponent(aspect)}&duration=${duration}&seed=${seed}&key=${POLLINATIONS_PK}&nologo=true`;
+
+        // Use AbortController with 3-minute timeout to prevent silent failures
+        const controller = new AbortController();
+        const timeoutId  = setTimeout(()=>controller.abort(), 180000); // 3 min max
+
+        let resp;
+        try{
+            resp = await fetch(url, { signal: controller.signal });
+            clearTimeout(timeoutId);
+        } catch(fetchErr){
+            clearTimeout(timeoutId);
+            if(fetchErr.name === 'AbortError') throw new Error('Timed out after 3 minutes — try a shorter duration or simpler prompt');
+            throw fetchErr;
+        }
+
+        if(!resp.ok){
+            const errText = await resp.text().catch(()=>'');
+            throw new Error(`Pollinations error ${resp.status}: ${errText.slice(0,100)}`);
+        }
+
+        const blob = await resp.blob();
+        console.log('Video response type:', blob.type, 'size:', blob.size);
+
+        // Accept any non-empty response (Pollinations may return video/mp4 or application/octet-stream)
+        if(blob.size < 1000){ throw new Error('Response too small — video generation may have failed'); }
+
+        // Create blob URL for immediate playback
+        const blobUrl = URL.createObjectURL(blob);
+
+        // Also try to upload to ThumbSnap so URL persists
+        let videoUrl = blobUrl;
+        if(THUMBSNAP_API_KEY){
+            try{
+                const fd = new FormData();
+                fd.append('media', blob, 'video.mp4');
+                fd.append('key', THUMBSNAP_API_KEY);
+                const r2 = await fetch('https://thumbsnap.com/api/upload',{method:'POST',body:fd});
+                const j2 = await r2.json();
+                if(j2.success && j2.data && j2.data.media){
+                    videoUrl = j2.data.media;
+                    URL.revokeObjectURL(blobUrl); // free memory
+                }
+            } catch(e){ console.warn('ThumbSnap upload failed, using blob URL:', e); }
+        }
+
+        clearInterval(timerInterval);
+        loadCard.remove();
+        const card = _buildVideoCard(videoUrl, userPrompt);
+        if(gallery) gallery.insertBefore(card, gallery.firstChild);
+
+        _videoHistory.unshift({ url: videoUrl, prompt: userPrompt });
+        _saveVideoHistory();
+        if(promptEl) promptEl.value = '';
+        toast('🎬 Video ready!');
+        return videoUrl;
+
+    } catch(e){
+        clearInterval(timerInterval);
+        loadCard.remove();
+        if(_videoHistory.length===0 && empty) empty.style.display='flex';
+        console.error('Video gen error:', e);
+        toast('Video failed: ' + (e.message||'unknown error') + ' — try again', 'warn');
+        throw e;
+    } finally {
+        if(btn){ btn.disabled=false; btn.style.opacity='1'; btn.textContent='✦ Generate Video'; }
+    }
+}
+window.generateVideo = generateVideo;
 
 function setImgStyle(btn, style){
     document.querySelectorAll('.img-style-btn').forEach(b => b.classList.remove('active'));
@@ -12082,6 +12368,12 @@ var NAI_MODES = [
     prompt:'__picture_mode__'
   },
   {
+    id:'video', emoji:'🎬', name:'Video Mode', color:'#7c3aed',
+    desc:'Every message creates a video. Just describe the scene — powered by Pollinations Seedance.',
+    badge:'Videos',badgeColor:'rgba(124,58,237,.22)',
+    prompt:'__video_mode__'
+  },
+  {
     id:'custom', emoji:'🔑', name:'Custom API', color:'#a855f7',
     desc:'Paste your own API endpoint or system prompt for a specialised AI.',
     badge:'Custom',badgeColor:'rgba(168,85,247,.2)',
@@ -12268,14 +12560,19 @@ function _updateModeUI(mode){
     // Show / hide Picture Mode banner on the input areas
     var existing = document.getElementById('naiPictureBanner');
     if(existing) existing.remove();
-    if(mode.id === 'picture'){
+    if(mode.id === 'picture' || mode.id === 'video'){
         var banner = document.createElement('div');
         banner.id = 'naiPictureBanner';
-        banner.style.cssText = 'background:linear-gradient(135deg,rgba(244,63,94,.18),rgba(251,113,133,.1));'
-            + 'border:1px solid rgba(244,63,94,.35);border-radius:12px;padding:8px 14px;'
-            + 'font-size:12px;font-weight:700;color:#fb7185;text-align:center;margin:6px 14px 0;'
+        var isPicture = mode.id === 'picture';
+        banner.style.cssText = 'background:linear-gradient(135deg,'
+            + (isPicture ? 'rgba(244,63,94,.18),rgba(251,113,133,.1))' : 'rgba(124,58,237,.18),rgba(99,102,241,.1))')
+            + ';border:1px solid ' + (isPicture ? 'rgba(244,63,94,.35)' : 'rgba(124,58,237,.35)')
+            + ';border-radius:12px;padding:8px 14px;'
+            + 'font-size:12px;font-weight:700;color:' + (isPicture ? '#fb7185' : '#a78bfa')
+            + ';text-align:center;margin:6px 14px 0;'
             + 'display:flex;align-items:center;justify-content:center;gap:6px;';
-        banner.innerHTML = '🎨 <span>Picture Mode ON — every message creates an image</span>';
+        banner.innerHTML = (isPicture ? '🎨 <span>Picture Mode ON — every message creates an image</span>'
+            : '🎬 <span>Video Mode ON — every message creates a video</span>');
         // Insert banner above the input areas
         var inputBot = document.getElementById('naiInputBottom');
         var inputCen = document.getElementById('naiInputCentered');
@@ -12350,6 +12647,7 @@ window._naiGetModePrompt = function(){
     if(!_naiCurrentMode || !_naiCurrentMode.prompt) return '';
     if(_naiCurrentMode.prompt === '__custom__') return _naiCustomPrompt || '';
     if(_naiCurrentMode.prompt === '__picture_mode__') return ''; // image gen handles its own prompting
+    if(_naiCurrentMode.prompt === '__video_mode__') return ''; // video gen handles its own prompting
     return _naiCurrentMode.prompt;
 };
 
