@@ -2461,11 +2461,11 @@ async function loadContent(){
         const cp=await window.dbGet(window.dbRef(window.db,'cloudinaryPreset'));
         if(cp.exists()&&cp.val())CLOUDINARY_UPLOAD_PRESET=cp.val();
         const ts=await window.dbGet(window.dbRef(window.db,'thumbsnapKey'));
-        if(ts.exists()&&ts.val())THUMBSNAP_API_KEY=ts.val();
+        if(ts.exists()&&ts.val()){ THUMBSNAP_API_KEY=ts.val(); localStorage.setItem('fh_thumbsnap_key',ts.val()); }
         const pk=await window.dbGet(window.dbRef(window.db,'publitioKey'));
-        if(pk.exists()&&pk.val())PUBLITIO_API_KEY=pk.val();
+        if(pk.exists()&&pk.val()){ PUBLITIO_API_KEY=pk.val(); localStorage.setItem('fh_publitio_key',pk.val()); }
         const ps=await window.dbGet(window.dbRef(window.db,'publitioSecret'));
-        if(ps.exists()&&ps.val())PUBLITIO_API_SECRET=ps.val();
+        if(ps.exists()&&ps.val()){ PUBLITIO_API_SECRET=ps.val(); localStorage.setItem('fh_publitio_sec',ps.val()); }
     }catch(e){}
     loadSections();
     loadCards(currentSection); // reload now that we have real defaultCardCount
@@ -3346,22 +3346,25 @@ async function saveHubSettings(){
     const pkKey       = document.getElementById('publitioKeyInput').value.trim();
     const psKey       = document.getElementById('publitioSecretInput').value.trim();
 
-    // ── Save API keys to localStorage immediately — no Firebase needed ──
-    // This means they work right away even if Firebase rules block writes
+    // ── Save keys to localStorage immediately (works on this device right away) ──
     if(tsKey){  localStorage.setItem('fh_thumbsnap_key', tsKey);   THUMBSNAP_API_KEY    = tsKey; }
     if(pkKey){  localStorage.setItem('fh_publitio_key',  pkKey);   PUBLITIO_API_KEY     = pkKey; }
     if(psKey){  localStorage.setItem('fh_publitio_sec',  psKey);   PUBLITIO_API_SECRET  = psKey; }
     if(cloudName){    localStorage.setItem('fh_cloudinary_name',   cloudName);    CLOUDINARY_CLOUD_NAME    = cloudName; }
     if(uploadPreset){ localStorage.setItem('fh_cloudinary_preset', uploadPreset); CLOUDINARY_UPLOAD_PRESET = uploadPreset; }
 
-    // ── Also try to save app settings to Firebase (non-critical) ──
+    // ── Save everything to Firebase so ALL family devices get the keys ──
     try{
-        if(name)  await window.dbSet(window.dbRef(window.db,'appName'),name);
-        if(count) await window.dbSet(window.dbRef(window.db,'defaultCardCount'),count);
-        if(link)  await window.dbSet(window.dbRef(window.db,'meetLink'),link);
-    }catch(e){ console.warn('Firebase settings save failed (keys already saved locally):', e.message); }
+        if(name)          await window.dbSet(window.dbRef(window.db,'appName'),name);
+        if(count)         await window.dbSet(window.dbRef(window.db,'defaultCardCount'),count);
+        if(link)          await window.dbSet(window.dbRef(window.db,'meetLink'),link);
+        if(tsKey)         await window.dbSet(window.dbRef(window.db,'thumbsnapKey'),tsKey);
+        if(pkKey)         await window.dbSet(window.dbRef(window.db,'publitioKey'),pkKey);
+        if(psKey)         await window.dbSet(window.dbRef(window.db,'publitioSecret'),psKey);
+        if(cloudName)     await window.dbSet(window.dbRef(window.db,'cloudinaryName'),cloudName);
+        if(uploadPreset)  await window.dbSet(window.dbRef(window.db,'cloudinaryPreset'),uploadPreset);
+    }catch(e){ console.warn('Firebase save failed — keys saved locally only:', e.message); }
 
-    // Update UI
     if(name){ document.getElementById('appName').textContent = name; }
     defaultCardCount = count;
     meetLink = link;
@@ -4108,7 +4111,13 @@ async function _uploadMediaToCloudinary(file){
             r.readAsDataURL(file);
         }
     } else {
-        toast('Add a ThumbSnap or Publitio key in Host → Settings to send videos', 'warn');
+        // A key was set but all uploads failed — show a real error, not a setup message
+        const anyKeySet = THUMBSNAP_API_KEY || (PUBLITIO_API_KEY && PUBLITIO_API_SECRET) || (CLOUDINARY_CLOUD_NAME && CLOUDINARY_CLOUD_NAME !== 'YOUR_CLOUD_NAME');
+        if(anyKeySet){
+            toast('Video upload failed — check your internet and try again', 'danger');
+        } else {
+            toast('To send videos: go to Host → Settings and add a ThumbSnap API key (free)', 'warn');
+        }
         clearImagePreview();
     }
 }
