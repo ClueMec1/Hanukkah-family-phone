@@ -11559,6 +11559,7 @@ window.aiSendQuestion = async function(){
     </button>
     <button class="lv-ctrl leave" onclick="lvLeave()">📵</button>
     <button class="lv-ctrl" id="lvCamBtn" onclick="lvCamToggle()">📷</button>
+    <button class="lv-ctrl" id="lvScreenBtn" onclick="lvScreenToggle()" title="Share Screen">🖥️</button>
   </div>
 </div>
 
@@ -11583,6 +11584,7 @@ window.aiSendQuestion = async function(){
 
 <script>
 var _lvStream=null,_lvUid=null,_lvPeers={},_lvUnsubs=[],_lvIn=false,_lvType=null,_lvMic=true,_lvCam=true,_lvDismiss=false,_lvReady=false;
+var _lvScreenStream=null,_lvScreenPeers={},_lvScreenUid=null;
 var STUN={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]};
 
 function _esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -11681,7 +11683,9 @@ window.lvJoin=async function(type){
     _watch('peers',function(snap){
         var ps=snap.val()||{};
         var el=document.getElementById('lvRoomCount');if(el)el.textContent=Object.keys(ps).length+' in room';
-        Object.keys(ps).forEach(function(uid){if(uid!==_lvUid&&!_lvPeers[uid])_connect(uid,_lvUid<uid);});
+        Object.keys(ps).forEach(function(uid){if(uid!==_lvUid&&uid!==_lvScreenUid&&!_lvPeers[uid])_connect(uid,_lvUid<uid);});
+        // If we're screen sharing, also connect new peers to our screen stream
+        Object.keys(ps).forEach(function(uid){if(uid!==_lvUid&&uid!==_lvScreenUid&&_lvScreenStream&&!_lvScreenPeers[uid])_screenConnect(uid,_lvScreenUid<uid);});
         Object.keys(ps).forEach(function(uid){
             var p=ps[uid];
             var mb=document.getElementById('lvm-'+uid),nv=document.getElementById('lvn-'+uid);
@@ -11723,14 +11727,16 @@ function _watch(path,cb){var u=window.dbOnValue(_db(path),cb);_lvUnsubs.push(u);
 
 function _buildTile(uid,name,isMe){
     var tile=document.createElement('div');tile.className='lv-tile';tile.id='lvt-'+uid;
+    var isScreen=uid.indexOf('_screen')>-1;
     var vid=document.createElement('video');vid.autoplay=true;vid.playsInline=true;tile.appendChild(vid);
     var nv=document.createElement('div');nv.className='lv-tnovid';nv.id='lvn-'+uid;nv.textContent='X';tile.appendChild(nv);
     var nm=document.createElement('div');nm.className='lv-tname';nm.textContent=name;tile.appendChild(nm);
     var h=document.createElement('div');h.className='lv-thint';h.textContent='tap to fullscreen';tile.appendChild(h);
-    if(isMe){var y=document.createElement('div');y.className='lv-tyou';y.textContent='You';tile.appendChild(y);}
+    if(isMe){var y=document.createElement('div');y.className='lv-tyou';y.textContent=isScreen?'Your Screen':'You';tile.appendChild(y);}
+    else if(isScreen){var lb=document.createElement('div');lb.className='lv-tlive';lb.textContent='SCREEN';lb.style.background='rgba(80,80,255,.9)';tile.appendChild(lb);}
     else if(_lvType==='live'){var lb=document.createElement('div');lb.className='lv-tlive';lb.textContent='LIVE';tile.appendChild(lb);}
     var mb=document.createElement('div');mb.className='lv-tmuted';mb.id='lvm-'+uid;mb.textContent='Muted';tile.appendChild(mb);
-    if(isHost&&!isMe){
+    if(isHost&&!isMe&&!isScreen){
         var kb=document.createElement('button');kb.className='lv-tkick';kb.textContent='X';
         (function(u,n){kb.onclick=function(e){e.stopPropagation();lvKick(u,n);};})(uid,name);
         tile.appendChild(kb);
@@ -11783,8 +11789,115 @@ function _lvCtrlUpdate(){
 window.lvMicToggle=function(){if(!_lvStream)return;_lvMic=!_lvMic;_lvStream.getAudioTracks().forEach(function(t){t.enabled=_lvMic;});try{window.dbSet(_db('peers/'+_lvUid+'/audio'),_lvMic);}catch(e){}_lvCtrlUpdate();};
 window.lvCamToggle=function(){if(!_lvStream)return;_lvCam=!_lvCam;_lvStream.getVideoTracks().forEach(function(t){t.enabled=_lvCam;});try{window.dbSet(_db('peers/'+_lvUid+'/video'),_lvCam);}catch(e){}var nv=document.getElementById('lvn-'+_lvUid);if(nv)nv.style.display=_lvCam?'none':'flex';_lvCtrlUpdate();};
 window.lvKick=function(uid,name){if(!isHost){toast('Only host can remove people.','warn');return;}if(!confirm('Remove '+name+'?'))return;try{window.dbSet(_db('kicked/'+uid),Date.now());}catch(e){}try{window.dbRemove(_db('peers/'+uid));}catch(e){}  _rmTile(uid);toast(name+' removed.','warn');};
-window.lvLeave=function(){document.dispatchEvent(new Event('lvLeaveEvent'));_lvIn=false;if(_lvStream){_lvStream.getTracks().forEach(function(t){t.stop();});_lvStream=null;}Object.values(_lvPeers).forEach(function(pc){pc.close();});_lvPeers={};_lvUnsubs.forEach(function(u){u();});_lvUnsubs=[];if(_lvUid){['peers/'+_lvUid,'sig/'+_lvUid,'ice/'+_lvUid,'kicked/'+_lvUid].forEach(function(p){try{window.dbRemove(_db(p));}catch(e){}});_lvUid=null;}var g=document.getElementById('lvGrid');if(g)g.innerHTML='';document.getElementById('lvRoom').classList.remove('on');lvFsClose();_lvDismiss=false;};
+window.lvLeave=function(){document.dispatchEvent(new Event('lvLeaveEvent'));_lvIn=false;if(_lvScreenStream){_lvScreenStream.getTracks().forEach(function(t){t.stop();});_lvScreenStream=null;}Object.values(_lvScreenPeers).forEach(function(pc){pc.close();});_lvScreenPeers={};if(_lvScreenUid){['peers/'+_lvScreenUid,'sig/'+_lvScreenUid,'ice/'+_lvScreenUid].forEach(function(p){try{window.dbRemove(_db(p));}catch(e){}});_lvScreenUid=null;}if(_lvStream){_lvStream.getTracks().forEach(function(t){t.stop();});_lvStream=null;}Object.values(_lvPeers).forEach(function(pc){pc.close();});_lvPeers={};_lvUnsubs.forEach(function(u){u();});_lvUnsubs=[];if(_lvUid){['peers/'+_lvUid,'sig/'+_lvUid,'ice/'+_lvUid,'kicked/'+_lvUid].forEach(function(p){try{window.dbRemove(_db(p));}catch(e){}});_lvUid=null;}var g=document.getElementById('lvGrid');if(g)g.innerHTML='';document.getElementById('lvRoom').classList.remove('on');lvFsClose();_lvDismiss=false;};
 window.lvEndRoom=function(){if(!isHost){toast('Only host can end room.','warn');return;}if(!confirm('End room for everyone?'))return;try{window.dbRemove(_db('room'));}catch(e){}['peers','sig','ice','kicked'].forEach(function(p){try{window.dbRemove(_db(p));}catch(e){}});lvLeave();toast('Room ended.','info');};
+
+// ── Screen Share ────────────────────────────────────────────
+window.lvScreenToggle=function(){
+    if(_lvScreenStream){_lvScreenStop();return;}
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getDisplayMedia){toast('Screen sharing not supported on this browser.','warn');return;}
+    navigator.mediaDevices.getDisplayMedia({video:true,audio:true}).then(function(stream){
+        _lvScreenStream=stream;
+        _lvScreenUid=_lvUid+'_screen';
+        // Register as a separate peer in Firebase
+        try{window.dbSet(_db('peers/'+_lvScreenUid),{name:(currentUser||'User')+' Screen',joinedAt:Date.now(),audio:false,video:true,isScreen:true});}catch(e){}
+        // Build a tile locally (visible to self)
+        var st=_buildScreenTile(_lvScreenUid,(currentUser||'User')+' Screen');
+        st.querySelector('video').srcObject=stream;
+        document.getElementById('lvGrid').appendChild(st);
+        _reflow();
+        // Connect to every current peer and send screen stream
+        Object.keys(_lvPeers).forEach(function(uid){_screenConnect(uid,true);});
+        // Watch for new peers joining after screen share starts
+        var screenWatcher=window.dbOnValue(_db('peers'),function(snap){
+            var ps=snap.val()||{};
+            Object.keys(ps).forEach(function(uid){
+                if(uid!==_lvUid&&uid!==_lvScreenUid&&!_lvScreenPeers[uid])_screenConnect(uid,_lvScreenUid<uid);
+            });
+        });
+        _lvUnsubs.push(screenWatcher);
+        // Watch for incoming signals to screen share uid
+        var _screenSigs={};
+        var sigWatcher=window.dbOnValue(_db('sig/'+_lvScreenUid),function(snap){
+            var sigs=snap.val()||{};
+            Object.keys(sigs).forEach(function(from){
+                var msg=sigs[from];if(!msg)return;
+                var key=from+':'+msg.type+':'+(msg.sdp||'').slice(0,20);
+                if(_screenSigs[key])return;
+                _screenSigs[key]=true;
+                if(msg.type==='offer')_screenHandleOffer(from,msg);
+                else if(msg.type==='answer')_screenHandleAnswer(from,msg);
+            });
+        });
+        _lvUnsubs.push(sigWatcher);
+        var iceWatcher=window.dbOnValue(_db('ice/'+_lvScreenUid),function(snap){
+            var all=snap.val()||{};
+            Object.keys(all).forEach(function(from){
+                var pc=_lvScreenPeers[from];if(!pc)return;
+                var seen=pc._seenIce=pc._seenIce||{};
+                var candidates=all[from]||{};
+                Object.keys(candidates).forEach(function(key){
+                    if(seen[key])return;seen[key]=true;
+                    var c=candidates[key];
+                    if(c)pc.addIceCandidate(new RTCIceCandidate(c)).catch(function(){});
+                });
+            });
+        });
+        _lvUnsubs.push(iceWatcher);
+        // When the user stops via browser's native stop button
+        stream.getVideoTracks()[0].onended=function(){_lvScreenStop();};
+        // Update button UI
+        var sb=document.getElementById('lvScreenBtn');if(sb){sb.textContent='⏹️';sb.classList.add('off');}
+        toast('Screen sharing started — visible to everyone!','info');
+    }).catch(function(err){
+        if(err.name!=='NotAllowedError')toast('Could not share screen: '+err.message,'warn');
+    });
+};
+
+function _buildScreenTile(uid,name){
+    var tile=document.createElement('div');tile.className='lv-tile';tile.id='lvt-'+uid;
+    var vid=document.createElement('video');vid.autoplay=true;vid.playsInline=true;vid.muted=true;tile.appendChild(vid);
+    var nm=document.createElement('div');nm.className='lv-tname';nm.textContent=name;tile.appendChild(nm);
+    var badge=document.createElement('div');badge.className='lv-tlive';badge.textContent='SCREEN';badge.style.background='rgba(80,80,255,.9)';tile.appendChild(badge);
+    var h=document.createElement('div');h.className='lv-thint';h.textContent='tap to fullscreen';tile.appendChild(h);
+    tile.addEventListener('click',function(){lvFsOpen(uid,name,true);});
+    return tile;
+}
+
+function _screenMakePc(uid){
+    var pc=new RTCPeerConnection(STUN);_lvScreenPeers[uid]=pc;
+    _lvScreenStream.getTracks().forEach(function(t){pc.addTrack(t,_lvScreenStream);});
+    pc.onicecandidate=function(e){if(e.candidate)window.dbPush(_db('ice/'+uid+'/'+_lvScreenUid),e.candidate.toJSON());};
+    pc.onconnectionstatechange=function(){if(['disconnected','failed','closed'].indexOf(pc.connectionState)>-1){delete _lvScreenPeers[uid];}};
+    return pc;
+}
+
+function _screenConnect(uid,offer){
+    if(_lvScreenPeers[uid])return;
+    var pc=_screenMakePc(uid);
+    if(offer)pc.createOffer().then(function(o){return pc.setLocalDescription(o).then(function(){return window.dbSet(_db('sig/'+uid+'/'+_lvScreenUid),{type:'offer',sdp:o.sdp});});}).catch(function(){});
+}
+
+function _screenHandleOffer(from,msg){
+    var pc=_lvScreenPeers[from]||_screenMakePc(from);
+    pc.setRemoteDescription(new RTCSessionDescription(msg)).then(function(){return pc.createAnswer();}).then(function(a){return pc.setLocalDescription(a).then(function(){return window.dbSet(_db('sig/'+from+'/'+_lvScreenUid),{type:'answer',sdp:a.sdp});});}).catch(function(){});
+}
+
+function _screenHandleAnswer(from,msg){var pc=_lvScreenPeers[from];if(!pc)return;pc.setRemoteDescription(new RTCSessionDescription(msg)).catch(function(){});}
+
+function _lvScreenStop(){
+    if(_lvScreenStream){_lvScreenStream.getTracks().forEach(function(t){t.stop();});_lvScreenStream=null;}
+    Object.values(_lvScreenPeers).forEach(function(pc){pc.close();});_lvScreenPeers={};
+    if(_lvScreenUid){
+        ['peers/'+_lvScreenUid,'sig/'+_lvScreenUid,'ice/'+_lvScreenUid].forEach(function(p){try{window.dbRemove(_db(p));}catch(e){}});
+        var st=document.getElementById('lvt-'+_lvScreenUid);if(st)st.remove();
+        _lvScreenUid=null;
+    }
+    _reflow();
+    var sb=document.getElementById('lvScreenBtn');if(sb){sb.textContent='🖥️';sb.classList.remove('off');}
+    toast('Screen sharing stopped.','info');
+}
+// ── End Screen Share ─────────────────────────────────────────
 
 window.lvFsOpen=function(uid,name,isMe){var tile=document.getElementById('lvt-'+uid);if(!tile)return;var sv=tile.querySelector('video');if(!sv||!sv.srcObject)return;var ov=document.getElementById('lvFs'),fv=document.getElementById('lvFsVid');fv.srcObject=sv.srcObject;fv.muted=!!isMe;document.getElementById('lvFsLbl').textContent=name+(isMe?' (You)':'');ov.classList.add('on');try{if(ov.requestFullscreen)ov.requestFullscreen();else if(ov.webkitRequestFullscreen)ov.webkitRequestFullscreen();}catch(e){};};
 window.lvFsClose=function(){var ov=document.getElementById('lvFs'),fv=document.getElementById('lvFsVid');if(!ov)return;ov.classList.remove('on');if(fv)fv.srcObject=null;try{if(document.exitFullscreen&&document.fullscreenElement)document.exitFullscreen();}catch(e){}try{if(document.webkitExitFullscreen&&document.webkitFullscreenElement)document.webkitExitFullscreen();}catch(e){};};
