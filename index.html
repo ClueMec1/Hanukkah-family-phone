@@ -2038,10 +2038,61 @@ function removeHostMemory() {
                     Save
                 </button>
             </div>
+
+            <!-- Open Browser Button -->
+            <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.08);">
+                <button onclick="openProtectedBrowser()" style="width:100%;padding:13px;background:linear-gradient(135deg,#2d5be3,#6366f1);color:white;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:0.2px;">
+                    🌐 Open Browser
+                </button>
+                <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px;">Password protected — opens inside the app</div>
+            </div>
         </div>
 
         <div class="modal-buttons" style="margin-top:6px;">
             <button class="btn btn-ghost" onclick="closeModal('settingsModal')">Close</button>
+        </div>
+
+        <!-- In-App Browser Modal -->
+        <div id="inAppBrowserModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:99999;flex-direction:column;">
+            <!-- Password Screen -->
+            <div id="browserPasswordScreen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;padding:24px;">
+                <div style="font-size:32px;">🔐</div>
+                <div style="font-size:18px;font-weight:700;color:white;">Enter Password</div>
+                <div style="font-size:13px;color:rgba(255,255,255,0.5);text-align:center;">This browser is password protected</div>
+                <input id="browserPasswordInput" type="password" placeholder="Enter password..."
+                    style="width:100%;max-width:280px;padding:13px 16px;border-radius:12px;border:2px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:white;font-size:16px;text-align:center;font-family:inherit;outline:none;"
+                    onkeydown="if(event.key==='Enter')checkBrowserPassword()" />
+                <div id="browserPassError" style="color:#ff6b6b;font-size:13px;font-weight:600;display:none;">❌ Wrong password</div>
+                <div style="display:flex;gap:10px;width:100%;max-width:280px;">
+                    <button onclick="closeInAppBrowser()" style="flex:1;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:white;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Cancel</button>
+                    <button onclick="checkBrowserPassword()" style="flex:1;padding:12px;border-radius:10px;border:none;background:#2d5be3;color:white;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Unlock</button>
+                </div>
+            </div>
+            <!-- Browser Screen -->
+            <div id="browserScreen" style="display:none;flex-direction:column;height:100%;">
+                <!-- Browser toolbar -->
+                <div style="background:#1a1a2e;padding:10px 12px;display:flex;align-items:center;gap:8px;flex-shrink:0;">
+                    <button onclick="closeInAppBrowser()" style="background:rgba(255,255,255,0.1);border:none;color:white;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">✕</button>
+                    <button onclick="browserBack()" style="background:rgba(255,255,255,0.1);border:none;color:white;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">‹</button>
+                    <button onclick="browserForward()" style="background:rgba(255,255,255,0.1);border:none;color:white;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">›</button>
+                    <input id="browserUrlBar" type="url" value="https://www.google.com"
+                        style="flex:1;padding:8px 12px;border-radius:8px;border:none;background:rgba(255,255,255,0.1);color:white;font-size:13px;font-family:inherit;outline:none;"
+                        onkeydown="if(event.key==='Enter')browserNavigate()" placeholder="Search or enter URL..." />
+                    <button onclick="browserNavigate()" style="background:#2d5be3;border:none;color:white;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;">→</button>
+                </div>
+                <!-- Quick links -->
+                <div style="background:#12122a;padding:8px 12px;display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0;">
+                    <button onclick="browserGo('https://www.google.com')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);border-radius:20px;padding:4px 12px;font-size:12px;cursor:pointer;font-family:inherit;">Google</button>
+                    <button onclick="browserGo('https://www.youtube.com')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);border-radius:20px;padding:4px 12px;font-size:12px;cursor:pointer;font-family:inherit;">YouTube</button>
+                    <button onclick="browserGo('https://www.wikipedia.org')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);border-radius:20px;padding:4px 12px;font-size:12px;cursor:pointer;font-family:inherit;">Wikipedia</button>
+                    <button onclick="browserGo('https://www.amazon.com')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);border-radius:20px;padding:4px 12px;font-size:12px;cursor:pointer;font-family:inherit;">Amazon</button>
+                </div>
+                <!-- iframe -->
+                <iframe id="browserFrame" src="https://www.google.com"
+                    style="flex:1;width:100%;border:none;background:white;"
+                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation">
+                </iframe>
+            </div>
         </div>
 
         <!-- Welcome Popup Panel -->
@@ -14242,6 +14293,67 @@ window._stampCutout = function _stampCutout(x, y){
 var _origPointerDown = iePointerDown;
 
 })();
+
+// ============================================================
+// IN-APP BROWSER WITH PASSWORD PROTECTION
+// ============================================================
+
+function openProtectedBrowser() {
+    const modal = document.getElementById('inAppBrowserModal');
+    modal.style.display = 'flex';
+    document.getElementById('browserPasswordScreen').style.display = 'flex';
+    document.getElementById('browserScreen').style.display = 'none';
+    document.getElementById('browserPassError').style.display = 'none';
+    document.getElementById('browserPasswordInput').value = '';
+    setTimeout(function(){ document.getElementById('browserPasswordInput').focus(); }, 100);
+}
+
+function checkBrowserPassword() {
+    const input = document.getElementById('browserPasswordInput').value;
+    if (input === '1239') {
+        document.getElementById('browserPasswordScreen').style.display = 'none';
+        document.getElementById('browserScreen').style.display = 'flex';
+        browserGo('https://www.google.com');
+    } else {
+        const err = document.getElementById('browserPassError');
+        err.style.display = 'block';
+        document.getElementById('browserPasswordInput').value = '';
+        document.getElementById('browserPasswordInput').focus();
+        setTimeout(function(){ err.style.display = 'none'; }, 2500);
+    }
+}
+
+function closeInAppBrowser() {
+    document.getElementById('inAppBrowserModal').style.display = 'none';
+    document.getElementById('browserFrame').src = 'about:blank';
+}
+
+function browserGo(url) {
+    document.getElementById('browserUrlBar').value = url;
+    document.getElementById('browserFrame').src = url;
+}
+
+function browserNavigate() {
+    let url = document.getElementById('browserUrlBar').value.trim();
+    if (!url) return;
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        if (url.includes('.') && !url.includes(' ')) {
+            url = 'https://' + url;
+        } else {
+            url = 'https://www.google.com/search?q=' + encodeURIComponent(url);
+        }
+    }
+    document.getElementById('browserUrlBar').value = url;
+    document.getElementById('browserFrame').src = url;
+}
+
+function browserBack() {
+    try { document.getElementById('browserFrame').contentWindow.history.back(); } catch(e){}
+}
+
+function browserForward() {
+    try { document.getElementById('browserFrame').contentWindow.history.forward(); } catch(e){}
+}
 </script>
 </body>
 </html>
