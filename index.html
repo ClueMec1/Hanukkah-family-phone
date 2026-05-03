@@ -3530,12 +3530,31 @@ function updateChatInputForGroup(group){
     }
 }
 
+let _msgUnsubscribe = null; // holds the active messages listener unsubscribe fn
+let _typingUnsubscribe = null;
+let _pinnedUnsubscribe = null;
+
 function switchChatGroup(name){
     clearTypingOnLeave();   // stop typing in old group
+
+    // Unsubscribe old message/typing/pinned listeners before switching
+    if(_msgUnsubscribe){ try{ _msgUnsubscribe(); }catch(e){} _msgUnsubscribe = null; }
+    if(_typingUnsubscribe){ try{ _typingUnsubscribe(); }catch(e){} _typingUnsubscribe = null; }
+    if(_pinnedUnsubscribe){ try{ _pinnedUnsubscribe(); }catch(e){} _pinnedUnsubscribe = null; }
+
     currentGroup = name;
-    setLastRead(name);  // mark newly opened group as read
+    setLastRead(name);
     renderGroupTabs();
     cancelReply();
+
+    // Clear messages panel so old group messages don't bleed through
+    const container = document.getElementById('waMessages');
+    if(container) container.innerHTML = '<p style="color:#888;text-align:center;padding:22px;font-size:13px;">Loading…</p>';
+
+    // Load messages for the new group
+    loadMessages(name);
+    updateChatInputForGroup(name);
+    document.getElementById('waChatSub').textContent = name;
 }
 
 function openAddGroupModal(){
@@ -3586,12 +3605,12 @@ async function saveNewGroup(){
 function msgPath(group){ return 'messages/'+group.replace(/\s+/g,'_'); }
 
 function loadMessages(group){
-    listenTyping(group);
-    listenPinnedMessage(group);
+    _typingUnsubscribe = listenTyping(group);
+    _pinnedUnsubscribe = listenPinnedMessage(group);
     let _knownKeys = [];   // ordered list of message keys we have rendered
     let _firstLoad  = true;
 
-    window.dbOnValue(window.dbRef(window.chatDb, msgPath(group)), snap=>{
+    _msgUnsubscribe = window.dbOnValue(window.dbRef(window.chatDb, msgPath(group)), snap=>{
         const container = document.getElementById('waMessages');
 
         // How far from the bottom before this update
@@ -4106,7 +4125,7 @@ async function pinMessage(key, text){
 
 function listenPinnedMessage(group){
     const path = 'chatPin/'+group.replace(/\s+/g,'_');
-    window.dbOnValue(window.dbRef(window.chatDb, path), snap=>{
+    const unsub = window.dbOnValue(window.dbRef(window.chatDb, path), snap=>{
         const bar = document.getElementById('pinnedMsgBar');
         if(!snap.exists()){ bar.style.display='none'; pinnedMsgKey=null; return; }
         const d = snap.val();
@@ -4114,6 +4133,7 @@ function listenPinnedMessage(group){
         document.getElementById('pinnedMsgText').textContent = d.text||'';
         bar.style.display = 'block';
     });
+    return unsub;
 }
 
 // ── Typing Indicator ──────────────────────────────────────
@@ -4183,6 +4203,7 @@ function listenTyping(group){
         }
     });
     typingListener = unsub;
+    return unsub;
 }
 
 // Clean up typing when chat closes or user switches group
