@@ -6552,13 +6552,12 @@ let swRegistration = null;
 async function registerServiceWorker() {
     if (!('serviceWorker' in navigator)) return null;
     try {
-        // First try the real sw.js file (works when properly hosted)
-        swRegistration = await navigator.serviceWorker.register('./sw.js', {scope: '/Hanukkah-family-phone/'});
-        console.log('SW registered from sw.js');
+        // Dynamically detect the correct scope from the page URL
+        const swScope = location.pathname.replace(/\/[^\/]*$/, '/') || '/';
+        swRegistration = await navigator.serviceWorker.register('./sw.js', {scope: swScope});
+        console.log('SW registered, scope:', swScope);
         return swRegistration;
     } catch(e) {
-        // sw.js not found (e.g. on preview/localhost) — SW not available,
-        // but notifications still work via direct Notification API
         console.log('sw.js not found, using direct notifications:', e.message);
         return null;
     }
@@ -6572,7 +6571,10 @@ async function saveNotifToken() {
     const deviceId = getDeviceId();
     const name = currentUser || localStorage.getItem('userName') || 'Unknown';
     try {
-        const token = await getToken(window.messaging, { vapidKey: 'BHAwixWkbrYNcSibsgBIqc5KsSkiQtxZOAKId43bBC3EnYeRQtGn5n_P7E5I6vvkTGJuOBceLOES_mKaAzI1FtE' }); // You'll need to generate a VAPID key
+        const token = await getToken(window.messaging, { 
+            vapidKey: 'BHAwixWkbrYNcSibsgBIqc5KsSkiQtxZOAKId43bBC3EnYeRQtGn5n_P7E5I6vvkTGJuOBceLOES_mKaAzI1FtE',
+            serviceWorkerRegistration: swRegistration || undefined
+        });
         if (token) {
             await window.dbSet(window.dbRef(window.db, 'notifTokens/' + deviceId), {
                 name,
@@ -7513,8 +7515,9 @@ window._askNotifPermission = _askNotifPermission;
 // ── PWA Service Worker Registration ──────────────────────
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js', {scope: '/Hanukkah-family-phone/'})
-            .then(r => console.log('SW registered'))
+        const swScope = location.pathname.replace(/\/[^\/]*$/, '/') || '/';
+        navigator.serviceWorker.register('./sw.js', {scope: swScope})
+            .then(r => { console.log('SW registered, scope:', swScope); swRegistration = r; })
             .catch(e => console.log('SW failed:', e.message));
     });
 }
