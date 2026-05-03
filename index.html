@@ -6552,12 +6552,13 @@ let swRegistration = null;
 async function registerServiceWorker() {
     if (!('serviceWorker' in navigator)) return null;
     try {
-        // Dynamically detect the correct scope from the page URL
-        const swScope = location.pathname.replace(/\/[^\/]*$/, '/') || '/';
-        swRegistration = await navigator.serviceWorker.register('./sw.js', {scope: swScope});
-        console.log('SW registered, scope:', swScope);
+        // First try the real sw.js file (works when properly hosted)
+        swRegistration = await navigator.serviceWorker.register('./sw.js', {scope: '/Hanukkah-family-phone/'});
+        console.log('SW registered from sw.js');
         return swRegistration;
     } catch(e) {
+        // sw.js not found (e.g. on preview/localhost) — SW not available,
+        // but notifications still work via direct Notification API
         console.log('sw.js not found, using direct notifications:', e.message);
         return null;
     }
@@ -6571,10 +6572,7 @@ async function saveNotifToken() {
     const deviceId = getDeviceId();
     const name = currentUser || localStorage.getItem('userName') || 'Unknown';
     try {
-        const token = await getToken(window.messaging, { 
-            vapidKey: 'BHAwixWkbrYNcSibsgBIqc5KsSkiQtxZOAKId43bBC3EnYeRQtGn5n_P7E5I6vvkTGJuOBceLOES_mKaAzI1FtE',
-            serviceWorkerRegistration: swRegistration || undefined
-        });
+        const token = await getToken(window.messaging, { vapidKey: 'BHAwixWkbrYNcSibsgBIqc5KsSkiQtxZOAKId43bBC3EnYeRQtGn5n_P7E5I6vvkTGJuOBceLOES_mKaAzI1FtE' }); // You'll need to generate a VAPID key
         if (token) {
             await window.dbSet(window.dbRef(window.db, 'notifTokens/' + deviceId), {
                 name,
@@ -7515,9 +7513,8 @@ window._askNotifPermission = _askNotifPermission;
 // ── PWA Service Worker Registration ──────────────────────
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        const swScope = location.pathname.replace(/\/[^\/]*$/, '/') || '/';
-        navigator.serviceWorker.register('./sw.js', {scope: swScope})
-            .then(r => { console.log('SW registered, scope:', swScope); swRegistration = r; })
+        navigator.serviceWorker.register('./sw.js', {scope: '/Hanukkah-family-phone/'})
+            .then(r => console.log('SW registered'))
             .catch(e => console.log('SW failed:', e.message));
     });
 }
@@ -11399,6 +11396,24 @@ function _esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replac
 function _show(id){document.getElementById(id).classList.add('on');}
 function _hide(id){document.getElementById(id).classList.remove('on');}
 function _dot(on){var d=document.getElementById('livePulseDot');if(d)d.style.display=on?'block':'none';}
+
+// Auto-clean empty rooms: if room exists but has 0 peers, remove it
+function _cleanEmptyRoom(){
+    if(!_lvReady||!window.db)return;
+    try{
+        window.dbGet(_db('room')).then(function(rs){
+            if(!rs.val())return; // already gone
+            window.dbGet(_db('peers')).then(function(ps){
+                var peers=ps.val()||{};
+                if(Object.keys(peers).length===0){
+                    // Room has no participants — clean it up
+                    window.dbRemove(_db('room')).catch(function(){});
+                    _dot(false);
+                }
+            }).catch(function(){});
+        }).catch(function(){});
+    }catch(e){}
+}
 function _db(p){return window.dbRef(window.chatDb,'live/'+p);}
 
 function _waitForFirebaseSafe(cb){
@@ -11425,12 +11440,29 @@ _waitForFirebaseSafe(function(){
     });
     window.dbOnValue(window.dbRef(window.chatDb,'live/room'),function(snap){
         var room=snap.val();
-        _dot(!!room);
-        if(!room){_lvDismiss=false;return;}
-        if(_lvIn||_lvDismiss)return;
-        _setJoinView(room);
-        var em=document.getElementById('lvEntry');
-        if(!em.classList.contains('on'))em.classList.add('on');
+        if(!room){_dot(false);_lvDismiss=false;return;}
+        // Only show red dot if there is at least 1 participant
+        window.dbGet(_db('peers')).then(function(ps){
+            var peers=ps.val()||{};
+            var hasParticipants=Object.keys(peers).length>0;
+            _dot(hasParticipants);
+            if(!hasParticipants){
+                // Room record exists but nobody is in it — clean it up
+                window.dbRemove(_db('room')).catch(function(){});
+                return;
+            }
+            if(_lvIn||_lvDismiss)return;
+            _setJoinView(room);
+            var em=document.getElementById('lvEntry');
+            if(!em.classList.contains('on'))em.classList.add('on');
+        }).catch(function(){
+            // Can't read peers — show dot based on room existing
+            _dot(!!room);
+            if(_lvIn||_lvDismiss)return;
+            _setJoinView(room);
+            var em=document.getElementById('lvEntry');
+            if(!em.classList.contains('on'))em.classList.add('on');
+        });
     });
 });
 
@@ -11484,7 +11516,12 @@ window.lvJoin=async function(type){
         catch(e2){toast('Please allow camera/mic access.','warn');return;}
     }
     _lvIn=true;_lvMic=true;_lvCtrlUpdate();
-    try{await window.dbSet(_db('peers/'+_lvUid),{name:currentUser,joinedAt:Date.now(),audio:true,video:_lvCam});}catch(e){}
+    try{
+        await window.dbSet(_db('peers/'+_lvUid),{name:currentUser,joinedAt:Date.now(),audio:true,video:_lvCam});
+        // Auto-remove this peer if they disconnect unexpectedly (tab close, crash, etc.)
+        var peerRef = _db('peers/'+_lvUid);
+        window.dbOnDisconnect(peerRef).remove().catch(function(){});
+    }catch(e){}
     document.getElementById('lvRoom').classList.add('on');
     document.getElementById('lvRoomTitle').textContent=type==='call'?'Video Call':'Live';
     var eb=document.getElementById('lvEndBtn');if(eb)eb.style.display=isHost?'block':'none';
@@ -11495,7 +11532,14 @@ window.lvJoin=async function(type){
     _reflow();
     _watch('peers',function(snap){
         var ps=snap.val()||{};
-        var el=document.getElementById('lvRoomCount');if(el)el.textContent=Object.keys(ps).length+' in room';
+        var count=Object.keys(ps).length;
+        var el=document.getElementById('lvRoomCount');if(el)el.textContent=count+' in room';
+        // Update nav red dot based on real participant count
+        _dot(count>0);
+        // If nobody left in room (after last person leaves), clean up room record
+        if(count===0&&!_lvIn){
+            try{window.dbRemove(_db('room')).catch(function(){});}catch(e){}
+        }
         Object.keys(ps).forEach(function(uid){if(uid!==_lvUid&&!_lvPeers[uid])_connect(uid,_lvUid<uid);});
         Object.keys(ps).forEach(function(uid){
             var p=ps[uid];
