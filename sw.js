@@ -1,8 +1,38 @@
-// Family Hub Service Worker v4
-// Full offline support + push notifications + Web Share Target
+// Family Hub Service Worker v5
+// Full offline support + push notifications + Web Share Target + Firebase Cloud Messaging
 
-const CACHE = 'family-hub-v4';
-const SHARE_CACHE = 'family-hub-shared-v1';
+// ── Firebase Cloud Messaging (required for FCM push notifications) ────────────
+importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
+
+firebase.initializeApp({
+  apiKey: "AIzaSyDR2gPV7AqJP8_cBbEINinB9m8APdnjc8c",
+  authDomain: "family-phone-game.firebaseapp.com",
+  databaseURL: "https://family-phone-game-default-rtdb.firebaseio.com",
+  projectId: "family-phone-game",
+  storageBucket: "family-phone-game.firebasestorage.app",
+  messagingSenderId: "933908338610",
+  appId: "1:933908338610:web:family-hub"
+});
+
+const messagingFCM = firebase.messaging();
+
+// Handle background FCM messages
+messagingFCM.onBackgroundMessage(function(payload) {
+  const { title = 'Family Hub', body = '', icon, tag } = payload.notification || payload.data || {};
+  self.registration.showNotification(title, {
+    body,
+    icon: icon || '/Hanukkah-family-phone/icon-192.png',
+    badge: '/Hanukkah-family-phone/icon-192.png',
+    tag: tag || 'fh-fcm',
+    renotify: true,
+    vibrate: [200, 100, 200],
+    data: { url: '/Hanukkah-family-phone/' }
+  });
+});
+
+const CACHE = 'family-hub-v5';
+const SHARE_CACHE = 'family-hub-shared-v2';
 
 const SHELL = [
   '/Hanukkah-family-phone/',
