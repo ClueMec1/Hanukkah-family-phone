@@ -401,6 +401,9 @@ c
 .img-gen-card img:hover{transform:scale(1.02);}
 .img-gen-meta{padding:10px 14px 12px;display:flex;align-items:center;gap:8px;}
 .img-gen-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:40px;background:var(--surface);border:1.5px solid var(--border);border-radius:16px;}
+.vid-model-btn{flex-shrink:0;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;color:var(--muted);font-family:inherit;white-space:nowrap;transition:all .2s;}
+.vid-model-btn:hover{border-color:var(--accent);color:var(--text);}
+.vid-model-btn.active{background:rgba(232,131,74,.12);border-color:var(--accent);color:var(--accent);}
 .wa-voice-msg{display:flex;align-items:center;gap:8px;padding:4px 2px;}
 .wa-voice-msg audio{width:180px;height:32px;vertical-align:middle;}
 .wa-voice-play{width:30px;height:30px;background:var(--accent);border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:#fff;}
@@ -1202,15 +1205,16 @@ function removeHostMemory() {
   <div style="background:linear-gradient(135deg,#f59e0b,#ef4444);padding:16px 18px;display:flex;align-items:center;gap:12px;flex-shrink:0;">
     <button onclick="closeImageGen()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">←</button>
     <div style="flex:1;">
-      <div style="font-family:'Fredoka One',cursive;font-size:20px;color:#fff;letter-spacing:.5px;">🎨 AI Image Generator</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:20px;color:#fff;letter-spacing:.5px;" id="imgGenTitle">🎨 AI Image Generator</div>
       <div style="font-size:11px;color:rgba(255,255,255,.8);font-weight:600;">Free • No account needed • Powered by Pollinations AI</div>
     </div>
-    <button onclick="iePickPhoto()" style="background:rgba(255,255,255,.22);border:1.5px solid rgba(255,255,255,.4);color:#fff;border-radius:12px;padding:8px 13px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;display:flex;align-items:center;gap:6px;flex-shrink:0;">
-      ✏️ Edit a Photo
-    </button>
-    <button onclick="openVideoGen()" style="background:rgba(255,255,255,.22);border:1.5px solid rgba(255,255,255,.4);color:#fff;border-radius:12px;padding:8px 13px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;display:flex;align-items:center;gap:6px;flex-shrink:0;">
-      🎬 AI Video
-    </button>
+    <div style="display:flex;gap:6px;flex-shrink:0;">
+      <button id="imgTabBtn" onclick="switchMediaTab('image')" style="background:rgba(255,255,255,.35);border:1.5px solid rgba(255,255,255,.6);color:#fff;border-radius:10px;padding:7px 11px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">🎨 Image</button>
+      <button id="vidTabBtn" onclick="switchMediaTab('video')" style="background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);color:rgba(255,255,255,.8);border-radius:10px;padding:7px 11px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">🎬 Video</button>
+      <button onclick="iePickPhoto()" style="background:rgba(255,255,255,.22);border:1.5px solid rgba(255,255,255,.4);color:#fff;border-radius:12px;padding:7px 11px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;display:flex;align-items:center;gap:5px;">
+        ✏️ Edit
+      </button>
+    </div>
   </div>
   <!-- Hidden file input for photo picker -->
   <input type="file" id="iePhotoPickerInput" accept="image/*" style="display:none" onchange="ieHandlePhotoPick(this)">
@@ -1274,60 +1278,74 @@ function removeHostMemory() {
       <div style="font-size:13px;color:var(--muted);font-weight:600;text-align:center;line-height:1.6;">Type a description above and tap ✦ to generate a free AI image — no account needed!</div>
     </div>
   </div>
-</div>
 
-<!-- ═══ AI VIDEO GENERATOR OVERLAY ═══ -->
-<div id="videoGenOverlay" style="display:none;position:fixed;inset:0;z-index:10600;background:var(--bg);flex-direction:column;overflow:hidden;font-family:'Nunito',sans-serif;">
-
-  <!-- Header -->
-  <div style="background:linear-gradient(135deg,#7c3aed,#4f46e5);padding:16px 18px;display:flex;align-items:center;gap:12px;flex-shrink:0;">
-    <button onclick="closeVideoGen()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">←</button>
-    <div style="flex:1;">
-      <div style="font-family:'Fredoka One',cursive;font-size:20px;color:#fff;letter-spacing:.5px;">🎬 AI Video Generator</div>
-      <div style="font-size:11px;color:rgba(255,255,255,.8);font-weight:600;">Powered by Pollinations AI • Seedance model • Free</div>
-    </div>
-  </div>
-
-  <!-- Prompt area -->
-  <div style="padding:14px 16px 0;flex-shrink:0;">
-    <textarea id="videoGenPrompt" placeholder="Describe your video… e.g. A family having a birthday party, confetti flying, warm lighting" rows="3"
-      style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:12px 14px;color:var(--text);font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box;line-height:1.5;"
-      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();generateVideo();}"></textarea>
-
-    <!-- Options row -->
-    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center;">
-      <select id="videoAspect" style="background:var(--surface);border:1.5px solid var(--border);color:var(--text);border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit;cursor:pointer;">
-        <option value="16:9">📺 16:9 Landscape</option>
-        <option value="9:16">📱 9:16 Portrait</option>
-        <option value="1:1">⬛ 1:1 Square</option>
-      </select>
-      <select id="videoDuration" style="background:var(--surface);border:1.5px solid var(--border);color:var(--text);border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit;cursor:pointer;">
-        <option value="5">5 seconds</option>
-        <option value="8" selected>8 seconds</option>
-        <option value="10">10 seconds</option>
-      </select>
-      <button onclick="generateVideo()" id="videoGenBtn"
-        style="flex:1;min-width:120px;background:linear-gradient(135deg,#7c3aed,#4f46e5);border:none;color:#fff;border-radius:12px;padding:10px 20px;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;">
-        ✦ Generate Video
-      </button>
+  <!-- ═══ AI VIDEO GENERATOR PANEL ═══ -->
+  <div id="aiVideoPanel" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+    <!-- Model selector -->
+    <div style="padding:12px 14px 6px;flex-shrink:0;">
+      <div style="font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;">Model</div>
+      <div style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;">
+        <button class="vid-model-btn active" onclick="setVidModel(this,'seedance')" data-model="seedance" title="Fast, smooth motion — best all-rounder">🌸 Seedance</button>
+        <button class="vid-model-btn" onclick="setVidModel(this,'seedance-pro')" data-model="seedance-pro" title="Higher quality Seedance">⭐ Seedance Pro</button>
+        <button class="vid-model-btn" onclick="setVidModel(this,'veo')" data-model="veo" title="Google Veo — cinematic quality">🎬 Veo</button>
+        <button class="vid-model-btn" onclick="setVidModel(this,'wan')" data-model="wan" title="WAN model — great for creative scenes">🌊 WAN</button>
+        <button class="vid-model-btn" onclick="setVidModel(this,'wan-fast')" data-model="wan-fast" title="Fastest generation">⚡ WAN Fast</button>
+      </div>
     </div>
 
-    <!-- Idea chips -->
-    <div style="display:flex;gap:6px;margin-top:10px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;">
-      <button class="img-idea-btn" onclick="setVideoPrompt('A family laughing together at a dinner table, warm golden lighting')">🍽️ Family dinner</button>
-      <button class="img-idea-btn" onclick="setVideoPrompt('Children playing in a sunny backyard with a dog running around')">🐕 Kids playing</button>
-      <button class="img-idea-btn" onclick="setVideoPrompt('A beautiful sunset over the ocean with waves crashing on the shore')">🌅 Sunset</button>
-      <button class="img-idea-btn" onclick="setVideoPrompt('Birthday party celebration with balloons and cake, people cheering')">🎂 Birthday</button>
-      <button class="img-idea-btn" onclick="setVideoPrompt('Snow falling gently on a cozy house with Christmas lights')">❄️ Winter scene</button>
+    <!-- Duration + Aspect -->
+    <div style="padding:4px 14px 8px;flex-shrink:0;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:7px;">
+        <span style="font-size:12px;font-weight:700;color:var(--muted);">⏱ Duration</span>
+        <select id="vidDuration" style="background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:12px;font-weight:700;color:var(--text);font-family:inherit;">
+          <option value="4">4 sec</option>
+          <option value="6" selected>6 sec</option>
+          <option value="8">8 sec</option>
+        </select>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;">
+        <span style="font-size:12px;font-weight:700;color:var(--muted);">📐 Format</span>
+        <select id="vidAspect" style="background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:12px;font-weight:700;color:var(--text);font-family:inherit;">
+          <option value="16:9" selected>16:9 Landscape</option>
+          <option value="9:16">9:16 Portrait</option>
+          <option value="1:1">1:1 Square</option>
+        </select>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;">
+        <label style="font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;">
+          <input type="checkbox" id="vidAudio" style="accent-color:var(--accent);margin-right:4px;">🎵 Sound
+        </label>
+      </div>
     </div>
-  </div>
 
-  <!-- Gallery -->
-  <div id="videoGenGallery" style="flex:1;overflow-y:auto;padding:14px 16px 20px;display:flex;flex-direction:column;gap:16px;">
-    <div id="videoGenEmpty" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:14px;padding:30px;">
-      <div style="font-size:64px;opacity:.4;">🎬</div>
-      <div style="font-family:'Fredoka One',cursive;font-size:20px;color:var(--muted);text-align:center;">Describe a scene to create a video</div>
-      <div style="font-size:13px;color:var(--muted);font-weight:600;text-align:center;line-height:1.6;">Videos take 20–60 seconds to generate. Be patient — good things take time! 🎥</div>
+    <!-- Prompt -->
+    <div style="padding:4px 14px 10px;flex-shrink:0;">
+      <div style="display:flex;gap:8px;align-items:flex-end;">
+        <textarea id="vidGenPrompt" placeholder="Describe your video… e.g. A family laughing around a dinner table, warm golden lighting, cinematic" rows="2"
+          style="flex:1;background:var(--surface);border:2px solid var(--border);border-radius:16px;padding:12px 16px;font-size:15px;font-family:'Nunito',sans-serif;font-weight:600;color:var(--text);resize:none;outline:none;line-height:1.5;transition:border-color .2s;"
+          onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();generateAIVideo();}"></textarea>
+        <button onclick="generateAIVideo()" id="vidGenBtn"
+          style="width:54px;height:54px;background:linear-gradient(135deg,#f59e0b,#ef4444);border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:22px;box-shadow:0 4px 16px rgba(245,158,11,.4);"
+          title="Generate Video">🎬</button>
+      </div>
+      <!-- Quick ideas -->
+      <div style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-top:8px;padding-bottom:2px;">
+        <button class="img-idea-btn" onclick="setVidPrompt('A family celebrating together with joy and laughter, warm lighting')">🎉 Celebration</button>
+        <button class="img-idea-btn" onclick="setVidPrompt('Kids playing in a sunny backyard, colorful and joyful')">👶 Kids playing</button>
+        <button class="img-idea-btn" onclick="setVidPrompt('A beautiful sunset over the ocean, waves rolling in, cinematic')">🌅 Sunset</button>
+        <button class="img-idea-btn" onclick="setVidPrompt('Candles being lit on a Shabbat table, warm glow, peaceful')">🕯️ Shabbat</button>
+        <button class="img-idea-btn" onclick="setVidPrompt('Snow falling on a cozy house decorated with holiday lights')">❄️ Winter</button>
+      </div>
+    </div>
+
+    <!-- Video gallery -->
+    <div id="vidGenGallery" style="flex:1;overflow-y:auto;padding:10px 14px 20px;display:flex;flex-direction:column;gap:16px;">
+      <div id="vidGenEmpty" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:14px;padding:30px;">
+        <div style="font-size:64px;opacity:.4;">🎬</div>
+        <div style="font-family:'Fredoka One',cursive;font-size:20px;color:var(--muted);text-align:center;">Generate an AI Video</div>
+        <div style="font-size:13px;color:var(--muted);font-weight:600;text-align:center;line-height:1.6;">Describe a scene and tap 🎬 — videos take 30-90 seconds to generate. Completely free!</div>
+      </div>
     </div>
   </div>
 </div>
@@ -1847,7 +1865,7 @@ function removeHostMemory() {
             </div>
             <textarea class="wa-input" id="newComment" placeholder="Type a message…" rows="1" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,140)+'px';onTypingInput()"
                 onpaste="handleChatPaste(event)"></textarea>
-            <button class="wa-send-btn" id="waSendBtn" onclick="postComment()">
+            <button class="wa-send-btn" onclick="postComment()">
                 <svg width="20" height="20" fill="white" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
         </div>
@@ -1953,68 +1971,20 @@ function removeHostMemory() {
                 <div><div class="setting-label">Default card count</div><div class="setting-desc">Empty cards per section</div></div>
                 <input type="number" id="defaultCardsInput" value="20" min="4" max="50" style="width:70px;padding:8px 10px;font-size:13px;">
             </div>
-            <!-- ── Media Upload Setup ── -->
-            <div style="background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(139,92,246,.05));border:1.5px solid rgba(99,102,241,.2);border-radius:14px;padding:14px 16px;margin-bottom:12px;">
-                <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:6px;">📸 Photo &amp; Video Uploads</div>
-                <div style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:10px;">
-                    Set up <strong style="color:var(--accent);">just one</strong> of the services below — whichever is easiest. The app tries them in order automatically.
+            <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
+                <div>
+                    <div class="setting-label">☁️ Cloudinary Setup</div>
+                    <div class="setting-desc">Needed to upload photos, videos &amp; audio that work on all devices</div>
                 </div>
-
-                <!-- ThumbSnap -->
-                <div style="border:1px solid rgba(99,102,241,.15);border-radius:10px;padding:12px 14px;margin-bottom:10px;background:rgba(0,0,0,.15);">
-                    <div style="font-size:12px;font-weight:800;color:#a5b4fc;margin-bottom:6px;">1️⃣ ThumbSnap <span style="font-size:10px;font-weight:600;color:var(--accent2);background:rgba(91,171,111,.15);padding:2px 7px;border-radius:6px;margin-left:4px;">Recommended</span></div>
-                    <div style="display:flex;gap:8px;margin-bottom:8px;">
-                        <input type="text" id="thumbsnapKeyInput" placeholder="Paste your ThumbSnap API key here" style="flex:1;padding:8px 10px;font-size:12px;">
-                        <button onclick="testApiKey('thumbsnap')" style="background:rgba(99,102,241,.2);border:1px solid rgba(99,102,241,.35);color:#a5b4fc;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;">🧪 Test</button>
-                    </div>
-                    <div id="thumbsnapStatus" style="font-size:12px;font-weight:700;padding:8px 12px;border-radius:8px;display:none;margin-bottom:6px;"></div>
-                    <div style="font-size:11px;color:var(--muted);line-height:1.9;background:rgba(0,0,0,.2);border-radius:8px;padding:8px 10px;">
-                        <strong style="color:#c7d2fe;">How to get your key (2 minutes):</strong><br>
-                        👉 Open your browser and go to: <strong style="color:var(--accent);">thumbsnap.com</strong><br>
-                        👉 Click <strong>Sign Up</strong> — just email &amp; password, no credit card<br>
-                        👉 Once logged in, click your <strong>username</strong> (top right)<br>
-                        👉 Click <strong>"API"</strong> in the menu<br>
-                        👉 You will see a long code — that is your API key<br>
-                        👉 Copy it and paste it in the box above, then tap <strong>Save</strong>
-                    </div>
+                <div style="width:100%;display:flex;flex-direction:column;gap:7px;">
+                    <input type="text" id="cloudNameInput" placeholder="Cloud Name  (e.g. myfamilyhub)" style="width:100%;padding:8px 10px;font-size:12px;">
+                    <input type="text" id="uploadPresetInput" placeholder="Upload Preset  (e.g. family_hub_uploads)" style="width:100%;padding:8px 10px;font-size:12px;">
                 </div>
-
-                <!-- Publitio -->
-                <div style="border:1px solid rgba(99,102,241,.15);border-radius:10px;padding:12px 14px;margin-bottom:10px;background:rgba(0,0,0,.15);">
-                    <div style="font-size:12px;font-weight:800;color:#a5b4fc;margin-bottom:6px;">2️⃣ Publitio <span style="font-size:10px;font-weight:600;color:var(--muted);padding:2px 7px;">Backup</span></div>
-                    <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:8px;">
-                        <input type="text" id="publitioKeyInput"    placeholder="Publitio API Key"    style="width:100%;padding:8px 10px;font-size:12px;">
-                        <input type="text" id="publitioSecretInput" placeholder="Publitio API Secret" style="width:100%;padding:8px 10px;font-size:12px;">
-                        <button onclick="testApiKey('publitio')" style="background:rgba(99,102,241,.2);border:1px solid rgba(99,102,241,.35);color:#a5b4fc;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">🧪 Test Publitio</button>
-                    </div>
-                    <div id="publitioStatus" style="font-size:12px;font-weight:700;padding:8px 12px;border-radius:8px;display:none;margin-bottom:6px;"></div>
-                    <div style="font-size:11px;color:var(--muted);line-height:1.9;background:rgba(0,0,0,.2);border-radius:8px;padding:8px 10px;">
-                        <strong style="color:#c7d2fe;">How to get your keys (2 minutes):</strong><br>
-                        👉 Go to: <strong style="color:var(--accent);">publit.io</strong><br>
-                        👉 Click <strong>Sign Up Free</strong> — free gives you 5GB storage<br>
-                        👉 After login, look at the left menu → click <strong>"API Credentials"</strong><br>
-                        👉 You will see <strong>API Key</strong> and <strong>API Secret</strong> on that page<br>
-                        👉 Copy each one into the boxes above, then tap <strong>Save</strong>
-                    </div>
-                </div>
-
-                <!-- Cloudinary -->
-                <div style="border:1px solid rgba(99,102,241,.15);border-radius:10px;padding:12px 14px;background:rgba(0,0,0,.15);">
-                    <div style="font-size:12px;font-weight:800;color:#a5b4fc;margin-bottom:6px;">3️⃣ Cloudinary <span style="font-size:10px;font-weight:600;color:var(--muted);padding:2px 7px;">Backup</span></div>
-                    <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:8px;">
-                        <input type="text" id="cloudNameInput"    placeholder="Cloud Name  (e.g. myfamilyhub)"              style="width:100%;padding:8px 10px;font-size:12px;">
-                        <input type="text" id="uploadPresetInput" placeholder="Upload Preset  (e.g. family_hub_uploads)"    style="width:100%;padding:8px 10px;font-size:12px;">
-                        <button onclick="testApiKey('cloudinary')" style="background:rgba(99,102,241,.2);border:1px solid rgba(99,102,241,.35);color:#a5b4fc;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">🧪 Test Cloudinary</button>
-                    </div>
-                    <div id="cloudinaryStatus" style="font-size:12px;font-weight:700;padding:8px 12px;border-radius:8px;display:none;margin-bottom:6px;"></div>
-                    <div style="font-size:11px;color:var(--muted);line-height:1.9;background:rgba(0,0,0,.2);border-radius:8px;padding:8px 10px;">
-                        <strong style="color:#c7d2fe;">How to get your keys:</strong><br>
-                        👉 Go to: <strong style="color:var(--accent);">cloudinary.com</strong> → Sign up free<br>
-                        👉 After login your <strong>Cloud Name</strong> is shown in the top-left of the dashboard<br>
-                        👉 Go to <strong>Settings → Upload → Add upload preset</strong><br>
-                        👉 Set signing mode to <strong>Unsigned</strong> → Save → copy the preset name<br>
-                        👉 Paste both above → tap <strong>Save</strong>
-                    </div>
+                <div style="font-size:11px;color:var(--muted);line-height:1.6;">
+                    1. Go to <strong style="color:var(--accent);">cloudinary.com</strong> → sign up free (no credit card)<br>
+                    2. Dashboard → top-left shows your <strong>Cloud Name</strong><br>
+                    3. Settings → Upload → Add upload preset → set to <strong>Unsigned</strong> → copy name<br>
+                    4. Paste both above → Save
                 </div>
             </div>
             <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
@@ -2032,67 +2002,29 @@ function removeHostMemory() {
                     3. Copy the link → paste above → Save
                 </div>
             </div>
+            <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
+                <div>
+                    <div class="setting-label">🤖 Gemini AI Key</div>
+                    <div class="setting-desc">Powers smart chat, photo editing, image analysis &amp; more</div>
+                </div>
+                <input type="password" id="geminiKeyInput" placeholder="Paste your Gemini API key (starts with AIza…)" style="width:100%;padding:8px 10px;font-size:12px;">
+                <div id="geminiKeyStatus" style="font-size:11px;font-weight:700;"></div>
+                <div style="font-size:11px;color:var(--muted);line-height:1.6;">
+                    1. Go to <strong style="color:var(--accent);">aistudio.google.com/apikey</strong><br>
+                    2. Click <strong>Create API Key</strong> → copy &amp; paste above → Save<br>
+                    <em>Enables: smart chat, photo editing, image reading, recipes &amp; more!</em>
+                </div>
+            </div>
             <div class="modal-buttons">
                 <button class="btn btn-outline" onclick="saveHubSettings()">
                     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
                     Save
                 </button>
             </div>
-
-            <!-- Open Browser Button -->
-            <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.08);">
-                <button onclick="openProtectedBrowser()" style="width:100%;padding:13px;background:linear-gradient(135deg,#2d5be3,#6366f1);color:white;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:0.2px;">
-                    🌐 Open Browser
-                </button>
-                <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px;">Password protected — opens inside the app</div>
-            </div>
         </div>
 
         <div class="modal-buttons" style="margin-top:6px;">
             <button class="btn btn-ghost" onclick="closeModal('settingsModal')">Close</button>
-        </div>
-
-        <!-- In-App Browser Modal -->
-        <div id="inAppBrowserModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:99999;flex-direction:column;">
-            <!-- Password Screen -->
-            <div id="browserPasswordScreen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;padding:24px;">
-                <div style="font-size:32px;">🔐</div>
-                <div style="font-size:18px;font-weight:700;color:white;">Enter Password</div>
-                <div style="font-size:13px;color:rgba(255,255,255,0.5);text-align:center;">This browser is password protected</div>
-                <input id="browserPasswordInput" type="password" placeholder="Enter password..."
-                    style="width:100%;max-width:280px;padding:13px 16px;border-radius:12px;border:2px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:white;font-size:16px;text-align:center;font-family:inherit;outline:none;"
-                    onkeydown="if(event.key==='Enter')checkBrowserPassword()" />
-                <div id="browserPassError" style="color:#ff6b6b;font-size:13px;font-weight:600;display:none;">❌ Wrong password</div>
-                <div style="display:flex;gap:10px;width:100%;max-width:280px;">
-                    <button onclick="closeInAppBrowser()" style="flex:1;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:white;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Cancel</button>
-                    <button onclick="checkBrowserPassword()" style="flex:1;padding:12px;border-radius:10px;border:none;background:#2d5be3;color:white;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Unlock</button>
-                </div>
-            </div>
-            <!-- Browser Screen -->
-            <div id="browserScreen" style="display:none;flex-direction:column;height:100%;">
-                <!-- Browser toolbar -->
-                <div style="background:#1a1a2e;padding:10px 12px;display:flex;align-items:center;gap:8px;flex-shrink:0;">
-                    <button onclick="closeInAppBrowser()" style="background:rgba(255,255,255,0.1);border:none;color:white;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">✕</button>
-                    <button onclick="browserBack()" style="background:rgba(255,255,255,0.1);border:none;color:white;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">‹</button>
-                    <button onclick="browserForward()" style="background:rgba(255,255,255,0.1);border:none;color:white;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">›</button>
-                    <input id="browserUrlBar" type="url" value="https://www.google.com"
-                        style="flex:1;padding:8px 12px;border-radius:8px;border:none;background:rgba(255,255,255,0.1);color:white;font-size:13px;font-family:inherit;outline:none;"
-                        onkeydown="if(event.key==='Enter')browserNavigate()" placeholder="Search or enter URL..." />
-                    <button onclick="browserNavigate()" style="background:#2d5be3;border:none;color:white;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;">→</button>
-                </div>
-                <!-- Quick links -->
-                <div style="background:#12122a;padding:8px 12px;display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0;">
-                    <button onclick="browserGo('https://www.google.com')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);border-radius:20px;padding:4px 12px;font-size:12px;cursor:pointer;font-family:inherit;">Google</button>
-                    <button onclick="browserGo('https://www.youtube.com')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);border-radius:20px;padding:4px 12px;font-size:12px;cursor:pointer;font-family:inherit;">YouTube</button>
-                    <button onclick="browserGo('https://www.wikipedia.org')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);border-radius:20px;padding:4px 12px;font-size:12px;cursor:pointer;font-family:inherit;">Wikipedia</button>
-                    <button onclick="browserGo('https://www.amazon.com')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);border-radius:20px;padding:4px 12px;font-size:12px;cursor:pointer;font-family:inherit;">Amazon</button>
-                </div>
-                <!-- iframe -->
-                <iframe id="browserFrame" src="https://www.google.com"
-                    style="flex:1;width:100%;border:none;background:white;"
-                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation">
-                </iframe>
-            </div>
         </div>
 
         <!-- Welcome Popup Panel -->
@@ -2436,15 +2368,8 @@ const PRIVATE_ROOM = 'FamilyHub-8x4k2m9q7w3j5p1r6n0y';
 
 // ── Cloudinary config ─────────────────────────────────────
 // Replace these with your own values from cloudinary.com → Settings → API Keys
-// Pollinations publishable key — safe for front-end, powers AI video generation
-const POLLINATIONS_PK = 'pk_JDZbByaZVrjx8Nzl';
-
-// API keys — hardcoded so every device works without any setup
-let CLOUDINARY_CLOUD_NAME    = localStorage.getItem('fh_cloudinary_name')   || 'YOUR_CLOUD_NAME';
-let CLOUDINARY_UPLOAD_PRESET = localStorage.getItem('fh_cloudinary_preset') || 'YOUR_UPLOAD_PRESET';
-let THUMBSNAP_API_KEY        = '0004716083421ae0159de376874cc818'; // hardcoded — works for everyone
-let PUBLITIO_API_KEY         = localStorage.getItem('fh_publitio_key')      || '';
-let PUBLITIO_API_SECRET      = localStorage.getItem('fh_publitio_sec')      || '';
+let CLOUDINARY_CLOUD_NAME = 'YOUR_CLOUD_NAME';   // e.g. 'myfamilyhub'
+let CLOUDINARY_UPLOAD_PRESET = 'YOUR_UPLOAD_PRESET'; // e.g. 'family_hub_uploads'
 const EMOJIS = ['📁','📂','🏠','❤️','⭐','🎵','🎬','📸','🎮','📖','🍕','🌟',
                 '🔥','💡','🎯','🎁','🌈','🦁','🐻','🌺','⚽','🎸','🧩','🍎',
                 '🌙','☀️','🎉','💎','🔖','📌'];
@@ -2581,18 +2506,6 @@ async function loadContent(){
         if(cn.exists()&&cn.val())CLOUDINARY_CLOUD_NAME=cn.val();
         const cp=await window.dbGet(window.dbRef(window.db,'cloudinaryPreset'));
         if(cp.exists()&&cp.val())CLOUDINARY_UPLOAD_PRESET=cp.val();
-        // Load upload API keys from Firebase (overrides localStorage — Firebase is the source of truth)
-        const ts=await window.dbGet(window.dbRef(window.db,'thumbsnapKey'));
-        if(ts.exists()&&ts.val()){ localStorage.setItem('fh_thumbsnap_key',ts.val()); }
-        // THUMBSNAP_API_KEY stays as the hardcoded value unless localStorage has a newer one
-        const pk=await window.dbGet(window.dbRef(window.db,'publitioKey'));
-        if(pk.exists()&&pk.val()){ PUBLITIO_API_KEY=pk.val(); localStorage.setItem('fh_publitio_key',pk.val()); }
-        const ps=await window.dbGet(window.dbRef(window.db,'publitioSecret'));
-        if(ps.exists()&&ps.val()){ PUBLITIO_API_SECRET=ps.val(); localStorage.setItem('fh_publitio_sec',ps.val()); }
-        const fc=await window.dbGet(window.dbRef(window.db,'cloudinaryName'));
-        if(fc.exists()&&fc.val()){ CLOUDINARY_CLOUD_NAME=fc.val(); localStorage.setItem('fh_cloudinary_name',fc.val()); }
-        const fp=await window.dbGet(window.dbRef(window.db,'cloudinaryPreset'));
-        if(fp.exists()&&fp.val()){ CLOUDINARY_UPLOAD_PRESET=fp.val(); localStorage.setItem('fh_cloudinary_preset',fp.val()); }
     }catch(e){}
     loadSections();
     loadCards(currentSection); // reload now that we have real defaultCardCount
@@ -3420,27 +3333,14 @@ function openSettings(){
     document.getElementById('meetLinkInput').value=meetLink||'';
     document.getElementById('cloudNameInput').value=CLOUDINARY_CLOUD_NAME!=='YOUR_CLOUD_NAME'?CLOUDINARY_CLOUD_NAME:'';
     document.getElementById('uploadPresetInput').value=CLOUDINARY_UPLOAD_PRESET!=='YOUR_UPLOAD_PRESET'?CLOUDINARY_UPLOAD_PRESET:'';
-    document.getElementById('thumbsnapKeyInput').value=THUMBSNAP_API_KEY||'';
-    document.getElementById('publitioKeyInput').value=PUBLITIO_API_KEY||'';
-    document.getElementById('publitioSecretInput').value=PUBLITIO_API_SECRET||'';
-
-    // Show saved status for each service
-    function _showSaved(elId, active){
-        var el = document.getElementById(elId);
-        if(!el) return;
-        if(active){
-            el.style.display='block';
-            el.style.background='rgba(34,197,94,.12)';
-            el.style.border='1px solid rgba(34,197,94,.3)';
-            el.style.color='#4ade80';
-            el.textContent='✅ Key saved — tap 🧪 Test to confirm it works';
-        } else {
-            el.style.display='none';
-        }
+    // Load Gemini key
+    const gkEl=document.getElementById('geminiKeyInput');
+    const gkSt=document.getElementById('geminiKeyStatus');
+    if(gkEl){ gkEl.value=window._GEMINI_KEY||''; }
+    if(gkSt){ 
+        if(window._GEMINI_KEY){ gkSt.textContent='✅ Gemini key loaded'; gkSt.style.color='var(--accent2)'; }
+        else { gkSt.textContent='⚠️ No key saved — AI uses free backup only'; gkSt.style.color='var(--muted)'; }
     }
-    _showSaved('thumbsnapStatus',  !!THUMBSNAP_API_KEY);
-    _showSaved('publitioStatus',   !!(PUBLITIO_API_KEY && PUBLITIO_API_SECRET));
-    _showSaved('cloudinaryStatus', !!(CLOUDINARY_CLOUD_NAME && CLOUDINARY_CLOUD_NAME!=='YOUR_CLOUD_NAME'));
 }
 function switchHostTab(name,btn){
     document.querySelectorAll('.host-tab').forEach(t=>t.classList.remove('active'));
@@ -3481,140 +3381,42 @@ async function clearAnnouncement(){
     try{await window.dbRemove(window.dbRef(window.db,'announcement'));toast('Banner cleared','warn');}
     catch(e){toast('Failed','danger');}
 }
-// ── Test API keys live ──
-window.testApiKey = async function(service){
-    var statusEl, key, key2;
-
-    function showStatus(el, ok, msg){
-        if(!el) return;
-        el.style.display = 'block';
-        el.style.background = ok ? 'rgba(34,197,94,.12)' : 'rgba(239,68,68,.12)';
-        el.style.border = ok ? '1px solid rgba(34,197,94,.3)' : '1px solid rgba(239,68,68,.3)';
-        el.style.color = ok ? '#4ade80' : '#f87171';
-        el.textContent = (ok ? '✅ ' : '❌ ') + msg;
-    }
-
-    if(service === 'thumbsnap'){
-        key = (document.getElementById('thumbsnapKeyInput').value.trim()) || THUMBSNAP_API_KEY;
-        statusEl = document.getElementById('thumbsnapStatus');
-        if(!key){ showStatus(statusEl, false, 'No API key entered'); return; }
-        showStatus(statusEl, true, 'Testing ThumbSnap…');
-        try{
-            // Upload a tiny 1x1 transparent PNG as test
-            var testBlob = await fetch('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==').then(r=>r.blob());
-            var fd = new FormData();
-            fd.append('media', testBlob, 'test.png');
-            fd.append('key', key);
-            var r = await fetch('https://thumbsnap.com/api/upload', {method:'POST', body:fd});
-            var j = await r.json();
-            if(j.success && j.data && j.data.media){
-                showStatus(statusEl, true, 'ThumbSnap works! ✓ Photos & videos will upload here.');
-                THUMBSNAP_API_KEY = key;
-                localStorage.setItem('fh_thumbsnap_key', key);
-            } else {
-                showStatus(statusEl, false, 'ThumbSnap rejected the key: ' + (j.error || 'unknown error'));
-            }
-        } catch(e){
-            showStatus(statusEl, false, 'Could not reach ThumbSnap — check your internet');
-        }
-
-    } else if(service === 'publitio'){
-        key  = (document.getElementById('publitioKeyInput').value.trim())    || PUBLITIO_API_KEY;
-        key2 = (document.getElementById('publitioSecretInput').value.trim()) || PUBLITIO_API_SECRET;
-        statusEl = document.getElementById('publitioStatus');
-        if(!key || !key2){ showStatus(statusEl, false, 'Enter both API Key and API Secret'); return; }
-        showStatus(statusEl, true, 'Testing Publitio…');
-        try{
-            var auth = btoa(key + ':' + key2);
-            var r2 = await fetch('https://api.publit.io/v1/account', {
-                headers:{ 'Authorization': 'Basic ' + auth }
-            });
-            if(r2.ok){
-                var j2 = await r2.json();
-                showStatus(statusEl, true, 'Publitio works! ✓ Account: ' + (j2.username || j2.email || 'connected'));
-                PUBLITIO_API_KEY = key; PUBLITIO_API_SECRET = key2;
-                localStorage.setItem('fh_publitio_key', key);
-                localStorage.setItem('fh_publitio_sec', key2);
-            } else {
-                showStatus(statusEl, false, 'Publitio rejected the credentials (HTTP ' + r2.status + ')');
-            }
-        } catch(e2){
-            showStatus(statusEl, false, 'Could not reach Publitio — check your internet');
-        }
-
-    } else if(service === 'cloudinary'){
-        key  = (document.getElementById('cloudNameInput').value.trim())    || CLOUDINARY_CLOUD_NAME;
-        key2 = (document.getElementById('uploadPresetInput').value.trim()) || CLOUDINARY_UPLOAD_PRESET;
-        statusEl = document.getElementById('cloudinaryStatus');
-        if(!key || key === 'YOUR_CLOUD_NAME'){ showStatus(statusEl, false, 'Enter your Cloud Name first'); return; }
-        if(!key2 || key2 === 'YOUR_UPLOAD_PRESET'){ showStatus(statusEl, false, 'Enter your Upload Preset first'); return; }
-        showStatus(statusEl, true, 'Testing Cloudinary…');
-        try{
-            var testBlob2 = await fetch('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==').then(r=>r.blob());
-            var fd3 = new FormData();
-            fd3.append('file', testBlob2, 'test.png');
-            fd3.append('upload_preset', key2);
-            var r3 = await fetch('https://api.cloudinary.com/v1_1/'+key+'/image/upload', {method:'POST', body:fd3});
-            var j3 = await r3.json();
-            if(j3.secure_url){
-                showStatus(statusEl, true, 'Cloudinary works! ✓ Image uploaded successfully.');
-                CLOUDINARY_CLOUD_NAME = key; CLOUDINARY_UPLOAD_PRESET = key2;
-                localStorage.setItem('fh_cloudinary_name', key);
-                localStorage.setItem('fh_cloudinary_preset', key2);
-            } else {
-                showStatus(statusEl, false, 'Cloudinary error: ' + (j3.error && j3.error.message || 'check your Cloud Name and preset'));
-            }
-        } catch(e3){
-            showStatus(statusEl, false, 'Could not reach Cloudinary — check your internet');
-        }
-    }
-};
-
 async function saveHubSettings(){
-    const name        = document.getElementById('hubNameInput').value.trim();
-    const count       = parseInt(document.getElementById('defaultCardsInput').value)||20;
-    const link        = document.getElementById('meetLinkInput').value.trim();
-    const cloudName   = document.getElementById('cloudNameInput').value.trim();
-    const uploadPreset= document.getElementById('uploadPresetInput').value.trim();
-    const tsKey       = document.getElementById('thumbsnapKeyInput').value.trim();
-    const pkKey       = document.getElementById('publitioKeyInput').value.trim();
-    const psKey       = document.getElementById('publitioSecretInput').value.trim();
+    const name=document.getElementById('hubNameInput').value.trim();
+    const count=parseInt(document.getElementById('defaultCardsInput').value)||20;
+    const link=document.getElementById('meetLinkInput').value.trim();
+    const cloudName=document.getElementById('cloudNameInput').value.trim();
+    const uploadPreset=document.getElementById('uploadPresetInput').value.trim();
+    const geminiKey=document.getElementById('geminiKeyInput')?.value.trim()||'';
 
-    // ── Save keys to localStorage (persists on this device after reload) ──
-    localStorage.setItem('fh_thumbsnap_key',    tsKey);
-    localStorage.setItem('fh_publitio_key',     pkKey);
-    localStorage.setItem('fh_publitio_sec',     psKey);
-    localStorage.setItem('fh_cloudinary_name',  cloudName);
-    localStorage.setItem('fh_cloudinary_preset',uploadPreset);
+    // Always save Gemini key locally first — this never fails
+    if(geminiKey){ localStorage.setItem('_ghk', geminiKey); window._GEMINI_KEY=geminiKey; }
+    else { localStorage.removeItem('_ghk'); window._GEMINI_KEY=''; }
+    const gkSt=document.getElementById('geminiKeyStatus');
+    if(gkSt){
+        gkSt.textContent=geminiKey?'✅ Gemini key saved — AI upgraded!':'⚠️ No key — using free backup AI';
+        gkSt.style.color=geminiKey?'var(--accent2)':'var(--muted)';
+    }
 
-    // Update live variables immediately
-    THUMBSNAP_API_KEY    = tsKey;
-    PUBLITIO_API_KEY     = pkKey;
-    PUBLITIO_API_SECRET  = psKey;
-    CLOUDINARY_CLOUD_NAME    = cloudName    || 'YOUR_CLOUD_NAME';
-    CLOUDINARY_UPLOAD_PRESET = uploadPreset || 'YOUR_UPLOAD_PRESET';
+    // Also save Cloudinary locally right away
+    if(cloudName){ CLOUDINARY_CLOUD_NAME=cloudName; }
+    if(uploadPreset){ CLOUDINARY_UPLOAD_PRESET=uploadPreset; }
+    if(name){ document.getElementById('appName').textContent=name; }
+    defaultCardCount=count;
+    meetLink=link;
 
-    // ── Also save to Firebase so other family devices get the keys ──
+    // Now try Firebase — if it fails, local settings are already saved
     try{
-        const updates = {};
-        if(name)        updates['appName']          = name;
-        if(count)       updates['defaultCardCount'] = count;
-        updates['meetLink']         = link        || '';
-        updates['thumbsnapKey']     = tsKey       || '';
-        updates['publitioKey']      = pkKey       || '';
-        updates['publitioSecret']   = psKey       || '';
-        updates['cloudinaryName']   = cloudName   || '';
-        updates['cloudinaryPreset'] = uploadPreset|| '';
-        await window.dbUpdate(window.dbRef(window.db), updates);
-    }catch(e){ console.warn('Firebase save failed (keys saved locally):', e.message); }
-
-    if(name){ document.getElementById('appName').textContent = name; }
-    defaultCardCount = count;
-    meetLink = link;
-
-    // Show which key is active
-    var activeService = tsKey ? 'ThumbSnap' : pkKey ? 'Publitio' : cloudName ? 'Cloudinary' : 'none';
-    toast('Saved! ✓  Active: ' + activeService);
+        if(name)await window.dbSet(window.dbRef(window.db,'appName'),name);
+        await window.dbSet(window.dbRef(window.db,'defaultCardCount'),count);
+        await window.dbSet(window.dbRef(window.db,'meetLink'),link);
+        if(cloudName)await window.dbSet(window.dbRef(window.db,'cloudinaryName'),cloudName);
+        if(uploadPreset)await window.dbSet(window.dbRef(window.db,'cloudinaryPreset'),uploadPreset);
+        toast('Saved! ✓');
+    }catch(e){
+        console.warn('Firebase save failed (local settings still saved):', e);
+        toast('Saved locally ✓ (sync failed — check connection)', 'warn');
+    }
 }
 
 // ── Comments ──────────────────────────────────────────────
@@ -3626,26 +3428,19 @@ let chatGroupMeta = {}; // { groupName: { type: 'announce'|'private'|'public', m
 
 function openComments(){
     document.getElementById('commentsModal').classList.add('active');
-    setLastRead(currentGroup);
-    // loadChatGroups fetches groups once and then calls loadMessages
+    setLastRead(currentGroup);  // mark current group as read
     loadChatGroups();
 }
 
 function loadChatGroups(){
-    // Fetch once — don't use persistent listeners here to avoid
-    // triggering renderGroupTabs (and loadMessages) on every Firebase change
-    window.dbGet(window.dbRef(window.chatDb,'chatGroups')).then(snap=>{
+    window.dbOnValue(window.dbRef(window.chatDb,'chatGroups'), snap=>{
         if(snap.exists()) chatGroups = snap.val();
         else { chatGroups=['General']; window.dbSet(window.dbRef(window.chatDb,'chatGroups'),chatGroups); }
-        return window.dbGet(window.dbRef(window.db,'chatGroupMeta'));
-    }).then(snap=>{
+        renderGroupTabs();
+    });
+    window.dbOnValue(window.dbRef(window.db,'chatGroupMeta'), snap=>{
         chatGroupMeta = snap.exists() ? snap.val() : {};
         renderGroupTabs();
-        // Now load messages for the current group (only once after groups are ready)
-        loadMessages(currentGroup);
-    }).catch(()=>{
-        renderGroupTabs();
-        loadMessages(currentGroup);
     });
 }
 
@@ -3698,8 +3493,7 @@ function renderGroupTabs(){
     document.getElementById('waChatSub').textContent = currentGroup;
     // Update input area based on current group type
     updateChatInputForGroup(currentGroup);
-    // NOTE: do NOT call loadMessages here — it is called only from
-    // openComments() and switchChatGroup() to avoid duplicate listeners
+    loadMessages(currentGroup);
 }
 
 async function deleteChatGroup(groupName){
@@ -3737,11 +3531,10 @@ function updateChatInputForGroup(group){
 }
 
 function switchChatGroup(name){
-    clearTypingOnLeave();
+    clearTypingOnLeave();   // stop typing in old group
     currentGroup = name;
-    setLastRead(name);
-    renderGroupTabs();      // re-renders tabs (does NOT call loadMessages)
-    loadMessages(name);     // load messages for the new group
+    setLastRead(name);  // mark newly opened group as read
+    renderGroupTabs();
     cancelReply();
 }
 
@@ -3792,30 +3585,13 @@ async function saveNewGroup(){
 
 function msgPath(group){ return 'messages/'+group.replace(/\s+/g,'_'); }
 
-// Holds the active unsubscribe function for the current chat listener
-let _msgListenerUnsub = null;
-
 function loadMessages(group){
-    // ── Detach any previous listener so old chats don't bleed into this one ──
-    if(_msgListenerUnsub){
-        try{ _msgListenerUnsub(); } catch(e){}
-        _msgListenerUnsub = null;
-    }
-
     listenTyping(group);
     listenPinnedMessage(group);
+    let _knownKeys = [];   // ordered list of message keys we have rendered
+    let _firstLoad  = true;
 
-    // Clear the container immediately when switching groups
-    const container = document.getElementById('waMessages');
-    container.innerHTML = '<p style="color:#888;text-align:center;padding:22px;font-size:13px;">Loading… 💬</p>';
-
-    let _knownKeys = [];
-    let _firstLoad = true;
-
-    const dbRef = window.dbRef(window.chatDb, msgPath(group));
-
-    // Use onValue and capture the unsubscribe function it returns
-    _msgListenerUnsub = window.dbOnValue(dbRef, snap=>{
+    window.dbOnValue(window.dbRef(window.chatDb, msgPath(group)), snap=>{
         const container = document.getElementById('waMessages');
 
         // How far from the bottom before this update
@@ -3829,11 +3605,10 @@ function loadMessages(group){
             return;
         }
 
-        const data    = snap.val();
-        const newKeys = Object.keys(data);
-        const prevCount = _knownKeys.length;
+        const data    = snap.val();                      // { key: msgObj, … }
+        const newKeys = Object.keys(data);               // current ordered keys from Firebase
 
-        // ── 1. Remove bubbles deleted from Firebase ──
+        // ── 1. Remove bubbles that no longer exist (deleted messages) ──
         _knownKeys.forEach(k => {
             if(!data[k]){
                 const el = document.getElementById('msg-'+k);
@@ -3841,16 +3616,18 @@ function loadMessages(group){
             }
         });
 
-        // ── 2. Add new messages or update reactions on existing ones ──
-        let prevEl = null;
+        // ── 2. Add or update each message ──
+        let prevEl = null; // used to insert in order
         newKeys.forEach(k => {
             const existing = document.getElementById('msg-'+k);
             if(existing){
-                // Already rendered — update reactions only
+                // Message already rendered — only re-render if reactions changed
+                // (reactions are the only thing that fires updates without adding messages)
                 const msg = data[k];
                 const reactionWrap = existing.querySelector('.wa-reactions');
                 const newReactions = msg.reactions || {};
                 const hasReactions = Object.keys(newReactions).length > 0;
+                // Rebuild reaction section cheaply
                 if(reactionWrap) reactionWrap.remove();
                 if(hasReactions){
                     const counts = {};
@@ -3872,14 +3649,14 @@ function loadMessages(group){
                 }
                 prevEl = existing;
             } else {
-                // New message — always append after prevEl (never insertBefore firstChild)
+                // New message — build and insert after prevEl
                 const bubble = buildBubble(k, data[k]);
-                if(prevEl){
-                    // Insert right after prevEl
-                    prevEl.insertAdjacentElement('afterend', bubble);
-                } else {
-                    // Very first message in the list
+                if(prevEl && prevEl.nextSibling){
+                    container.insertBefore(bubble, prevEl.nextSibling);
+                } else if(prevEl){
                     container.appendChild(bubble);
+                } else {
+                    container.insertBefore(bubble, container.firstChild);
                 }
                 prevEl = bubble;
             }
@@ -3887,10 +3664,18 @@ function loadMessages(group){
 
         _knownKeys = newKeys;
 
-        // ── 3. Scroll to bottom only when needed ──
-        const isNewMessage = newKeys.length > prevCount;
-        if(_firstLoad || (isNewMessage && wasAtBottom)){
+        // ── 3. Scroll only when appropriate ──
+        if(_firstLoad){
+            // First load: jump to bottom
             container.scrollTop = container.scrollHeight;
+        } else {
+            const countBefore = _knownKeys.length - newKeys.filter(k=>!document.getElementById('msg-'+k)).length;
+            const isNewMessage = newKeys.length > countBefore;
+            if(isNewMessage && wasAtBottom){
+                // New message arrived and user was already at bottom — follow it down
+                container.scrollTop = container.scrollHeight;
+            }
+            // Otherwise: do nothing — keep everyone's scroll position exactly where it was
         }
 
         _firstLoad = false;
@@ -4108,7 +3893,10 @@ async function toggleReaction(key, emoji){
 let _pendingImageData = null;
 let _pendingMediaType = null;
 let _pendingFile = null;
-let _uploadInProgress = false;  // true while upload is running — blocks send
+
+// CLOUDINARY vars already declared above — skip redeclaration
+CLOUDINARY_CLOUD_NAME   = CLOUDINARY_CLOUD_NAME || 'YOUR_CLOUD_NAME';
+CLOUDINARY_UPLOAD_PRESET = (typeof CLOUDINARY_UPLOAD_PRESET !== 'undefined' ? CLOUDINARY_UPLOAD_PRESET : null) || 'YOUR_UPLOAD_PRESET';
 
 function handleImagePick(input){
     const file = input.files?.[0];
@@ -4140,230 +3928,75 @@ function handleImagePick(input){
         const reader = new FileReader();
         reader.onload = e => { imgThumb.src = e.target.result; imgThumb.style.display = 'block'; };
         reader.readAsDataURL(file);
-        label.textContent = '📷 Uploading…';
+        label.textContent = '📷 Image — tap send or type a caption';
     } else {
         const objUrl = URL.createObjectURL(file);
         vidThumb.src = objUrl;
         vidThumb.style.display = 'block';
-        label.textContent = '🎬 Uploading…';
+        label.textContent = '🎬 Video (' + mb.toFixed(1) + 'MB) — tap send';
     }
 
-    // Disable send button while upload runs
-    _uploadInProgress = true;
-    const sendBtn = document.getElementById('waSendBtn') || document.querySelector('.wa-send-btn');
-    if(sendBtn){ sendBtn.style.opacity='0.4'; sendBtn.style.pointerEvents='none'; }
-
-    _uploadMediaToCloudinary(file).finally(() => {
-        _uploadInProgress = false;
-        if(sendBtn){ sendBtn.style.opacity=''; sendBtn.style.pointerEvents=''; }
-    });
-}
-
-// ── Upload to ThumbSnap (free image + video host, needs API key) ──
-async function _uploadToThumbSnap(file, onProgress){
-    if(!THUMBSNAP_API_KEY) throw new Error('No ThumbSnap key');
-    const fd = new FormData();
-    fd.append('media', file);
-    fd.append('key',   THUMBSNAP_API_KEY);
-    return new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST','https://thumbsnap.com/api/upload');
-        xhr.upload.onprogress = e => {
-            if(e.lengthComputable && onProgress)
-                onProgress(Math.round(e.loaded / e.total * 100));
-        };
-        xhr.onload = () => {
-            if(xhr.status === 200){
-                try{
-                    const j = JSON.parse(xhr.responseText);
-                    if(j.success && j.data && j.data.media) resolve(j.data.media);
-                    else reject(new Error(j.error || 'ThumbSnap upload failed'));
-                } catch(e){ reject(new Error('Bad response from ThumbSnap')); }
-            } else {
-                reject(new Error('ThumbSnap HTTP ' + xhr.status));
-            }
-        };
-        xhr.onerror = () => reject(new Error('Network error'));
-        xhr.send(fd);
-    });
-}
-
-// ── Upload to Publitio (free 5GB media host, needs API key + secret) ──
-async function _uploadToPublitio(file, onProgress){
-    if(!PUBLITIO_API_KEY || !PUBLITIO_API_SECRET) throw new Error('No Publitio credentials');
-    const fd = new FormData();
-    fd.append('file', file);
-    fd.append('folder', '/family_chat');
-    // Publitio uses HTTP Basic Auth
-    const auth = btoa(PUBLITIO_API_KEY + ':' + PUBLITIO_API_SECRET);
-    return new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'https://api.publit.io/v1/files/create');
-        xhr.setRequestHeader('Authorization', 'Basic ' + auth);
-        xhr.upload.onprogress = e => {
-            if(e.lengthComputable && onProgress)
-                onProgress(Math.round(e.loaded / e.total * 100));
-        };
-        xhr.onload = () => {
-            if(xhr.status === 200){
-                try{
-                    const j = JSON.parse(xhr.responseText);
-                    // Publitio returns url_short or url_preview
-                    const url = j.url_short || j.url_preview || (j.versions && j.versions[0] && j.versions[0].url);
-                    if(url) resolve(url);
-                    else reject(new Error('Publitio: no URL in response'));
-                } catch(e){ reject(new Error('Bad response from Publitio')); }
-            } else {
-                reject(new Error('Publitio HTTP ' + xhr.status));
-            }
-        };
-        xhr.onerror = () => reject(new Error('Network error'));
-        xhr.send(fd);
-    });
-}
-
-// ── Upload via Puter.js (free, no API key — uses Puter cloud storage) ──
-async function _uploadToPuter(file){
-    if(typeof puter === 'undefined' || !puter.fs || !puter.fs.upload)
-        throw new Error('Puter.js not available');
-    // Puter requires sign-in but handles it with a popup automatically
-    const fname = 'family_chat/' + Date.now() + '_' + (file.name || 'media');
-    const result = await puter.fs.upload([file], fname);
-    // Get a public share URL
-    const uploaded = Array.isArray(result) ? result[0] : result;
-    if(!uploaded) throw new Error('Puter upload returned nothing');
-    // Create a public sharing link
-    const shared = await puter.fs.share([uploaded.path || uploaded]);
-    const url = (shared && (shared.url || (Array.isArray(shared) && shared[0] && shared[0].url)));
-    if(!url) throw new Error('Puter: could not get public URL');
-    return url;
+    _uploadMediaToCloudinary(file);
 }
 
 async function _uploadMediaToCloudinary(file){
     const progress = document.getElementById('mediaUploadProgress');
     const label    = document.getElementById('mediaPreviewLabel');
-    const isImage  = file.type.startsWith('image/');
-    const isVideo  = file.type.startsWith('video/');
 
-    const showProg = pct => {
-        if(progress){ progress.style.display='block'; progress.textContent='Uploading… '+pct+'%'; }
-    };
-    const hideProg = () => { if(progress) progress.style.display='none'; };
-
-    // ── Priority 1: ThumbSnap ──
-    if(THUMBSNAP_API_KEY){
-        showProg(0);
-        try{
-            const url = await _uploadToThumbSnap(file, showProg);
-            _pendingImageData = url;
-            hideProg();
-            if(label) label.textContent = (isVideo?'🎬 Video':'📷 Image') + ' ready to send ✓';
-            toast('Upload complete! Tap send ✓');
-            return;
-        } catch(e){
-            console.warn('ThumbSnap failed, trying Cloudinary:', e.message);
-        }
-    }
-
-    // ── Priority 2: Publitio ──
-    if(PUBLITIO_API_KEY && PUBLITIO_API_SECRET){
-        showProg(0);
-        try{
-            const url = await _uploadToPublitio(file, showProg);
-            _pendingImageData = url;
-            hideProg();
-            if(label) label.textContent = (isVideo?'🎬 Video':'📷 Image') + ' ready to send ✓';
-            toast('Upload complete! Tap send ✓');
-            return;
-        } catch(e){ console.warn('Publitio failed, trying Cloudinary:', e.message); }
-    }
-
-    // ── Priority 3: Cloudinary ──
-    if(CLOUDINARY_CLOUD_NAME && CLOUDINARY_CLOUD_NAME !== 'YOUR_CLOUD_NAME'){
-        showProg(0);
-        try {
-            const fd = new FormData();
-            fd.append('file', file);
-            fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-            fd.append('folder', 'family_chat');
-            const url = await new Promise((resolve, reject) => {
-                const xhr = new XMLHttpRequest();
-                xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${isVideo?'video':'image'}/upload`);
-                xhr.upload.onprogress = e => {
-                    if(e.lengthComputable) showProg(Math.round(e.loaded/e.total*100));
-                };
-                xhr.onload = () => {
-                    if(xhr.status===200) resolve(JSON.parse(xhr.responseText).secure_url);
-                    else reject(new Error('Cloudinary HTTP ' + xhr.status));
-                };
-                xhr.onerror = ()=>reject(new Error('Network error'));
-                xhr.send(fd);
-            });
-            _pendingImageData = url;
-            hideProg();
-            if(label) label.textContent = (isVideo?'🎬 Video':'📷 Image') + ' ready to send ✓';
-            toast('Upload complete! Tap send ✓');
-            return;
-        } catch(e){
-            console.warn('Cloudinary failed, trying Puter:', e.message);
-        }
-    }
-
-    // ── Priority 4: Puter.js (free cloud, auto sign-in popup) ──
-    showProg(0);
-    try{
-        if(label) label.textContent = (isVideo?'🎬 Uploading via Puter…':'📷 Uploading via Puter…');
-        const url = await _uploadToPuter(file);
-        _pendingImageData = url;
-        hideProg();
-        if(label) label.textContent = (isVideo?'🎬 Video':'📷 Image') + ' ready to send ✓';
-        toast('Upload complete! Tap send ✓');
-        return;
-    } catch(e){ console.warn('Puter failed, using base64 fallback:', e.message); hideProg(); }
-
-    // ── Priority 5: base64 fallback (images only) ──
-    if(isImage){
-        if(label) label.textContent = '📷 Preparing…';
-        try{
-            const dataUrl = await new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onerror = reject;
-                reader.onload = ev => {
-                    const img = new Image();
-                    img.onerror = reject;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        let w = img.width, h = img.height;
-                        const maxPx = 1200;
-                        if(w > maxPx || h > maxPx){
-                            if(w > h){ h = Math.round(h*maxPx/w); w = maxPx; }
-                            else      { w = Math.round(w*maxPx/h); h = maxPx; }
-                        }
-                        canvas.width = w; canvas.height = h;
-                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                        let q = 0.82, result = canvas.toDataURL('image/jpeg', q);
-                        while(result.length > 400*1024*1.37 && q > 0.2){ q -= 0.07; result = canvas.toDataURL('image/jpeg', q); }
-                        resolve(result);
-                    };
-                    img.src = ev.target.result;
-                };
-                reader.readAsDataURL(file);
-            });
-            _pendingImageData = dataUrl;
-            if(label) label.textContent = '📷 Image ready to send';
-        } catch(err){
-            const r = new FileReader();
-            r.onload = e => { _pendingImageData = e.target.result; if(label) label.textContent = '📷 Image ready to send'; };
-            r.readAsDataURL(file);
-        }
-    } else {
-        // A key was set but all uploads failed — show a real error, not a setup message
-        const anyKeySet = THUMBSNAP_API_KEY || (PUBLITIO_API_KEY && PUBLITIO_API_SECRET) || (CLOUDINARY_CLOUD_NAME && CLOUDINARY_CLOUD_NAME !== 'YOUR_CLOUD_NAME');
-        if(anyKeySet){
-            toast('Video upload failed — file may be too large. Try a shorter clip.', 'danger');
+    if(CLOUDINARY_CLOUD_NAME === 'YOUR_CLOUD_NAME'){
+        if(file.type.startsWith('image/') && file.size < 3*1024*1024){
+            const reader = new FileReader();
+            reader.onload = e => {
+                _pendingImageData = e.target.result;
+                if(label) label.textContent = '📷 Image ready to send';
+            };
+            reader.readAsDataURL(file);
         } else {
-            toast('To send videos: go to Host → Settings and add a ThumbSnap API key (free)', 'warn');
+            toast('Set up Cloudinary in Host → Settings to send large images & videos', 'warn');
+            clearImagePreview();
         }
+        return;
+    }
+
+    if(progress) { progress.style.display = 'block'; progress.textContent = 'Uploading… 0%'; }
+
+    try {
+        const fd = new FormData();
+        fd.append('file', file);
+        fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+        fd.append('folder', 'family_chat');
+
+        const url = await new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            const resourceType = file.type.startsWith('video/') ? 'video' : 'image';
+            xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`);
+
+            xhr.upload.onprogress = e => {
+                if(e.lengthComputable && progress){
+                    const pct = Math.round(e.loaded / e.total * 100);
+                    progress.textContent = 'Uploading… ' + pct + '%';
+                }
+            };
+            xhr.onload = () => {
+                if(xhr.status === 200){
+                    const r = JSON.parse(xhr.responseText);
+                    resolve(r.secure_url);
+                } else {
+                    reject(new Error('Upload failed: ' + xhr.status));
+                }
+            };
+            xhr.onerror = () => reject(new Error('Network error'));
+            xhr.send(fd);
+        });
+
+        _pendingImageData = url;
+        if(progress) progress.style.display = 'none';
+        if(label) label.textContent = (file.type.startsWith('video/') ? '🎬 Video' : '📷 Image') + ' ready to send ✓';
+        toast('Upload complete! Tap send ✓');
+
+    } catch(e) {
+        console.error('Cloudinary upload failed:', e);
+        toast('Upload failed — ' + e.message, 'danger');
         clearImagePreview();
     }
 }
@@ -4787,46 +4420,21 @@ async function uploadAndSendVoice(blob){
     try{
         let audioUrl = '';
 
-        const ext = blob.type.includes('mp4') || blob.type.includes('aac') ? 'mp4'
-                  : blob.type.includes('ogg') ? 'ogg' : 'webm';
-        const voiceFile = new File([blob], 'voice.' + ext, {type: blob.type});
-
-        // Priority 1: ThumbSnap
-        if(THUMBSNAP_API_KEY){
-            try{
-                audioUrl = await _uploadToThumbSnap(voiceFile, null);
-            } catch(e){ console.warn('ThumbSnap voice failed:', e.message); }
-        }
-
-        // Priority 2: Publitio
-        if(!audioUrl && PUBLITIO_API_KEY && PUBLITIO_API_SECRET){
-            try{ audioUrl = await _uploadToPublitio(voiceFile, null); }
-            catch(e){ console.warn('Publitio voice failed:', e.message); }
-        }
-
-        // Priority 3: Cloudinary
-        if(!audioUrl && CLOUDINARY_CLOUD_NAME && CLOUDINARY_CLOUD_NAME !== 'YOUR_CLOUD_NAME'){
-            try{
-                const fd = new FormData();
-                fd.append('file', voiceFile);
-                fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-                fd.append('resource_type', 'auto');
-                const res = await fetch('https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD_NAME + '/auto/upload', {method:'POST', body:fd});
-                if(res.ok){
-                    const cData = await res.json();
-                    if(!cData.error) audioUrl = cData.secure_url;
-                }
-            } catch(e){ console.warn('Cloudinary voice failed:', e.message); }
-        }
-
-        // Priority 4: Puter.js
-        if(!audioUrl){
-            try{ audioUrl = await _uploadToPuter(voiceFile); }
-            catch(e){ console.warn('Puter voice failed:', e.message); }
-        }
-
-        // Priority 5: base64 fallback (short clips only)
-        if(!audioUrl){
+        if(CLOUDINARY_CLOUD_NAME && CLOUDINARY_CLOUD_NAME !== 'YOUR_CLOUD_NAME' &&
+           CLOUDINARY_UPLOAD_PRESET && CLOUDINARY_UPLOAD_PRESET !== 'YOUR_UPLOAD_PRESET'){
+            const fd = new FormData();
+            const ext = blob.type.includes('mp4') || blob.type.includes('aac') ? 'mp4'
+                      : blob.type.includes('ogg') ? 'ogg' : 'webm';
+            fd.append('file', blob, 'voice.' + ext);
+            fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+            fd.append('resource_type', 'auto');
+            const res = await fetch('https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD_NAME + '/auto/upload', {method:'POST', body:fd});
+            if(!res.ok) throw new Error('Cloudinary upload failed: ' + res.status);
+            const cData = await res.json();
+            if(cData.error) throw new Error('Cloudinary error: ' + cData.error.message);
+            audioUrl = cData.secure_url;
+        } else {
+            toast('No Cloudinary set up — storing voice note in database (keep clips under 30s)', 'warn');
             const reader = new FileReader();
             audioUrl = await new Promise((res, rej) => {
                 reader.onload  = () => res(reader.result);
@@ -4834,7 +4442,7 @@ async function uploadAndSendVoice(blob){
                 reader.readAsDataURL(blob);
             });
             if(audioUrl.length > 900000){
-                toast('Voice clip too long — keep clips under 20s, or add a ThumbSnap key in Settings', 'warn');
+                toast('Voice clip too long for free plan — keep clips under 20s', 'warn');
                 return;
             }
         }
@@ -4859,73 +4467,175 @@ async function uploadAndSendVoice(blob){
     }
 }
 
-// ── Shared AI helper — Pollinations POST (free, no auth, CORS-open) ──────────
-async function _aiChatMulti(messages){
+// ── Load Gemini key from localStorage on startup ─────────────────────────────
+(function(){ window._GEMINI_KEY = localStorage.getItem('_ghk') || ''; })();
+
+// ── Smart AI Router — Gemini first, Pollinations fallback ────────────────────
+// Detects task type and routes to best API automatically
+
+function _detectTaskType(messages){
+    const allText = messages.map(m=>m.content||'').join(' ').toLowerCase();
+    if(/edit.{0,30}(photo|image|picture)|photo.{0,20}edit|remove.{0,20}background|crop|rotate|brighten|darken|filter|enhance photo|fix photo/i.test(allText)) return 'photo_edit';
+    if(/genera|create|draw|make.{0,10}(image|picture|photo)|paint|illustrat/i.test(allText)) return 'image_gen';
+    if(/recipe|ingredient|cook|bake|how to make|how do (i|you) make|food|meal|dish/i.test(allText)) return 'recipe';
+    if(/translat|in (spanish|french|hebrew|arabic|german|italian|chinese|japanese|russian)/i.test(allText)) return 'translate';
+    if(/code|function|script|program|javascript|python|html|css|bug|error|debug/i.test(allText)) return 'code';
+    if(/analyz|describ|what('s| is) in|read this|look at this|tell me about this (image|photo|picture)/i.test(allText)) return 'vision';
+    if(/weather|news|current|today|latest|right now/i.test(allText)) return 'realtime';
+    return 'chat';
+}
+
+async function _geminiChat(messages, imageBase64=null, mimeType='image/jpeg'){
+    const key = window._GEMINI_KEY;
+    if(!key) throw new Error('No Gemini key');
     const sys = messages.find(m=>m.role==='system');
-    // ── Step 1: reasoning pass — ask the model to think before answering ──
-    // We prepend a chain-of-thought instruction so the final answer is more considered
-    const reasoningSystem = (sys ? sys.content + '\n\n' : '') +
-        'Before giving your final answer, briefly think through: what does the user actually need, ' +
-        'what facts are relevant, and what is the most accurate and helpful response. ' +
-        'Then give a clear, well-considered answer. Do not show your thinking — only the final answer.';
-    const enhancedMessages = messages.map(m =>
-        m.role === 'system' ? { ...m, content: reasoningSystem } : m
-    );
+    const convMsgs = messages.filter(m=>m.role!=='system');
+    
+    // Build Gemini contents format
+    const contents = convMsgs.map((m,i) => {
+        const parts = [];
+        // Add image to last user message if provided
+        if(imageBase64 && m.role==='user' && i===convMsgs.length-1){
+            parts.push({ inlineData: { mimeType, data: imageBase64 } });
+        }
+        parts.push({ text: m.content || '' });
+        return { role: m.role==='assistant'?'model':'user', parts };
+    });
 
-    // ── Step 2: call with best available model + generous token budget ──
     const body = {
-        model: 'openai-large',   // GPT-4o-level via Pollinations
-        messages: enhancedMessages,
-        temperature: 0.65,       // thoughtful but not robotic
-        max_tokens: 1200,        // enough for thorough answers
-        top_p: 0.9
+        system_instruction: sys ? { parts:[{ text: sys.content }] } : undefined,
+        contents,
+        generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 2048,
+            topP: 0.95,
+            topK: 40
+        },
+        safetySettings: [
+            { category:'HARM_CATEGORY_HARASSMENT', threshold:'BLOCK_ONLY_HIGH' },
+            { category:'HARM_CATEGORY_HATE_SPEECH', threshold:'BLOCK_ONLY_HIGH' },
+            { category:'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold:'BLOCK_ONLY_HIGH' },
+            { category:'HARM_CATEGORY_DANGEROUS_CONTENT', threshold:'BLOCK_ONLY_HIGH' }
+        ]
     };
+    if(!body.system_instruction) delete body.system_instruction;
 
+    // Use gemini-2.0-flash for speed+quality (with vision support)
+    const model = imageBase64 ? 'gemini-2.0-flash' : 'gemini-2.0-flash';
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+    const r = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(20000)
+    });
+    if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error('Gemini '+r.status+': '+(e?.error?.message||'')); }
+    const d = await r.json();
+    const text = d.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    if(!text) throw new Error('Gemini empty response');
+    return text;
+}
+
+async function _geminiEditPhoto(imageBase64, mimeType, instruction){
+    // Gemini Vision: analyze + describe edits, then generate via Pollinations with the description
+    const key = window._GEMINI_KEY;
+    if(!key) throw new Error('No Gemini key');
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
+    const body = {
+        contents:[{ role:'user', parts:[
+            { inlineData:{ mimeType, data:imageBase64 } },
+            { text: `You are an expert photo editor. The user wants to: "${instruction}"
+
+First describe this photo in vivid detail (colors, subjects, setting, lighting, style, mood). Then describe exactly how the edited version should look with the requested change applied. Output ONLY a detailed image generation prompt for the edited photo, starting with "A photo of". Be very specific and descriptive. No preamble.` }
+        ]}],
+        generationConfig:{ maxOutputTokens:400, temperature:0.4 }
+    };
+    const r = await fetch(url,{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    if(!r.ok) throw new Error('Gemini vision failed');
+    const d = await r.json();
+    return d.candidates?.[0]?.content?.parts?.[0]?.text || '';
+}
+
+async function _pollinationsChat(messages){
+    const sys = messages.find(m=>m.role==='system');
+    const body = { model:'openai-large', messages, temperature:0.65, max_tokens:1200, top_p:0.9 };
     try {
         const r = await fetch('https://text.pollinations.ai/openai', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
+            method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body),
+            signal:AbortSignal.timeout(15000)
         });
-        if(!r.ok) throw new Error('status ' + r.status);
+        if(!r.ok) throw new Error('status '+r.status);
         const d = await r.json();
-        const text = (d.choices?.[0]?.message?.content || '').trim();
-        if(!text) throw new Error('empty response');
+        const text = (d.choices?.[0]?.message?.content||'').trim();
+        if(!text) throw new Error('empty');
         return text;
-    } catch(e) {
-        console.warn('[AI] openai-large failed:', e.message, '— falling back to openai');
-        // Fallback to standard model
-        try {
-            const r2 = await fetch('https://text.pollinations.ai/openai', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...body, model: 'openai', max_tokens: 800 })
-            });
-            if(!r2.ok) throw new Error('fallback status ' + r2.status);
-            const d2 = await r2.json();
-            const t2 = (d2.choices?.[0]?.message?.content || '').trim();
-            if(!t2) throw new Error('empty fallback response');
-            return t2;
-        } catch(e2){
-            // Last resort: GET endpoint
-            const sysText = sys ? sys.content : '';
-            const lastUser = [...messages].reverse().find(m=>m.role==='user')?.content || '';
-            const url = 'https://text.pollinations.ai/' +
-                encodeURIComponent(lastUser.slice(0, 600)) +
-                '?model=openai-large&system=' + encodeURIComponent(sysText.slice(0, 1200));
-            const r3 = await fetch(url);
-            if(!r3.ok) throw new Error('GET also failed');
-            return (await r3.text()).trim();
-        }
+    } catch(e){
+        // GET fallback
+        const sysText = sys?sys.content:'';
+        const lastUser = [...messages].reverse().find(m=>m.role==='user')?.content||'';
+        const url = 'https://text.pollinations.ai/'+encodeURIComponent(lastUser.slice(0,600))
+            +'?model=openai-large&system='+encodeURIComponent(sysText.slice(0,1200));
+        const r2 = await fetch(url, { signal:AbortSignal.timeout(12000) });
+        if(!r2.ok) throw new Error('GET failed');
+        return (await r2.text()).trim();
     }
 }
 
-async function _aiChat(systemPrompt, userMessage){
+async function _aiChatMulti(messages, imageBase64=null, mimeType='image/jpeg'){
+    const task = _detectTaskType(messages);
+    console.log('[AI Router] Task:', task, '| Gemini key:', window._GEMINI_KEY?'✅':'❌');
+
+    // Photo editing: Gemini Vision → describe edit → Pollinations generates
+    if(task==='photo_edit' && imageBase64){
+        if(window._GEMINI_KEY){
+            try {
+                const instruction = [...messages].reverse().find(m=>m.role==='user')?.content||'';
+                const editPrompt = await _geminiEditPhoto(imageBase64, mimeType, instruction);
+                console.log('[AI Router] Photo edit prompt:', editPrompt.slice(0,80));
+                return { type:'image_prompt', prompt: editPrompt };
+            } catch(e){ console.warn('[AI Router] Gemini photo edit failed:', e.message); }
+        }
+        return { type:'image_prompt', prompt:'A beautifully edited photo, high quality, realistic' };
+    }
+
+    // Vision (image analysis): Gemini first, Pollinations fallback
+    if((task==='vision'||imageBase64) && imageBase64){
+        if(window._GEMINI_KEY){
+            try { return await _geminiChat(messages, imageBase64, mimeType); } 
+            catch(e){ console.warn('[AI Router] Gemini vision failed, trying Pollinations:', e.message); }
+        }
+        try { return await _pollinationsChat(messages); }
+        catch(e){ return "I couldn't analyze that image right now. Please try again!"; }
+    }
+
+    // All other tasks: Gemini first, Pollinations fallback
+    if(window._GEMINI_KEY){
+        try { return await _geminiChat(messages); }
+        catch(e){ console.warn('[AI Router] Gemini failed, falling back to Pollinations:', e.message); }
+    }
+    try { return await _pollinationsChat(messages); }
+    catch(e){ return "I'm having trouble connecting right now. Please try again in a moment!"; }
+}
+
+async function _aiChat(systemPrompt, userMessage, imageBase64=null, mimeType='image/jpeg'){
     return _aiChatMulti([
         { role: 'system', content: systemPrompt },
         { role: 'user',   content: userMessage  }
-    ]);
+    ], imageBase64, mimeType);
 }
+
+// ── Gemini image analysis helper (for when image is sent in chat) ─────────────
+async function analyzeImageWithGemini(base64, mimeType, question){
+    if(!window._GEMINI_KEY) return _pollinationsChat([
+        { role:'system', content:'You are a helpful family AI assistant.' },
+        { role:'user', content: question||'Describe this image.' }
+    ]);
+    return _geminiChat([
+        { role:'system', content:'You are a helpful family AI assistant. Analyze the image and answer helpfully.' },
+        { role:'user', content: question||'Describe this image in detail.' }
+    ], base64, mimeType);
+}
+window.analyzeImageWithGemini = analyzeImageWithGemini;
 
 // ── ✨ AI Text Enhancement ────────────────────────────────────────────────────
 async function aiEnhanceText(){
@@ -4968,7 +4678,6 @@ async function aiEnhanceText(){
 async function postComment(){
     const input = document.getElementById('newComment');
     const text = input.value.trim();
-    if(_uploadInProgress){ toast('Please wait — image is still uploading…','warn'); return; }
     if(!text && !_pendingImageData){ toast('Write something first!','warn'); return; }
     if(!currentUser){ toast('Please sign in first!','warn'); return; }
     const meta = chatGroupMeta[currentGroup.replace(/\s+/g,'_')] || {};
@@ -6893,7 +6602,7 @@ async function sendHostPushNotification() {
 // This is how push works in this app:
 // Host writes to Firebase → ALL users listening get a browser notification
 // No FCM server needed — pure Firebase realtime listener triggers SW notification
-let lastNotifTimestamp = Date.now() - 2000; // 2-second grace window for clock drift between devices
+let lastNotifTimestamp = Date.now(); // ignore old ones on boot
 
 function listenPushNotifications() {
     if (!window.db) return; // removed isHost guard — ALL users listen
@@ -6919,25 +6628,19 @@ function _showPushNotification(title, body){
     // Always show in-app toast
     toast('🔔 ' + title + (body ? ': ' + body : ''), 'info');
 
-    // Sync notifPermission with real browser state every time (fixes "half the people" bug)
-    if('Notification' in window) notifPermission = Notification.permission;
-
     // Show real OS notification via service worker if permission granted
     if(notifPermission === 'granted' && 'serviceWorker' in navigator){
         navigator.serviceWorker.ready.then(sw => {
             sw.showNotification(title, {
                 body,
-                icon: '/Hanukkah-family-phone/icon-192.png',
-                badge: '/Hanukkah-family-phone/icon-192.png',
+                icon: './icon-192.png',
+                badge: './icon-192.png',
                 tag: 'family-hub-push-' + Date.now(),
                 renotify: true,
                 vibrate: [200, 100, 200],
-                data: { url: '/Hanukkah-family-phone/' }
+                data: { url: './' }
             });
-        }).catch(() => {
-            // SW failed — fall back to direct Notification API
-            try{ new Notification(title, { body, icon: '/Hanukkah-family-phone/icon-192.png' }); }catch(e2){}
-        });
+        }).catch(e => console.log('SW notification failed:', e));
     }
 }
 
@@ -7609,9 +7312,6 @@ window.updateUserNamePill=updateUserNamePill;
 })();
 
 async function _bootPushForUser(){
-    // Ensure Firebase is ready before starting any listeners
-    await new Promise(res => waitForFirebase(res));
-
     // Load settings from Firebase first
     await loadNotifSettings();
 
@@ -7625,18 +7325,15 @@ async function _bootPushForUser(){
     await loadAllProfilePhotos();
     listenProfilePhotos();
 
-    // Wire chat group listeners — wait longer for groups to load from Firebase
+    // Wire chat group listeners (groups load async, so wait for them)
     setTimeout(() => {
         if (Array.isArray(chatGroups)) {
             chatGroups.forEach(g => listenChatGroupForNotif(g));
         }
-    }, 5000);
+    }, 3000);
 
     // Browser notification permission (for OS-level popups)
     if (!('Notification' in window)) return;
-
-    // Sync local flag with real browser state
-    notifPermission = Notification.permission;
 
     // If already granted — set flag, save token, done
     if (Notification.permission === 'granted') {
@@ -7700,10 +7397,14 @@ async function _askNotifPermission(){
 
 window._askNotifPermission = _askNotifPermission;
 
-// ── PWA: Register SW immediately at page load (not just after sign-in) ────────
-// This ensures the SW is active for ALL users as soon as the page opens,
-// so offline caching, share target, and background push all work even before sign-in.
-window.addEventListener('load', () => { registerServiceWorker(); });
+// ── PWA Service Worker Registration ──────────────────────
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js', {scope: '/Hanukkah-family-phone/'})
+            .then(r => console.log('SW registered'))
+            .catch(e => console.log('SW failed:', e.message));
+    });
+}
 
 // ── Notification Permission Request (host settings panel) ─────────────────────
 function requestNotificationPermission() {
@@ -9331,15 +9032,8 @@ async function aiSendQuestion(){
 
     // ── Detect image generation request (only when NO image attached) ──
     var IMAGE_RE = /\b(generate|create|make|draw|paint|render|design|picture|image|photo|illustration|artwork|sketch|visuali[sz]e|imagine)\b/i;
-    var VIDEO_RE = /\b(video|clip|animation|animate|movie|film|reel|footage|motion|moving|short film|make.*video|create.*video|generate.*video|record)\b/i;
     var EDIT_RE  = /\b(edit|change|remove|delete|erase|fix|improve|enhance|add|put|place|replace|crop|resize|adjust|filter|recolor|modify|alter|touch.?up|clean.?up|cut.?out)\b/i;
-    // In Picture Mode every message is treated as an image generation request
-    var _inPictureMode = (typeof _naiCurrentMode !== 'undefined' && _naiCurrentMode && _naiCurrentMode.id === 'picture');
-    // In Video Mode every message becomes a video
-    var _inVideoMode = (typeof _naiCurrentMode !== 'undefined' && _naiCurrentMode && _naiCurrentMode.id === 'video');
-    // Video detection takes priority over image detection
-    var isVideoGen  = (_inVideoMode || VIDEO_RE.test(question)) && !hasAttachedImage;
-    var isImageGen  = !isVideoGen && (_inPictureMode || IMAGE_RE.test(question)) && !hasAttachedImage;
+    var isImageGen  = IMAGE_RE.test(question) && !hasAttachedImage;
     var isImageEdit = hasAttachedImage && EDIT_RE.test(question);
     var isImageView = hasAttachedImage && !isImageEdit; // just analysing/describing
 
@@ -9368,52 +9062,6 @@ async function aiSendQuestion(){
                 }, 300);
             } else {
                 if(thinkBubble){ thinkBubble.innerHTML=''; thinkBubble.textContent='Please attach an image first, then ask me to edit it.'; }
-            }
-
-        } else if(isVideoGen){
-            // ── Video generation path ────────────────────────────────
-            if(thinkBubble){
-                thinkBubble.innerHTML = '';
-                thinkBubble.style.cssText = 'padding:12px 14px;display:flex;flex-direction:column;align-items:center;gap:10px;';
-                thinkBubble.innerHTML = '<div style="width:40px;height:40px;border:3px solid rgba(124,58,237,.3);border-top-color:#7c3aed;border-radius:50%;animation:spin .8s linear infinite;"></div>'
-                    + '<div style="font-size:13px;font-weight:700;color:var(--muted);text-align:center;" id="naiVideoStatus">🎬 Generating your video…<br><span style="font-size:11px;opacity:.7;">30–90 seconds — please wait</span></div>';
-            }
-
-            // Tick the status message so user knows it's alive
-            var _naiVidTick = 0;
-            var _naiVidTimer = setInterval(function(){
-                _naiVidTick++;
-                var st = document.getElementById('naiVideoStatus');
-                if(st) st.innerHTML = '🎬 Generating your video… ' + _naiVidTick + 's<br><span style="font-size:11px;opacity:.7;">' + (_naiVidTick<30?'starting up…':_naiVidTick<60?'working on it…':'almost there…') + '</span>';
-            }, 1000);
-
-            try{
-                // Pass prompt directly — no need to open the overlay
-                var videoUrl = await window.generateVideo(question);
-                clearInterval(_naiVidTimer);
-
-                if(thinkBubble){
-                    thinkBubble.innerHTML = '';
-                    thinkBubble.style.cssText = 'padding:6px;background:transparent;border:none;';
-                    if(videoUrl){
-                        var vid = document.createElement('video');
-                        vid.src = videoUrl;
-                        vid.controls = true;
-                        vid.setAttribute('playsinline','');
-                        vid.style.cssText = 'max-width:280px;width:100%;border-radius:14px;display:block;box-shadow:0 4px 20px rgba(124,58,237,.3);';
-                        var vcap = document.createElement('div');
-                        vcap.style.cssText = 'margin-top:8px;font-size:11px;color:rgba(100,116,139,.6);font-family:"DM Mono",monospace;padding:0 4px;';
-                        vcap.textContent = 'Your AI video • tap ▶ to play';
-                        thinkBubble.appendChild(vid);
-                        thinkBubble.appendChild(vcap);
-                    } else {
-                        thinkBubble.textContent = '🎬 Video saved to AI Video Generator!';
-                    }
-                }
-                if(window._naiVoiceMode) naiSpeak('Your video is ready!');
-            } catch(vidErr){
-                clearInterval(_naiVidTimer);
-                if(thinkBubble){ thinkBubble.innerHTML=''; thinkBubble.style.cssText='padding:10px 14px;'; thinkBubble.textContent='Sorry, video generation failed — try a shorter or simpler description.'; }
             }
 
         } else if(isImageGen){
@@ -9629,179 +9277,6 @@ function openImageGen(){
 function closeImageGen(){
     document.getElementById('imageGenOverlay').style.display = 'none';
 }
-
-// ═══════════════════════════════════════════════════
-//  AI VIDEO GENERATOR — Pollinations Seedance model
-// ═══════════════════════════════════════════════════
-let _videoHistory = [];
-const _VIDEO_STORAGE_KEY = 'familyHub_videoHistory';
-const _VIDEO_MAX_SAVED = 20;
-
-function _saveVideoHistory(){
-    try{ localStorage.setItem(_VIDEO_STORAGE_KEY, JSON.stringify(_videoHistory.slice(0,_VIDEO_MAX_SAVED))); }catch(e){}
-}
-function _loadVideoHistory(){
-    try{ const r=localStorage.getItem(_VIDEO_STORAGE_KEY); if(r) _videoHistory=JSON.parse(r); }catch(e){ _videoHistory=[]; }
-}
-
-function openVideoGen(){
-    document.getElementById('videoGenOverlay').style.display = 'flex';
-    _loadVideoHistory();
-    _rebuildVideoGallery();
-}
-window.openVideoGen = openVideoGen;
-
-function closeVideoGen(){
-    document.getElementById('videoGenOverlay').style.display = 'none';
-}
-window.closeVideoGen = closeVideoGen;
-
-function setVideoPrompt(text){
-    const ta = document.getElementById('videoGenPrompt');
-    if(ta){ ta.value = text; ta.focus(); }
-}
-window.setVideoPrompt = setVideoPrompt;
-
-function _rebuildVideoGallery(){
-    const gallery = document.getElementById('videoGenGallery');
-    const empty   = document.getElementById('videoGenEmpty');
-    if(!gallery) return;
-    Array.from(gallery.querySelectorAll('.vid-gen-card')).forEach(c=>c.remove());
-    if(_videoHistory.length===0){ if(empty) empty.style.display='flex'; return; }
-    if(empty) empty.style.display='none';
-    _videoHistory.forEach(item => {
-        const card = _buildVideoCard(item.url, item.prompt);
-        gallery.appendChild(card);
-    });
-}
-
-function _buildVideoCard(url, prompt){
-    const card = document.createElement('div');
-    card.className = 'vid-gen-card';
-    card.style.cssText = 'background:var(--surface);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;';
-    const safePrompt = (prompt||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    card.innerHTML = `
-        <video src="${url}" controls playsinline preload="metadata"
-            style="width:100%;display:block;max-height:300px;background:#000;border-radius:16px 16px 0 0;">
-        </video>
-        <div style="padding:10px 14px 12px;display:flex;align-items:center;gap:8px;">
-            <div style="flex:1;font-size:12px;font-weight:600;color:var(--muted);line-height:1.4;">${safePrompt}</div>
-            <a href="${url}" download="family-ai-video.mp4" style="background:var(--accent);color:#fff;border:none;border-radius:10px;padding:7px 12px;font-size:12px;font-weight:800;cursor:pointer;text-decoration:none;flex-shrink:0;">⬇</a>
-            <button onclick="this.closest('.vid-gen-card').remove();_videoHistory=_videoHistory.filter(i=>i.url!=='${url.replace(/'/g,"\'")}');_saveVideoHistory();"
-                style="background:rgba(229,57,53,.1);color:var(--danger);border:1.5px solid rgba(229,57,53,.25);border-radius:10px;padding:7px 10px;font-size:13px;cursor:pointer;flex-shrink:0;">🗑</button>
-        </div>`;
-    return card;
-}
-
-async function generateVideo(promptOverride){
-    const promptEl  = document.getElementById('videoGenPrompt');
-    const btn       = document.getElementById('videoGenBtn');
-    const gallery   = document.getElementById('videoGenGallery');
-    const empty     = document.getElementById('videoGenEmpty');
-    const aspectEl  = document.getElementById('videoAspect');
-    const durEl     = document.getElementById('videoDuration');
-    const aspect    = aspectEl ? aspectEl.value : '16:9';
-    const duration  = durEl ? (parseInt(durEl.value)||8) : 8;
-
-    const userPrompt = (promptOverride || (promptEl&&promptEl.value)||'').trim();
-    if(!userPrompt){ toast('Describe the video you want first!','warn'); return; }
-
-    if(btn){ btn.disabled=true; btn.style.opacity='.5'; btn.textContent='Generating…'; }
-    if(empty) empty.style.display='none';
-
-    // Animated loading card with elapsed timer
-    const loadCard = document.createElement('div');
-    loadCard.style.cssText = 'background:var(--surface);border:1.5px solid rgba(124,58,237,.35);border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:40px;';
-    loadCard.innerHTML = `
-        <div style="width:52px;height:52px;border:4px solid var(--border);border-top-color:#7c3aed;border-radius:50%;animation:spin .8s linear infinite;"></div>
-        <div style="font-size:14px;font-weight:700;color:var(--muted);text-align:center;">
-            🎬 Generating your video…<br>
-            <span id="videoTimer" style="font-size:12px;opacity:.7;">0s — please wait, this takes 30–90 seconds</span>
-        </div>`;
-    if(gallery) gallery.insertBefore(loadCard, gallery.firstChild);
-
-    // Elapsed timer so user knows it's working
-    let elapsed = 0;
-    const timerInterval = setInterval(()=>{
-        elapsed++;
-        const el = document.getElementById('videoTimer');
-        if(el) el.textContent = elapsed+'s — '+( elapsed<30 ? 'starting up…' : elapsed<60 ? 'working on it…' : 'almost there…' );
-    }, 1000);
-
-    try{
-        // Correct Pollinations video endpoint:
-        // image.pollinations.ai/prompt/PROMPT?model=seedance&aspectRatio=16:9&duration=8&key=KEY
-        const seed = Math.floor(Math.random()*99999);
-        const enc  = encodeURIComponent(userPrompt + ', high quality, cinematic, smooth motion, family-friendly');
-        const url  = `https://image.pollinations.ai/prompt/${enc}?model=seedance&aspectRatio=${encodeURIComponent(aspect)}&duration=${duration}&seed=${seed}&key=${POLLINATIONS_PK}&nologo=true`;
-
-        // Use AbortController with 3-minute timeout to prevent silent failures
-        const controller = new AbortController();
-        const timeoutId  = setTimeout(()=>controller.abort(), 180000); // 3 min max
-
-        let resp;
-        try{
-            resp = await fetch(url, { signal: controller.signal });
-            clearTimeout(timeoutId);
-        } catch(fetchErr){
-            clearTimeout(timeoutId);
-            if(fetchErr.name === 'AbortError') throw new Error('Timed out after 3 minutes — try a shorter duration or simpler prompt');
-            throw fetchErr;
-        }
-
-        if(!resp.ok){
-            const errText = await resp.text().catch(()=>'');
-            throw new Error(`Pollinations error ${resp.status}: ${errText.slice(0,100)}`);
-        }
-
-        const blob = await resp.blob();
-        console.log('Video response type:', blob.type, 'size:', blob.size);
-
-        // Accept any non-empty response (Pollinations may return video/mp4 or application/octet-stream)
-        if(blob.size < 1000){ throw new Error('Response too small — video generation may have failed'); }
-
-        // Create blob URL for immediate playback
-        const blobUrl = URL.createObjectURL(blob);
-
-        // Also try to upload to ThumbSnap so URL persists
-        let videoUrl = blobUrl;
-        if(THUMBSNAP_API_KEY){
-            try{
-                const fd = new FormData();
-                fd.append('media', blob, 'video.mp4');
-                fd.append('key', THUMBSNAP_API_KEY);
-                const r2 = await fetch('https://thumbsnap.com/api/upload',{method:'POST',body:fd});
-                const j2 = await r2.json();
-                if(j2.success && j2.data && j2.data.media){
-                    videoUrl = j2.data.media;
-                    URL.revokeObjectURL(blobUrl); // free memory
-                }
-            } catch(e){ console.warn('ThumbSnap upload failed, using blob URL:', e); }
-        }
-
-        clearInterval(timerInterval);
-        loadCard.remove();
-        const card = _buildVideoCard(videoUrl, userPrompt);
-        if(gallery) gallery.insertBefore(card, gallery.firstChild);
-
-        _videoHistory.unshift({ url: videoUrl, prompt: userPrompt });
-        _saveVideoHistory();
-        if(promptEl) promptEl.value = '';
-        toast('🎬 Video ready!');
-        return videoUrl;
-
-    } catch(e){
-        clearInterval(timerInterval);
-        loadCard.remove();
-        if(_videoHistory.length===0 && empty) empty.style.display='flex';
-        console.error('Video gen error:', e);
-        toast('Video failed: ' + (e.message||'unknown error') + ' — try again', 'warn');
-        throw e;
-    } finally {
-        if(btn){ btn.disabled=false; btn.style.opacity='1'; btn.textContent='✦ Generate Video'; }
-    }
-}
-window.generateVideo = generateVideo;
 
 function setImgStyle(btn, style){
     document.querySelectorAll('.img-style-btn').forEach(b => b.classList.remove('active'));
@@ -10297,6 +9772,166 @@ window.setImgStyle    = setImgStyle;
 window.setImgPrompt   = setImgPrompt;
 window.openImgViewer  = openImgViewer;
 window.closeImgViewer = closeImgViewer;
+
+// ══ AI VIDEO GENERATOR ══════════════════════════════════════════════════════
+var _vidModel = 'seedance';
+
+function switchMediaTab(tab){
+    const imgPanel = document.getElementById('imgGenGallery')?.parentElement;
+    const vidPanel = document.getElementById('aiVideoPanel');
+    const styleRow = document.querySelector('#imgEditor ~ div, .img-style-btn')?.closest('div[style*="padding"]');
+    const imgTabBtn = document.getElementById('imgTabBtn');
+    const vidTabBtn = document.getElementById('vidTabBtn');
+    const title = document.getElementById('imgGenTitle');
+
+    // Find the image tab content sections (all direct children except video panel)
+    const imgSections = [];
+    const parent = vidPanel?.parentElement;
+    if(parent){
+        Array.from(parent.children).forEach(ch=>{
+            if(ch.id !== 'aiVideoPanel') imgSections.push(ch);
+        });
+    }
+
+    if(tab==='video'){
+        imgSections.forEach(s=>s.style.display='none');
+        if(vidPanel){ vidPanel.style.display='flex'; }
+        if(imgTabBtn){ imgTabBtn.style.background='rgba(255,255,255,.15)'; imgTabBtn.style.borderColor='rgba(255,255,255,.3)'; imgTabBtn.style.color='rgba(255,255,255,.8)'; }
+        if(vidTabBtn){ vidTabBtn.style.background='rgba(255,255,255,.35)'; vidTabBtn.style.borderColor='rgba(255,255,255,.6)'; vidTabBtn.style.color='#fff'; }
+        if(title) title.textContent='🎬 AI Video Generator';
+    } else {
+        imgSections.forEach(s=>s.style.display='');
+        if(vidPanel){ vidPanel.style.display='none'; }
+        if(imgTabBtn){ imgTabBtn.style.background='rgba(255,255,255,.35)'; imgTabBtn.style.borderColor='rgba(255,255,255,.6)'; imgTabBtn.style.color='#fff'; }
+        if(vidTabBtn){ vidTabBtn.style.background='rgba(255,255,255,.15)'; vidTabBtn.style.borderColor='rgba(255,255,255,.3)'; vidTabBtn.style.color='rgba(255,255,255,.8)'; }
+        if(title) title.textContent='🎨 AI Image Generator';
+    }
+}
+
+function setVidModel(btn, model){
+    document.querySelectorAll('.vid-model-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    _vidModel = model;
+}
+
+function setVidPrompt(text){
+    const ta = document.getElementById('vidGenPrompt');
+    if(ta){ ta.value = text; ta.focus(); }
+}
+
+async function generateAIVideo(){
+    const promptEl = document.getElementById('vidGenPrompt');
+    const btn = document.getElementById('vidGenBtn');
+    const gallery = document.getElementById('vidGenGallery');
+    const empty = document.getElementById('vidGenEmpty');
+    const duration = document.getElementById('vidDuration')?.value || '6';
+    const aspect = document.getElementById('vidAspect')?.value || '16:9';
+    const withAudio = document.getElementById('vidAudio')?.checked || false;
+
+    const userPrompt = (promptEl?.value || '').trim();
+    if(!userPrompt){ toast('Describe your video first!','warn'); return; }
+
+    if(btn){ btn.disabled=true; btn.style.opacity='.5'; }
+    if(empty) empty.style.display='none';
+
+    // Loading card
+    const loadCard = document.createElement('div');
+    loadCard.className = 'img-gen-loading';
+    loadCard.innerHTML = `
+        <div style="width:52px;height:52px;border:4px solid var(--border);border-top-color:#f59e0b;border-radius:50%;animation:spin .8s linear infinite;"></div>
+        <div style="font-size:14px;font-weight:700;color:var(--muted);text-align:center;">
+            🎬 Generating video…<br>
+            <span id="vidLoadStatus" style="font-size:12px;opacity:.7;">Starting up… this takes 30–90 seconds</span>
+        </div>
+        <div style="font-size:11px;color:var(--muted);text-align:center;max-width:260px;opacity:.7;">Powered by Pollinations AI — completely free!</div>
+    `;
+    gallery.insertBefore(loadCard, gallery.firstChild);
+
+    try {
+        // Enhance prompt with Gemini if available
+        let finalPrompt = userPrompt + ', high quality, cinematic, family-friendly';
+        if(window._GEMINI_KEY){
+            try {
+                const enhanced = await _aiChat(
+                    'You are a video prompt engineer. Take the user video idea and write a vivid, detailed, cinematic video generation prompt in 1-2 sentences. Keep it family-friendly. Output ONLY the prompt, no explanation.',
+                    userPrompt
+                );
+                if(enhanced && typeof enhanced === 'string' && enhanced.length > 10) finalPrompt = enhanced;
+            } catch(e){ /* use original */ }
+        }
+
+        const encoded = encodeURIComponent(finalPrompt);
+        // Official Pollinations video endpoint: gen.pollinations.ai/video/{prompt}
+        // It's a GET that returns MP4 directly — just build the URL and embed it
+        const models = [_vidModel, 'seedance', 'wan-fast', 'wan'];
+        let videoUrl = null;
+        let lastErr = '';
+
+        for(const model of models){
+            try {
+                let url = `https://gen.pollinations.ai/video/${encoded}?model=${model}&duration=${duration}&aspectRatio=${encodeURIComponent(aspect)}`;
+                if(withAudio) url += '&audio=true';
+                url += '&nologo=true';
+
+                // Fetch the actual video — this can take 30-90 seconds
+                const loadMsg = document.getElementById('vidLoadStatus');
+                if(loadMsg) loadMsg.textContent = `Trying model: ${model}… (${duration}s clip)`;
+
+                const resp = await fetch(url, { signal: AbortSignal.timeout(120000) });
+                if(resp.ok && resp.headers.get('content-type')?.includes('video')){
+                    // Got a video — create a blob URL so we can play & download it
+                    const blob = await resp.blob();
+                    videoUrl = URL.createObjectURL(blob);
+                    break;
+                } else {
+                    lastErr = `${model}: HTTP ${resp.status}`;
+                    console.warn('[Video]', lastErr);
+                }
+            } catch(e){
+                lastErr = `${model}: ${e.message}`;
+                console.warn('[Video] Model', model, 'failed:', e.message);
+            }
+        }
+
+        // Remove loading card
+        if(loadCard.parentNode) loadCard.remove();
+
+        if(videoUrl){
+            const card = document.createElement('div');
+            card.style.cssText = 'background:var(--surface);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;';
+            card.innerHTML = `
+                <video controls playsinline autoplay style="width:100%;max-height:320px;display:block;background:#000;">
+                    <source src="${videoUrl}" type="video/mp4">
+                    Your browser does not support video playback.
+                </video>
+                <div style="padding:10px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                    <div style="flex:1;font-size:12px;color:var(--muted);font-weight:600;line-height:1.4;">${esc(userPrompt.slice(0,80))}${userPrompt.length>80?'…':''}</div>
+                    <a href="${videoUrl}" download="ai-video.mp4" style="background:var(--accent);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:800;text-decoration:none;cursor:pointer;display:inline-flex;align-items:center;gap:5px;">⬇ Save</a>
+                </div>
+                <div style="padding:0 14px 10px;font-size:11px;color:var(--muted);">Model: ${_vidModel} • ${duration}s • ${aspect}</div>
+            `;
+            gallery.insertBefore(card, gallery.firstChild);
+            toast('🎬 Video ready! Tap play to watch!');
+        } else {
+            throw new Error('All video models failed. Last error: ' + lastErr);
+        }
+    } catch(e){
+        if(loadCard.parentNode) loadCard.remove();
+        console.error('[Video Gen]', e);
+        const errCard = document.createElement('div');
+        errCard.style.cssText = 'background:rgba(239,68,68,.08);border:1.5px solid rgba(239,68,68,.3);border-radius:16px;padding:18px;text-align:center;';
+        errCard.innerHTML = `<div style="font-size:24px;margin-bottom:8px;">⚠️</div><div style="font-size:13px;font-weight:700;color:var(--text);">Video generation failed</div><div style="font-size:12px;color:var(--muted);margin-top:4px;">Try a different model or shorter prompt. Video AI can be slow — try again!</div>`;
+        gallery.insertBefore(errCard, gallery.firstChild);
+        toast('Video failed — try a different model','danger');
+    } finally {
+        if(btn){ btn.disabled=false; btn.style.opacity='1'; }
+    }
+}
+
+window.switchMediaTab  = switchMediaTab;
+window.setVidModel     = setVidModel;
+window.setVidPrompt    = setVidPrompt;
+window.generateAIVideo = generateAIVideo;
 
 function deleteImgCard(btn){
     const card = btn.closest('.img-gen-card');
@@ -11220,9 +10855,9 @@ window.switchToHumanGame=switchToHumanGame;
         <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         Search
     </button>
-    <button class="bottom-nav-btn" onclick="iePickPhoto()" title="Edit a Photo">
-        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        Edit Photo
+    <button class="bottom-nav-btn" onclick="window.open('https://maps.google.com','_blank')" title="Google Maps">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5" fill="currentColor" stroke="none"/></svg>
+        Maps
     </button>
     <button class="bottom-nav-btn" onclick="showHostLogin()" title="Host / Settings" id="bottomHostBtn">
         <span id="bottomRequestBadge" class="bottom-nav-badge"></span>
@@ -11618,7 +11253,6 @@ window.aiSendQuestion = async function(){
     </button>
     <button class="lv-ctrl leave" onclick="lvLeave()">📵</button>
     <button class="lv-ctrl" id="lvCamBtn" onclick="lvCamToggle()">📷</button>
-    <button class="lv-ctrl" id="lvScreenBtn" onclick="lvScreenToggle()" title="Share Screen">🖥️</button>
   </div>
 </div>
 
@@ -11643,7 +11277,6 @@ window.aiSendQuestion = async function(){
 
 <script>
 var _lvStream=null,_lvUid=null,_lvPeers={},_lvUnsubs=[],_lvIn=false,_lvType=null,_lvMic=true,_lvCam=true,_lvDismiss=false,_lvReady=false;
-var _lvScreenStream=null,_lvScreenPeers={},_lvScreenUid=null;
 var STUN={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]};
 
 function _esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -11652,7 +11285,12 @@ function _hide(id){document.getElementById(id).classList.remove('on');}
 function _dot(on){var d=document.getElementById('livePulseDot');if(d)d.style.display=on?'block':'none';}
 function _db(p){return window.dbRef(window.chatDb,'live/'+p);}
 
-waitForFirebase(function(){
+function _waitForFirebaseSafe(cb){
+    if(typeof waitForFirebase==='function') waitForFirebase(cb);
+    else setTimeout(function(){_waitForFirebaseSafe(cb);},50);
+}
+
+_waitForFirebaseSafe(function(){
     _lvReady=true;
     window.dbOnValue(window.dbRef(window.db,'familyMembers'),function(snap){
         var data=snap.val()||{};
@@ -11742,9 +11380,7 @@ window.lvJoin=async function(type){
     _watch('peers',function(snap){
         var ps=snap.val()||{};
         var el=document.getElementById('lvRoomCount');if(el)el.textContent=Object.keys(ps).length+' in room';
-        Object.keys(ps).forEach(function(uid){if(uid!==_lvUid&&uid!==_lvScreenUid&&!_lvPeers[uid])_connect(uid,_lvUid<uid);});
-        // If we're screen sharing, also connect new peers to our screen stream
-        Object.keys(ps).forEach(function(uid){if(uid!==_lvUid&&uid!==_lvScreenUid&&_lvScreenStream&&!_lvScreenPeers[uid])_screenConnect(uid,_lvScreenUid<uid);});
+        Object.keys(ps).forEach(function(uid){if(uid!==_lvUid&&!_lvPeers[uid])_connect(uid,_lvUid<uid);});
         Object.keys(ps).forEach(function(uid){
             var p=ps[uid];
             var mb=document.getElementById('lvm-'+uid),nv=document.getElementById('lvn-'+uid);
@@ -11786,16 +11422,14 @@ function _watch(path,cb){var u=window.dbOnValue(_db(path),cb);_lvUnsubs.push(u);
 
 function _buildTile(uid,name,isMe){
     var tile=document.createElement('div');tile.className='lv-tile';tile.id='lvt-'+uid;
-    var isScreen=uid.indexOf('_screen')>-1;
     var vid=document.createElement('video');vid.autoplay=true;vid.playsInline=true;tile.appendChild(vid);
     var nv=document.createElement('div');nv.className='lv-tnovid';nv.id='lvn-'+uid;nv.textContent='X';tile.appendChild(nv);
     var nm=document.createElement('div');nm.className='lv-tname';nm.textContent=name;tile.appendChild(nm);
     var h=document.createElement('div');h.className='lv-thint';h.textContent='tap to fullscreen';tile.appendChild(h);
-    if(isMe){var y=document.createElement('div');y.className='lv-tyou';y.textContent=isScreen?'Your Screen':'You';tile.appendChild(y);}
-    else if(isScreen){var lb=document.createElement('div');lb.className='lv-tlive';lb.textContent='SCREEN';lb.style.background='rgba(80,80,255,.9)';tile.appendChild(lb);}
+    if(isMe){var y=document.createElement('div');y.className='lv-tyou';y.textContent='You';tile.appendChild(y);}
     else if(_lvType==='live'){var lb=document.createElement('div');lb.className='lv-tlive';lb.textContent='LIVE';tile.appendChild(lb);}
     var mb=document.createElement('div');mb.className='lv-tmuted';mb.id='lvm-'+uid;mb.textContent='Muted';tile.appendChild(mb);
-    if(isHost&&!isMe&&!isScreen){
+    if(isHost&&!isMe){
         var kb=document.createElement('button');kb.className='lv-tkick';kb.textContent='X';
         (function(u,n){kb.onclick=function(e){e.stopPropagation();lvKick(u,n);};})(uid,name);
         tile.appendChild(kb);
@@ -11848,115 +11482,8 @@ function _lvCtrlUpdate(){
 window.lvMicToggle=function(){if(!_lvStream)return;_lvMic=!_lvMic;_lvStream.getAudioTracks().forEach(function(t){t.enabled=_lvMic;});try{window.dbSet(_db('peers/'+_lvUid+'/audio'),_lvMic);}catch(e){}_lvCtrlUpdate();};
 window.lvCamToggle=function(){if(!_lvStream)return;_lvCam=!_lvCam;_lvStream.getVideoTracks().forEach(function(t){t.enabled=_lvCam;});try{window.dbSet(_db('peers/'+_lvUid+'/video'),_lvCam);}catch(e){}var nv=document.getElementById('lvn-'+_lvUid);if(nv)nv.style.display=_lvCam?'none':'flex';_lvCtrlUpdate();};
 window.lvKick=function(uid,name){if(!isHost){toast('Only host can remove people.','warn');return;}if(!confirm('Remove '+name+'?'))return;try{window.dbSet(_db('kicked/'+uid),Date.now());}catch(e){}try{window.dbRemove(_db('peers/'+uid));}catch(e){}  _rmTile(uid);toast(name+' removed.','warn');};
-window.lvLeave=function(){document.dispatchEvent(new Event('lvLeaveEvent'));_lvIn=false;if(_lvScreenStream){_lvScreenStream.getTracks().forEach(function(t){t.stop();});_lvScreenStream=null;}Object.values(_lvScreenPeers).forEach(function(pc){pc.close();});_lvScreenPeers={};if(_lvScreenUid){['peers/'+_lvScreenUid,'sig/'+_lvScreenUid,'ice/'+_lvScreenUid].forEach(function(p){try{window.dbRemove(_db(p));}catch(e){}});_lvScreenUid=null;}if(_lvStream){_lvStream.getTracks().forEach(function(t){t.stop();});_lvStream=null;}Object.values(_lvPeers).forEach(function(pc){pc.close();});_lvPeers={};_lvUnsubs.forEach(function(u){u();});_lvUnsubs=[];if(_lvUid){['peers/'+_lvUid,'sig/'+_lvUid,'ice/'+_lvUid,'kicked/'+_lvUid].forEach(function(p){try{window.dbRemove(_db(p));}catch(e){}});_lvUid=null;}var g=document.getElementById('lvGrid');if(g)g.innerHTML='';document.getElementById('lvRoom').classList.remove('on');lvFsClose();_lvDismiss=false;};
+window.lvLeave=function(){document.dispatchEvent(new Event('lvLeaveEvent'));_lvIn=false;if(_lvStream){_lvStream.getTracks().forEach(function(t){t.stop();});_lvStream=null;}Object.values(_lvPeers).forEach(function(pc){pc.close();});_lvPeers={};_lvUnsubs.forEach(function(u){u();});_lvUnsubs=[];if(_lvUid){['peers/'+_lvUid,'sig/'+_lvUid,'ice/'+_lvUid,'kicked/'+_lvUid].forEach(function(p){try{window.dbRemove(_db(p));}catch(e){}});_lvUid=null;}var g=document.getElementById('lvGrid');if(g)g.innerHTML='';document.getElementById('lvRoom').classList.remove('on');lvFsClose();_lvDismiss=false;};
 window.lvEndRoom=function(){if(!isHost){toast('Only host can end room.','warn');return;}if(!confirm('End room for everyone?'))return;try{window.dbRemove(_db('room'));}catch(e){}['peers','sig','ice','kicked'].forEach(function(p){try{window.dbRemove(_db(p));}catch(e){}});lvLeave();toast('Room ended.','info');};
-
-// ── Screen Share ────────────────────────────────────────────
-window.lvScreenToggle=function(){
-    if(_lvScreenStream){_lvScreenStop();return;}
-    if(!navigator.mediaDevices||!navigator.mediaDevices.getDisplayMedia){toast('Screen sharing not supported on this browser.','warn');return;}
-    navigator.mediaDevices.getDisplayMedia({video:true,audio:true}).then(function(stream){
-        _lvScreenStream=stream;
-        _lvScreenUid=_lvUid+'_screen';
-        // Register as a separate peer in Firebase
-        try{window.dbSet(_db('peers/'+_lvScreenUid),{name:(currentUser||'User')+' Screen',joinedAt:Date.now(),audio:false,video:true,isScreen:true});}catch(e){}
-        // Build a tile locally (visible to self)
-        var st=_buildScreenTile(_lvScreenUid,(currentUser||'User')+' Screen');
-        st.querySelector('video').srcObject=stream;
-        document.getElementById('lvGrid').appendChild(st);
-        _reflow();
-        // Connect to every current peer and send screen stream
-        Object.keys(_lvPeers).forEach(function(uid){_screenConnect(uid,true);});
-        // Watch for new peers joining after screen share starts
-        var screenWatcher=window.dbOnValue(_db('peers'),function(snap){
-            var ps=snap.val()||{};
-            Object.keys(ps).forEach(function(uid){
-                if(uid!==_lvUid&&uid!==_lvScreenUid&&!_lvScreenPeers[uid])_screenConnect(uid,_lvScreenUid<uid);
-            });
-        });
-        _lvUnsubs.push(screenWatcher);
-        // Watch for incoming signals to screen share uid
-        var _screenSigs={};
-        var sigWatcher=window.dbOnValue(_db('sig/'+_lvScreenUid),function(snap){
-            var sigs=snap.val()||{};
-            Object.keys(sigs).forEach(function(from){
-                var msg=sigs[from];if(!msg)return;
-                var key=from+':'+msg.type+':'+(msg.sdp||'').slice(0,20);
-                if(_screenSigs[key])return;
-                _screenSigs[key]=true;
-                if(msg.type==='offer')_screenHandleOffer(from,msg);
-                else if(msg.type==='answer')_screenHandleAnswer(from,msg);
-            });
-        });
-        _lvUnsubs.push(sigWatcher);
-        var iceWatcher=window.dbOnValue(_db('ice/'+_lvScreenUid),function(snap){
-            var all=snap.val()||{};
-            Object.keys(all).forEach(function(from){
-                var pc=_lvScreenPeers[from];if(!pc)return;
-                var seen=pc._seenIce=pc._seenIce||{};
-                var candidates=all[from]||{};
-                Object.keys(candidates).forEach(function(key){
-                    if(seen[key])return;seen[key]=true;
-                    var c=candidates[key];
-                    if(c)pc.addIceCandidate(new RTCIceCandidate(c)).catch(function(){});
-                });
-            });
-        });
-        _lvUnsubs.push(iceWatcher);
-        // When the user stops via browser's native stop button
-        stream.getVideoTracks()[0].onended=function(){_lvScreenStop();};
-        // Update button UI
-        var sb=document.getElementById('lvScreenBtn');if(sb){sb.textContent='⏹️';sb.classList.add('off');}
-        toast('Screen sharing started — visible to everyone!','info');
-    }).catch(function(err){
-        if(err.name!=='NotAllowedError')toast('Could not share screen: '+err.message,'warn');
-    });
-};
-
-function _buildScreenTile(uid,name){
-    var tile=document.createElement('div');tile.className='lv-tile';tile.id='lvt-'+uid;
-    var vid=document.createElement('video');vid.autoplay=true;vid.playsInline=true;vid.muted=true;tile.appendChild(vid);
-    var nm=document.createElement('div');nm.className='lv-tname';nm.textContent=name;tile.appendChild(nm);
-    var badge=document.createElement('div');badge.className='lv-tlive';badge.textContent='SCREEN';badge.style.background='rgba(80,80,255,.9)';tile.appendChild(badge);
-    var h=document.createElement('div');h.className='lv-thint';h.textContent='tap to fullscreen';tile.appendChild(h);
-    tile.addEventListener('click',function(){lvFsOpen(uid,name,true);});
-    return tile;
-}
-
-function _screenMakePc(uid){
-    var pc=new RTCPeerConnection(STUN);_lvScreenPeers[uid]=pc;
-    _lvScreenStream.getTracks().forEach(function(t){pc.addTrack(t,_lvScreenStream);});
-    pc.onicecandidate=function(e){if(e.candidate)window.dbPush(_db('ice/'+uid+'/'+_lvScreenUid),e.candidate.toJSON());};
-    pc.onconnectionstatechange=function(){if(['disconnected','failed','closed'].indexOf(pc.connectionState)>-1){delete _lvScreenPeers[uid];}};
-    return pc;
-}
-
-function _screenConnect(uid,offer){
-    if(_lvScreenPeers[uid])return;
-    var pc=_screenMakePc(uid);
-    if(offer)pc.createOffer().then(function(o){return pc.setLocalDescription(o).then(function(){return window.dbSet(_db('sig/'+uid+'/'+_lvScreenUid),{type:'offer',sdp:o.sdp});});}).catch(function(){});
-}
-
-function _screenHandleOffer(from,msg){
-    var pc=_lvScreenPeers[from]||_screenMakePc(from);
-    pc.setRemoteDescription(new RTCSessionDescription(msg)).then(function(){return pc.createAnswer();}).then(function(a){return pc.setLocalDescription(a).then(function(){return window.dbSet(_db('sig/'+from+'/'+_lvScreenUid),{type:'answer',sdp:a.sdp});});}).catch(function(){});
-}
-
-function _screenHandleAnswer(from,msg){var pc=_lvScreenPeers[from];if(!pc)return;pc.setRemoteDescription(new RTCSessionDescription(msg)).catch(function(){});}
-
-function _lvScreenStop(){
-    if(_lvScreenStream){_lvScreenStream.getTracks().forEach(function(t){t.stop();});_lvScreenStream=null;}
-    Object.values(_lvScreenPeers).forEach(function(pc){pc.close();});_lvScreenPeers={};
-    if(_lvScreenUid){
-        ['peers/'+_lvScreenUid,'sig/'+_lvScreenUid,'ice/'+_lvScreenUid].forEach(function(p){try{window.dbRemove(_db(p));}catch(e){}});
-        var st=document.getElementById('lvt-'+_lvScreenUid);if(st)st.remove();
-        _lvScreenUid=null;
-    }
-    _reflow();
-    var sb=document.getElementById('lvScreenBtn');if(sb){sb.textContent='🖥️';sb.classList.remove('off');}
-    toast('Screen sharing stopped.','info');
-}
-// ── End Screen Share ─────────────────────────────────────────
 
 window.lvFsOpen=function(uid,name,isMe){var tile=document.getElementById('lvt-'+uid);if(!tile)return;var sv=tile.querySelector('video');if(!sv||!sv.srcObject)return;var ov=document.getElementById('lvFs'),fv=document.getElementById('lvFsVid');fv.srcObject=sv.srcObject;fv.muted=!!isMe;document.getElementById('lvFsLbl').textContent=name+(isMe?' (You)':'');ov.classList.add('on');try{if(ov.requestFullscreen)ov.requestFullscreen();else if(ov.webkitRequestFullscreen)ov.webkitRequestFullscreen();}catch(e){};};
 window.lvFsClose=function(){var ov=document.getElementById('lvFs'),fv=document.getElementById('lvFsVid');if(!ov)return;ov.classList.remove('on');if(fv)fv.srcObject=null;try{if(document.exitFullscreen&&document.fullscreenElement)document.exitFullscreen();}catch(e){}try{if(document.webkitExitFullscreen&&document.webkitFullscreenElement)document.webkitExitFullscreen();}catch(e){};};
@@ -12534,18 +12061,6 @@ var NAI_MODES = [
     prompt:'You are a helpful personal finance assistant. Give practical advice on budgeting, saving, investing basics, and financial planning. Always note you\'re not a licensed financial advisor and professional consultation is recommended for major decisions.'
   },
   {
-    id:'picture', emoji:'🎨', name:'Picture Mode', color:'#f43f5e',
-    desc:'Every message becomes an image. Just describe what you want — no need to say "generate" or "draw".',
-    badge:'Images',badgeColor:'rgba(244,63,94,.22)',
-    prompt:'__picture_mode__'
-  },
-  {
-    id:'video', emoji:'🎬', name:'Video Mode', color:'#7c3aed',
-    desc:'Every message creates a video. Just describe the scene — powered by Pollinations Seedance.',
-    badge:'Videos',badgeColor:'rgba(124,58,237,.22)',
-    prompt:'__video_mode__'
-  },
-  {
     id:'custom', emoji:'🔑', name:'Custom API', color:'#a855f7',
     desc:'Paste your own API endpoint or system prompt for a specialised AI.',
     badge:'Custom',badgeColor:'rgba(168,85,247,.2)',
@@ -12728,34 +12243,6 @@ function _updateModeUI(mode){
     if(emoji) emoji.textContent = mode.emoji;
     if(name)  name.textContent  = mode.name;
     if(label) label.textContent = mode.desc ? mode.desc.slice(0,40) : mode.name;
-
-    // Show / hide Picture Mode banner on the input areas
-    var existing = document.getElementById('naiPictureBanner');
-    if(existing) existing.remove();
-    if(mode.id === 'picture' || mode.id === 'video'){
-        var banner = document.createElement('div');
-        banner.id = 'naiPictureBanner';
-        var isPicture = mode.id === 'picture';
-        banner.style.cssText = 'background:linear-gradient(135deg,'
-            + (isPicture ? 'rgba(244,63,94,.18),rgba(251,113,133,.1))' : 'rgba(124,58,237,.18),rgba(99,102,241,.1))')
-            + ';border:1px solid ' + (isPicture ? 'rgba(244,63,94,.35)' : 'rgba(124,58,237,.35)')
-            + ';border-radius:12px;padding:8px 14px;'
-            + 'font-size:12px;font-weight:700;color:' + (isPicture ? '#fb7185' : '#a78bfa')
-            + ';text-align:center;margin:6px 14px 0;'
-            + 'display:flex;align-items:center;justify-content:center;gap:6px;';
-        banner.innerHTML = (isPicture ? '🎨 <span>Picture Mode ON — every message creates an image</span>'
-            : '🎬 <span>Video Mode ON — every message creates a video</span>');
-        // Insert banner above the input areas
-        var inputBot = document.getElementById('naiInputBottom');
-        var inputCen = document.getElementById('naiInputCentered');
-        var target = (inputBot && inputBot.closest) ? inputBot.closest('.nai-input-wrap') || inputBot.parentNode : null;
-        if(!target && inputCen) target = inputCen.closest('.nai-input-wrap') || inputCen.parentNode;
-        if(target && target.parentNode) target.parentNode.insertBefore(banner, target);
-        else {
-            var chatArea = document.getElementById('naiChatMessages');
-            if(chatArea && chatArea.parentNode) chatArea.parentNode.appendChild(banner);
-        }
-    }
 }
 
 window.naiModePickerOpen = function(){
@@ -12818,8 +12305,6 @@ function naiCustomModeDialog(){
 window._naiGetModePrompt = function(){
     if(!_naiCurrentMode || !_naiCurrentMode.prompt) return '';
     if(_naiCurrentMode.prompt === '__custom__') return _naiCustomPrompt || '';
-    if(_naiCurrentMode.prompt === '__picture_mode__') return ''; // image gen handles its own prompting
-    if(_naiCurrentMode.prompt === '__video_mode__') return ''; // video gen handles its own prompting
     return _naiCurrentMode.prompt;
 };
 
@@ -13293,43 +12778,27 @@ var _history = [], _redoStack = [];
 var _tool = 'draw';
 var _drawing = false, _lx = 0, _ly = 0;
 
-// Editor state — normal local vars
+// Draw
 var _brushSize = 12, _brushColor = '#ff3b30', _brushOpacity = 1;
+// Eraser
 var _eraserSize = 28;
+// Text
 var _textVal = '', _textSize = 28, _textColor = '#ffffff', _textFont = 'Nunito';
 var _textBold = true, _textShadow = true;
+// Shape
 var _shape = 'rect', _shapeFill = true, _shapeColor = '#6366f1', _shapeOpacity = 0.85;
 var _shapeStart = null, _shapeDragging = false;
-var _sticker = '❤️', _stickerSize = 48;
+// Sticker
+var _sticker = '❤️';
+var _stickerSize = 48;
+// Crop
 var _cropStart = null, _cropRect = null, _cropping = false;
+// Adjustments (stored as CSS filter values)
 var _brightness = 0, _contrast = 0, _saturation = 0, _hue = 0;
-var _blur = 0, _vignette = 0, _filter = 'none', _blurBaked = 0;
-
-// Expose on window._ie so HTML oninput/onclick can set them
-// The draw functions read from window._ie so changes take effect immediately
-window._ie = {
-    get brushSize(){return _brushSize;},    set brushSize(v){_brushSize=+v;},
-    get brushColor(){return _brushColor;},  set brushColor(v){_brushColor=v;},
-    get brushOpacity(){return _brushOpacity;}, set brushOpacity(v){_brushOpacity=+v;},
-    get eraserSize(){return _eraserSize;},  set eraserSize(v){_eraserSize=+v;},
-    get textVal(){return _textVal;},        set textVal(v){_textVal=v;},
-    get textSize(){return _textSize;},      set textSize(v){_textSize=+v;},
-    get textColor(){return _textColor;},    set textColor(v){_textColor=v;},
-    get textFont(){return _textFont;},      set textFont(v){_textFont=v;},
-    get shape(){return _shape;},            set shape(v){_shape=v;},
-    get shapeFill(){return _shapeFill;},    set shapeFill(v){_shapeFill=v;},
-    get shapeColor(){return _shapeColor;},  set shapeColor(v){_shapeColor=v;},
-    get shapeOpacity(){return _shapeOpacity;}, set shapeOpacity(v){_shapeOpacity=+v;},
-    get sticker(){return _sticker;},        set sticker(v){_sticker=v;},
-    get stickerSize(){return _stickerSize;}, set stickerSize(v){_stickerSize=+v;},
-    get brightness(){return _brightness;},  set brightness(v){_brightness=+v;},
-    get contrast(){return _contrast;},      set contrast(v){_contrast=+v;},
-    get saturation(){return _saturation;},  set saturation(v){_saturation=+v;},
-    get hue(){return _hue;},                set hue(v){_hue=+v;},
-    get blur(){return _blur;},              set blur(v){_blur=+v;},
-    get vignette(){return _vignette;},      set vignette(v){_vignette=+v;},
-    get filter(){return _filter;},          set filter(v){_filter=v;},
-};
+var _blur = 0, _sharpen = 0, _vignette = 0;
+var _filter = 'none';
+// Baked pixel adjustments
+var _blurBaked = 0;
 
 /* ═══════════════════════════════════════════════════════
    OPEN / CLOSE / SAVE
@@ -13339,9 +12808,7 @@ window.openImgEditor = function(src, title){
     _ctx = _c.getContext('2d');
     _history = []; _redoStack = [];
     _brightness=0; _contrast=0; _saturation=0; _hue=0;
-    _blur=0; _vignette=0; _filter='none'; _blurBaked=0;
-    if(window._ie){ window._ie.brightness=0; window._ie.contrast=0; window._ie.saturation=0;
-        window._ie.hue=0; window._ie.blur=0; window._ie.vignette=0; window._ie.filter='none'; }
+    _blur=0; _sharpen=0; _vignette=0; _filter='none'; _blurBaked=0;
     _c.style.filter = 'none';
     document.getElementById('imgEditor').classList.add('on');
     document.getElementById('ieTitle').textContent = (title || 'Edit Image');
@@ -13525,9 +12992,7 @@ function _restoreDataUrl(dataUrl){
 window.ieReset = function(){
     if(!_origImg) return;
     _brightness=0;_contrast=0;_saturation=0;_hue=0;
-    _blur=0;_vignette=0;_filter='none';
-    if(window._ie){ window._ie.brightness=0; window._ie.contrast=0; window._ie.saturation=0;
-        window._ie.hue=0; window._ie.blur=0; window._ie.vignette=0; window._ie.filter='none'; }
+    _blur=0;_sharpen=0;_vignette=0;_filter='none';
     _c.style.filter='none';
     var vig = document.getElementById('ieVigOverlay');
     if(vig) vig.style.display='none';
@@ -13608,47 +13073,47 @@ window.ieTool = function(t){
         ob.classList.add('on');
         ob.innerHTML=
             '<span class="ie-opt-label">Size</span>'
-            +'<input class="ie-slider" type="range" min="1" max="60" value="'+_brushSize+'" oninput="window._ie.brushSize=+this.value">'
+            +'<input class="ie-slider" type="range" min="1" max="60" value="'+_brushSize+'" oninput="_ieBrushSize=+this.value;_brushSize=+this.value">'
             +'<span class="ie-opt-label">Color</span>'
-            +'<input class="ie-color" type="color" value="'+_brushColor+'" oninput="window._ie.brushColor=this.value">'
+            +'<input class="ie-color" type="color" value="'+_brushColor+'" oninput="_brushColor=this.value">'
             +'<span class="ie-opt-label">Opacity</span>'
-            +'<input class="ie-slider" type="range" min="10" max="100" value="'+Math.round(_brushOpacity*100)+'" oninput="window._ie.brushOpacity=this.value/100">';
+            +'<input class="ie-slider" type="range" min="10" max="100" value="'+Math.round(_brushOpacity*100)+'" oninput="_brushOpacity=this.value/100">';
         _c.style.cursor='crosshair';
     } else if(t==='eraser'){
         ob.classList.add('on');
         ob.innerHTML='<span class="ie-opt-label">Eraser size</span>'
-            +'<input class="ie-slider" type="range" min="5" max="100" value="'+_eraserSize+'" oninput="window._ie.eraserSize=+this.value">';
+            +'<input class="ie-slider" type="range" min="5" max="100" value="'+_eraserSize+'" oninput="_eraserSize=+this.value">';
         _c.style.cursor='cell';
     } else if(t==='text'){
         ob.classList.add('on');
-        ob.innerHTML='<input type="text" id="ieTextInput" placeholder="Type here…" value="'+(_textVal||'')+'" style="flex:1;min-width:80px;background:rgba(20,22,40,.85);border:1px solid rgba(99,102,241,.3);border-radius:8px;padding:6px 10px;color:#e2e8f0;font-size:13px;font-family:Nunito,sans-serif;outline:none;" oninput="window._ie.textVal=this.value">'
-            +'<input class="ie-color" type="color" value="'+_textColor+'" oninput="window._ie.textColor=this.value" title="Text color">'
+        ob.innerHTML='<input type="text" id="ieTextInput" placeholder="Type here…" value="'+(_textVal||'')+'" style="flex:1;min-width:80px;background:rgba(20,22,40,.85);border:1px solid rgba(99,102,241,.3);border-radius:8px;padding:6px 10px;color:#e2e8f0;font-size:13px;font-family:Nunito,sans-serif;outline:none;" oninput="_textVal=this.value">'
+            +'<input class="ie-color" type="color" value="'+_textColor+'" oninput="_textColor=this.value" title="Text color">'
             +'<span class="ie-opt-label">Size</span>'
-            +'<input class="ie-slider" type="range" min="12" max="120" value="'+_textSize+'" oninput="window._ie.textSize=+this.value" style="width:80px;">'
-            +'<select id="ieFontSel" style="background:#0d0e1a;border:1px solid rgba(99,102,241,.3);color:#cbd5e1;border-radius:8px;padding:5px 8px;font-size:12px;cursor:pointer;" onchange="window._ie.textFont=this.value"><option value="Nunito">Nunito</option><option value="Georgia">Georgia</option><option value="Impact">Impact</option><option value="Comic Sans MS">Comic</option><option value="monospace">Mono</option></select>';
+            +'<input class="ie-slider" type="range" min="12" max="120" value="'+_textSize+'" oninput="_textSize=+this.value" style="width:80px;">'
+            +'<select id="ieFontSel" style="background:#0d0e1a;border:1px solid rgba(99,102,241,.3);color:#cbd5e1;border-radius:8px;padding:5px 8px;font-size:12px;cursor:pointer;" onchange="_textFont=this.value"><option value="Nunito">Nunito</option><option value="Georgia">Georgia</option><option value="Impact">Impact</option><option value="Comic Sans MS">Comic</option><option value="monospace">Mono</option></select>';
         _c.style.cursor='text';
     } else if(t==='shape'){
         ob.classList.add('on');
         var shapes=[['rect','▭ Rect'],['circle','○ Circle'],['line','╱ Line'],['arrow','→ Arrow'],['star','★ Star'],['heart','♥ Heart']];
         ob.innerHTML='<div class="ie-shape-grid">'+shapes.map(function(s){
-            return '<div class="ie-shape-btn'+(s[0]===_shape?' active':'')+'" onclick="window._ie.shape=\''+s[0]+'\';document.querySelectorAll(\'.ie-shape-btn\').forEach(function(b){b.classList.remove(\'active\')});this.classList.add(\'active\')" title="'+s[0]+'">'+s[1]+'</div>';
+            return '<div class="ie-shape-btn'+(s[0]===_shape?' active':'')+'" onclick="_shape=\''+s[0]+'\';document.querySelectorAll(\'.ie-shape-btn\').forEach(function(b){b.classList.remove(\'active\')});this.classList.add(\'active\')" title="'+s[0]+'">'+s[1]+'</div>';
         }).join('')+'</div>'
         +'<div class="ie-opt-sep"></div>'
         +'<span class="ie-opt-label">Color</span>'
-        +'<input class="ie-color" type="color" value="'+_shapeColor+'" oninput="window._ie.shapeColor=this.value">'
-        +'<button class="ie-filter-btn'+(_shapeFill?' active':'')+'" onclick="window._ie.shapeFill=!window._ie.shapeFill;this.classList.toggle(\'active\')">Fill</button>'
+        +'<input class="ie-color" type="color" value="'+_shapeColor+'" oninput="_shapeColor=this.value">'
+        +'<button class="ie-filter-btn'+(_shapeFill?' active':'')+'" onclick="_shapeFill=!_shapeFill;this.classList.toggle(\'active\')">Fill</button>'
         +'<span class="ie-opt-label">Opacity</span>'
-        +'<input class="ie-slider" type="range" min="10" max="100" value="'+Math.round(_shapeOpacity*100)+'" oninput="window._ie.shapeOpacity=this.value/100">';
+        +'<input class="ie-slider" type="range" min="10" max="100" value="'+Math.round(_shapeOpacity*100)+'" oninput="_shapeOpacity=this.value/100">';
         _c.style.cursor='crosshair';
     } else if(t==='sticker'){
         ob.classList.add('on');
         var stickers=['❤️','😍','🎉','🌟','🔥','✨','😂','👏','🌈','🦋','🎨','🌸','💫','🎵','🏆','💖','🌺','🍀','🌙','☀️'];
         ob.innerHTML='<div class="ie-shape-grid">'+stickers.map(function(s){
-            return '<div class="ie-shape-btn'+(s===_sticker?' active':'')+'" onclick="window._ie.sticker=\''+s+'\';document.querySelectorAll(\'.ie-shape-btn\').forEach(function(b){b.classList.remove(\'active\')});this.classList.add(\'active\')" style="font-size:20px;">'+s+'</div>';
+            return '<div class="ie-shape-btn'+(s===_sticker?' active':'')+'" onclick="_sticker=\''+s+'\';document.querySelectorAll(\'.ie-shape-btn\').forEach(function(b){b.classList.remove(\'active\')});this.classList.add(\'active\')" style="font-size:20px;">'+s+'</div>';
         }).join('')+'</div>'
         +'<div class="ie-opt-sep"></div>'
         +'<span class="ie-opt-label">Size</span>'
-        +'<input class="ie-slider" type="range" min="20" max="160" value="'+_stickerSize+'" oninput="window._ie.stickerSize=+this.value">';
+        +'<input class="ie-slider" type="range" min="20" max="160" value="'+_stickerSize+'" oninput="_stickerSize=+this.value">';
         _c.style.cursor='copy';
     } else if(t==='cutout'){
         if(typeof window._ieCutoutInit === 'function') window._ieCutoutInit();
@@ -13663,19 +13128,19 @@ window.ieTool = function(t){
         ob.classList.add('on');
         ob.innerHTML=
             '<span class="ie-opt-label">☀️</span>'
-            +'<input class="ie-slider" type="range" min="-80" max="80" value="'+_brightness+'" oninput="window._ie.brightness=+this.value;_updateCanvasFilter()" title="Brightness">'
+            +'<input class="ie-slider" type="range" min="-80" max="80" value="'+_brightness+'" oninput="_brightness=+this.value;_updateCanvasFilter()" title="Brightness">'
             +'<span class="ie-opt-label">◐</span>'
-            +'<input class="ie-slider" type="range" min="-80" max="80" value="'+_contrast+'" oninput="window._ie.contrast=+this.value;_updateCanvasFilter()" title="Contrast">'
+            +'<input class="ie-slider" type="range" min="-80" max="80" value="'+_contrast+'" oninput="_contrast=+this.value;_updateCanvasFilter()" title="Contrast">'
             +'<span class="ie-opt-label">🎨</span>'
-            +'<input class="ie-slider" type="range" min="-80" max="80" value="'+_saturation+'" oninput="window._ie.saturation=+this.value;_updateCanvasFilter()" title="Saturation">'
+            +'<input class="ie-slider" type="range" min="-80" max="80" value="'+_saturation+'" oninput="_saturation=+this.value;_updateCanvasFilter()" title="Saturation">'
             +'<span class="ie-opt-label">🌈</span>'
-            +'<input class="ie-slider" type="range" min="-180" max="180" value="'+_hue+'" oninput="window._ie.hue=+this.value;_updateCanvasFilter()" title="Hue">';
+            +'<input class="ie-slider" type="range" min="-180" max="180" value="'+_hue+'" oninput="_hue=+this.value;_updateCanvasFilter()" title="Hue">';
         _c.style.cursor='default';
     } else if(t==='blur'){
         ob.classList.add('on');
         ob.innerHTML=
             '<span class="ie-opt-label">Blur</span>'
-            +'<input class="ie-slider" type="range" min="0" max="10" step=".1" value="'+_blur+'" oninput="window._ie.blur=+this.value;_updateCanvasFilter()">'
+            +'<input class="ie-slider" type="range" min="0" max="10" step=".1" value="'+_blur+'" oninput="_blur=+this.value;_updateCanvasFilter()">'
             +'<button class="ie-filter-btn" onclick="ieSharpen(1)" title="Apply Sharpen pass">Sharpen ✓</button>'
             +'<button class="ie-filter-btn" onclick="ieGaussian()" title="Bake blur into canvas">Bake Blur ✓</button>';
         _c.style.cursor='default';
@@ -13683,7 +13148,7 @@ window.ieTool = function(t){
         ob.classList.add('on');
         ob.innerHTML=
             '<span class="ie-opt-label">Vignette strength</span>'
-            +'<input class="ie-slider" type="range" min="0" max="100" value="'+_vignette+'" oninput="window._ie.vignette=+this.value;_updateCanvasFilter()">';
+            +'<input class="ie-slider" type="range" min="0" max="100" value="'+_vignette+'" oninput="_vignette=+this.value;_updateCanvasFilter()">';
         _c.style.cursor='default';
     } else if(t==='filter'){
         ob.classList.add('on');
@@ -13693,7 +13158,7 @@ window.ieTool = function(t){
             ['sepia','Sepia'],['fade','Fade'],['chrome','Chrome'],
         ];
         ob.innerHTML=filters.map(function(f){
-            return '<button class="ie-filter-btn'+(_filter===f[0]?' active':'')+'" onclick="window._ie.filter=\''+f[0]+'\';_updateCanvasFilter();document.querySelectorAll(\'.ie-filter-btn\').forEach(function(b){b.classList.remove(\'active\')});this.classList.add(\'active\')">'+f[1]+'</button>';
+            return '<button class="ie-filter-btn'+(_filter===f[0]?' active':'')+'" onclick="_filter=\''+f[0]+'\';_updateCanvasFilter();document.querySelectorAll(\'.ie-filter-btn\').forEach(function(b){b.classList.remove(\'active\')});this.classList.add(\'active\')">'+f[1]+'</button>';
         }).join('');
         _c.style.cursor='default';
     } else if(t==='ai'){
@@ -13749,11 +13214,9 @@ function iePointerDown(e){
     if(_tool==='sticker'){
         var sz=_stickerSize;
         _ctx.save();
-        // Use emoji-specific fonts so they render in colour on all devices
-        _ctx.font=sz+'px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",serif';
+        _ctx.font=sz+'px serif';
         _ctx.textAlign='center';
         _ctx.textBaseline='middle';
-        _ctx.globalAlpha=1;
         _ctx.fillText(_sticker, p.x, p.y);
         _ctx.restore();
         _pushHistory(); _drawing=false; return;
@@ -14001,14 +13464,9 @@ async function _ieClaudeCall(userText){
 
     var responseText = '';
     try{
-        // Grab canvas image for vision (may fail if image is cross-origin tainted)
+        // Grab canvas image for vision
         var canvas = document.getElementById('ieCanvas');
-        var imgB64 = null;
-        try{
-            if(canvas) imgB64 = canvas.toDataURL('image/jpeg', 0.55).split(',')[1];
-        } catch(taintErr){
-            console.warn('Canvas tainted (cross-origin image) — sending text only:', taintErr.message);
-        }
+        var imgB64 = canvas ? canvas.toDataURL('image/jpeg', 0.55).split(',')[1] : null;
 
         var sysPrompt = 'You are a helpful, friendly AI assistant built into a family photo editor. ' +
             'The user shares images and asks you anything — outfit advice, food identification, ' +
@@ -14293,67 +13751,6 @@ window._stampCutout = function _stampCutout(x, y){
 var _origPointerDown = iePointerDown;
 
 })();
-
-// ============================================================
-// IN-APP BROWSER WITH PASSWORD PROTECTION
-// ============================================================
-
-function openProtectedBrowser() {
-    const modal = document.getElementById('inAppBrowserModal');
-    modal.style.display = 'flex';
-    document.getElementById('browserPasswordScreen').style.display = 'flex';
-    document.getElementById('browserScreen').style.display = 'none';
-    document.getElementById('browserPassError').style.display = 'none';
-    document.getElementById('browserPasswordInput').value = '';
-    setTimeout(function(){ document.getElementById('browserPasswordInput').focus(); }, 100);
-}
-
-function checkBrowserPassword() {
-    const input = document.getElementById('browserPasswordInput').value;
-    if (input === '1239') {
-        document.getElementById('browserPasswordScreen').style.display = 'none';
-        document.getElementById('browserScreen').style.display = 'flex';
-        browserGo('https://www.google.com');
-    } else {
-        const err = document.getElementById('browserPassError');
-        err.style.display = 'block';
-        document.getElementById('browserPasswordInput').value = '';
-        document.getElementById('browserPasswordInput').focus();
-        setTimeout(function(){ err.style.display = 'none'; }, 2500);
-    }
-}
-
-function closeInAppBrowser() {
-    document.getElementById('inAppBrowserModal').style.display = 'none';
-    document.getElementById('browserFrame').src = 'about:blank';
-}
-
-function browserGo(url) {
-    document.getElementById('browserUrlBar').value = url;
-    document.getElementById('browserFrame').src = url;
-}
-
-function browserNavigate() {
-    let url = document.getElementById('browserUrlBar').value.trim();
-    if (!url) return;
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        if (url.includes('.') && !url.includes(' ')) {
-            url = 'https://' + url;
-        } else {
-            url = 'https://www.google.com/search?q=' + encodeURIComponent(url);
-        }
-    }
-    document.getElementById('browserUrlBar').value = url;
-    document.getElementById('browserFrame').src = url;
-}
-
-function browserBack() {
-    try { document.getElementById('browserFrame').contentWindow.history.back(); } catch(e){}
-}
-
-function browserForward() {
-    try { document.getElementById('browserFrame').contentWindow.history.forward(); } catch(e){}
-}
 </script>
 </body>
 </html>
