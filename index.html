@@ -2007,7 +2007,7 @@ function removeHostMemory() {
                     <div class="setting-label">🤖 Gemini AI Key</div>
                     <div class="setting-desc">Powers smart chat, photo editing, image analysis &amp; more</div>
                 </div>
-                <input type="password" id="geminiKeyInput" placeholder="Paste your Gemini API key (starts with AIza…)" style="width:100%;padding:8px 10px;font-size:12px;">
+                <input type="text" id="geminiKeyInput" placeholder="Paste your Gemini API key (starts with AIza…)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="width:100%;padding:8px 10px;font-size:12px;font-family:monospace;">
                 <div id="geminiKeyStatus" style="font-size:11px;font-weight:700;"></div>
                 <div style="font-size:11px;color:var(--muted);line-height:1.6;">
                     1. Go to <strong style="color:var(--accent);">aistudio.google.com/apikey</strong><br>
@@ -2330,6 +2330,8 @@ window.messaging = getMessaging(appMain);
 window.dbRef = ref; window.dbSet = set; window.dbGet = get;
 window.dbOnValue = onValue; window.dbPush = push; window.dbRemove = remove; window.dbUpdate = update;
 window.dbOnDisconnect = onDisconnect;
+// Load Gemini key from Firebase as soon as DB is ready
+setTimeout(()=>{ if(typeof _loadGeminiKeyFromFirebase==='function') _loadGeminiKeyFromFirebase(); }, 500);
 window.storageRef = storageRef;
 window.uploadBytesResumable = uploadBytesResumable;
 window.getDownloadURL = getDownloadURL;
@@ -3333,13 +3335,32 @@ function openSettings(){
     document.getElementById('meetLinkInput').value=meetLink||'';
     document.getElementById('cloudNameInput').value=CLOUDINARY_CLOUD_NAME!=='YOUR_CLOUD_NAME'?CLOUDINARY_CLOUD_NAME:'';
     document.getElementById('uploadPresetInput').value=CLOUDINARY_UPLOAD_PRESET!=='YOUR_UPLOAD_PRESET'?CLOUDINARY_UPLOAD_PRESET:'';
-    // Load Gemini key
+    // Load Gemini key — try all sources: window var, localStorage, sessionStorage, Firebase
+    let _loadedKey = window._GEMINI_KEY || '';
+    if(!_loadedKey){ try { _loadedKey = localStorage.getItem('_ghk') || sessionStorage.getItem('_ghk') || ''; } catch(e){} }
+    if(_loadedKey) window._GEMINI_KEY = _loadedKey;
     const gkEl=document.getElementById('geminiKeyInput');
     const gkSt=document.getElementById('geminiKeyStatus');
-    if(gkEl){ gkEl.value=window._GEMINI_KEY||''; }
-    if(gkSt){ 
-        if(window._GEMINI_KEY){ gkSt.textContent='✅ Gemini key loaded'; gkSt.style.color='var(--accent2)'; }
-        else { gkSt.textContent='⚠️ No key saved — AI uses free backup only'; gkSt.style.color='var(--muted)'; }
+    if(gkEl){ gkEl.value=_loadedKey; }
+    if(gkSt){
+        if(_loadedKey){ gkSt.textContent='✅ Gemini key loaded (AI is active!)'; gkSt.style.color='var(--accent2)'; }
+        else { gkSt.textContent='⚠️ No key — paste your key above and tap Save'; gkSt.style.color='var(--muted)'; }
+    }
+    // Also try Firebase in background (updates UI if found)
+    if(!_loadedKey){
+        try {
+            window.dbGet(window.dbRef(window.db,'_hostConfig/gk')).then(snap=>{
+                if(snap.exists()){
+                    try {
+                        const k = atob(snap.val());
+                        window._GEMINI_KEY = k;
+                        try { localStorage.setItem('_ghk', k); } catch(e){}
+                        if(gkEl) gkEl.value = k;
+                        if(gkSt){ gkSt.textContent='✅ Gemini key loaded (AI is active!)'; gkSt.style.color='var(--accent2)'; }
+                    } catch(e){}
+                }
+            }).catch(()=>{});
+        } catch(e){}
     }
 }
 function switchHostTab(name,btn){
@@ -3387,11 +3408,21 @@ async function saveHubSettings(){
     const link=document.getElementById('meetLinkInput').value.trim();
     const cloudName=document.getElementById('cloudNameInput').value.trim();
     const uploadPreset=document.getElementById('uploadPresetInput').value.trim();
-    const geminiKey=document.getElementById('geminiKeyInput')?.value.trim()||'';
+    let geminiKey = document.getElementById('geminiKeyInput')?.value.trim()||'';
+    // If field is blank, check if we already have a saved key — don't erase it accidentally
+    if(!geminiKey){
+        try { geminiKey = localStorage.getItem('_ghk') || sessionStorage.getItem('_ghk') || window._GEMINI_KEY || ''; } catch(e){}
+    }
 
-    // Always save Gemini key locally first — this never fails
-    if(geminiKey){ localStorage.setItem('_ghk', geminiKey); window._GEMINI_KEY=geminiKey; }
-    else { localStorage.removeItem('_ghk'); window._GEMINI_KEY=''; }
+    // Save Gemini key to all available storage (Firebase + local)
+    if(geminiKey){
+        try { localStorage.setItem('_ghk', geminiKey); } catch(e){}
+        try { sessionStorage.setItem('_ghk', geminiKey); } catch(e){}
+        window._GEMINI_KEY = geminiKey;
+        // Also save to Firebase so it persists across browsers/devices
+        try { await window.dbSet(window.dbRef(window.db,'_hostConfig/gk'), btoa(geminiKey)); } catch(e){}
+    }
+    // Only erase if user explicitly cleared the field AND confirmed (field was previously filled)
     const gkSt=document.getElementById('geminiKeyStatus');
     if(gkSt){
         gkSt.textContent=geminiKey?'✅ Gemini key saved — AI upgraded!':'⚠️ No key — using free backup AI';
@@ -4489,7 +4520,33 @@ async function uploadAndSendVoice(blob){
 }
 
 // ── Load Gemini key from localStorage on startup ─────────────────────────────
-(function(){ window._GEMINI_KEY = localStorage.getItem('_ghk') || ''; })();
+(function(){
+    try {
+        window._GEMINI_KEY = localStorage.getItem('_ghk') || sessionStorage.getItem('_ghk') || '';
+    } catch(e){ window._GEMINI_KEY = ''; }
+})();
+// Also reload on DOMContentLoaded in case the IIFE ran too early
+document.addEventListener('DOMContentLoaded', function(){
+    try {
+        const saved = localStorage.getItem('_ghk') || sessionStorage.getItem('_ghk');
+        if(saved) window._GEMINI_KEY = saved;
+    } catch(e){}
+});
+
+// Load Gemini key from Firebase after Firebase is ready (most reliable)
+function _loadGeminiKeyFromFirebase(){
+    try {
+        window.dbOnValue(window.dbRef(window.db,'_hostConfig/gk'), snap => {
+            if(snap.exists()){
+                try {
+                    const decoded = atob(snap.val());
+                    window._GEMINI_KEY = decoded;
+                    try { localStorage.setItem('_ghk', decoded); } catch(e){}
+                } catch(e){}
+            }
+        }, { onlyOnce: true });
+    } catch(e){}
+}
 
 // ── Smart AI Router — Gemini first, Pollinations fallback ────────────────────
 // Detects task type and routes to best API automatically
@@ -4512,16 +4569,22 @@ async function _geminiChat(messages, imageBase64=null, mimeType='image/jpeg'){
     const sys = messages.find(m=>m.role==='system');
     const convMsgs = messages.filter(m=>m.role!=='system');
     
-    // Build Gemini contents format
-    const contents = convMsgs.map((m,i) => {
+    // Build Gemini contents format — must alternate user/model, start with user
+    let contents = convMsgs.map((m,i) => {
         const parts = [];
-        // Add image to last user message if provided
         if(imageBase64 && m.role==='user' && i===convMsgs.length-1){
             parts.push({ inlineData: { mimeType, data: imageBase64 } });
         }
-        parts.push({ text: m.content || '' });
+        const text = (typeof m.content === 'string' ? m.content : JSON.stringify(m.content)) || ' ';
+        parts.push({ text });
         return { role: m.role==='assistant'?'model':'user', parts };
     });
+    // If empty, add a placeholder
+    if(!contents.length) contents = [{ role:'user', parts:[{ text: 'Hello' }] }];
+    // Ensure starts with user
+    if(contents[0].role !== 'user') contents.unshift({ role:'user', parts:[{ text: ' ' }] });
+    // Deduplicate consecutive same roles (Gemini rejects these)
+    contents = contents.filter((c,i) => i===0 || c.role !== contents[i-1].role);
 
     const body = {
         system_instruction: sys ? { parts:[{ text: sys.content }] } : undefined,
@@ -4548,7 +4611,7 @@ async function _geminiChat(messages, imageBase64=null, mimeType='image/jpeg'){
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
-        signal: AbortSignal.timeout(20000)
+        signal: AbortSignal.timeout(30000)
     });
     if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error('Gemini '+r.status+': '+(e?.error?.message||'')); }
     const d = await r.json();
@@ -4579,63 +4642,92 @@ First describe this photo in vivid detail (colors, subjects, setting, lighting, 
 
 async function _pollinationsChat(messages){
     const sys = messages.find(m=>m.role==='system');
-    const body = { model:'openai-large', messages, temperature:0.65, max_tokens:1200, top_p:0.9 };
+    const lastUser = [...messages].reverse().find(m=>m.role==='user')?.content||'';
+    const sysText = sys?sys.content:'';
+
+    // Try 1: gen.pollinations.ai
     try {
-        const r = await fetch('https://text.pollinations.ai/openai', {
-            method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body),
-            signal:AbortSignal.timeout(15000)
+        const r = await fetch('https://gen.pollinations.ai/v1/chat/completions', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({ model:'openai', messages, temperature:0.7, max_tokens:1200 }),
+            signal:AbortSignal.timeout(22000)
         });
         if(!r.ok) throw new Error('status '+r.status);
         const d = await r.json();
         const text = (d.choices?.[0]?.message?.content||'').trim();
-        if(!text) throw new Error('empty');
-        return text;
-    } catch(e){
-        // GET fallback
-        const sysText = sys?sys.content:'';
-        const lastUser = [...messages].reverse().find(m=>m.role==='user')?.content||'';
-        const url = 'https://text.pollinations.ai/'+encodeURIComponent(lastUser.slice(0,600))
-            +'?model=openai-large&system='+encodeURIComponent(sysText.slice(0,1200));
-        const r2 = await fetch(url, { signal:AbortSignal.timeout(12000) });
-        if(!r2.ok) throw new Error('GET failed');
-        return (await r2.text()).trim();
-    }
+        if(text) return text;
+    } catch(e){ console.warn('[Pollinations1]', e.message); }
+
+    // Try 2: text.pollinations.ai GET (simplest, most reliable)
+    try {
+        const url = 'https://text.pollinations.ai/'+encodeURIComponent(lastUser.slice(0,500))
+            +(sysText ? '?system='+encodeURIComponent(sysText.slice(0,800)) : '');
+        const r = await fetch(url, { signal:AbortSignal.timeout(22000) });
+        if(!r.ok) throw new Error('GET '+r.status);
+        const text = (await r.text()).trim();
+        if(text) return text;
+    } catch(e){ console.warn('[Pollinations2]', e.message); }
+
+    throw new Error('Pollinations unavailable');
+}
+
+async function _puterChat(messages){
+    // Puter.js — free AI, no key needed, user's own Puter account
+    if(typeof puter === 'undefined' || !puter.ai) throw new Error('Puter not loaded');
+    const sys = messages.find(m=>m.role==='system');
+    const lastUser = [...messages].reverse().find(m=>m.role==='user')?.content||'';
+    const userPromptText = (sys ? sys.content + ' ' : '') + lastUser;
+    const resp = await puter.ai.chat(userPromptText, { model:'gpt-4o-mini' });
+    const text = resp?.message?.content || resp?.text || (typeof resp==='string'?resp:'');
+    if(!text) throw new Error('Puter empty');
+    return text;
 }
 
 async function _aiChatMulti(messages, imageBase64=null, mimeType='image/jpeg'){
-    const task = _detectTaskType(messages);
-    console.log('[AI Router] Task:', task, '| Gemini key:', window._GEMINI_KEY?'✅':'❌');
+    // Always re-check storage for Gemini key in case it wasn't loaded yet
+    if(!window._GEMINI_KEY){
+        try { const k=localStorage.getItem('_ghk')||sessionStorage.getItem('_ghk'); if(k) window._GEMINI_KEY=k; } catch(e){}
+    }
 
-    // Photo editing: Gemini Vision → describe edit → Pollinations generates
+    const task = _detectTaskType(messages);
+    console.log('[AI] Task:', task, '| Gemini:', window._GEMINI_KEY?'✅':'❌');
+
+    // Photo editing
     if(task==='photo_edit' && imageBase64){
         if(window._GEMINI_KEY){
             try {
                 const instruction = [...messages].reverse().find(m=>m.role==='user')?.content||'';
                 const editPrompt = await _geminiEditPhoto(imageBase64, mimeType, instruction);
-                console.log('[AI Router] Photo edit prompt:', editPrompt.slice(0,80));
                 return { type:'image_prompt', prompt: editPrompt };
-            } catch(e){ console.warn('[AI Router] Gemini photo edit failed:', e.message); }
+            } catch(e){ console.warn('[AI] Gemini photo edit failed:', e.message); }
         }
         return { type:'image_prompt', prompt:'A beautifully edited photo, high quality, realistic' };
     }
 
-    // Vision (image analysis): Gemini first, Pollinations fallback
-    if((task==='vision'||imageBase64) && imageBase64){
+    // Vision
+    if(imageBase64){
         if(window._GEMINI_KEY){
-            try { return await _geminiChat(messages, imageBase64, mimeType); } 
-            catch(e){ console.warn('[AI Router] Gemini vision failed, trying Pollinations:', e.message); }
+            try { return await _geminiChat(messages, imageBase64, mimeType); }
+            catch(e){ console.warn('[AI] Gemini vision failed:', e.message); }
         }
-        try { return await _pollinationsChat(messages); }
-        catch(e){ return "I couldn't analyze that image right now. Please try again!"; }
+        try { return await _pollinationsChat(messages); } catch(e){}
+        return "I couldn't analyze that image. Please try again!";
     }
 
-    // All other tasks: Gemini first, Pollinations fallback
+    // Chat — try each provider in order
+    // 1. Gemini (best, needs key)
     if(window._GEMINI_KEY){
         try { return await _geminiChat(messages); }
-        catch(e){ console.warn('[AI Router] Gemini failed, falling back to Pollinations:', e.message); }
+        catch(e){ console.warn('[AI] Gemini failed:', e.message); }
     }
+    // 2. Pollinations (free, no key)
     try { return await _pollinationsChat(messages); }
-    catch(e){ return "I'm having trouble connecting right now. Please try again in a moment!"; }
+    catch(e){ console.warn('[AI] Pollinations failed:', e.message); }
+    // 3. Puter.js (free, no key, user's account)
+    try { return await _puterChat(messages); }
+    catch(e){ console.warn('[AI] Puter failed:', e.message); }
+
+    return "AI is unavailable right now. Please check your internet connection or add a Gemini key in Host Settings.";
 }
 
 async function _aiChat(systemPrompt, userMessage, imageBase64=null, mimeType='image/jpeg'){
@@ -13514,27 +13606,29 @@ async function _ieClaudeCall(userText){
             .concat(priorMsgs)
             .concat([{ role:'user', content: userContent }]);
 
-        var resp = await fetch('https://text.pollinations.ai/openai', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                model: 'openai-large',
-                messages: allMessages,
-                max_tokens: 900,
-                temperature: 0.7
-            })
-        });
-
-        if(!resp.ok) throw new Error('HTTP ' + resp.status);
-        var data = await resp.json();
-        var txt = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
-        if(!txt) throw new Error('empty');
-        responseText = txt;
+        // Use Gemini if key available (supports real vision), else Pollinations
+        if(window._GEMINI_KEY && imgB64){
+            responseText = await _geminiChat(allMessages, imgB64, 'image/jpeg');
+        } else if(window._GEMINI_KEY){
+            responseText = await _geminiChat(allMessages);
+        } else {
+            var resp = await fetch('https://gen.pollinations.ai/v1/chat/completions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ model: 'openai', messages: allMessages, max_tokens: 900, temperature: 0.7 }),
+                signal: AbortSignal.timeout(25000)
+            });
+            if(!resp.ok) throw new Error('HTTP ' + resp.status);
+            var data = await resp.json();
+            var txt = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+            if(!txt) throw new Error('empty');
+            responseText = txt;
+        }
 
     } catch(e){
-        // Fallback — text only, simpler model
+        // Fallback — use _pollinationsChat
         try{
-            var r2 = await fetch('https://text.pollinations.ai/openai', {
+            var r2 = await fetch('https://gen.pollinations.ai/v1/chat/completions', {
                 method:'POST',
                 headers:{'Content-Type':'application/json'},
                 body: JSON.stringify({
@@ -13544,7 +13638,8 @@ async function _ieClaudeCall(userText){
                         {role:'user',   content: userText}
                     ],
                     max_tokens: 500
-                })
+                }),
+                signal: AbortSignal.timeout(20000)
             });
             if(!r2.ok) throw new Error('fallback failed');
             var d2 = await r2.json();
@@ -13554,9 +13649,10 @@ async function _ieClaudeCall(userText){
         } catch(e2){
             // Last resort — simple GET request
             try{
-                var r3 = await fetch('https://text.pollinations.ai/' +
+                var r3 = await fetch('https://gen.pollinations.ai/text/' +
                     encodeURIComponent(userText.slice(0,300)) +
-                    '?model=openai&system=' + encodeURIComponent('You help with photo editing advice.'));
+                    '?model=openai&system=' + encodeURIComponent('You help with photo editing advice.'),
+                    { signal: AbortSignal.timeout(15000) });
                 responseText = (await r3.text()).trim() || 'Sorry, no response. Try again.';
             } catch(e3){
                 responseText = 'Could not reach AI right now. Please try again in a moment.';
