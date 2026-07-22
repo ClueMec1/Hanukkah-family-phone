@@ -1,7 +1,7 @@
 {
-  "name": "Family Hub",
-  "short_name": "Family Hub",
-  "description": "Your family's private app",
+  "name": "Simcha Invitations",
+  "short_name": "Simcha Invitations",
+  "description": "a place for everyone to make Simcha Invitations",
   "start_url": "/Hanukkah-family-phone/",
   "scope": "/Hanukkah-family-phone/",
   "display": "standalone",
