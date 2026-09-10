@@ -1,4 +1,4 @@
-// Newman Phone Line — app.js
+// NEUMIFY — app.js
 // Everything here is a plain ES module, no build step. Wires up:
 //   - onboarding (pick a name/color, claim a 10-digit "Newman number")
 //   - contacts, recents, profile (all localStorage — never touches Firebase)
