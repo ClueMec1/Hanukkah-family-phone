@@ -1,6 +1,6 @@
 {
   "name": "neumify",
-  "short_name": "FamBoard",
+  "short_name": "neumify",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
