@@ -3,7 +3,7 @@
 // (chat, calendar, feed, recipes, AI) always comes fresh from Firestore
 // — and the Gemini API — never the cache.
 
-const CACHE = "fam-board-shell-v13";
+const CACHE = "fam-board-shell-v14";
 const SHELL_FILES = [
   "./index.html",
   "./manifest.json"

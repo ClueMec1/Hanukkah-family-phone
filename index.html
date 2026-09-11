@@ -278,6 +278,28 @@
   .event-card .date { font-family: var(--font-display); color: var(--turquoise-dark); min-width: 78px; font-weight: 600; }
   .event-card .who-added { font-size: 0.73rem; color: var(--muted); }
 
+  /* ---------- Calendar view ---------- */
+  .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 8px; }
+  .cal-dow { text-align: center; font-size: 0.68rem; font-weight: 700; color: var(--muted); padding-bottom: 4px; }
+  .cal-day {
+    aspect-ratio: 1; border-radius: 10px; background: var(--surface); border: 1px solid var(--line);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2px;
+    font-size: 0.75rem; position: relative; cursor: pointer; -webkit-user-select: none; user-select: none;
+  }
+  .cal-day.other-month { opacity: 0.3; }
+  .cal-day.today { border: 2px solid var(--turquoise); font-weight: 700; }
+  .cal-day.this-week { background: var(--turquoise-tint); }
+  .cal-day .cal-primary { font-family: var(--font-display); font-weight: 600; }
+  .cal-day .cal-secondary { font-size: 0.55rem; color: var(--muted); line-height: 1.1; }
+  .cal-day .cal-dot { position: absolute; bottom: 3px; width: 5px; height: 5px; border-radius: 50%; background: var(--pink); }
+  .cal-day .cal-holiday-dot { position: absolute; bottom: 3px; left: 6px; width: 5px; height: 5px; border-radius: 50%; background: var(--amber-dark); }
+  .zmanim-row { display: flex; justify-content: space-between; font-size: 0.82rem; padding: 4px 0; border-bottom: 1px solid var(--line); }
+  .zmanim-row:last-child { border-bottom: none; }
+  .upcoming-row { display: flex; justify-content: space-between; align-items: center; background: var(--surface); border-radius: var(--radius-md); box-shadow: var(--shadow); padding: 12px 15px; margin-bottom: 10px; }
+  .upcoming-row.this-week { box-shadow: 0 0 0 2px var(--turquoise), var(--shadow); }
+  .upcoming-row .date { font-family: var(--font-display); color: var(--turquoise-dark); font-weight: 600; min-width: 68px; }
+
   /* ---------- Recipes view ---------- */
   .recipe-card { background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow); padding: 17px 18px; margin-bottom: 14px; }
   .recipe-card .head { display: flex; justify-content: space-between; align-items: center; gap: 10px; cursor: pointer; -webkit-user-select: none; user-select: none; }
@@ -434,12 +456,30 @@
       <!-- ---- CALENDAR ---- -->
       <div class="view" id="view-calendar">
         <h2 class="view-title"></h2>
-        <form class="card" id="event-form" style="margin-bottom:24px;">
-          <div class="field"><label class="field-label">What's happening</label><input type="text" id="event-title" class="input" required /></div>
-          <div class="field"><label class="field-label">Date</label><input type="date" id="event-date" class="input" required /></div>
-          <button type="submit" class="btn turquoise block">Add event</button>
-        </form>
-        <div id="event-list"><p class="empty-state">Loading…</p></div>
+
+        <div class="pill-tabs" id="calendar-date-toggle">
+          <button class="pill-tab active" data-cal="english">English primary</button>
+          <button class="pill-tab" data-cal="hebrew">Hebrew primary</button>
+        </div>
+
+        <div class="card" id="zmanim-card" style="margin-bottom:18px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <strong id="zmanim-date-label" style="font-family:var(--font-display);"></strong>
+          </div>
+          <div id="zmanim-list"><p class="empty-state">Loading…</p></div>
+        </div>
+
+        <div class="cal-nav">
+          <button type="button" class="icon-btn" id="cal-prev-month"></button>
+          <strong id="cal-month-label" style="font-family:var(--font-display); font-size:1.1rem;"></strong>
+          <button type="button" class="icon-btn" id="cal-next-month"></button>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+
+        <button type="button" class="btn turquoise block" id="open-event-form-btn" style="margin:18px 0;">Add an event</button>
+
+        <h3 style="font-size:1.05rem; margin:20px 0 10px 0;">Next 30 days</h3>
+        <div id="upcoming-list"><p class="empty-state">Loading…</p></div>
       </div>
 
       <!-- ---- RECIPES ---- -->
@@ -452,8 +492,11 @@
       <!-- ---- AI ---- -->
       <div class="view" id="view-ai">
         <h2 class="view-title" style="margin-bottom:6px;"></h2>
-        <p style="color:var(--muted); font-size:0.85rem; margin:0 0 16px 0;">Your own private conversation — it remembers this chat while you're here, and always knows the family facts the host has shared with it.</p>
-        <button type="button" class="btn ghost sm" id="ai-settings-btn" style="display:none; margin-bottom:14px;">Manage facts &amp; API key</button>
+        <p style="color:var(--muted); font-size:0.85rem; margin:0 0 16px 0;">Your own private conversation — it remembers this chat while you're here, and always knows the family facts everyone's shared with it.</p>
+        <div style="display:flex; gap:8px; margin-bottom:14px;">
+          <button type="button" class="btn ghost sm" id="ai-facts-btn">Family facts</button>
+          <button type="button" class="btn ghost sm" id="ai-settings-btn" style="display:none;">API keys (host)</button>
+        </div>
         <div id="ai-key-missing" class="card" style="display:none; margin-bottom:16px;"><p style="margin:0; color:var(--muted);">Using Puter as a fallback — no host setup needed, but you may see a one-time free sign-in the first time.</p></div>
         <div class="messages" id="ai-messages" style="height:50vh; min-height:320px; border-radius:var(--radius-lg); background:var(--surface); box-shadow:var(--shadow); margin-bottom:14px;"><p class="empty-state">Loading…</p></div>
         <form class="compose" id="ai-compose-form" style="border-top:none; background:none; padding:0;">
@@ -494,6 +537,19 @@
                 <li>Paste the cloud name and preset name into any slot above and hit Save.</li>
               </ol>
             </details>
+          </div>
+
+          <p style="font-size:0.8rem; color:var(--turquoise-dark); font-weight:700; margin:0 0 10px 0;">CALENDAR — location for zmanim &amp; holiday times</p>
+          <div class="card" style="margin-bottom:20px;">
+            <p style="margin:0 0 12px 0; font-size:0.85rem; color:var(--muted);">
+              Zmanim (sunrise, candle-lighting, etc.) depend on an exact
+              location. Defaults to New York City — change it if your
+              family is elsewhere.
+            </p>
+            <div class="field"><label class="field-label">Latitude</label><input type="text" id="calendar-lat-input" class="input" placeholder="40.7128" /></div>
+            <div class="field"><label class="field-label">Longitude</label><input type="text" id="calendar-lon-input" class="input" placeholder="-74.0060" /></div>
+            <div class="field"><label class="field-label">Timezone (IANA name)</label><input type="text" id="calendar-tzid-input" class="input" placeholder="America/New_York" /></div>
+            <button type="button" class="btn turquoise sm" id="calendar-location-save-btn">Save</button>
           </div>
 
           <p style="font-size:0.8rem; color:var(--pink-dark); font-weight:700; margin:0 0 10px 0;">CHAT — everyone's photos, videos &amp; voice messages</p>
@@ -632,10 +688,42 @@
     </div>
   </div>
 
+  <!-- ---- New event sheet ---- -->
+  <div class="overlay" id="event-overlay">
+    <div class="sheet" style="max-width:420px;">
+      <h2>New event</h2>
+      <div class="field"><label class="field-label">What's happening</label><input type="text" id="event-title" class="input" /></div>
+      <div class="field"><label class="field-label">Date</label><input type="date" id="event-date" class="input" /></div>
+      <div class="field">
+        <label class="field-label">Repeat</label>
+        <select id="event-recurrence" class="input">
+          <option value="none">Doesn't repeat</option>
+          <option value="english">Repeats every year (English date)</option>
+          <option value="hebrew">Repeats every year (Hebrew date)</option>
+        </select>
+      </div>
+      <div class="sheet-actions">
+        <button class="btn ghost" id="event-cancel-btn">Cancel</button>
+        <button class="btn turquoise" id="event-save-btn">Add event</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---- Today popup — shown once per session, first time Calendar opens,
+       only if something is happening today ---- -->
+  <div id="today-popup-wrap" style="display:none;">
+    <div class="room-shell" style="align-items:center; justify-content:center; text-align:center; padding:32px;">
+      <div style="font-size:3rem; margin-bottom:12px;">🎉</div>
+      <h1 style="font-family:var(--font-display); font-size:1.6rem; margin:0 0 10px 0;">Today</h1>
+      <div id="today-popup-list" style="margin-bottom:24px;"></div>
+      <button type="button" class="btn turquoise" id="today-popup-close-btn">See the calendar</button>
+    </div>
+  </div>
+
   <!-- ---- New recipe sheet ---- -->
   <div class="overlay" id="recipe-overlay">
     <div class="sheet" style="max-width:520px;">
-      <h2>New recipe</h2>
+      <h2 id="recipe-overlay-title">New recipe</h2>
       <div class="field"><label class="field-label">Title</label><input type="text" id="recipe-title-input" class="input" /></div>
       <div class="field">
         <label class="field-label">Paste the ingredients</label>
@@ -653,7 +741,25 @@
     </div>
   </div>
 
-  <!-- ---- AI facts & API key sheet (host only) ---- -->
+  <!-- ---- Family facts sheet — everyone can add/remove, not just the host ---- -->
+  <div class="overlay" id="ai-facts-overlay">
+    <div class="sheet" style="max-width:480px;">
+      <h2>Family facts</h2>
+      <p style="font-size:0.8rem; color:var(--muted); margin:-4px 0 14px;">Anyone can add a fact — every conversation, for every person, knows the current list from message one.</p>
+      <div class="field">
+        <div id="ai-fact-list"></div>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <input type="text" id="ai-fact-input" class="input" placeholder="e.g. Grandma's birthday is June 3rd" />
+          <button type="button" class="btn ghost sm" id="ai-add-fact-btn">Add</button>
+        </div>
+      </div>
+      <div class="sheet-actions">
+        <button class="btn ghost block" id="ai-facts-close-btn">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---- AI provider keys sheet (host only) ---- -->
   <div class="overlay" id="ai-settings-overlay">
     <div class="sheet" style="max-width:480px;">
       <h2>Family AI setup</h2>
@@ -668,14 +774,6 @@
       </div>
       <p style="font-size:0.8rem; color:var(--muted); margin:-6px 0 14px;">Third — Puter — needs nothing from you here; it's built in and always available as the last resort, no key required.</p>
       <button type="button" class="btn amber sm" id="ai-save-key-btn" style="margin-bottom:18px;">Save keys</button>
-      <div class="field">
-        <label class="field-label">Facts the AI should know</label>
-        <div id="ai-fact-list"></div>
-        <div style="display:flex; gap:8px; margin-top:8px;">
-          <input type="text" id="ai-fact-input" class="input" placeholder="e.g. Grandma's birthday is June 3rd" />
-          <button type="button" class="btn ghost sm" id="ai-add-fact-btn">Add</button>
-        </div>
-      </div>
       <div class="sheet-actions">
         <button class="btn ghost block" id="ai-settings-close-btn">Done</button>
       </div>
@@ -1282,6 +1380,7 @@
     startCloudinaryConfigWatch();
     startSupabaseConfigWatch();
     startGeminiKeyWatch();
+    startCalendarLocationWatch();
     const parts = location.hash.replace(/^#\/?/, "").split("/");
     renderView(parts[0] || "feed", parts[1] ? decodeURIComponent(parts[1]) : undefined);
   }
@@ -1970,51 +2069,319 @@
   });
 
   // ============================================================
-  // CALENDAR
+  // CALENDAR — real month grid, English/Hebrew toggle, zmanim, Jewish
+  // holidays (excluding Israeli/modern ones), and year-aware recurrence
+  // via Hebcal's free public API (no key needed for any of this).
   // ============================================================
   let calendarStarted = false;
-  function startCalendarIfNeeded() {
-    if (calendarStarted) return;
-    calendarStarted = true;
-    const listEl = document.getElementById("event-list");
-    const eventsRef = collection(db, "calendar_events");
-    const q = query(eventsRef, orderBy("date", "asc"));
-    onSnapshot(q, (snapshot) => {
-      if (snapshot.empty) { listEl.innerHTML = '<p class="empty-state">No events yet.</p>'; return; }
-      listEl.innerHTML = "";
-      snapshot.forEach((docSnap) => {
-        const ev = docSnap.data();
-        const canDelete = ev.addedById === member.id || member.isHost;
-        const card = document.createElement("div");
-        card.className = "event-card";
-        card.innerHTML = `
-          <div class="date">${formatDate(ev.date)}</div>
-          <div style="flex:1;">${escapeHtml(ev.title)}<div class="who-added">added by ${escapeHtml(ev.addedByName || "someone")}</div></div>
-          ${canDelete ? `<button class="remove-link" data-id="${docSnap.id}">Remove</button>` : ""}
-        `;
-        listEl.appendChild(card);
-      });
-      listEl.querySelectorAll(".remove-link").forEach((btn) => {
-        btn.addEventListener("click", () => deleteDoc(doc(db, "calendar_events", btn.dataset.id)));
-      });
-    }, (err) => showConnError(err));
+  let calDisplayYear, calDisplayMonth; // 1-indexed month
+  let calPrimaryIsHebrew = false;
+  let allCalendarEvents = [];
+  const monthDataCache = {};       // "YYYY-M" -> { hebrewByISO, holidaysByISO }
+  const hebrewRecurrenceCache = {}; // "eventId:year" -> resolved ISO date or null
+  let todayPopupCheckedThisSession = false;
 
-    document.getElementById("event-form").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const title = document.getElementById("event-title").value.trim();
-      const date = document.getElementById("event-date").value;
-      if (!title || !date) return;
-      try {
-        await addDoc(eventsRef, { title, date, addedById: member.id, addedByName: member.name });
-        e.target.reset();
-      } catch (err) {
-        showConnError(err);
-      }
-    });
+  let calendarConfig = null;
+  let calendarLocationWatchStarted = false;
+  function startCalendarLocationWatch() {
+    if (calendarLocationWatchStarted) return;
+    calendarLocationWatchStarted = true;
+    onSnapshot(doc(db, "settings", "calendarLocation"), (snap) => {
+      calendarConfig = snap.exists() ? snap.data() : null;
+      document.getElementById("calendar-lat-input").value = (calendarConfig && calendarConfig.lat) || "40.7128";
+      document.getElementById("calendar-lon-input").value = (calendarConfig && calendarConfig.lon) || "-74.0060";
+      document.getElementById("calendar-tzid-input").value = (calendarConfig && calendarConfig.tzid) || "America/New_York";
+    }, (err) => showConnError(err));
+  }
+  document.getElementById("calendar-location-save-btn").addEventListener("click", async () => {
+    const lat = document.getElementById("calendar-lat-input").value.trim();
+    const lon = document.getElementById("calendar-lon-input").value.trim();
+    const tzid = document.getElementById("calendar-tzid-input").value.trim();
+    try {
+      await setDoc(doc(db, "settings", "calendarLocation"), { lat, lon, tzid }, { merge: true });
+      await showAlert("Saved.");
+      fetchAndRenderZmanim();
+    } catch (err) {
+      showConnError(err);
+    }
+  });
+
+  function isoOf(d) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   }
   function formatDate(iso) {
     const d = new Date(iso + "T00:00:00");
     return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  }
+
+  async function fetchMonthHebcalData(year, month) {
+    const cacheKey = `${year}-${month}`;
+    if (monthDataCache[cacheKey]) return monthDataCache[cacheKey];
+    const result = { hebrewByISO: {}, holidaysByISO: {} };
+    try {
+      const url = `https://www.hebcal.com/hebcal?v=1&cfg=json&year=${year}&month=${month}&maj=on&min=on&mod=off&d=on`;
+      const res = await withTimeout(fetch(url), 10000, "Hebcal is taking too long to respond.");
+      const data = await res.json();
+      (data.items || []).forEach((item) => {
+        const iso = (item.date || "").slice(0, 10);
+        if (!iso) return;
+        if (item.hdate) result.hebrewByISO[iso] = item.hdate;
+        if (item.category === "holiday") {
+          result.holidaysByISO[iso] = result.holidaysByISO[iso] || [];
+          result.holidaysByISO[iso].push(item.title || item.hebrew || "Holiday");
+        }
+      });
+    } catch (e) { /* graceful degradation — grid still shows Gregorian dates */ }
+    monthDataCache[cacheKey] = result;
+    return result;
+  }
+
+  async function resolveHebrewEventForYear(ev, year) {
+    if (!ev.hebrewAnchor) return null;
+    const cacheKey = `${ev.id}:${year}`;
+    if (hebrewRecurrenceCache[cacheKey] !== undefined) return hebrewRecurrenceCache[cacheKey];
+    const { hm, hd } = ev.hebrewAnchor;
+    for (const candidateHY of [year + 3760, year + 3761]) {
+      try {
+        const url = `https://www.hebcal.com/converter?cfg=json&h2g=1&hy=${candidateHY}&hm=${encodeURIComponent(hm)}&hd=${hd}`;
+        const res = await withTimeout(fetch(url), 10000, "Hebcal is taking too long to respond.");
+        const data = await res.json();
+        if (data.gy === year) {
+          const iso = `${data.gy}-${String(data.gm).padStart(2, "0")}-${String(data.gd).padStart(2, "0")}`;
+          hebrewRecurrenceCache[cacheKey] = iso;
+          return iso;
+        }
+      } catch (e) { /* try the other candidate year */ }
+    }
+    hebrewRecurrenceCache[cacheKey] = null;
+    return null;
+  }
+
+  async function getResolvedEventsForYear(year) {
+    const resolved = [];
+    for (const ev of allCalendarEvents) {
+      if (ev.recurrence === "hebrew") {
+        const iso = await resolveHebrewEventForYear(ev, year);
+        if (iso) resolved.push({ ...ev, resolvedDate: iso });
+      } else if (ev.recurrence === "english") {
+        const parts = ev.date.split("-");
+        resolved.push({ ...ev, resolvedDate: `${year}-${parts[1]}-${parts[2]}` });
+      } else {
+        if (parseInt(ev.date.slice(0, 4), 10) === year) resolved.push({ ...ev, resolvedDate: ev.date });
+      }
+    }
+    return resolved;
+  }
+
+  async function getUpcomingEvents(days) {
+    const now = new Date();
+    const todayISO = isoOf(now);
+    const endDate = new Date(now.getTime() + days * 86400000);
+    const years = new Set([now.getFullYear(), endDate.getFullYear()]);
+    let all = [];
+    for (const y of years) all = all.concat(await getResolvedEventsForYear(y));
+    return all.filter((e) => e.resolvedDate >= todayISO && e.resolvedDate <= isoOf(endDate))
+      .sort((a, b) => a.resolvedDate.localeCompare(b.resolvedDate));
+  }
+
+  async function renderCalendarGrid() {
+    document.getElementById("cal-month-label").textContent =
+      new Date(calDisplayYear, calDisplayMonth - 1, 1).toLocaleDateString(undefined, { month: "long", year: "numeric" });
+
+    const [monthData, resolvedEvents] = await Promise.all([
+      fetchMonthHebcalData(calDisplayYear, calDisplayMonth),
+      getResolvedEventsForYear(calDisplayYear)
+    ]);
+
+    const firstOfMonth = new Date(calDisplayYear, calDisplayMonth - 1, 1);
+    const startDow = firstOfMonth.getDay();
+    const daysInMonth = new Date(calDisplayYear, calDisplayMonth, 0).getDate();
+    const prevMonthDays = new Date(calDisplayYear, calDisplayMonth - 1, 0).getDate();
+    const todayISO = isoOf(new Date());
+    const weekFromNowISO = isoOf(new Date(Date.now() + 7 * 86400000));
+
+    let html = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => `<div class="cal-dow">${d}</div>`).join("");
+    for (let i = 0; i < startDow; i++) {
+      html += `<div class="cal-day other-month"><span class="cal-primary">${prevMonthDays - startDow + i + 1}</span></div>`;
+    }
+    for (let day = 1; day <= daysInMonth; day++) {
+      const iso = `${calDisplayYear}-${String(calDisplayMonth).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      const hasEvent = resolvedEvents.some((e) => e.resolvedDate === iso);
+      const hasHoliday = !!(monthData.holidaysByISO[iso] && monthData.holidaysByISO[iso].length);
+      const hebrewLabel = monthData.hebrewByISO[iso] || "";
+      const isToday = iso === todayISO;
+      const isThisWeek = iso >= todayISO && iso <= weekFromNowISO;
+      const primary = calPrimaryIsHebrew ? (hebrewLabel || String(day)) : String(day);
+      const secondary = calPrimaryIsHebrew ? String(day) : hebrewLabel;
+      html += `
+        <div class="cal-day ${isToday ? "today" : ""} ${isThisWeek ? "this-week" : ""}" data-iso="${iso}">
+          <span class="cal-primary">${primary}</span>
+          ${secondary ? `<span class="cal-secondary">${escapeHtml(secondary)}</span>` : ""}
+          ${hasEvent ? `<span class="cal-dot"></span>` : ""}
+          ${hasHoliday ? `<span class="cal-holiday-dot"></span>` : ""}
+        </div>
+      `;
+    }
+    const gridEl = document.getElementById("cal-grid");
+    gridEl.innerHTML = html;
+    gridEl.querySelectorAll("[data-iso]").forEach((cell) => {
+      cell.addEventListener("click", () => showDayInfo(cell.dataset.iso, resolvedEvents, monthData));
+    });
+  }
+
+  function showDayInfo(iso, resolvedEvents, monthData) {
+    const evs = resolvedEvents.filter((e) => e.resolvedDate === iso).map((e) => e.title);
+    const holidays = monthData.holidaysByISO[iso] || [];
+    const hebrewLabel = monthData.hebrewByISO[iso] || "";
+    const lines = [];
+    if (hebrewLabel) lines.push("Hebrew date: " + hebrewLabel);
+    if (holidays.length) lines.push("Holiday: " + holidays.join(", "));
+    if (evs.length) lines.push("Events: " + evs.join(", "));
+    if (lines.length === 0) lines.push("Nothing scheduled.");
+    showAlert(formatDate(iso) + " — " + lines.join(" • "));
+  }
+
+  async function renderUpcomingList() {
+    const listEl = document.getElementById("upcoming-list");
+    const events = await getUpcomingEvents(30);
+    if (events.length === 0) { listEl.innerHTML = '<p class="empty-state">Nothing in the next 30 days.</p>'; return; }
+    const weekFromNowISO = isoOf(new Date(Date.now() + 7 * 86400000));
+    listEl.innerHTML = events.map((e) => {
+      const isThisWeek = e.resolvedDate <= weekFromNowISO;
+      const canDelete = e.addedById === member.id || member.isHost;
+      return `
+        <div class="upcoming-row ${isThisWeek ? "this-week" : ""}">
+          <div class="date">${formatDate(e.resolvedDate)}</div>
+          <div style="flex:1; padding:0 10px;">${escapeHtml(e.title)}</div>
+          ${canDelete ? `<button class="remove-link" data-id="${e.id}">Remove</button>` : ""}
+        </div>
+      `;
+    }).join("");
+    listEl.querySelectorAll(".remove-link").forEach((btn) => {
+      btn.addEventListener("click", () => deleteDoc(doc(db, "calendar_events", btn.dataset.id)));
+    });
+  }
+
+  async function fetchAndRenderZmanim() {
+    document.getElementById("zmanim-date-label").textContent = new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+    const listEl = document.getElementById("zmanim-list");
+    const lat = (calendarConfig && calendarConfig.lat) || "40.7128";
+    const lon = (calendarConfig && calendarConfig.lon) || "-74.0060";
+    const tzid = (calendarConfig && calendarConfig.tzid) || "America/New_York";
+    try {
+      const url = `https://www.hebcal.com/zmanim?cfg=json&date=${isoOf(new Date())}&lat=${lat}&lon=${lon}&tzid=${encodeURIComponent(tzid)}`;
+      const res = await withTimeout(fetch(url), 10000, "Hebcal is taking too long to respond.");
+      const data = await res.json();
+      const times = (data && data.times) || {};
+      const labels = {
+        alotHaShachar: "Dawn", misheyakir: "Earliest tallit/tefillin", sunrise: "Sunrise",
+        sofZmanShma: "Latest Shema", sofZmanTfilla: "Latest morning prayers", chatzot: "Midday",
+        minchaGedola: "Earliest Mincha", minchaKetana: "Preferred Mincha", plagHaMincha: "Plag HaMincha",
+        sunset: "Sunset", tzeit7083deg: "Nightfall", candlelighting: "Candle lighting", chatzotNight: "Midnight"
+      };
+      const rows = Object.keys(times).filter((k) => labels[k]).map((k) => {
+        const t = new Date(times[k]);
+        const timeStr = isNaN(t) ? times[k] : t.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+        return `<div class="zmanim-row"><span>${labels[k]}</span><span>${timeStr}</span></div>`;
+      });
+      listEl.innerHTML = rows.length ? rows.join("") : '<p class="empty-state">No zmanim data for today.</p>';
+    } catch (e) {
+      listEl.innerHTML = '<p class="empty-state">Couldn\'t load zmanim — check your internet.</p>';
+    }
+  }
+
+  async function maybeShowTodayPopup() {
+    if (todayPopupCheckedThisSession) return;
+    todayPopupCheckedThisSession = true;
+    const now = new Date();
+    const todayISO = isoOf(now);
+    const [resolvedEvents, monthData] = await Promise.all([
+      getResolvedEventsForYear(now.getFullYear()),
+      fetchMonthHebcalData(now.getFullYear(), now.getMonth() + 1)
+    ]);
+    const todays = resolvedEvents.filter((e) => e.resolvedDate === todayISO);
+    const holidays = monthData.holidaysByISO[todayISO] || [];
+    if (todays.length === 0 && holidays.length === 0) return;
+    document.getElementById("today-popup-list").innerHTML =
+      todays.map((e) => `<p style="margin:4px 0; font-family:var(--font-display); font-size:1.1rem;">${escapeHtml(e.title)}</p>`).join("") +
+      holidays.map((h) => `<p style="margin:4px 0; color:var(--amber-dark);">${escapeHtml(h)}</p>`).join("");
+    document.getElementById("today-popup-wrap").style.display = "flex";
+  }
+  document.getElementById("today-popup-close-btn").addEventListener("click", () => {
+    document.getElementById("today-popup-wrap").style.display = "none";
+  });
+
+  function startCalendarIfNeeded() {
+    if (calendarStarted) return;
+    calendarStarted = true;
+    const now = new Date();
+    calDisplayYear = now.getFullYear();
+    calDisplayMonth = now.getMonth() + 1;
+
+    onSnapshot(query(collection(db, "calendar_events"), orderBy("date", "asc")), (snapshot) => {
+      allCalendarEvents = [];
+      snapshot.forEach((d) => allCalendarEvents.push({ id: d.id, ...d.data() }));
+      renderCalendarGrid();
+      renderUpcomingList();
+      maybeShowTodayPopup();
+    }, (err) => showConnError(err));
+
+    fetchAndRenderZmanim();
+
+    document.getElementById("calendar-date-toggle").addEventListener("click", (e) => {
+      const btn = e.target.closest(".pill-tab");
+      if (!btn) return;
+      document.querySelectorAll("#calendar-date-toggle .pill-tab").forEach((b) => b.classList.toggle("active", b === btn));
+      calPrimaryIsHebrew = btn.dataset.cal === "hebrew";
+      renderCalendarGrid();
+    });
+    document.getElementById("cal-prev-month").innerHTML = `<span class="icon">${ICONS.back}</span>`;
+    document.getElementById("cal-next-month").innerHTML = `<span class="icon" style="transform:scaleX(-1);">${ICONS.back}</span>`;
+    document.getElementById("cal-prev-month").addEventListener("click", () => {
+      calDisplayMonth--; if (calDisplayMonth < 1) { calDisplayMonth = 12; calDisplayYear--; }
+      renderCalendarGrid();
+    });
+    document.getElementById("cal-next-month").addEventListener("click", () => {
+      calDisplayMonth++; if (calDisplayMonth > 12) { calDisplayMonth = 1; calDisplayYear++; }
+      renderCalendarGrid();
+    });
+
+    document.getElementById("open-event-form-btn").addEventListener("click", () => {
+      document.getElementById("event-title").value = "";
+      document.getElementById("event-date").value = "";
+      document.getElementById("event-recurrence").value = "none";
+      document.getElementById("event-overlay").classList.add("open");
+    });
+    document.getElementById("event-cancel-btn").addEventListener("click", () => document.getElementById("event-overlay").classList.remove("open"));
+    document.getElementById("event-save-btn").addEventListener("click", async () => {
+      const title = document.getElementById("event-title").value.trim();
+      const date = document.getElementById("event-date").value;
+      const recurrence = document.getElementById("event-recurrence").value;
+      if (!title || !date) { await showAlert("Please add a title and a date."); return; }
+      let hebrewAnchor = null;
+      if (recurrence === "hebrew") {
+        showBusy("Converting to the Hebrew date…");
+        try {
+          const res = await withTimeout(fetch(`https://www.hebcal.com/converter?cfg=json&date=${date}&g2h=1`), 10000, "Hebcal is taking too long to respond.");
+          const data = await res.json();
+          hebrewAnchor = { hy: data.hy, hm: data.hm, hd: data.hd };
+        } catch (err) {
+          hideBusy();
+          showConnError(err);
+          return;
+        }
+        hideBusy();
+      }
+      try {
+        await addDoc(collection(db, "calendar_events"), {
+          title, date, recurrence, hebrewAnchor,
+          addedById: member.id, addedByName: member.name, createdAt: serverTimestamp()
+        });
+        document.getElementById("event-overlay").classList.remove("open");
+      } catch (err) {
+        showConnError(err);
+      }
+    });
   }
 
   // ============================================================
@@ -2024,14 +2391,27 @@
   // ============================================================
   let recipesStarted = false;
   let allRecipes = [];
+  let editingRecipeId = null; // null = creating new; set = editing an existing recipe
 
   document.getElementById("add-recipe-btn").addEventListener("click", () => {
+    editingRecipeId = null;
+    document.getElementById("recipe-overlay-title").textContent = "New recipe";
+    document.getElementById("recipe-save-btn").textContent = "Create recipe";
     document.getElementById("recipe-title-input").value = "";
     document.getElementById("recipe-ingredients-input").value = "";
     document.getElementById("recipe-steps-input").value = "";
     document.getElementById("recipe-overlay").classList.add("open");
   });
   document.getElementById("recipe-cancel-btn").addEventListener("click", () => document.getElementById("recipe-overlay").classList.remove("open"));
+
+  // Reconstructs plain ingredients/steps text from the AI-organized `parts`
+  // — editing continues from the organized version, not the person's
+  // original raw paste.
+  function reconstructRawFromParts(recipe) {
+    const ingredients = (recipe.parts || []).flatMap((p) => p.ingredients).join("\n");
+    const steps = (recipe.parts || []).flatMap((p) => p.steps.map((s) => s.text)).join("\n");
+    return { ingredients, steps };
+  }
 
   // Fallback used when there's no Gemini key configured yet, or the AI
   // call fails for any reason — the recipe still saves and works, just
@@ -2086,10 +2466,14 @@ ${rawSteps}`;
     }
     hideBusy();
     try {
-      await addDoc(collection(db, "recipes"), {
-        title, rawIngredients, rawSteps, parts,
-        addedById: member.id, addedByName: member.name, createdAt: serverTimestamp()
-      });
+      if (editingRecipeId) {
+        await updateDoc(doc(db, "recipes", editingRecipeId), { title, rawIngredients, rawSteps, parts });
+      } else {
+        await addDoc(collection(db, "recipes"), {
+          title, rawIngredients, rawSteps, parts,
+          addedById: member.id, addedByName: member.name, createdAt: serverTimestamp()
+        });
+      }
       document.getElementById("recipe-overlay").classList.remove("open");
     } catch (err) {
       showConnError(err);
@@ -2131,6 +2515,7 @@ ${rawSteps}`;
           `).join("")}
           <div class="detail-actions">
             <button class="btn amber" data-cook="${r.id}">Start cooking</button>
+            ${canDelete ? `<button class="btn ghost" data-editrecipe="${r.id}">Edit</button>` : ""}
             ${canDelete ? `<button class="btn ghost" data-delrecipe="${r.id}">Delete</button>` : ""}
           </div>
         </div>
@@ -2144,6 +2529,20 @@ ${rawSteps}`;
       btn.addEventListener("click", () => {
         const recipe = allRecipes.find((r) => r.id === btn.dataset.cook);
         if (recipe) startCookMode(recipe);
+      });
+    });
+    listEl.querySelectorAll("[data-editrecipe]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const recipe = allRecipes.find((r) => r.id === btn.dataset.editrecipe);
+        if (!recipe) return;
+        const { ingredients, steps } = reconstructRawFromParts(recipe);
+        editingRecipeId = recipe.id;
+        document.getElementById("recipe-overlay-title").textContent = "Edit recipe";
+        document.getElementById("recipe-save-btn").textContent = "Save changes";
+        document.getElementById("recipe-title-input").value = recipe.title;
+        document.getElementById("recipe-ingredients-input").value = ingredients;
+        document.getElementById("recipe-steps-input").value = steps;
+        document.getElementById("recipe-overlay").classList.add("open");
       });
     });
     listEl.querySelectorAll("[data-delrecipe]").forEach((btn) => {
@@ -2337,6 +2736,8 @@ ${rawSteps}`;
     });
   }
 
+  document.getElementById("ai-facts-btn").addEventListener("click", () => document.getElementById("ai-facts-overlay").classList.add("open"));
+  document.getElementById("ai-facts-close-btn").addEventListener("click", () => document.getElementById("ai-facts-overlay").classList.remove("open"));
   document.getElementById("ai-settings-btn").addEventListener("click", () => document.getElementById("ai-settings-overlay").classList.add("open"));
   document.getElementById("ai-settings-close-btn").addEventListener("click", () => document.getElementById("ai-settings-overlay").classList.remove("open"));
   document.getElementById("ai-save-key-btn").addEventListener("click", async () => {
