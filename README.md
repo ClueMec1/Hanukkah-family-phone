@@ -1,9 +1,59 @@
+[README.md](https://github.com/user-attachments/files/32123402/README.md)
 # Neumify
 
 A family-only PWA: an open, categorized photo/video/music feed, a
 WhatsApp-style chat, a shared calendar, voice-guided recipes, a
 private AI assistant per person, and host approvals — all in **one
 file**, `index.html`.
+
+## Important: a real bug just got fixed — read this once
+
+Every previous version of `index.html` created a `sw.js` file but
+**never actually registered it** — no `navigator.serviceWorker.register(...)`
+call existed anywhere. That means the service worker sat there
+completely inert this whole time, and every "I bumped the cache
+version" fix in earlier rounds did nothing at all. This version
+finally registers it, and adds logic to actively check for updates
+and auto-reload once when a new version takes over — so a phone that's
+just backgrounded (not force-closed) still picks up changes instead of
+silently sitting on stale content.
+
+**One manual step you'll likely need on each device, one time only:**
+since no service worker was ever controlling the page before, and
+phones (especially "Add to Home Screen" installs) can hold onto old
+cached content stubbornly at the browser level too, you may need to
+force one fresh load to get *this specific fix* onto a device — after
+that, updates should propagate on their own. Easiest ways: remove and
+re-add the home screen icon, or open the URL fresh in the browser
+(not the home-screen icon) and hard-refresh once.
+
+## Important: a second real bug just got fixed — likely explains several other symptoms at once
+
+`enterApp()` — the function that runs the moment you're approved and
+signed in — was being called again on **every single change** to your
+member document, not just at login. Once presence tracking, points,
+and profile photos were all added, that meant it was firing roughly
+every 30 seconds (the presence heartbeat) or any time you earned
+points, changed your photo, etc. And at the end of it, it
+unconditionally re-ran the app's navigation logic for whatever screen
+you were currently on.
+
+Two concrete symptoms this caused: on the **AI tab**, that navigation
+re-run included a session reset, so an in-progress conversation could
+get silently wiped while waiting for a reply — which looks exactly
+like "my question disappeared, then the answer popped up out of
+context" a few seconds later. In an open **chat room**, it meant the
+message list and the typing/presence listeners were being torn down
+and rebuilt roughly every 30 seconds — which would make online status
+and typing indicators flicker in and out rather than staying up,
+since they rarely got more than a few seconds to actually display
+before being reset.
+
+Fixed with a simple guard: the navigation logic now only runs on the
+*first* entry into the app each session. Everything else in
+`enterApp()` (avatar, points badge, host-tab visibility) still updates
+live exactly as before — only the destructive re-navigation was the
+problem.
 
 ## Why one file right now (and what changes later)
 
@@ -47,6 +97,14 @@ sense. Firestore listeners for each view only start the first time
 you visit it (`startXIfNeeded()` guards), except the chat *room*
 thread, which tears down and resubscribes every time you open a
 different conversation — that one's per-conversation, not
+
+**Chat on wide screens** is a real WhatsApp-Web-style split: the chat
+list stays visible in a fixed left column while a conversation (or an
+empty-state placeholder) fills the rest, instead of the room covering
+the whole screen the way it still does on mobile. A pinned **✨
+Family AI** row sits at the top of the chat list too — it's not a
+separate feature, just a second, more discoverable way into the exact
+same private AI conversation that's also reachable from the AI tab.
 per-app-lifetime.
 
 manifest.json / sw.js / icons/ stay as separate files — a PWA manifest
@@ -108,6 +166,13 @@ automatically via `speechSynthesis` (broad browser support) the
 moment it appears, and a step with a timer shows a **Start timer**
 button with a live countdown.
 
+**Editing a recipe** (the recipe's author, or the host) shows the
+**AI-organized version**, not your original raw paste — the
+ingredients and steps textareas are pre-filled from the already-sorted
+`parts`, so you're refining what the AI produced rather than starting
+over. Saving an edit re-runs the same AI organizing pass on your
+edited text.
+
 ## Family AI — a private assistant per person, with a 3-tier fallback
 
 Each family member gets their **own private conversation** with the
@@ -123,17 +188,29 @@ AI. Two different kinds of "memory," deliberately:
   known to the AI from the very first message of every new
   conversation, for everyone.
 
-### Three providers, tried in order — every AI feature uses this chain
+### Three providers per feature, tried in order — and each feature has its own separate keys
 
-Both the Family AI chat and Recipes' auto-organizing call the same
-chain: **Gemini → Groq → Puter**, first success wins. If Gemini's
-free-tier usage runs out for the day, it quietly moves to Groq;
-if that's also unavailable, it falls through to Puter — which needs
-no host-managed key at all, so there's always something that works.
+Every AI feature (Family AI chat, Recipes' auto-organizing, and the
+Daily Question) calls the same chain shape — **Gemini → Groq →
+Puter**, first success wins — but **Chat, Recipes, and Daily
+Question each have their own separate Gemini and Groq keys**, not one
+shared pair. This is deliberate: it used to be one shared key across
+everything, and heavy use of one feature (the Daily Question
+generating right at 7pm, say) could slow down or rate-limit someone
+having a conversation with the AI at the same moment. Separate keys
+mean separate quotas — one feature being busy never affects another.
+If Gemini's free-tier usage runs out for a given feature, it quietly
+moves to that feature's Groq key; if that's also unavailable or not
+set, it falls through to Puter, which needs no host-managed key at
+all, so there's always something that works.
 
 1. **Gemini** (tried first) — **[Google AI Studio](https://aistudio.google.com/apikey)**,
    sign in with any Google account, click **Create API key**. No
-   payment info needed.
+   payment info needed. You can generate up to three separate keys
+   (one per feature) from the same free account if you want fully
+   independent quotas, or reuse one key across all three fields — it's
+   still one shared quota either way, just organized identically to
+   how the app calls it.
 2. **Groq** (tried second) — **[console.groq.com](https://console.groq.com)**,
    free signup, generate an API key. Groq runs open models on custom
    chips and is extremely fast, though generally a notch behind
@@ -147,17 +224,19 @@ no host-managed key at all, so there's always something that works.
    model, so nobody manages a shared key for it, but there's a small
    individual step instead.
 
-**One-time host setup:** open the **AI** tab → **Manage facts & API
-key** (host-only) → paste the Gemini key, the Groq key, or both (or
-neither, and let Puter carry everything) → **Save keys**.
+**One-time host setup:** open the **AI** tab → **API keys (host)** →
+fill in Gemini and/or Groq keys for Chat, Recipes, and Daily Question
+separately (any left blank falls through to Puter) → **Save all keys**.
 
-The same screen lets the host add **facts** ("Grandma's birthday is
-June 3rd," "we're vegetarian on Fridays," whatever's useful) — every
-conversation, for every person, includes the current fact list from
-its very first message regardless of which of the three providers
-answered it, and the host can remove a fact any time to correct it.
+**Family facts are separate, and open to everyone** — the **Family
+facts** button on the AI tab is visible to any approved member, not
+just the host ("Grandma's birthday is June 3rd," "we're vegetarian on
+Fridays," whatever's useful). Every conversation, for every person,
+includes the current fact list from its very first message regardless
+of which provider answered it, and anyone can remove a fact to
+correct it.
 
-**Worth knowing:** both keys are stored in Firestore under the same
+**Worth knowing:** all six keys are stored in Firestore under the same
 trust model as everything else in this app (any approved family
 member's device can read them, since that's also what lets their
 browser call Gemini/Groq directly) — consistent with the rest of the
@@ -244,6 +323,174 @@ than doing nothing.
 single function, `uploadToCloudinary()` or `uploadToSupabase()`, so
 swapping means changing that one function, not touching Feed or Chat.
 
+## More WhatsApp-style chat behavior
+
+- **Typing indicators** — appear under the message list within ~3
+  seconds of the other person typing, and clear automatically if they
+  stop or send.
+- **Online / last seen** — shown under the other person's name in a
+  1:1 conversation. This is a heartbeat, not true instant presence:
+  every device checks in every 30 seconds while the app is open, and
+  "online" just means "checked in within the last 90 seconds." This
+  app doesn't use Firebase's Realtime Database, which is what would
+  normally provide instant, disconnect-aware presence — the heartbeat
+  is the honest, free-tier-friendly approximation.
+- **Read receipts** — a single grey checkmark means sent; a double
+  turquoise checkmark means at least one other person has seen it.
+  Works the same for text, photos, videos, and voice messages.
+- **Profile pictures** — tap your own avatar (top-right) to upload
+  one, using whichever upload provider is already configured for
+  Chat (Supabase, or Cloudinary as the fallback — see Integrations
+  above). No provider configured yet means no profile picture yet,
+  same graceful-degradation pattern as every other upload feature
+  here.
+
+## Notifications — what "free and serverless" actually allows
+
+Real push notifications — the kind that wake up a fully closed app —
+need a server holding a credential that calls Firebase Cloud
+Messaging on your behalf. This app has no server, so that's not
+something that can be added without also adding one (a Firebase Cloud
+Function would be the natural way, which needs the Blaze plan).
+
+What *is* built, for free, with no backend: **local notifications**,
+using the browser's own Notification API, triggered by the live data
+this app is already watching. The browser asks for permission once,
+automatically, the first time you're approved into the app. From
+then on, you'll get a native notification for:
+- A new message in a chat you're not currently looking at
+- A new Feed post from someone else, if you're not currently on the
+  Feed tab
+
+**The honest limit:** this only works while the app is open — a
+background tab, a backgrounded phone PWA, that all still counts as
+"open" and still works. A *fully closed* app (force-quit, or never
+opened since restart) won't notify you, because nothing is running to
+notice the new data. That's the real trade-off of staying
+server-free.
+
+## Daily Question — a reason to open the app every evening
+
+A pinned **🎯 Today's Question** chat sits at the top of the chat
+list, alongside Family Chat and Family AI. Once it's past 7pm, a
+fresh question appears there and everyone gets a notification; the
+question is shown big, at the top of that chat, and anyone can reply
+underneath it. By 8pm, if it hasn't gotten much engagement, there's a
+gentle reminder notification too. The previous day's conversation is
+cleared out each time a new question starts — it's meant to feel like
+a fresh daily prompt, not an ever-growing thread.
+
+**Where the question comes from:** the AI writes it automatically
+each evening, using the family facts from the AI tab (a real memory,
+an upcoming date, a family member's name — whatever's been shared).
+The host can also set it directly, any time, in Host → Integrations
+— typing a question there and hitting **Save — use this now**
+replaces today's question **immediately**, for everyone, regardless
+of what time it is; it doesn't wait for 7pm or save for "later."
+
+**The honest scheduling limit — same shape as the notifications
+section below:** there's no server here, no actual clock running at
+7:00:00pm. What happens instead: whichever family member's device
+has the app open first *after* 7pm notices the date has changed and
+generates the question — then Firestore's real-time sync pushes it to
+everyone else's already-open app instantly, including the
+notification. A device that's fully closed right at 7pm won't get a
+notification for it, but will see the new question the next time it's
+opened, same as any other Firestore-backed data here.
+
+There's also a small, low-key nudge toward another feature (Calendar,
+voice-guided Recipes, the AI) shown once when you open the Daily
+Question room — not a whole onboarding system, just a rotating tip,
+in keeping with the spirit of gently pulling people deeper into the
+app without being pushy about it.
+
+## Games & points
+
+A **Games** tab in the nav (bottom pill on phones, sidebar on
+desktop) with three mini-games, none requiring any outside knowledge
+(trivia was removed for exactly that reason): a self-contained
+**Memory Match** card game (5–20 points depending on how few moves it
+took), **Connect Four** (15 points for a win) with a bot that takes a
+winning move when available, blocks yours when it has to, and
+otherwise favors the center columns, and **Checkers** (20 points for
+a win) with a bot that prefers captures when one's available.
+Checkers here uses **simplified rules — captures are optional, not
+forced** (real tournament checkers requires capturing whenever
+possible, including multi-jump chains; that logic is exactly where
+most bugs in a from-scratch checkers implementation tend to live, so
+it's intentionally left out for a casual family game — diagonal
+moves and king promotion both work normally). Points show as a 🪙
+badge in the top bar, live-updated via the same `members/{id}`
+document everything else already reads, using Firestore's
+`increment()` so simultaneous point-earning across devices can't
+silently overwrite itself.
+
+**Chess** asks the player to pick the rules fresh, every single time
+they play — two genuinely different engines, not one game with a
+setting:
+
+- **Standard** uses [chess.js](https://github.com/jhlywa/chess.js)
+  (BSD-2-Clause licensed, loaded from jsDelivr), which handles full
+  FIDE legality — castling, en passant, check/checkmate/stalemate.
+  Real chess rules are exactly the kind of thing worth trusting a
+  well-tested library for rather than reimplementing by hand.
+- **Simple** is entirely custom code, hand-written for this app: no
+  castling, no en passant, and **no check restriction at all** — you
+  can even move into check — and you win by literally capturing the
+  opponent's king on a later move. That's a deliberately different,
+  much easier ruleset, not a cut-down version of the same one; pawns
+  auto-promote to a queen in both modes.
+
+Bot difficulty (Easy/Medium/Hard) is picked at the same time as the
+ruleset. Easy plays randomly; Medium picks the best immediate move by
+material; Hard looks two moves ahead (its move, then your best
+reply) to avoid obvious blunders and spot two-move tactics. Points
+scale with difficulty (15/25/40 for a win) regardless of which
+ruleset you picked.
+
+## Host-gated paid Feed videos
+
+When posting to the Feed, the host can set an optional **"Cost to
+unlock, in points"** field. A post with a cost shows as a locked 🔒
+card to everyone except the poster and the host — tapping **Unlock**
+spends that many points (if you have them) and reveals it, permanently,
+for that person specifically; the deduction and the unlock are two
+separate Firestore writes, so in the rare case one fails the other is
+caught and surfaced as a normal connection error rather than silently
+charging someone for nothing. Everyone else still sees it locked until
+they spend their own points.
+
+## Daily Question: "what we heard yesterday"
+
+Right before each new day's question clears out the previous day's
+conversation, the AI reads through what was actually said and writes
+one short summary sentence — a consensus, or an interesting split of
+opinions ("more people said Thursday than Monday") — stored as
+`previousSummary` on the new question document. A small box reading
+**"💭 What we heard yesterday: ..."** appears above the new question
+in the Daily Question room whenever one exists. If there were fewer
+than two messages the day before, or the AI summary call fails for
+any reason, the box just doesn't appear that day — never blocks the
+new question from being generated.
+
+## Video calling — not built yet, and here's the honest reason why
+
+WebRTC video calling is genuinely possible without a dedicated
+signaling server — Firestore can carry the offer/answer/ICE exchange
+between two devices, the same way it already carries everything else
+here. The part that doesn't have a free, reliable answer is **TURN**:
+free public **STUN** servers (which just help two devices discover
+their own network address) are easy to use and already exist, but
+many real-world connections — cellular data, symmetric NATs, some
+corporate or home routers — need a **TURN relay server** to actually
+connect the call, and a TURN server has to relay real audio/video
+traffic, which costs real bandwidth — nobody gives that away free at
+meaningful scale. A STUN-only version would work great on the same
+WiFi network and fail unpredictably elsewhere, which isn't a good
+foundation to ship silently. Worth building as its own dedicated
+piece, with that trade-off out in the open, rather than folded into
+everything else.
+
 ## Chat retention & space-saving — what actually happens, honestly
 
 Three separate rules, all "lazy" (checked whenever someone opens a
@@ -285,6 +532,53 @@ browser data, or opens the chat on a different device, they'll see
 This mirrors how real WhatsApp media works, not a bug — it's the
 direct trade-off of actually freeing up storage rather than keeping
 everything forever.
+
+## Calendar — real month grid, zmanim, Jewish holidays, dual recurrence
+
+Uses **Hebcal's free public API** (no key needed at all) for everything
+Hebrew-calendar-related. This is deliberate: getting Hebrew date math,
+leap years, and zmanim right by hand is exactly the kind of thing
+worth relying on a validated source for rather than reimplementing.
+
+- **Month grid** — every day shows both its Gregorian day number and
+  its Hebrew date; a pill toggle swaps which one is large/primary.
+  Jewish holidays get a small amber dot, family events get a pink
+  dot, today gets a highlighted border, and the next 7 days get a
+  soft highlight. Tap any day for a quick summary.
+- **Holidays** shown are major + minor Jewish holidays — Rosh
+  Hashanah, Yom Kippur, Sukkot, Chanukah, Purim, Pesach, Shavuot, and
+  similar — with modern Israeli civil holidays (Yom HaAtzma'ut, Yom
+  HaZikaron, Yom HaShoah, Yom Yerushalayim) deliberately excluded, as
+  asked.
+- **Adding an event** starts with two tabs — **English date** or
+  **Hebrew date**. English shows the normal Gregorian date picker.
+  Hebrew shows dropdowns for the day and the month, with month names
+  in Hebrew script (ניסן, אייר, etc.), for people who think in the
+  Hebrew calendar rather than converting from a Gregorian date in
+  their head. Either way, a "Repeats every year" checkbox controls
+  recurrence. A Hebrew-repeating event needs **no Hebcal lookup at
+  all** when you save it — only a one-time (non-repeating) Hebrew
+  date needs a single lookup, to pin down which Gregorian date it
+  falls on this year.
+- The grid's day-of-week header also switches to Hebrew-alphabet day
+  letters (א׳ ב׳ ג׳...) when Hebrew is the primary calendar.
+- **Next 30 days** is a plain, flat list beneath the grid, computed
+  the same recurrence-aware way; anything within 7 days gets the same
+  soft highlight as the grid.
+- **Today popup** — the first time you open the Calendar tab each
+  session, if anything (an event or a holiday) falls on today, a
+  full-screen banner announces it before you see the grid. Nothing to
+  configure — it just checks and shows itself when relevant.
+- **Zmanim** (halachic daily times — dawn, sunrise, latest Shema,
+  sunset, nightfall, etc.) are shown for today at the top of the tab.
+  These depend on an exact location, so there's a **CALENDAR** card in
+  Host → Integrations for latitude/longitude/timezone, defaulting to
+  New York City. Change it if your family is elsewhere.
+
+Every Hebcal call degrades gracefully — if the network hiccups or
+Hebcal is briefly unavailable, the grid still shows Gregorian dates
+and your events; you just temporarily lose the Hebrew labels/holidays
+until the next successful load.
 
 ## Firebase setup
 
