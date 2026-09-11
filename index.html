@@ -128,10 +128,13 @@
   .avatar {
     width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--pink), var(--orange));
     color: #fff; display: flex; align-items: center; justify-content: center; font-family: var(--font-display);
-    font-weight: 600; font-size: 0.9rem; flex-shrink: 0;
+    font-weight: 600; font-size: 0.9rem; flex-shrink: 0; overflow: hidden; cursor: pointer;
   }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .online-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--green); border: 2px solid var(--surface); position: absolute; margin-left: 22px; margin-top: 22px; }
   .name-badge { font-size: 0.85rem; font-weight: 700; display: none; }
   @media (min-width: 480px) { .name-badge { display: inline; } }
+  .points-badge { font-size: 0.78rem; font-weight: 700; background: var(--amber-tint); color: var(--amber-dark); padding: 5px 10px; border-radius: 999px; white-space: nowrap; }
 
   main { flex: 1; padding: 22px 18px 110px; max-width: 720px; margin: 0 auto; width: 100%; }
   .view { display: none; }
@@ -150,6 +153,8 @@
   }
   .nav-item .icon { width: 20px; height: 20px; }
   .nav-item.accent-feed.active { background: var(--orange-tint); color: var(--orange-dark); }
+  .nav-item.accent-dq.active { background: var(--amber-tint); color: var(--amber-dark); }
+  .nav-item.accent-games.active { background: var(--green-tint); color: var(--green-dark); }
   .nav-item.accent-chat.active { background: var(--pink-tint); color: var(--pink-dark); }
   .nav-item.accent-calendar.active { background: var(--turquoise-tint); color: var(--turquoise-dark); }
   .nav-item.accent-recipes.active { background: var(--amber-tint); color: var(--amber-dark); }
@@ -173,11 +178,26 @@
     .fab { right: 40px; bottom: 32px; }
     .post-list { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .post-card { margin-bottom: 0; }
+
+    /* WhatsApp-style split view: chat list stays visible in a fixed left
+       column while a conversation (or the empty state) fills the rest —
+       instead of the room covering the whole screen like on mobile. */
+    #screen-app.wide-chat-split #view-chat {
+      display: block !important;
+      position: fixed; top: 0; left: 224px; bottom: 0; width: 360px;
+      padding: 96px 20px 20px; overflow-y: auto; border-right: 1px solid var(--line);
+      background: var(--bg); z-index: 60;
+    }
+    #screen-app.wide-chat-split #view-room .room-shell { left: 584px; }
+    #screen-app.wide-chat-split #chat-empty-state.show {
+      display: block; position: fixed; top: 0; left: 584px; right: 0; bottom: 0; z-index: 55; background: var(--bg);
+    }
   }
   @media (min-width: 1200px) {
     main { max-width: 960px; }
     .post-list { grid-template-columns: 1fr 1fr 1fr; }
   }
+  #chat-empty-state { display: none; }
 
   /* ---------- Feed view ---------- */
   .composer { margin-bottom: 24px; }
@@ -256,6 +276,19 @@
     background: rgba(251,248,243,0.92); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); flex-shrink: 0;
   }
   .room-title { font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; }
+  #daily-question-banner {
+    background: linear-gradient(135deg, var(--amber-tint), var(--orange-tint)); padding: 20px 18px;
+    text-align: center; font-family: var(--font-display); font-size: 1.15rem; line-height: 1.4;
+    border-bottom: 1px solid var(--line); flex-shrink: 0;
+  }
+  #dq-previous-summary {
+    background: var(--turquoise-tint); color: var(--turquoise-dark); font-size: 0.82rem; padding: 12px 18px;
+    text-align: center; flex-shrink: 0; border-bottom: 1px solid var(--line);
+  }
+  #feature-tip-banner {
+    background: var(--violet-tint); color: var(--violet-dark); font-size: 0.8rem; padding: 10px 16px;
+    text-align: center; flex-shrink: 0;
+  }
   .messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
   .bubble-wrap { display: flex; flex-direction: column; max-width: 78%; }
   .bubble-wrap.mine { align-self: flex-end; align-items: flex-end; }
@@ -265,6 +298,10 @@
   .mine .bubble { background: var(--pink); color: #fff; border-radius: 18px 18px 5px 18px; box-shadow: none; }
   .delete-msg { background: none; border: none; font-size: 0.68rem; color: var(--muted); cursor: pointer; margin-top: 2px; padding: 0 4px; -webkit-user-select: none; user-select: none; }
   .mine .delete-msg { color: #ffd7e0; }
+  .bubble-meta { display: flex; align-items: center; gap: 6px; margin-top: 2px; padding: 0 4px; }
+  .mine .bubble-meta { justify-content: flex-end; }
+  .receipt { font-size: 0.72rem; color: var(--muted); }
+  .receipt.seen { color: var(--turquoise); }
   .compose { display: flex; gap: 8px; padding: 12px; background: #fff; border-top: 1px solid var(--line); flex-shrink: 0; padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
   .compose input { flex: 1; }
   .compose button {
@@ -406,8 +443,10 @@
     <header class="topbar">
       <div class="brand"><svg class="logo-mark" width="26" height="26" viewBox="0 0 34 34" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="ng3" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FF6F91"/><stop offset="1" stop-color="#FF8B5E"/></linearGradient></defs><rect width="34" height="34" rx="11" fill="url(#ng3)"/><text x="17" y="23" font-family="Fredoka, sans-serif" font-size="18" font-weight="600" fill="#fff" text-anchor="middle">N</text></svg>Neumify</div>
       <div class="who">
+        <span class="points-badge" id="points-badge" title="Points — earn them in Games">🪙 0</span>
         <span class="name-badge" id="user-name"></span>
-        <div class="avatar" id="user-avatar"></div>
+        <div class="avatar" id="user-avatar" title="Change your profile picture"></div>
+        <input type="file" id="profile-photo-input" accept="image/*" style="display:none;" />
         <button class="icon-btn" id="emergency-topbar-btn" title="Emergency chat"></button>
         <button class="icon-btn" id="switch-user-btn" title="Switch user"></button>
       </div>
@@ -442,6 +481,7 @@
             <input type="file" id="post-file-input" accept="image/*,video/*,audio/*" style="display:none;" />
           </div>
           <div id="post-upload-progress" style="display:none; font-size:0.8rem; color:var(--orange-dark); font-weight:700; margin-bottom:10px;">Uploading…</div>
+          <div class="field"><label class="field-label">Cost to unlock, in points <span style="font-weight:400; color:var(--muted);">(optional — leave 0 for a normal, free post)</span></label><input type="number" id="post-points-cost" class="input" min="0" value="0" /></div>
           <button type="submit" class="btn orange block" id="post-btn">Post to Feed</button>
         </form>
         <div class="post-list" id="post-list"><p class="empty-state">Loading…</p></div>
@@ -480,6 +520,20 @@
 
         <h3 style="font-size:1.05rem; margin:20px 0 10px 0;">Next 30 days</h3>
         <div id="upcoming-list"><p class="empty-state">Loading…</p></div>
+      </div>
+
+      <!-- ---- GAMES ---- -->
+      <div class="view" id="view-games">
+        <h2 class="view-title"></h2>
+        <div class="card" style="margin-bottom:18px; text-align:center;">
+          <div style="font-size:0.8rem; color:var(--muted);">Your points</div>
+          <div style="font-family:var(--font-display); font-size:2rem; font-weight:600; color:var(--amber-dark);" id="games-points-display">🪙 0</div>
+        </div>
+        <div id="games-selector" class="pill-tabs" style="flex-wrap:wrap;">
+          <button type="button" class="btn green sm" id="play-trivia-btn">🧠 Trivia</button>
+          <button type="button" class="btn turquoise sm" id="play-memory-btn">🃏 Memory Match</button>
+        </div>
+        <div id="game-play-area" style="display:none; margin-top:18px;"></div>
       </div>
 
       <!-- ---- RECIPES ---- -->
@@ -539,6 +593,20 @@
             </details>
           </div>
 
+          <p style="font-size:0.8rem; color:var(--violet-dark); font-weight:700; margin:0 0 10px 0;">TODAY'S QUESTION — a daily prompt to pull everyone in</p>
+          <div class="card" style="margin-bottom:20px;">
+            <p style="margin:0 0 12px 0; font-size:0.85rem; color:var(--muted);">
+              Every day, once it's past 7pm, a new question appears in a
+              pinned "Today's Question" chat, and everyone gets a
+              notification — the AI writes one using the family facts
+              from the AI tab. If it's not been answered much by 8pm,
+              there's a gentle reminder notification too. Yesterday's
+              conversation is cleared out when the new one starts.
+            </p>
+            <div class="field"><label class="field-label">Set tomorrow's question yourself (optional)</label><input type="text" id="daily-question-override-input" class="input" placeholder="Leave blank and the AI will pick one" /></div>
+            <button type="button" class="btn violet sm" id="daily-question-save-btn">Save</button>
+          </div>
+
           <p style="font-size:0.8rem; color:var(--turquoise-dark); font-weight:700; margin:0 0 10px 0;">CALENDAR — location for zmanim &amp; holiday times</p>
           <div class="card" style="margin-bottom:20px;">
             <p style="margin:0 0 12px 0; font-size:0.85rem; color:var(--muted);">
@@ -582,7 +650,9 @@
 
     <nav class="bottom-nav">
       <button class="nav-item accent-feed" data-view="feed"></button>
+      <button class="nav-item accent-dq" data-view="dq"></button>
       <button class="nav-item accent-chat" data-view="chat"></button>
+      <button class="nav-item accent-games" data-view="games"></button>
       <button class="nav-item accent-calendar" data-view="calendar"></button>
       <button class="nav-item accent-recipes" data-view="recipes"></button>
       <button class="nav-item accent-ai" data-view="ai"></button>
@@ -617,14 +687,30 @@
     </div>
   </div>
 
+  <!-- ---- Empty state for wide screens: shown next to the chat list when
+       no conversation is open, WhatsApp-Web-style ---- -->
+  <div id="chat-empty-state">
+    <div style="height:100%; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:14px; color:var(--muted);">
+      <div style="font-size:3.4rem;">💬</div>
+      <p style="font-family:var(--font-display); font-size:1.05rem;">Select a conversation</p>
+    </div>
+  </div>
+
   <!-- ---- ROOM (full-screen overlay) ---- -->
   <div id="view-room">
     <div class="room-shell">
       <div class="room-header">
         <button class="icon-btn" id="room-back-btn"></button>
-        <span class="room-title" id="room-title">Loading…</span>
+        <div>
+          <div class="room-title" id="room-title">Loading…</div>
+          <div id="room-subtitle" style="font-size:0.72rem; color:var(--muted);"></div>
+        </div>
       </div>
+      <div id="daily-question-banner" style="display:none;"></div>
+      <div id="dq-previous-summary" style="display:none;"></div>
+      <div id="feature-tip-banner" style="display:none;"></div>
       <div class="messages" id="messages"><p class="empty-state">Loading messages…</p></div>
+      <div id="room-typing-indicator" style="display:none; font-size:0.78rem; color:var(--muted); padding:0 16px 6px;"></div>
       <form class="compose" id="compose-form">
         <button type="button" class="icon-btn" id="chat-attach-photo-btn" title="Send a photo"></button>
         <button type="button" class="icon-btn" id="chat-attach-video-btn" title="Send a video"></button>
@@ -693,15 +779,30 @@
     <div class="sheet" style="max-width:420px;">
       <h2>New event</h2>
       <div class="field"><label class="field-label">What's happening</label><input type="text" id="event-title" class="input" /></div>
-      <div class="field"><label class="field-label">Date</label><input type="date" id="event-date" class="input" /></div>
-      <div class="field">
-        <label class="field-label">Repeat</label>
-        <select id="event-recurrence" class="input">
-          <option value="none">Doesn't repeat</option>
-          <option value="english">Repeats every year (English date)</option>
-          <option value="hebrew">Repeats every year (Hebrew date)</option>
-        </select>
+
+      <div class="pill-tabs" id="event-date-type-tabs">
+        <button type="button" class="pill-tab active" data-type="english">English date</button>
+        <button type="button" class="pill-tab" data-type="hebrew">Hebrew date</button>
       </div>
+
+      <div class="field" id="event-english-fields">
+        <label class="field-label">Date</label>
+        <input type="date" id="event-date" class="input" />
+      </div>
+
+      <div class="field" id="event-hebrew-fields" style="display:none;">
+        <label class="field-label">Hebrew date</label>
+        <div style="display:flex; gap:8px;">
+          <select id="event-hebrew-day" class="input" style="flex:0 0 80px;"></select>
+          <select id="event-hebrew-month" class="input"></select>
+        </div>
+      </div>
+
+      <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem; margin:10px 0 4px;">
+        <input type="checkbox" id="event-repeat-checkbox" checked style="width:18px; height:18px;" />
+        Repeats every year
+      </label>
+
       <div class="sheet-actions">
         <button class="btn ghost" id="event-cancel-btn">Cancel</button>
         <button class="btn turquoise" id="event-save-btn">Add event</button>
@@ -785,7 +886,7 @@
   import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
   import {
     getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, addDoc, getDocs,
-    query, where, orderBy, deleteDoc, serverTimestamp
+    query, where, orderBy, deleteDoc, serverTimestamp, arrayUnion, increment
   } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
   // ============================================================
@@ -837,7 +938,9 @@
     video: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="M21 8.5l-5 3.5 5 3.5z"/></svg>`,
     mic: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3.5M8.5 21.5h7"/></svg>`,
     stop: `<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>`,
-    emergency: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.3a2 2 0 0 1 3.4 0l8.2 14A2 2 0 0 1 20.2 20H3.8a2 2 0 0 1-1.7-2.7z"/><path d="M12 9v4M12 17h.01"/></svg>`
+    emergency: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.3a2 2 0 0 1 3.4 0l8.2 14A2 2 0 0 1 20.2 20H3.8a2 2 0 0 1-1.7-2.7z"/><path d="M12 9v4M12 17h.01"/></svg>`,
+    dailyq: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/></svg>`,
+    games: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="7" width="19" height="11" rx="4"/><path d="M7 10.5v4M5 12.5h4"/><circle cx="16" cy="10.5" r="1" fill="currentColor" stroke="none"/><circle cx="18.5" cy="13" r="1" fill="currentColor" stroke="none"/></svg>`
   };
   function setIcon(el, name) { el.innerHTML = `<span class="icon">${ICONS[name]}</span>`; }
 
@@ -858,7 +961,9 @@
 
   const NAV = [
     { view: "feed", icon: "feed", label: "Feed" },
+    { view: "dq", icon: "dailyq", label: "Today" },
     { view: "chat", icon: "chat", label: "Chat" },
+    { view: "games", icon: "games", label: "Games" },
     { view: "calendar", icon: "calendar", label: "Calendar" },
     { view: "recipes", icon: "recipes", label: "Recipes" },
     { view: "ai", icon: "ai", label: "AI" },
@@ -867,12 +972,16 @@
   document.querySelectorAll(".nav-item").forEach((btn) => {
     const cfg = NAV.find((n) => n.view === btn.dataset.view);
     btn.innerHTML = `<span class="icon">${ICONS[cfg.icon]}</span><span>${cfg.label}</span>`;
-    btn.addEventListener("click", () => navigateTo(cfg.view));
+    btn.addEventListener("click", () => {
+      if (cfg.view === "dq") navigateTo("room", "daily-question");
+      else navigateTo(cfg.view);
+    });
   });
   document.getElementById("view-feed").querySelector(".view-title").innerHTML = `${ICONS.feed.replace("<svg", '<svg style="width:22px;height:22px;"')} Feed`;
   document.getElementById("view-chat").querySelector(".view-title").innerHTML = `${ICONS.chat.replace("<svg", '<svg style="width:22px;height:22px;"')} Chats`;
   document.getElementById("view-calendar").querySelector(".view-title").innerHTML = `${ICONS.calendar.replace("<svg", '<svg style="width:22px;height:22px;"')} Calendar`;
   document.getElementById("view-recipes").querySelector(".view-title").innerHTML = `${ICONS.recipes.replace("<svg", '<svg style="width:22px;height:22px;"')} Recipes`;
+  document.getElementById("view-games").querySelector(".view-title").innerHTML = `${ICONS.games.replace("<svg", '<svg style="width:22px;height:22px;"')} Games`;
   document.getElementById("view-ai").querySelector(".view-title").innerHTML = `${ICONS.ai.replace("<svg", '<svg style="width:22px;height:22px;"')} Family AI`;
   document.getElementById("view-host").querySelector(".view-title").innerHTML = `${ICONS.host.replace("<svg", '<svg style="width:22px;height:22px;"')} Host`;
 
@@ -886,6 +995,10 @@
     return div.innerHTML;
   }
   function normalizePhone(p) { return p.replace(/\D/g, ""); }
+  function avatarHtml(name, photoURL) {
+    if (photoURL) return `<img src="${photoURL}" alt="" />`;
+    return escapeHtml((name || "?").trim().charAt(0).toUpperCase());
+  }
 
   // ---- Custom dialogs — replace prompt()/confirm()/alert(), which iOS
   // silently disables once the app is installed to the home screen. ----
@@ -1018,6 +1131,58 @@
   // tiers: Gemini (best, tried first) → Groq (fast, free, tried second)
   // → Puter (needs no key at all, always available as the last resort). ----
   let aiApiKey = "";
+  // ---- Presence — "online" / "last seen" without a dedicated Realtime
+  // Database (which this app doesn't use). A heartbeat writes lastSeen
+  // every 30s while the tab is open/visible; "online" is inferred as
+  // "seen in the last 90 seconds" rather than instantly detected — an
+  // honest approximation, not true onDisconnect-style presence. ----
+  let presenceIntervalId = null;
+  function startPresenceHeartbeat() {
+    if (presenceIntervalId) return;
+    updateMyPresence();
+    presenceIntervalId = setInterval(updateMyPresence, 30000);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") updateMyPresence();
+    });
+  }
+  function updateMyPresence() {
+    if (!member) return;
+    updateDoc(doc(db, "members", member.id), { lastSeen: Date.now() }).catch(() => {});
+  }
+  function isOnline(lastSeen) {
+    return !!lastSeen && (Date.now() - lastSeen < 90000);
+  }
+  function presenceLabel(lastSeen) {
+    if (isOnline(lastSeen)) return "online";
+    if (!lastSeen) return "";
+    const mins = Math.round((Date.now() - lastSeen) / 60000);
+    if (mins < 1) return "last seen just now";
+    if (mins < 60) return `last seen ${mins}m ago`;
+    const hrs = Math.round(mins / 60);
+    if (hrs < 24) return `last seen ${hrs}h ago`;
+    return `last seen ${Math.round(hrs / 24)}d ago`;
+  }
+
+  function showLocalNotification(title, body) {
+    if (!("Notification" in window) || Notification.permission !== "granted") return;
+    try { new Notification(title, { body, icon: "icons/icon-192.png" }); } catch (e) { /* best effort */ }
+  }
+  // Notifies on a genuinely new message in a chat the person isn't
+  // currently looking at — reuses the chat-list's existing listeners
+  // rather than opening new ones, comparing each chat's lastMessageAt to
+  // what was last seen. Skips the very first snapshot for each chat (that's
+  // existing history on load, not a new arrival).
+  const lastKnownMessageAt = {};
+  function maybeNotifyNewMessage(chatId, label, chatData) {
+    if (!chatData || !chatData.lastMessageAt) return;
+    const prev = lastKnownMessageAt[chatId];
+    lastKnownMessageAt[chatId] = chatData.lastMessageAt;
+    if (prev === undefined) return;
+    if (chatData.lastMessageAt <= prev) return;
+    if (currentView === "room" && currentRoomId === chatId) return;
+    showLocalNotification(label, chatData.lastMessageText || "New message");
+  }
+
   let groqApiKey = "";
   let geminiKeyWatchStarted = false;
   function startGeminiKeyWatch() {
@@ -1030,6 +1195,20 @@
       document.getElementById("ai-key-missing").style.display = (aiApiKey || groqApiKey) ? "none" : "block";
       document.getElementById("ai-api-key-input").value = aiApiKey;
       document.getElementById("ai-groq-key-input").value = groqApiKey;
+    }, (err) => showConnError(err));
+  }
+
+  // ---- Family facts — app-wide too (Daily Question generation uses
+  // these even if nobody's visited the AI tab this session). ----
+  let aiFacts = [];
+  let aiFactsWatchStarted = false;
+  function startAiFactsWatch() {
+    if (aiFactsWatchStarted) return;
+    aiFactsWatchStarted = true;
+    onSnapshot(query(collection(db, "ai_memories"), orderBy("createdAt", "asc")), (snapshot) => {
+      aiFacts = [];
+      snapshot.forEach((d) => aiFacts.push({ id: d.id, ...d.data() }));
+      renderAiFacts();
     }, (err) => showConnError(err));
   }
 
@@ -1371,16 +1550,43 @@
     });
   }
 
+  let profilePhotoWired = false;
   function enterApp() {
     showScreen("app");
     document.getElementById("user-name").textContent = member.name;
-    document.getElementById("user-avatar").textContent = (member.name || "?").trim().charAt(0).toUpperCase();
+    document.getElementById("user-avatar").innerHTML = avatarHtml(member.name, member.photoURL);
+    document.getElementById("points-badge").textContent = "🪙 " + (member.points || 0);
     document.getElementById("host-nav-item").style.display = member.isHost ? "flex" : "none";
     document.getElementById("new-chat-btn").style.display = (currentView === "chat") ? "flex" : "none";
     startCloudinaryConfigWatch();
     startSupabaseConfigWatch();
     startGeminiKeyWatch();
     startCalendarLocationWatch();
+    startAiFactsWatch();
+    startDailyQuestionWatch();
+    startPresenceHeartbeat();
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission().catch(() => {});
+    }
+    if (!profilePhotoWired) {
+      profilePhotoWired = true;
+      document.getElementById("user-avatar").addEventListener("click", () => document.getElementById("profile-photo-input").click());
+      document.getElementById("profile-photo-input").addEventListener("change", async (e) => {
+        const file = e.target.files[0];
+        e.target.value = "";
+        if (!file) return;
+        if (!chatUploadsAvailable()) { await showAlert("Ask the host to set up an upload provider (Host tab → Integrations) before adding a profile picture."); return; }
+        showBusy("Uploading…");
+        try {
+          const uploaded = await uploadForChat(file);
+          await updateDoc(doc(db, "members", member.id), { photoURL: uploaded.url });
+          hideBusy();
+        } catch (err) {
+          hideBusy();
+          showConnError(err);
+        }
+      });
+    }
     const parts = location.hash.replace(/^#\/?/, "").split("/");
     renderView(parts[0] || "feed", parts[1] ? decodeURIComponent(parts[1]) : undefined);
   }
@@ -1483,8 +1689,22 @@
     renderView(parts[0] || "feed", parts[1] ? decodeURIComponent(parts[1]) : undefined);
   });
 
+  // Re-checks the wide/narrow split whenever the window is resized or a
+  // tablet is rotated — otherwise it'd only update on the next navigation.
+  let resizeDebounceTimer = null;
+  window.addEventListener("resize", () => {
+    if (resizeDebounceTimer) clearTimeout(resizeDebounceTimer);
+    resizeDebounceTimer = setTimeout(() => {
+      if (member && (currentView === "chat" || currentView === "room")) renderView(currentView, currentRoomId);
+    }, 200);
+  });
+
+  function isWideScreen() {
+    return window.matchMedia("(min-width: 860px)").matches;
+  }
+
   function renderView(view, param) {
-    if (!["feed", "chat", "room", "calendar", "recipes", "ai", "host"].includes(view)) view = "feed";
+    if (!["feed", "chat", "room", "games", "calendar", "recipes", "ai", "host"].includes(view)) view = "feed";
     if (view === "room" && !param) view = "chat";
     if (currentView === "room" && view !== "room") leaveRoom();
     currentView = view;
@@ -1497,14 +1717,30 @@
     } else {
       document.getElementById("view-" + view).style.display = "block";
     }
-    document.querySelectorAll(".nav-item").forEach((n) => n.classList.toggle("active", n.dataset.view === view));
-    document.getElementById("screen-app").classList.toggle("in-room", view === "room");
-    document.getElementById("new-chat-btn").style.display = (view === "chat") ? "flex" : "none";
+
+    // WhatsApp-style split: on wide screens, keep the chat list visible in
+    // a fixed left column while chatting or browsing, instead of the room
+    // covering the whole screen the way it does on mobile.
+    const wideChatMode = isWideScreen() && (view === "chat" || view === "room");
+    document.getElementById("screen-app").classList.toggle("wide-chat-split", wideChatMode);
+    document.getElementById("chat-empty-state").classList.toggle("show", wideChatMode && view === "chat");
+
+    document.querySelectorAll(".nav-item").forEach((n) => {
+      let isActive = n.dataset.view === view;
+      if (view === "room") {
+        if (n.dataset.view === "dq") isActive = (param === "daily-question");
+        if (n.dataset.view === "chat") isActive = (param !== "daily-question");
+      }
+      n.classList.toggle("active", isActive);
+    });
+    document.getElementById("screen-app").classList.toggle("in-room", view === "room" && !wideChatMode);
+    document.getElementById("new-chat-btn").style.display = (view === "chat" || (wideChatMode && view === "room")) ? "flex" : "none";
     window.scrollTo(0, 0);
 
     if (view === "feed") startFeedIfNeeded();
-    if (view === "chat") startChatListIfNeeded();
+    if (view === "chat" || view === "room") startChatListIfNeeded(); // list data stays live so the wide-screen column always has it
     if (view === "room") openRoom(param);
+    if (view === "games") startGamesIfNeeded();
     if (view === "calendar") startCalendarIfNeeded();
     if (view === "recipes") startRecipesIfNeeded();
     if (view === "ai") startAiIfNeeded();
@@ -1548,6 +1784,7 @@
     e.preventDefault();
     const caption = document.getElementById("post-caption").value.trim();
     let url = document.getElementById("post-url").value.trim();
+    const pointsCost = Math.max(0, parseInt(document.getElementById("post-points-cost").value, 10) || 0);
     if (!caption && !url && !selectedPostFile) return;
     if (selectedPostCategory !== "memory" && !url && !selectedPostFile) return;
     const postBtn = document.getElementById("post-btn");
@@ -1560,7 +1797,7 @@
         url = uploaded.url;
       }
       await addDoc(collection(db, "feed_posts"), {
-        category: selectedPostCategory, caption, url: url || null,
+        category: selectedPostCategory, caption, url: url || null, pointsCost, unlockedBy: [],
         authorId: member.id, authorName: member.name, createdAt: serverTimestamp()
       });
       document.getElementById("post-form").reset();
@@ -1584,8 +1821,21 @@
     onSnapshot(q, (snapshot) => {
       allFeedPosts = [];
       snapshot.forEach((docSnap) => allFeedPosts.push({ id: docSnap.id, ...docSnap.data() }));
+      maybeNotifyNewFeedPost(snapshot);
       renderFeedList();
     }, (err) => showConnError(err));
+  }
+  let feedNotifyBaseline = null; // first snapshot's top post id — nothing before this notifies
+  function maybeNotifyNewFeedPost(snapshot) {
+    if (snapshot.empty) return;
+    const topDoc = snapshot.docs[0]; // ordered desc by createdAt
+    if (feedNotifyBaseline === null) { feedNotifyBaseline = topDoc.id; return; }
+    if (topDoc.id === feedNotifyBaseline) return;
+    feedNotifyBaseline = topDoc.id;
+    const post = topDoc.data();
+    if (post.authorId === member.id) return;
+    if (currentView === "feed") return;
+    showLocalNotification("New on the Feed", post.caption || (CAT_LABELS[post.category] || "New post"));
   }
 
   const CAT_LABELS = { video: "Video", music: "Music", photo: "Picture", memory: "Memory" };
@@ -1601,6 +1851,7 @@
     posts.forEach((post) => {
       const canDelete = post.authorId === member.id || member.isHost;
       const initial = (post.authorName || "?").trim().charAt(0).toUpperCase();
+      const isLocked = post.pointsCost > 0 && post.authorId !== member.id && !member.isHost && !(post.unlockedBy || []).includes(member.id);
       const card = document.createElement("div");
       card.className = "post-card";
       card.innerHTML = `
@@ -1613,13 +1864,39 @@
         </div>
         <span class="cat-tag">${CAT_LABELS[post.category] || "Post"}</span>
         ${post.caption ? `<p class="post-caption">${escapeHtml(post.caption)}</p>` : ""}
-        <div class="post-media">${renderFeedEmbed(post)}</div>
+        <div class="post-media">${isLocked ? renderLockedFeedCard(post) : renderFeedEmbed(post)}</div>
       `;
       listEl.appendChild(card);
+      if (isLocked) {
+        const unlockBtn = card.querySelector("[data-unlock]");
+        if (unlockBtn) unlockBtn.addEventListener("click", () => unlockFeedPost(post.id, post.pointsCost));
+      }
     });
     listEl.querySelectorAll(".remove-link").forEach((btn) => {
       btn.addEventListener("click", () => deleteDoc(doc(db, "feed_posts", btn.dataset.id)));
     });
+  }
+
+  function renderLockedFeedCard(post) {
+    const myPoints = member.points || 0;
+    const canAfford = myPoints >= post.pointsCost;
+    return `
+      <div style="background:var(--bg); border:2px dashed var(--line); border-radius:var(--radius-md); padding:24px 16px; text-align:center;">
+        <div style="font-size:2rem;">🔒</div>
+        <p style="font-family:var(--font-display); margin:6px 0;">Costs ${post.pointsCost} points to unlock</p>
+        <p style="font-size:0.78rem; color:var(--muted); margin:0 0 12px;">You have 🪙 ${myPoints}${canAfford ? "" : " — earn more in Games"}</p>
+        <button type="button" class="btn amber sm" data-unlock="${post.id}" ${canAfford ? "" : "disabled"}>Unlock for ${post.pointsCost} points</button>
+      </div>
+    `;
+  }
+  async function unlockFeedPost(postId, cost) {
+    if ((member.points || 0) < cost) { await showAlert("You don't have enough points yet — play a game in the Games tab to earn more."); return; }
+    try {
+      await updateDoc(doc(db, "feed_posts", postId), { unlockedBy: arrayUnion(member.id) });
+      await updateDoc(doc(db, "members", member.id), { points: increment(-cost) });
+    } catch (err) {
+      showConnError(err);
+    }
   }
 
   function renderFeedEmbed(post) {
@@ -1646,6 +1923,7 @@
   // CHAT LIST
   // ============================================================
   let chatListStarted = false;
+  let renderChatListFn = null; // exposes the closure-scoped render function to other listeners (e.g. Daily Question)
   function startChatListIfNeeded() {
     if (chatListStarted) return;
     chatListStarted = true;
@@ -1655,18 +1933,44 @@
 
     onSnapshot(doc(db, "chats", "family"), (snap) => {
       if (snap.exists() && snap.data().lastMessageText) familyPreview = snap.data().lastMessageText;
+      maybeNotifyNewMessage("family", "Family Chat", snap.exists() ? snap.data() : null);
       renderChatList();
     }, (err) => showConnError(err));
 
     onSnapshot(query(collection(db, "chats"), where("memberIds", "array-contains", member.id)), (snapshot) => {
       myChats = [];
       snapshot.forEach((d) => { if (d.id !== "family") myChats.push({ id: d.id, ...d.data() }); });
+      myChats.forEach((c) => {
+        const label = c.isGroup ? (c.name || "Group chat") : (Object.entries(c.memberNames || {}).find(([id]) => id !== member.id)?.[1] || "Chat");
+        maybeNotifyNewMessage(c.id, label, c);
+      });
       myChats.sort((a, b) => (b.lastMessageAt || 0) - (a.lastMessageAt || 0));
       renderChatList();
     }, (err) => showConnError(err));
 
+    renderChatListFn = renderChatList;
+
     function renderChatList() {
       rowsEl.innerHTML = "";
+
+      const dqRow = document.createElement("div");
+      dqRow.className = "chat-row";
+      dqRow.innerHTML = `
+        <div class="avatar" style="background: linear-gradient(135deg, var(--amber), var(--orange));">🎯</div>
+        <div class="body"><div class="name">Today's Question</div><div class="preview">${escapeHtml(dailyQuestionData ? dailyQuestionData.question : "Tap to join today's conversation")}</div></div>
+      `;
+      dqRow.addEventListener("click", () => navigateTo("room", "daily-question"));
+      rowsEl.appendChild(dqRow);
+
+      const aiRow = document.createElement("div");
+      aiRow.className = "chat-row";
+      aiRow.innerHTML = `
+        <div class="avatar" style="background: linear-gradient(135deg, var(--violet), var(--pink));">✨</div>
+        <div class="body"><div class="name">Family AI</div><div class="preview">Your own private assistant</div></div>
+      `;
+      aiRow.addEventListener("click", () => navigateTo("ai"));
+      rowsEl.appendChild(aiRow);
+
       const familyRow = document.createElement("div");
       familyRow.className = "chat-row";
       familyRow.innerHTML = `
@@ -1759,14 +2063,59 @@
   // ROOM (chat thread)
   // ============================================================
   let unsubRoomMessages = null;
+  let unsubRoomPresence = null;
+  let unsubRoomTyping = null;
   let currentRoomId = null;
   let currentRoomIsGroupLike = true; // family + real groups = true; a genuine 1:1 = false
+  let currentRoomOtherMemberId = null; // for 1:1 presence
 
   function leaveRoom() {
     if (unsubRoomMessages) { unsubRoomMessages(); unsubRoomMessages = null; }
+    if (unsubRoomPresence) { unsubRoomPresence(); unsubRoomPresence = null; }
+    if (unsubRoomTyping) { unsubRoomTyping(); unsubRoomTyping = null; }
+    if (currentRoomId) clearMyTyping(currentRoomId);
     currentRoomId = null;
+    currentRoomOtherMemberId = null;
   }
   document.getElementById("room-back-btn").addEventListener("click", () => navigateTo("chat"));
+
+  function subscribeRoomPresence(otherId) {
+    if (!otherId) { document.getElementById("room-subtitle").textContent = ""; return; }
+    unsubRoomPresence = onSnapshot(doc(db, "members", otherId), (snap) => {
+      if (!snap.exists()) return;
+      document.getElementById("room-subtitle").textContent = presenceLabel(snap.data().lastSeen);
+    });
+  }
+  function subscribeRoomTyping(chatId) {
+    unsubRoomTyping = onSnapshot(collection(db, "chats", chatId, "typing"), (snapshot) => {
+      const now = Date.now();
+      const names = [];
+      snapshot.forEach((d) => {
+        if (d.id === member.id) return;
+        const data = d.data();
+        if (data.updatedAt && now - data.updatedAt < 4000) names.push(data.name);
+      });
+      const el = document.getElementById("room-typing-indicator");
+      if (names.length) {
+        el.textContent = names.join(", ") + (names.length > 1 ? " are typing…" : " is typing…");
+        el.style.display = "block";
+      } else {
+        el.style.display = "none";
+      }
+    });
+  }
+  let typingDebounceTimer = null;
+  function notifyTyping() {
+    if (!currentRoomId) return;
+    setDoc(doc(db, "chats", currentRoomId, "typing", member.id), { name: member.name, updatedAt: Date.now() }).catch(() => {});
+    if (typingDebounceTimer) clearTimeout(typingDebounceTimer);
+    typingDebounceTimer = setTimeout(() => clearMyTyping(currentRoomId), 3000);
+  }
+  function clearMyTyping(chatId) {
+    if (typingDebounceTimer) { clearTimeout(typingDebounceTimer); typingDebounceTimer = null; }
+    if (chatId) deleteDoc(doc(db, "chats", chatId, "typing", member.id)).catch(() => {});
+  }
+  document.getElementById("msg-input").addEventListener("input", notifyTyping);
 
   // ---- Retention: text messages anywhere delete after 30 days; media in
   // group-like chats (Family + custom groups) expires after 5 days into a
@@ -1798,17 +2147,200 @@
     } catch (e) { /* best-effort cleanup — never block opening the room on this */ }
   }
 
+  // ============================================================
+  // DAILY QUESTION — a fresh AI-written (or host-set) conversation
+  // starter each evening, meant to pull the family back into the app.
+  // There's no server/cron here, so "7pm" means: whichever device has
+  // the app open first notices the time has passed and generates it;
+  // Firestore's real-time sync then pushes it to everyone else's open
+  // app instantly, same honesty as the notification system already
+  // documented in the README. A device that's fully closed at 7pm just
+  // sees the new question next time it opens, with no notification.
+  // ============================================================
+  let dailyQuestionData = null; // current { question, dateKey, ... }
+  let dailyQuestionWatchStarted = false;
+  let lastKnownDailyQuestionDateKey; // undefined until the first snapshot
+
+  function todayDateKey() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }
+
+  function startDailyQuestionWatch() {
+    if (dailyQuestionWatchStarted) return;
+    dailyQuestionWatchStarted = true;
+
+    onSnapshot(doc(db, "chats", "daily-question"), (snap) => {
+      if (!snap.exists()) return;
+      const data = snap.data();
+      dailyQuestionData = data;
+      if (lastKnownDailyQuestionDateKey !== undefined && data.dateKey !== lastKnownDailyQuestionDateKey && currentRoomId !== "daily-question") {
+        showLocalNotification("🎯 Today's Family Question", data.question);
+      }
+      lastKnownDailyQuestionDateKey = data.dateKey;
+      if (renderChatListFn) renderChatListFn();
+      if (currentRoomId === "daily-question") {
+        const banner = document.getElementById("daily-question-banner");
+        if (banner) banner.textContent = data.question;
+        const summaryEl = document.getElementById("dq-previous-summary");
+        if (summaryEl) {
+          if (data.previousSummary) {
+            summaryEl.textContent = "💭 What we heard yesterday: " + data.previousSummary;
+            summaryEl.style.display = "block";
+          } else {
+            summaryEl.style.display = "none";
+          }
+        }
+      }
+    }, () => { /* best effort — a missing/broken daily question never blocks the rest of the app */ });
+
+    checkAndMaybeAdvanceDailyQuestion();
+    setInterval(checkAndMaybeAdvanceDailyQuestion, 5 * 60 * 1000);
+  }
+
+  async function checkAndMaybeAdvanceDailyQuestion() {
+    try {
+      const snap = await getDoc(doc(db, "chats", "daily-question"));
+      const data = snap.exists() ? snap.data() : null;
+      const today = todayDateKey();
+      const hour = new Date().getHours();
+
+      if (hour >= 19 && (!data || data.dateKey !== today)) {
+        await generateAndPublishDailyQuestion(today);
+        return;
+      }
+      if (hour >= 20 && data && data.dateKey === today && !data.reminderSentAt) {
+        showLocalNotification("🎯 Don't forget today's family question!", data.question);
+        updateDoc(doc(db, "chats", "daily-question"), { reminderSentAt: true }).catch(() => {});
+      }
+    } catch (e) { /* best effort — never surface an error banner for this background check */ }
+  }
+
+  async function generateAndPublishDailyQuestion(dateKey) {
+    let previousSummary = null;
+    try {
+      const oldMsgs = await getDocs(collection(db, "chats", "daily-question", "messages"));
+      if (oldMsgs.docs.length >= 2) {
+        try {
+          const prevSnap = await getDoc(doc(db, "chats", "daily-question"));
+          const prevQuestion = prevSnap.exists() ? prevSnap.data().question : "";
+          const transcript = oldMsgs.docs
+            .slice()
+            .sort((a, b) => (a.data().createdAt?.toMillis?.() || 0) - (b.data().createdAt?.toMillis?.() || 0))
+            .map((d) => `${d.data().authorName || "someone"}: ${d.data().text || "[shared a photo/video/voice message]"}`)
+            .join("\n");
+          previousSummary = await summarizeDailyConversation(prevQuestion, transcript);
+        } catch (e) { previousSummary = null; } // no summary is fine — just skip the box that day
+      }
+      await Promise.allSettled(oldMsgs.docs.map((d) => deleteDoc(d.ref).catch(() => {})));
+    } catch (e) { /* best effort */ }
+
+    let question, source;
+    let hostOverride = "";
+    try {
+      const settingsSnap = await getDoc(doc(db, "settings", "dailyQuestion"));
+      hostOverride = settingsSnap.exists() ? (settingsSnap.data().hostOverride || "") : "";
+    } catch (e) { /* fall through to AI */ }
+
+    if (hostOverride) {
+      question = hostOverride;
+      source = "host";
+      setDoc(doc(db, "settings", "dailyQuestion"), { hostOverride: "" }, { merge: true }).catch(() => {});
+    } else {
+      source = "ai";
+      try {
+        question = await generateDailyQuestionWithAI();
+      } catch (e) {
+        question = "What's one happy family memory you'd love to talk about tonight?";
+      }
+    }
+
+    try {
+      await setDoc(doc(db, "chats", "daily-question"), {
+        question, dateKey, source, isGroup: true, memberIds: [],
+        generatedAt: serverTimestamp(), reminderSentAt: false, previousSummary
+      });
+    } catch (e) { /* best effort */ }
+  }
+
+  async function summarizeDailyConversation(prevQuestion, transcript) {
+    const prompt = `Yesterday's family conversation-starter question was: "${prevQuestion}"
+
+Here's what people said, in order:
+${transcript}
+
+In ONE short, warm sentence, summarize the key takeaway — a consensus if there was one, or an interesting split of opinions (e.g. "more people said Thursday than Monday"). Respond with ONLY that sentence, nothing else.`;
+    const raw = await callAI("You summarize a family group chat conversation in one short, warm sentence and output nothing else.", [{ role: "user", text: prompt }]);
+    return raw.trim();
+  }
+
+  async function generateDailyQuestionWithAI() {
+    const factsText = aiFacts.length ? aiFacts.map((f) => "- " + f.text).join("\n") : "No specific family facts recorded yet.";
+    const prompt = `Write ONE short, warm question to post in a family group chat as today's conversation starter — something that will make people want to reply and chat with each other. Make it feel personal to this specific family when the facts below give you something to work with (a person, a memory, an upcoming date); otherwise a warm, general question about family life, memories, or plans is fine. One sentence only. Respond with ONLY the question itself — no quotes, no preamble, no extra commentary.
+
+Family facts:
+${factsText}`;
+    const raw = await callAI("You write a single engaging family conversation-starter question and output nothing else.", [{ role: "user", text: prompt }]);
+    return raw.trim().replace(/^["']+|["']+$/g, "");
+  }
+
+  document.getElementById("daily-question-save-btn").addEventListener("click", async () => {
+    const text = document.getElementById("daily-question-override-input").value.trim();
+    try {
+      await setDoc(doc(db, "settings", "dailyQuestion"), { hostOverride: text }, { merge: true });
+      await showAlert(text ? "Saved — this will be tomorrow's question." : "Cleared — the AI will pick tomorrow's question.");
+      document.getElementById("daily-question-override-input").value = "";
+    } catch (err) {
+      showConnError(err);
+    }
+  });
+
+  // ---- A small, low-pressure nudge toward another feature, shown once
+  // per visit to the Daily Question room — the "pull people in deeper"
+  // idea, kept simple: a short rotating list of tips, not a whole system. ----
+  const FEATURE_TIPS = [
+    "💡 Did you know? The whole family's calendar — with Hebrew dates and zmanim — is in the Calendar tab.",
+    "🎙️ Mom's recipes can be cooked hands-free — paste them into the Recipes tab and it reads every step aloud.",
+    "✨ You've got your own private Family AI — it remembers the family facts everyone's shared with it."
+  ];
+  function showFeatureTip() {
+    const el = document.getElementById("feature-tip-banner");
+    el.textContent = FEATURE_TIPS[Math.floor(Math.random() * FEATURE_TIPS.length)];
+    el.style.display = "block";
+  }
+
   async function openRoom(chatId) {
     leaveRoom();
     currentRoomId = chatId;
     document.getElementById("room-title").textContent = "Loading…";
+    document.getElementById("room-subtitle").textContent = "";
     document.getElementById("messages").innerHTML = '<p class="empty-state">Loading messages…</p>';
+    document.getElementById("daily-question-banner").style.display = "none";
+    document.getElementById("dq-previous-summary").style.display = "none";
+    document.getElementById("feature-tip-banner").style.display = "none";
 
+    if (chatId === "daily-question") {
+      currentRoomIsGroupLike = true;
+      document.getElementById("room-title").textContent = "🎯 Today's Question";
+      const banner = document.getElementById("daily-question-banner");
+      banner.style.display = "block";
+      banner.textContent = dailyQuestionData ? dailyQuestionData.question : "Loading today's question…";
+      const summaryEl = document.getElementById("dq-previous-summary");
+      if (dailyQuestionData && dailyQuestionData.previousSummary) {
+        summaryEl.textContent = "💭 What we heard yesterday: " + dailyQuestionData.previousSummary;
+        summaryEl.style.display = "block";
+      }
+      showFeatureTip();
+      subscribeRoomMessages(chatId);
+      subscribeRoomTyping(chatId);
+      return;
+    }
     if (chatId === "family") {
       currentRoomIsGroupLike = true;
       document.getElementById("room-title").textContent = "👪 Family Chat";
       cleanupOldMessages(chatId, true);
       subscribeRoomMessages(chatId);
+      subscribeRoomTyping(chatId);
       return;
     }
     try {
@@ -1823,8 +2355,13 @@
         ? (chat.name || Object.values(chat.memberNames || {}).join(", "))
         : (Object.entries(chat.memberNames || {}).find(([id]) => id !== member.id)?.[1] || "Chat");
       document.getElementById("room-title").textContent = title;
+      if (!chat.isGroup) {
+        currentRoomOtherMemberId = (chat.memberIds || []).find((id) => id !== member.id);
+        subscribeRoomPresence(currentRoomOtherMemberId);
+      }
       cleanupOldMessages(chatId, currentRoomIsGroupLike);
       subscribeRoomMessages(chatId);
+      subscribeRoomTyping(chatId);
     } catch (err) {
       showConnError(err);
     }
@@ -1844,12 +2381,18 @@
         const canDelete = isMine || member.isHost;
         const wrap = document.createElement("div");
         wrap.className = "bubble-wrap " + (isMine ? "mine" : "theirs");
+        const seenByOthers = (m.readBy || []).some((id) => id !== member.id);
+        const receipt = isMine ? `<span class="receipt ${seenByOthers ? "seen" : ""}">${seenByOthers ? "✓✓" : "✓"}</span>` : "";
         wrap.innerHTML = `
           ${!isMine ? `<div class="sender">${escapeHtml(m.authorName || "someone")}</div>` : ""}
           <div class="bubble">${renderChatMedia(m, docSnap.id)}${m.text ? escapeHtml(m.text) : ""}</div>
-          ${canDelete ? `<button class="delete-msg" data-id="${docSnap.id}">remove</button>` : ""}
+          <div class="bubble-meta">${canDelete ? `<button class="delete-msg" data-id="${docSnap.id}">remove</button>` : ""}${receipt}</div>
         `;
         msgsEl.appendChild(wrap);
+
+        if (!isMine && !(m.readBy || []).includes(member.id)) {
+          updateDoc(doc(db, "chats", chatId, "messages", docSnap.id), { readBy: arrayUnion(member.id) }).catch(() => {});
+        }
 
         // 1:1 chats only: download+cache media locally, then (Supabase
         // only) free the remote copy once the recipient has it cached.
@@ -2058,6 +2601,7 @@
     if (!text) return;
     input.value = "";
     const chatId = currentRoomId;
+    clearMyTyping(chatId);
     try {
       await addDoc(collection(db, "chats", chatId, "messages"), {
         text, authorId: member.id, authorName: member.name, createdAt: serverTimestamp()
@@ -2074,8 +2618,22 @@
   // via Hebcal's free public API (no key needed for any of this).
   // ============================================================
   let calendarStarted = false;
+  // Hebrew month names shown in Hebrew script; `value` is what's sent to
+  // Hebcal (transliterated — the format its API expects). Adar is offered
+  // once as a simplification; in leap years Hebcal resolves "Adar" itself.
+  const HEBREW_MONTHS = [
+    { value: "Nisan", label: "ניסן" }, { value: "Iyyar", label: "אייר" }, { value: "Sivan", label: "סיון" },
+    { value: "Tamuz", label: "תמוז" }, { value: "Av", label: "אב" }, { value: "Elul", label: "אלול" },
+    { value: "Tishrei", label: "תשרי" }, { value: "Cheshvan", label: "חשון" }, { value: "Kislev", label: "כסלו" },
+    { value: "Tevet", label: "טבת" }, { value: "Shvat", label: "שבט" }, { value: "Adar", label: "אדר" },
+    { value: "Adar II", label: "אדר ב׳" }
+  ];
+  const HEBREW_WEEKDAYS = ["א׳", "ב׳", "ג׳", "ד׳", "ה׳", "ו׳", "ש׳"]; // Sun–Sat, Hebrew-alphabet day letters
+  const ENGLISH_WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
   let calDisplayYear, calDisplayMonth; // 1-indexed month
   let calPrimaryIsHebrew = false;
+  let eventDateType = "english"; // which tab is active in the New Event sheet
   let allCalendarEvents = [];
   const monthDataCache = {};       // "YYYY-M" -> { hebrewByISO, holidaysByISO }
   const hebrewRecurrenceCache = {}; // "eventId:year" -> resolved ISO date or null
@@ -2200,7 +2758,7 @@
     const todayISO = isoOf(new Date());
     const weekFromNowISO = isoOf(new Date(Date.now() + 7 * 86400000));
 
-    let html = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => `<div class="cal-dow">${d}</div>`).join("");
+    let html = (calPrimaryIsHebrew ? HEBREW_WEEKDAYS : ENGLISH_WEEKDAYS).map((d) => `<div class="cal-dow">${d}</div>`).join("");
     for (let i = 0; i < startDow; i++) {
       html += `<div class="cal-day other-month"><span class="cal-primary">${prevMonthDays - startDow + i + 1}</span></div>`;
     }
@@ -2328,6 +2886,12 @@
 
     fetchAndRenderZmanim();
 
+    // Populate the Hebrew date picker once.
+    document.getElementById("event-hebrew-day").innerHTML =
+      Array.from({ length: 30 }, (_, i) => i + 1).map((d) => `<option value="${d}">${d}</option>`).join("");
+    document.getElementById("event-hebrew-month").innerHTML =
+      HEBREW_MONTHS.map((m) => `<option value="${m.value}">${m.label}</option>`).join("");
+
     document.getElementById("calendar-date-toggle").addEventListener("click", (e) => {
       const btn = e.target.closest(".pill-tab");
       if (!btn) return;
@@ -2349,39 +2913,273 @@
     document.getElementById("open-event-form-btn").addEventListener("click", () => {
       document.getElementById("event-title").value = "";
       document.getElementById("event-date").value = "";
-      document.getElementById("event-recurrence").value = "none";
+      document.getElementById("event-repeat-checkbox").checked = true;
+      document.querySelectorAll("#event-date-type-tabs .pill-tab").forEach((b) => b.classList.toggle("active", b.dataset.type === "english"));
+      document.getElementById("event-english-fields").style.display = "block";
+      document.getElementById("event-hebrew-fields").style.display = "none";
+      eventDateType = "english";
       document.getElementById("event-overlay").classList.add("open");
     });
     document.getElementById("event-cancel-btn").addEventListener("click", () => document.getElementById("event-overlay").classList.remove("open"));
+
+    document.getElementById("event-date-type-tabs").addEventListener("click", (e) => {
+      const btn = e.target.closest(".pill-tab");
+      if (!btn) return;
+      document.querySelectorAll("#event-date-type-tabs .pill-tab").forEach((b) => b.classList.toggle("active", b === btn));
+      eventDateType = btn.dataset.type;
+      document.getElementById("event-english-fields").style.display = eventDateType === "english" ? "block" : "none";
+      document.getElementById("event-hebrew-fields").style.display = eventDateType === "hebrew" ? "block" : "none";
+    });
+
     document.getElementById("event-save-btn").addEventListener("click", async () => {
       const title = document.getElementById("event-title").value.trim();
-      const date = document.getElementById("event-date").value;
-      const recurrence = document.getElementById("event-recurrence").value;
-      if (!title || !date) { await showAlert("Please add a title and a date."); return; }
-      let hebrewAnchor = null;
-      if (recurrence === "hebrew") {
-        showBusy("Converting to the Hebrew date…");
+      const repeats = document.getElementById("event-repeat-checkbox").checked;
+      if (!title) { await showAlert("Please add a title."); return; }
+
+      if (eventDateType === "english") {
+        const date = document.getElementById("event-date").value;
+        if (!date) { await showAlert("Please pick a date."); return; }
         try {
-          const res = await withTimeout(fetch(`https://www.hebcal.com/converter?cfg=json&date=${date}&g2h=1`), 10000, "Hebcal is taking too long to respond.");
-          const data = await res.json();
-          hebrewAnchor = { hy: data.hy, hm: data.hm, hd: data.hd };
+          await addDoc(collection(db, "calendar_events"), {
+            title, date, recurrence: repeats ? "english" : "none", hebrewAnchor: null,
+            addedById: member.id, addedByName: member.name, createdAt: serverTimestamp()
+          });
+          document.getElementById("event-overlay").classList.remove("open");
         } catch (err) {
-          hideBusy();
           showConnError(err);
-          return;
         }
-        hideBusy();
+        return;
       }
-      try {
-        await addDoc(collection(db, "calendar_events"), {
-          title, date, recurrence, hebrewAnchor,
-          addedById: member.id, addedByName: member.name, createdAt: serverTimestamp()
-        });
-        document.getElementById("event-overlay").classList.remove("open");
-      } catch (err) {
-        showConnError(err);
+
+      // Hebrew date — no Hebcal call needed at all if it repeats yearly,
+      // since resolution always recomputes for whatever year is being
+      // viewed. Only a one-time Hebrew-dated event needs a lookup, to
+      // pin down which Gregorian date it actually falls on.
+      const hm = document.getElementById("event-hebrew-month").value;
+      const hd = document.getElementById("event-hebrew-day").value;
+      if (repeats) {
+        try {
+          await addDoc(collection(db, "calendar_events"), {
+            title, date: null, recurrence: "hebrew", hebrewAnchor: { hm, hd: Number(hd) },
+            addedById: member.id, addedByName: member.name, createdAt: serverTimestamp()
+          });
+          document.getElementById("event-overlay").classList.remove("open");
+        } catch (err) {
+          showConnError(err);
+        }
+      } else {
+        showBusy("Finding the date…");
+        const thisYear = new Date().getFullYear();
+        const anchor = { hm, hd: Number(hd) };
+        let resolvedIso = await resolveHebrewEventForYear({ id: "newevent", hebrewAnchor: anchor }, thisYear);
+        if (!resolvedIso) resolvedIso = await resolveHebrewEventForYear({ id: "newevent", hebrewAnchor: anchor }, thisYear + 1);
+        hideBusy();
+        if (!resolvedIso) { showConnError(new Error("Couldn't resolve that Hebrew date. Check your internet and try again.")); return; }
+        try {
+          await addDoc(collection(db, "calendar_events"), {
+            title, date: resolvedIso, recurrence: "none", hebrewAnchor: null,
+            addedById: member.id, addedByName: member.name, createdAt: serverTimestamp()
+          });
+          document.getElementById("event-overlay").classList.remove("open");
+        } catch (err) {
+          showConnError(err);
+        }
       }
     });
+  }
+
+  // ============================================================
+  // GAMES — mini games that earn points, spendable on locked Feed videos.
+  // Trivia uses Open Trivia DB (opentdb.com) — free, no API key needed.
+  // Memory Match is fully self-contained, no external API at all.
+  // ============================================================
+  let gamesStarted = false;
+  function startGamesIfNeeded() {
+    document.getElementById("games-points-display").textContent = "🪙 " + (member.points || 0);
+    if (gamesStarted) return;
+    gamesStarted = true;
+    document.getElementById("play-trivia-btn").addEventListener("click", startTriviaGame);
+    document.getElementById("play-memory-btn").addEventListener("click", startMemoryGame);
+  }
+  function backToGamesSelector() {
+    document.getElementById("games-selector").style.display = "flex";
+    document.getElementById("game-play-area").style.display = "none";
+    document.getElementById("game-play-area").innerHTML = "";
+  }
+  function decodeHtmlEntities(str) {
+    const el = document.createElement("textarea");
+    el.innerHTML = str;
+    return el.value;
+  }
+  function shuffleArray(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+  async function awardPoints(amount) {
+    document.getElementById("games-points-display").textContent = "🪙 " + ((member.points || 0) + amount);
+    try { await updateDoc(doc(db, "members", member.id), { points: increment(amount) }); } catch (e) { /* best effort */ }
+  }
+
+  // ---- Trivia ----
+  let triviaQuestions = [];
+  let triviaIndex = 0;
+  let triviaScore = 0;
+  async function startTriviaGame() {
+    document.getElementById("games-selector").style.display = "none";
+    const playEl = document.getElementById("game-play-area");
+    playEl.style.display = "block";
+    playEl.innerHTML = '<p class="empty-state">Loading trivia…</p>';
+    try {
+      const res = await withTimeout(fetch("https://opentdb.com/api.php?amount=5&type=multiple"), 10000, "Trivia is taking too long to load.");
+      const data = await res.json();
+      triviaQuestions = (data.results || []).map((q) => {
+        const correct = decodeHtmlEntities(q.correct_answer);
+        return {
+          question: decodeHtmlEntities(q.question),
+          answers: shuffleArray([correct, ...q.incorrect_answers.map(decodeHtmlEntities)]),
+          correct
+        };
+      });
+      if (triviaQuestions.length === 0) throw new Error("No questions came back.");
+      triviaIndex = 0;
+      triviaScore = 0;
+      renderTriviaQuestion();
+    } catch (e) {
+      playEl.innerHTML = `<p class="empty-state">Couldn't load trivia — check your internet and try again.</p><button class="btn ghost sm" id="games-back-1">Back</button>`;
+      document.getElementById("games-back-1").addEventListener("click", backToGamesSelector);
+    }
+  }
+  function renderTriviaQuestion() {
+    const playEl = document.getElementById("game-play-area");
+    const q = triviaQuestions[triviaIndex];
+    playEl.innerHTML = `
+      <div class="card">
+        <p style="font-size:0.78rem; color:var(--muted); margin:0 0 6px;">Question ${triviaIndex + 1} of ${triviaQuestions.length} · Score: ${triviaScore}</p>
+        <p style="font-family:var(--font-display); font-size:1.1rem; margin:0 0 14px;">${q.question}</p>
+        <div id="trivia-answers" style="display:flex; flex-direction:column; gap:8px;"></div>
+      </div>
+    `;
+    const answersEl = document.getElementById("trivia-answers");
+    q.answers.forEach((a) => {
+      const btn = document.createElement("button");
+      btn.className = "btn ghost";
+      btn.textContent = a;
+      btn.addEventListener("click", () => answerTrivia(a, btn));
+      answersEl.appendChild(btn);
+    });
+  }
+  async function answerTrivia(chosen, btnEl) {
+    document.querySelectorAll("#trivia-answers button").forEach((b) => (b.disabled = true));
+    const q = triviaQuestions[triviaIndex];
+    if (chosen === q.correct) {
+      btnEl.style.background = "var(--green-tint)";
+      btnEl.style.borderColor = "var(--green)";
+      triviaScore++;
+      await awardPoints(10);
+    } else {
+      btnEl.style.background = "#FFE3EA";
+    }
+    setTimeout(() => {
+      triviaIndex++;
+      if (triviaIndex < triviaQuestions.length) renderTriviaQuestion();
+      else finishTrivia();
+    }, 1000);
+  }
+  function finishTrivia() {
+    const playEl = document.getElementById("game-play-area");
+    playEl.innerHTML = `
+      <div class="card" style="text-align:center;">
+        <div style="font-size:2.4rem;">🎉</div>
+        <p style="font-family:var(--font-display); font-size:1.2rem; margin:8px 0;">${triviaScore} out of ${triviaQuestions.length} correct!</p>
+        <p style="color:var(--muted); font-size:0.85rem; margin:0 0 16px;">You earned ${triviaScore * 10} points.</p>
+        <button class="btn green" id="games-play-again">Play again</button>
+        <button class="btn ghost" id="games-back-2" style="margin-top:8px;">Back to Games</button>
+      </div>
+    `;
+    document.getElementById("games-play-again").addEventListener("click", startTriviaGame);
+    document.getElementById("games-back-2").addEventListener("click", backToGamesSelector);
+  }
+
+  // ---- Memory Match ----
+  const MEMORY_EMOJIS = ["🍎", "🍌", "🍇", "🍓", "🍒", "🥝", "🍑", "🍍"];
+  let memoryCards = [];
+  let memoryFlipped = [];
+  let memoryMoves = 0;
+  let memoryLocked = false;
+  function startMemoryGame() {
+    document.getElementById("games-selector").style.display = "none";
+    const chosen = shuffleArray(MEMORY_EMOJIS).slice(0, 6);
+    memoryCards = shuffleArray([...chosen, ...chosen]).map((emoji, i) => ({ id: i, emoji, matched: false }));
+    memoryFlipped = [];
+    memoryMoves = 0;
+    memoryLocked = false;
+    renderMemoryGame();
+  }
+  function renderMemoryGame() {
+    const playEl = document.getElementById("game-play-area");
+    playEl.style.display = "block";
+    playEl.innerHTML = `
+      <p style="font-size:0.78rem; color:var(--muted); margin:0 0 10px; text-align:center;">Moves: ${memoryMoves}</p>
+      <div id="memory-grid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px; max-width:320px; margin:0 auto;"></div>
+      <div style="text-align:center; margin-top:14px;"><button class="btn ghost sm" id="games-back-3">Back to Games</button></div>
+    `;
+    const gridEl = document.getElementById("memory-grid");
+    memoryCards.forEach((card) => {
+      const isFaceUp = card.matched || memoryFlipped.includes(card.id);
+      const btn = document.createElement("button");
+      btn.className = "btn ghost";
+      btn.style.cssText = "aspect-ratio:1; font-size:1.6rem; padding:0;" + (card.matched ? "opacity:0.4;" : "");
+      btn.textContent = isFaceUp ? card.emoji : "❔";
+      btn.disabled = card.matched;
+      btn.addEventListener("click", () => flipMemoryCard(card.id));
+      gridEl.appendChild(btn);
+    });
+    document.getElementById("games-back-3").addEventListener("click", backToGamesSelector);
+  }
+  function flipMemoryCard(id) {
+    if (memoryLocked) return;
+    if (memoryFlipped.includes(id)) return;
+    const card = memoryCards.find((c) => c.id === id);
+    if (!card || card.matched) return;
+    memoryFlipped.push(id);
+    renderMemoryGame();
+    if (memoryFlipped.length === 2) {
+      memoryMoves++;
+      const [a, b] = memoryFlipped.map((fid) => memoryCards.find((c) => c.id === fid));
+      if (a.emoji === b.emoji) {
+        a.matched = true; b.matched = true;
+        memoryFlipped = [];
+        renderMemoryGame();
+        if (memoryCards.every((c) => c.matched)) finishMemoryGame();
+      } else {
+        memoryLocked = true;
+        setTimeout(() => {
+          memoryFlipped = [];
+          memoryLocked = false;
+          renderMemoryGame();
+        }, 900);
+      }
+    }
+  }
+  async function finishMemoryGame() {
+    const earned = Math.max(20 - memoryMoves, 5);
+    await awardPoints(earned);
+    const playEl = document.getElementById("game-play-area");
+    playEl.innerHTML = `
+      <div class="card" style="text-align:center;">
+        <div style="font-size:2.4rem;">🃏</div>
+        <p style="font-family:var(--font-display); font-size:1.2rem; margin:8px 0;">Matched in ${memoryMoves} moves!</p>
+        <p style="color:var(--muted); font-size:0.85rem; margin:0 0 16px;">You earned ${earned} points.</p>
+        <button class="btn turquoise" id="games-play-again-2">Play again</button>
+        <button class="btn ghost" id="games-back-4" style="margin-top:8px;">Back to Games</button>
+      </div>
+    `;
+    document.getElementById("games-play-again-2").addEventListener("click", startMemoryGame);
+    document.getElementById("games-back-4").addEventListener("click", backToGamesSelector);
   }
 
   // ============================================================
@@ -2562,11 +3360,42 @@ ${rawSteps}`;
   let cookSequence = [];
   let cookIndex = 0;
   let cookTimerInterval = null;
+  let speechToken = 0;
 
   function speak(text) {
     if (!("speechSynthesis" in window)) return;
+    speechToken++;
     window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = 0.85; // a little slower than default, as asked
+    window.speechSynthesis.speak(utter);
+  }
+
+  // Speaks a list of separate phrases one at a time, with a real pause
+  // between each — used for ingredients so they don't run together into
+  // one long sentence. Each item gets its own utterance + a beat of
+  // silence afterward, chained via onend rather than spoken as one string.
+  // The token check keeps a stale sequence (e.g. from a screen you've
+  // since navigated away from) from resuming and colliding with new speech.
+  function speakSequence(parts) {
+    if (!("speechSynthesis" in window) || !parts || parts.length === 0) return;
+    speechToken++;
+    const myToken = speechToken;
+    window.speechSynthesis.cancel();
+    let i = 0;
+    function speakNext() {
+      if (myToken !== speechToken) return;
+      if (i >= parts.length) return;
+      const utter = new SpeechSynthesisUtterance(parts[i]);
+      utter.rate = 0.85;
+      utter.onend = () => {
+        if (myToken !== speechToken) return;
+        i++;
+        if (i < parts.length) setTimeout(speakNext, 1000); // stop for a second between items
+      };
+      window.speechSynthesis.speak(utter);
+    }
+    speakNext();
   }
 
   function buildCookSequence(recipe) {
@@ -2575,13 +3404,13 @@ ${rawSteps}`;
     const allIngredients = parts.flatMap((p) => p.ingredients);
     seq.push({
       type: "intro", heading: "All the ingredients", ingredients: allIngredients,
-      speakText: "Here's everything you'll need. " + allIngredients.join(", ") + "."
+      speakParts: ["Here's everything you'll need."].concat(allIngredients)
     });
     parts.forEach((part) => {
       if (parts.length > 1) {
         seq.push({
           type: "part-intro", heading: `Now let's start with the ${part.name}.`, ingredients: part.ingredients,
-          speakText: `Now let's start with the ${part.name}. You'll need: ` + part.ingredients.join(", ") + "."
+          speakParts: [`Now let's start with the ${part.name}. You'll need:`].concat(part.ingredients)
         });
       }
       part.steps.forEach((step) => {
@@ -2630,7 +3459,8 @@ ${rawSteps}`;
         timerWrap.style.display = "none";
       }
     }
-    speak(screen.speakText);
+    if (screen.speakParts) speakSequence(screen.speakParts);
+    else speak(screen.speakText);
   }
 
   function cookNext() {
@@ -2640,6 +3470,7 @@ ${rawSteps}`;
   function cookPrev() { if (cookIndex > 0) { cookIndex--; renderCookScreen(); } }
   function closeCookMode() {
     stopCookTimer();
+    speechToken++;
     if ("speechSynthesis" in window) window.speechSynthesis.cancel();
     document.getElementById("cook-shell-wrap").style.display = "none";
     cookSequence = [];
@@ -2689,20 +3520,10 @@ ${rawSteps}`;
   // shared family facts are the one thing that always persists, for
   // everyone, since those (and only those) live in Firestore.
   // ============================================================
-  let aiSettingsStarted = false;
-  let aiFacts = [];
   let aiSessionMessages = []; // { role: 'user'|'ai', text } — in memory only, never saved
 
   function startAiIfNeeded() {
     if (member.isHost) document.getElementById("ai-settings-btn").style.display = "inline-flex";
-    if (!aiSettingsStarted) {
-      aiSettingsStarted = true;
-      onSnapshot(query(collection(db, "ai_memories"), orderBy("createdAt", "asc")), (snapshot) => {
-        aiFacts = [];
-        snapshot.forEach((d) => aiFacts.push({ id: d.id, ...d.data() }));
-        renderAiFacts();
-      }, (err) => showConnError(err));
-    }
     resetAiSession();
   }
 
@@ -2939,6 +3760,30 @@ ${rawSteps}`;
         });
       });
     }, (err) => showConnError(err));
+  }
+
+  // ============================================================
+  // SERVICE WORKER — this was never actually being registered before,
+  // which meant sw.js sat there inert and every cache-version bump did
+  // nothing. Registering it now, plus actively checking for updates and
+  // auto-reloading once when a new version takes over, so a phone that's
+  // just backgrounded (not fully closed) still picks up changes instead
+  // of silently sitting on stale content indefinitely.
+  // ============================================================
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js").then((reg) => {
+      reg.update();
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") reg.update();
+      });
+    }).catch(() => { /* best effort — app still works without a service worker */ });
+
+    let swRefreshing = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (swRefreshing) return;
+      swRefreshing = true;
+      window.location.reload();
+    });
   }
 </script>
 </body>
