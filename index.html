@@ -2625,10 +2625,7 @@ ${rawSteps}`;
       if (screen.tip) { tipEl.style.display = "block"; tipEl.textContent = "💡 " + screen.tip; } else { tipEl.style.display = "none"; }
       if (screen.timerSeconds) {
         timerWrap.style.display = "flex";
-        updateCookTimerDisplay(screen.timerSeconds);
-        const timerBtn = document.getElementById("cook-timer-btn");
-        timerBtn.textContent = "Start timer";
-        timerBtn.disabled = false;
+        startCookTimerCountdown(screen.timerSeconds); // starts automatically the moment you reach this step
       } else {
         timerWrap.style.display = "none";
       }
@@ -2658,24 +2655,31 @@ ${rawSteps}`;
   function stopCookTimer() {
     if (cookTimerInterval) { clearInterval(cookTimerInterval); cookTimerInterval = null; }
   }
-  document.getElementById("cook-timer-btn").addEventListener("click", () => {
-    const screen = cookSequence[cookIndex];
-    if (!screen || !screen.timerSeconds) return;
+  // Starts (or restarts) the countdown for the current step's timer —
+  // called automatically by renderCookScreen the moment you land on a
+  // step that has one, and also reachable via the button if it needs
+  // restarting (e.g. you got distracted and it finished already).
+  function startCookTimerCountdown(totalSeconds) {
     stopCookTimer();
-    let remaining = screen.timerSeconds;
+    let remaining = totalSeconds;
+    updateCookTimerDisplay(remaining);
     const timerBtn = document.getElementById("cook-timer-btn");
-    timerBtn.disabled = true;
-    timerBtn.textContent = "Running…";
+    timerBtn.textContent = "Restart";
+    timerBtn.disabled = false;
     cookTimerInterval = setInterval(() => {
       remaining--;
       updateCookTimerDisplay(remaining);
       if (remaining <= 0) {
         stopCookTimer();
-        timerBtn.textContent = "Start timer";
-        timerBtn.disabled = false;
+        timerBtn.textContent = "Restart";
         speak("Time's up!");
       }
     }, 1000);
+  }
+  document.getElementById("cook-timer-btn").addEventListener("click", () => {
+    const screen = cookSequence[cookIndex];
+    if (!screen || !screen.timerSeconds) return;
+    startCookTimerCountdown(screen.timerSeconds);
   });
 
   // ============================================================
