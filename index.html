@@ -428,14 +428,16 @@
   .cook-ingredient-list { text-align: left; max-width: 340px; margin: 0 auto; padding-left: 22px; color: var(--ink); }
   .cook-ingredient-list li { margin-bottom: 4px; }
   .cook-tip { background: var(--amber-tint); color: var(--amber-dark); padding: 10px 16px; border-radius: var(--radius-sm); font-size: 0.85rem; max-width: 380px; margin: 0; }
-  .cook-timer { display: flex; align-items: center; gap: 14px; }
-  .cook-timer #cook-timer-display { font-family: var(--font-display); font-size: 1.7rem; font-weight: 600; min-width: 60px; }
-  .cook-controls { display: flex; gap: 8px; padding: 14px; padding-bottom: calc(14px + env(safe-area-inset-bottom)); background: #fff; border-top: 1px solid var(--line); flex-shrink: 0; }
-  #luna-indicator.on { display: flex !important; }
-  .luna-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--violet); display: inline-block; animation: luna-pulse 1.4s infinite; }
-  @keyframes luna-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
-  #luna-indicator.luna-flash { background: var(--violet); color: #fff; transform: scale(1.08); transition: transform 0.15s, background 0.15s, color 0.15s; }
-  #luna-help-strip { background: var(--violet-tint); color: var(--violet-dark); font-size: 0.76rem; padding: 10px 16px; line-height: 1.5; flex-shrink: 0; }
+  .cook-timer { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .cook-timer #cook-timer-display { font-family: var(--font-display); font-size: 3.2rem; font-weight: 700; min-width: 60px; line-height: 1; }
+  .cook-timer-adjust-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: center; }
+  .cook-controls { display: flex; gap: 16px; padding: 14px; padding-bottom: calc(14px + env(safe-area-inset-bottom)); background: #fff; border-top: 1px solid var(--line); flex-shrink: 0; justify-content: center; }
+  .cook-arrow-btn {
+    width: 64px; height: 64px; border-radius: 50%; background: var(--surface); border: 1.5px solid var(--line);
+    box-shadow: var(--shadow); display: flex; align-items: center; justify-content: center;
+  }
+  .cook-arrow-btn .icon { width: 26px; height: 26px; }
+  .cook-arrow-btn.primary { background: var(--amber); border-color: var(--amber); color: #fff; }
 
   /* ---------- AI view ---------- */
   #ai-fact-list { max-height: 180px; overflow-y: auto; margin-bottom: 4px; }
@@ -619,6 +621,7 @@
           <button type="button" class="game-tile" data-accent="orange" id="play-racing-btn"><span class="game-tile-icon">🏎️</span><span class="game-tile-label">3D Racing Game</span></button>
           <button type="button" class="game-tile" data-accent="amber" id="play-snake-btn"><span class="game-tile-icon">🐍</span><span class="game-tile-label">Snake</span></button>
           <button type="button" class="game-tile" data-accent="violet" id="play-2048-btn"><span class="game-tile-icon">🔢</span><span class="game-tile-label">2048</span></button>
+          <div id="external-games-tiles" style="display:contents;"></div>
         </div>
         <div id="game-play-area" style="display:none; margin-top:18px;"></div>
       </div>
@@ -747,8 +750,33 @@
               </ol>
             </details>
           </div>
+          <p style="font-size:0.8rem; color:var(--amber-dark); font-weight:700; margin:0 0 10px 0;">POINTS — see and adjust anyone's balance</p>
+          <div id="host-points-list" class="card" style="margin-bottom:20px;"><p class="empty-state">Loading…</p></div>
+
+          <p style="font-size:0.8rem; color:var(--violet-dark); font-weight:700; margin:0 0 10px 0;">FEATURES — roll the app out gradually instead of all at once</p>
+          <div class="card" style="margin-bottom:20px;">
+            <p style="margin:0 0 12px 0; font-size:0.85rem; color:var(--muted);">
+              <strong>On</strong> works normally. <strong>Under construction</strong> keeps it visible in
+              the navigation but tapping it shows a "coming soon" message instead of the real thing —
+              useful for showing people what's ahead without letting them in yet. <strong>Off</strong>
+              removes it from the navigation entirely. Nothing is ever deleted by turning something off —
+              all its data is exactly as you left it the moment you turn it back on.
+            </p>
+            <div id="host-feature-toggles"></div>
+          </div>
         </div>
         <div id="not-host" class="not-host" style="display:none;"><p>Only the host can see this page.</p></div>
+      </div>
+
+      <!-- ---- Under construction — shared placeholder shown instead of a
+           feature's real view; the real view's own DOM is never touched,
+           so switching it back to "on" finds everything exactly as it was. ---- -->
+      <div class="view" id="view-under-construction" style="display:none;">
+        <div style="text-align:center; padding:80px 20px;">
+          <div style="font-size:3.4rem;">🚧</div>
+          <h2 style="font-family:var(--font-display); margin:14px 0 6px;">Coming soon!</h2>
+          <p style="color:var(--muted);">This part of the app isn't ready yet — check back soon.</p>
+        </div>
       </div>
     </main>
 
@@ -889,11 +917,8 @@
       <div class="room-header">
         <button class="icon-btn" id="cook-back-btn"></button>
         <span class="room-title" id="cook-recipe-title">Cooking</span>
-        <div id="luna-indicator" style="display:none; margin-left:auto; align-items:center; gap:6px; font-size:0.72rem; color:var(--violet-dark); background:var(--violet-tint); padding:5px 10px; border-radius:999px; cursor:pointer;" title="Tap for the list of things you can say">
-          <span class="luna-dot"></span> Luna
-        </div>
+        <button type="button" class="btn ghost sm" id="cook-ask-btn" style="margin-left:auto;">❓ Ask a question</button>
       </div>
-      <div id="luna-help-strip" style="display:none;"></div>
       <div class="cook-body">
         <div class="cook-counter" id="cook-step-counter"></div>
         <ul class="cook-ingredient-list" id="cook-ingredient-list" style="display:none;"></ul>
@@ -901,12 +926,33 @@
         <p class="cook-tip" id="cook-tip" style="display:none;"></p>
         <div class="cook-timer" id="cook-timer-wrap" style="display:none;">
           <span id="cook-timer-display">0:00</span>
-          <button type="button" class="btn turquoise sm" id="cook-timer-btn">Start timer</button>
+          <div class="cook-timer-adjust-row">
+            <button type="button" class="btn ghost sm" id="cook-timer-minus1m">−1:00</button>
+            <button type="button" class="btn ghost sm" id="cook-timer-minus10s">−0:10</button>
+            <button type="button" class="btn turquoise sm" id="cook-timer-pause-btn">Pause</button>
+            <button type="button" class="btn ghost sm" id="cook-timer-plus10s">+0:10</button>
+            <button type="button" class="btn ghost sm" id="cook-timer-plus1m">+1:00</button>
+          </div>
+          <button type="button" class="btn ghost sm" id="cook-timer-btn">Start timer</button>
         </div>
       </div>
       <div class="cook-controls">
-        <button class="btn ghost sm" id="cook-prev-btn">Back</button>
-        <button class="btn amber" id="cook-next-btn" style="flex:1;">Next</button>
+        <button class="icon-btn cook-arrow-btn" id="cook-prev-btn" title="Previous step"></button>
+        <button class="icon-btn cook-arrow-btn primary" id="cook-next-btn" title="Next step"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---- Ask a question sheet — recipe questions go to the AI as a
+       button now, not voice; see README for why. ---- -->
+  <div class="overlay" id="cook-ask-overlay">
+    <div class="sheet" style="max-width:420px;">
+      <h2>Ask about this recipe</h2>
+      <div class="field"><input type="text" id="cook-ask-input" class="input" placeholder="e.g. Can I use butter instead of oil?" /></div>
+      <div id="cook-ask-answer" style="display:none; background:var(--violet-tint); color:var(--violet-dark); border-radius:var(--radius-md); padding:12px 14px; font-size:0.88rem; margin-bottom:14px;"></div>
+      <div class="sheet-actions">
+        <button class="btn ghost" id="cook-ask-close-btn">Close</button>
+        <button class="btn violet" id="cook-ask-submit-btn">Ask</button>
       </div>
     </div>
   </div>
@@ -1077,6 +1123,7 @@
     host: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15l-4.8 2.4.9-5.4-3.9-3.8 5.4-.8z"/></svg>`,
     plus: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>`,
     back: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>`,
+    check: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>`,
     send: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg>`,
     key: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M10.5 12.5L20 3M17 6l3 3M14 9l2.5 2.5"/></svg>`,
     logout: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 21H5.5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>`,
@@ -1095,6 +1142,8 @@
   document.getElementById("switch-user-btn").innerHTML = `<span class="icon">${ICONS.logout}</span>`;
   document.getElementById("room-back-btn").innerHTML = `<span class="icon">${ICONS.back}</span>`;
   document.getElementById("cook-back-btn").innerHTML = `<span class="icon">${ICONS.back}</span>`;
+  document.getElementById("cook-prev-btn").innerHTML = `<span class="icon">${ICONS.back}</span>`;
+  document.getElementById("cook-next-btn").innerHTML = `<span class="icon" style="transform:scaleX(-1);">${ICONS.back}</span>`;
   document.getElementById("new-chat-btn").innerHTML = `<span class="icon">${ICONS.plus}</span>`;
   document.getElementById("compose-form").querySelector("button[type=submit]").innerHTML = `<span class="icon" style="color:#fff;">${ICONS.send}</span>`;
   document.getElementById("ai-send-btn").innerHTML = `<span class="icon" style="color:#fff;">${ICONS.send}</span>`;
@@ -1747,6 +1796,8 @@
     startGeminiKeyWatch();
     startCalendarLocationWatch();
     startGiphyKeyWatch();
+    startFeatureTogglesWatch();
+    checkForPointsAdjustmentNotice();
     startAiFactsWatch();
     startDailyQuestionWatch();
     startPresenceHeartbeat();
@@ -1898,6 +1949,11 @@
     return window.matchMedia("(min-width: 860px)").matches;
   }
 
+  function getFeatureKeyForRoute(view, param) {
+    if (view === "room") return param === "daily-question" ? "dq" : "chat";
+    return view;
+  }
+
   function renderView(view, param) {
     if (!["feed", "chat", "room", "games", "calendar", "recipes", "ai", "host"].includes(view)) view = "feed";
     if (view === "room" && !param) view = "chat";
@@ -1907,7 +1963,15 @@
     document.querySelectorAll("main .view").forEach((v) => (v.style.display = "none"));
     document.getElementById("view-room").style.display = "none";
 
-    if (view === "room") {
+    // "Under construction" never touches the real view's own DOM — it just
+    // stays hidden behind a separate shared placeholder, so turning the
+    // feature back on later finds everything exactly as it was.
+    const featureKey = getFeatureKeyForRoute(view, param);
+    const isBlocked = view !== "host" && getFeatureState(featureKey) === "construction";
+
+    if (isBlocked) {
+      document.getElementById("view-under-construction").style.display = "block";
+    } else if (view === "room") {
       document.getElementById("view-room").style.display = "block";
     } else {
       document.getElementById("view-" + view).style.display = "block";
@@ -1916,7 +1980,7 @@
     // WhatsApp-style split: on wide screens, keep the chat list visible in
     // a fixed left column while chatting or browsing, instead of the room
     // covering the whole screen the way it does on mobile.
-    const wideChatMode = isWideScreen() && (view === "chat" || view === "room");
+    const wideChatMode = !isBlocked && isWideScreen() && (view === "chat" || view === "room");
     document.getElementById("screen-app").classList.toggle("wide-chat-split", wideChatMode);
     document.getElementById("chat-empty-state").classList.toggle("show", wideChatMode && view === "chat");
 
@@ -1928,9 +1992,11 @@
       }
       n.classList.toggle("active", isActive);
     });
-    document.getElementById("screen-app").classList.toggle("in-room", view === "room" && !wideChatMode);
-    document.getElementById("new-chat-btn").style.display = (view === "chat" || (wideChatMode && view === "room")) ? "flex" : "none";
+    document.getElementById("screen-app").classList.toggle("in-room", view === "room" && !wideChatMode && !isBlocked);
+    document.getElementById("new-chat-btn").style.display = (!isBlocked && (view === "chat" || (wideChatMode && view === "room"))) ? "flex" : "none";
     window.scrollTo(0, 0);
+
+    if (isBlocked) return; // don't start any real listeners/data for a blocked feature
 
     if (view === "feed") startFeedIfNeeded();
     if (view === "chat" || view === "room") startChatListIfNeeded(); // list data stays live so the wide-screen column always has it
@@ -3464,6 +3530,59 @@ ${factsText}`;
     document.getElementById("play-racing-btn").addEventListener("click", () => startCustomGame(GAME_RACING_B64, "3D Racing Game", true));
     document.getElementById("play-snake-btn").addEventListener("click", startSnakeGame);
     document.getElementById("play-2048-btn").addEventListener("click", startGame2048);
+    renderExternalGameTiles();
+  }
+  // ---- More games via GameZipper (gamezipper.com) — chosen specifically
+  // because they state plainly "no ads are injected into embeds," need no
+  // API key or signup, and their FAQ explicitly welcomes this kind of use.
+  // (A GameDistribution-style embed was asked about too — that network's
+  // own SDK exists specifically to show ads inside the game, and normally
+  // needs a publisher agreement, so it isn't used here.) A curated set,
+  // skipping anything that duplicates a game already built directly into
+  // this app (Snake, 2048, Chess, Checkers, Tic-Tac-Toe, Sudoku).
+  const EXTERNAL_GAMES = [
+    { slug: "tetris", title: "Tetris", icon: "🧱", accent: "orange" },
+    { slug: "pong", title: "Pong", icon: "🏓", accent: "turquoise" },
+    { slug: "slope", title: "Slope", icon: "🎢", accent: "violet" },
+    { slug: "brick-breaker", title: "Brick Breaker", icon: "🧱", accent: "pink" },
+    { slug: "t-rex", title: "Dino Runner", icon: "🦖", accent: "green" },
+    { slug: "flappy-wings", title: "Flappy Wings", icon: "🐦", accent: "amber" },
+    { slug: "fruit-slash", title: "Fruit Slash", icon: "🍉", accent: "turquoise" },
+    { slug: "whack-a-mole", title: "Whack-a-Mole", icon: "🔨", accent: "orange" },
+    { slug: "bubble-shooter", title: "Bubble Shooter", icon: "🫧", accent: "violet" },
+    { slug: "block-blast", title: "Block Blast", icon: "🟦", accent: "pink" },
+    { slug: "solitaire", title: "Solitaire", icon: "🃏", accent: "green" },
+    { slug: "mahjong-solitaire", title: "Mahjong Solitaire", icon: "🀄", accent: "amber" },
+    { slug: "word-connections", title: "Word Connections", icon: "🔤", accent: "turquoise" },
+    { slug: "crossword", title: "Crossword", icon: "📝", accent: "orange" },
+    { slug: "cut-the-rope", title: "Cut the Rope", icon: "🍬", accent: "violet" },
+    { slug: "jigsaw-puzzle", title: "Jigsaw Puzzle", icon: "🧩", accent: "pink" },
+    { slug: "reversi", title: "Reversi", icon: "⚫", accent: "green" },
+    { slug: "basketball-shoot", title: "Basketball Shoot", icon: "🏀", accent: "amber" },
+    { slug: "unblock-me", title: "Unblock Me", icon: "🚗", accent: "turquoise" },
+    { slug: "bounce-bot", title: "Bounce Bot", icon: "🤖", accent: "orange" }
+  ];
+  function renderExternalGameTiles() {
+    const container = document.getElementById("external-games-tiles");
+    container.innerHTML = EXTERNAL_GAMES.map((g) => `
+      <button type="button" class="game-tile" data-accent="${g.accent}" data-external-slug="${g.slug}" data-external-title="${escapeHtml(g.title)}">
+        <span class="game-tile-icon">${g.icon}</span><span class="game-tile-label">${escapeHtml(g.title)}</span>
+      </button>
+    `).join("");
+    container.querySelectorAll("[data-external-slug]").forEach((btn) => {
+      btn.addEventListener("click", () => startExternalGame(btn.dataset.externalSlug, btn.dataset.externalTitle));
+    });
+  }
+  function startExternalGame(slug, title) {
+    document.getElementById("games-selector").style.display = "none";
+    const playEl = document.getElementById("game-play-area");
+    playEl.style.display = "block";
+    playEl.innerHTML = `
+      <p style="text-align:center; font-size:0.85rem; color:var(--muted); margin:0 0 10px;">${escapeHtml(title)} — via GameZipper</p>
+      <iframe src="https://gamezipper.com/${encodeURIComponent(slug)}/?utm_source=neumify" style="width:100%; height:min(75vh,650px); border:none; border-radius:12px;" allow="autoplay; fullscreen; gamepad" allowfullscreen></iframe>
+      <div style="text-align:center; margin-top:14px;"><button class="btn ghost sm" id="games-back-ext">Back to Games</button></div>
+    `;
+    document.getElementById("games-back-ext").addEventListener("click", backToGamesSelector);
   }
   // Decodes the base64 back to the game's original HTML and loads it into
   // an iframe via the srcdoc *property* (not an HTML attribute string) —
@@ -4589,17 +4708,12 @@ ${rawSteps}`;
   let cookTimerInterval = null;
   let speechToken = 0;
 
-  let lastSpokenFullText = "";
   function speak(text) {
     if (!("speechSynthesis" in window)) return;
     speechToken++;
-    lastSpokenFullText = text;
     window.speechSynthesis.cancel();
-    pauseLunaForSpeech();
     const utter = new SpeechSynthesisUtterance(text);
     utter.rate = 0.85; // a little slower than default, as asked
-    utter.onend = resumeLunaAfterSpeech;
-    utter.onerror = resumeLunaAfterSpeech;
     window.speechSynthesis.speak(utter);
   }
 
@@ -4613,20 +4727,17 @@ ${rawSteps}`;
     if (!("speechSynthesis" in window) || !parts || parts.length === 0) return;
     speechToken++;
     const myToken = speechToken;
-    lastSpokenFullText = parts.join(". ");
     window.speechSynthesis.cancel();
-    pauseLunaForSpeech();
     let i = 0;
     function speakNext() {
-      if (myToken !== speechToken) { resumeLunaAfterSpeech(); return; }
-      if (i >= parts.length) { resumeLunaAfterSpeech(); return; }
+      if (myToken !== speechToken) return;
+      if (i >= parts.length) return;
       const utter = new SpeechSynthesisUtterance(parts[i]);
       utter.rate = 0.85;
       utter.onend = () => {
-        if (myToken !== speechToken) { resumeLunaAfterSpeech(); return; }
+        if (myToken !== speechToken) return;
         i++;
         if (i < parts.length) setTimeout(speakNext, 1000); // stop for a second between items
-        else resumeLunaAfterSpeech();
       };
       window.speechSynthesis.speak(utter);
     }
@@ -4653,245 +4764,6 @@ ${rawSteps}`;
     } catch (e) { /* best effort */ }
   }
 
-  // ============================================================
-  // LUNA — wake-word voice control for Cook Mode. Says nothing and does
-  // nothing until it hears "Luna" (with some tolerance for how clearly
-  // it's said), specifically to solve the "listens to everything and
-  // reacts to noise" problem rather than reintroduce it. Requires the
-  // browser's SpeechRecognition API, which is reliable on Chrome/Edge/
-  // Android but genuinely inconsistent on Safari/iPhone/iPad — this
-  // feature-detects and quietly stays off if unsupported; the rest of
-  // Cook Mode (buttons, spoken steps) is unaffected either way.
-  // ============================================================
-  let lunaSupported = false;
-  let lunaShouldBeListening = false;
-  let lunaPausedForSpeech = false;
-  let lunaRecognition = null;
-  let currentCookRecipe = null;
-
-  function getSpeechRecognitionApi() {
-    return window.SpeechRecognition || window.webkitSpeechRecognition || null;
-  }
-
-  function startLunaListening() {
-    const SpeechRecognitionApi = getSpeechRecognitionApi();
-    lunaSupported = !!SpeechRecognitionApi;
-    const indicatorEl = document.getElementById("luna-indicator");
-    if (!lunaSupported) {
-      if (indicatorEl) indicatorEl.classList.remove("on");
-      return;
-    }
-    lunaShouldBeListening = true;
-    if (indicatorEl) indicatorEl.classList.add("on");
-    actuallyStartLunaRecognition(SpeechRecognitionApi);
-  }
-  function actuallyStartLunaRecognition(SpeechRecognitionApi) {
-    if (!lunaShouldBeListening || lunaPausedForSpeech) return;
-    try {
-      lunaRecognition = new SpeechRecognitionApi();
-      lunaRecognition.continuous = true;
-      lunaRecognition.interimResults = true; // lets Luna react the moment her name is heard, not only once the whole sentence is finished
-      lunaRecognition.lang = "en-US";
-      let ackPlayedThisUtterance = false;
-      lunaRecognition.onresult = (event) => {
-        const result = event.results[event.results.length - 1];
-        const transcript = (result[0] && result[0].transcript) || "";
-        if (!result.isFinal) {
-          // Interim (still-changing) text — only used for instant feedback
-          // that she heard her name; never used to execute a command, since
-          // interim transcripts can still be revised as more audio comes in.
-          if (!ackPlayedThisUtterance && containsWakeWord(transcript)) {
-            ackPlayedThisUtterance = true;
-            playLunaChime();
-            flashLunaIndicator();
-          }
-          return;
-        }
-        ackPlayedThisUtterance = false;
-        handleLunaTranscript(transcript);
-      };
-      lunaRecognition.onerror = (event) => {
-        // 'no-speech' fires constantly in continuous mode during silence —
-        // completely normal, not an error worth acting on. A permission
-        // problem or genuine lack of support means stop trying quietly.
-        if (event.error === "not-allowed" || event.error === "service-not-allowed") {
-          lunaShouldBeListening = false;
-          const el = document.getElementById("luna-indicator");
-          if (el) el.classList.remove("on");
-        }
-      };
-      lunaRecognition.onend = () => {
-        // Browsers stop continuous recognition periodically on their own —
-        // restart as fast as reliably possible unless told to stop or mid-speech.
-        // A short delay is still needed here (restarting in the exact same
-        // tick as onend can throw in some browsers), but this is the
-        // shortest gap that holds up in practice.
-        if (lunaShouldBeListening && !lunaPausedForSpeech) {
-          setTimeout(() => actuallyStartLunaRecognition(SpeechRecognitionApi), 50);
-        }
-      };
-      lunaRecognition.start();
-    } catch (e) { /* already running, or truly unsupported on this device */ }
-  }
-  function pauseLunaForSpeech() {
-    lunaPausedForSpeech = true;
-    if (lunaRecognition) { try { lunaRecognition.stop(); } catch (e) {} }
-  }
-  function resumeLunaAfterSpeech() {
-    lunaPausedForSpeech = false;
-    if (lunaShouldBeListening) {
-      const SpeechRecognitionApi = getSpeechRecognitionApi();
-      setTimeout(() => actuallyStartLunaRecognition(SpeechRecognitionApi), 150);
-    }
-  }
-  function stopLunaListening() {
-    lunaShouldBeListening = false;
-    lunaAwaitingCommand = false;
-    if (lunaAwaitingCommandTimer) clearTimeout(lunaAwaitingCommandTimer);
-    if (lunaRecognition) { try { lunaRecognition.stop(); } catch (e) {} lunaRecognition = null; }
-    const el = document.getElementById("luna-indicator");
-    if (el) el.classList.remove("on");
-  }
-
-  function levenshtein(a, b) {
-    const m = a.length, n = b.length;
-    const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
-    for (let i = 0; i <= m; i++) dp[i][0] = i;
-    for (let j = 0; j <= n; j++) dp[0][j] = j;
-    for (let i = 1; i <= m; i++) {
-      for (let j = 1; j <= n; j++) {
-        dp[i][j] = a[i - 1] === b[j - 1] ? dp[i - 1][j - 1] : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
-      }
-    }
-    return dp[m][n];
-  }
-  // Fuzzy wake-word check: exact "luna", a couple of known mishears
-  // ("tuna" being the obvious one), or anything within 1 edit of "luna" —
-  // close enough that saying it fast still works, far enough that random
-  // words don't accidentally match (a looser match was tested and found
-  // to trigger on ordinary words like "Linda" or "Lane" — see README).
-  function findWakeWordIndex(words) {
-    for (let i = 0; i < words.length; i++) {
-      const w = words[i];
-      if (w.length < 2) continue;
-      if (w === "luna" || w === "tuna" || w === "lunar" || w === "loona" || w === "lunas" || levenshtein(w, "luna") <= 1) return i;
-    }
-    return -1;
-  }
-  function wordsFrom(transcript) {
-    return transcript.toLowerCase().replace(/[^a-z0-9\s]/g, "").split(/\s+/).filter(Boolean);
-  }
-  function containsWakeWord(transcript) {
-    return findWakeWordIndex(wordsFrom(transcript)) !== -1;
-  }
-  // If "Luna" was just said with nothing after it, she chimes and waits —
-  // the next thing said (within a few seconds, no need to say "Luna"
-  // again) is treated directly as the command. This is what makes saying
-  // "Luna" — pause — then the command work, instead of requiring it all
-  // in one breath.
-  let lunaAwaitingCommand = false;
-  let lunaAwaitingCommandTimer = null;
-  function handleLunaTranscript(rawTranscript) {
-    const cleaned = rawTranscript.trim();
-    if (lunaAwaitingCommand) {
-      clearTimeout(lunaAwaitingCommandTimer);
-      lunaAwaitingCommand = false;
-      executeLunaCommand(cleaned.toLowerCase());
-      return;
-    }
-    const words = wordsFrom(cleaned);
-    const wakeIndex = findWakeWordIndex(words);
-    if (wakeIndex === -1) return; // no wake word — ignored entirely, which is the whole point
-    const command = words.slice(wakeIndex + 1).join(" ").trim();
-    if (command) {
-      executeLunaCommand(command);
-    } else {
-      // Just "Luna", nothing else yet — acknowledge and wait for the follow-up.
-      playLunaChime();
-      flashLunaIndicator();
-      lunaAwaitingCommand = true;
-      lunaAwaitingCommandTimer = setTimeout(() => { lunaAwaitingCommand = false; }, 6000);
-    }
-  }
-  // A short, quiet tone confirming "I heard you" — generated on the fly
-  // with the Web Audio API, no sound file needed.
-  function playLunaChime() {
-    try {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      const ctx = new AudioCtx();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.value = 880;
-      gain.gain.setValueAtTime(0.15, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.25);
-    } catch (e) { /* best effort */ }
-  }
-  function flashLunaIndicator() {
-    const el = document.getElementById("luna-indicator");
-    if (!el) return;
-    el.classList.add("luna-flash");
-    setTimeout(() => el.classList.remove("luna-flash"), 600);
-  }
-  function parseSpokenNumber(s) {
-    return SPOKEN_NUMBER_WORDS[s] !== undefined ? SPOKEN_NUMBER_WORDS[s] : (parseInt(s, 10) || 0);
-  }
-  function repeatLastSpoken() {
-    if (lastSpokenFullText) speak(lastSpokenFullText);
-  }
-  async function askLunaQuestion(question) {
-    if (!question) { speak("What's your question?"); return; }
-    speak("Let me think about that.");
-    try {
-      const currentStepText = (cookSequence[cookIndex] && cookSequence[cookIndex].text) || "";
-      const context = currentCookRecipe
-        ? `Recipe: ${currentCookRecipe.title}\nIngredients: ${(currentCookRecipe.parts || []).flatMap((p) => p.ingredients).join(", ")}\nCurrent step: ${currentStepText}`
-        : "";
-      const answer = await callAI(
-        "You are a friendly cooking assistant answering a quick spoken question during a guided recipe. Use the recipe context if it's relevant. Keep the answer to 1-2 short sentences, spoken-friendly — no lists, no markdown, no asterisks.",
-        [{ role: "user", text: context + "\n\nQuestion: " + question }],
-        "recipes"
-      );
-      speak(answer);
-    } catch (e) {
-      speak("Sorry, I couldn't get an answer right now.");
-    }
-  }
-  // Every command below is matched against whatever came *after* the wake
-  // word — a handful of natural phrasings per command, not just the exact
-  // words given, since real speech is rarely that tidy.
-  function executeLunaCommand(command) {
-    const t = command.trim();
-    const questionMatch = t.match(/^(?:i have a question|quick question|question)[,:]?\s*(.*)$/);
-    if (questionMatch) { askLunaQuestion(questionMatch[1] || ""); return; }
-
-    if (/^(next|okay|ok|continue|go on|ready|got it|done|move on)\b/.test(t)) { cookNext(); return; }
-    if (/^(back|previous|go back|last step|wait go back)\b/.test(t)) { cookPrev(); return; }
-    if (/^(pause|stop|hold on|wait)\b/.test(t)) { cookTimerPause(); return; }
-    if (/^(resume|keep going|unpause|continue timer)\b/.test(t)) { cookTimerResume(); return; }
-    if (/^(start over|restart|reset|start the timer over|do it again)\b/.test(t)) { cookTimerRestart(); return; }
-
-    const addMatch = t.match(/^add\s+(?:a |an )?(\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s*minutes?/);
-    if (addMatch) { cookTimerAdjust(parseSpokenNumber(addMatch[1]) * 60); return; }
-    const removeMatch = t.match(/^(?:remove|subtract|take off|take away)\s+(?:a |an )?(\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s*minutes?/);
-    if (removeMatch) { cookTimerAdjust(-parseSpokenNumber(removeMatch[1]) * 60); return; }
-
-    if (/^(where was i|say that again|repeat that|what did you say|come again|repeat|one more time)\b/.test(t)) { repeatLastSpoken(); return; }
-    // Anything unmatched is silently ignored, on purpose — reducing noise
-    // was the whole point, so Luna doesn't talk back just to say "I don't
-    // understand" every time someone's kitchen conversation brushes past her name.
-  }
-  document.getElementById("luna-indicator").addEventListener("click", () => {
-    const strip = document.getElementById("luna-help-strip");
-    if (strip.style.display === "block") { strip.style.display = "none"; return; }
-    strip.innerHTML = `<strong>Say "Luna" then your command</strong> (or just say "Luna" — you'll hear a chime, then say the command next, no need to repeat her name): next / back / pause / resume / start over &middot; add (or remove) N minutes &middot; say that again &middot; I have a question, [ask anything]`;
-    strip.style.display = "block";
-  });
-
   // ---- Serving-size scaling — asked fresh every time you cook, since
   // remembering to double something every single time is exactly the
   // friction this removes. Only ingredient amounts scale; step text is
@@ -4900,7 +4772,6 @@ ${rawSteps}`;
   // shouldn't change just because the batch got bigger — safely telling
   // those apart from an actual quantity in free-form prose isn't
   // reliable enough to risk, so this stays scoped to the ingredient list.
-  const SPOKEN_NUMBER_WORDS = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10 };
   function showServingPrompt(recipe) {
     const baseServings = recipe.servings || 4;
     document.getElementById("serving-prompt-note").textContent = `This recipe makes ${baseServings}.`;
@@ -4986,7 +4857,6 @@ ${rawSteps}`;
     document.getElementById("cook-recipe-title").textContent = recipe.title;
     document.getElementById("cook-shell-wrap").style.display = "flex";
     warmUpSpeechEngine();
-    startLunaListening();
     renderCookScreen();
   }
 
@@ -4995,7 +4865,11 @@ ${rawSteps}`;
     const screen = cookSequence[cookIndex];
     document.getElementById("cook-step-counter").textContent = `${cookIndex + 1} of ${cookSequence.length}`;
     document.getElementById("cook-prev-btn").disabled = cookIndex === 0;
-    document.getElementById("cook-next-btn").textContent = (cookIndex === cookSequence.length - 1) ? "Finish" : "Next";
+    const isLastStep = cookIndex === cookSequence.length - 1;
+    document.getElementById("cook-next-btn").innerHTML = isLastStep
+      ? `<span class="icon">${ICONS.check}</span>`
+      : `<span class="icon" style="transform:scaleX(-1);">${ICONS.back}</span>`;
+    document.getElementById("cook-next-btn").title = isLastStep ? "Finish" : "Next step";
 
     const ingredientListEl = document.getElementById("cook-ingredient-list");
     const tipEl = document.getElementById("cook-tip");
@@ -5029,17 +4903,53 @@ ${rawSteps}`;
   function cookPrev() { if (cookIndex > 0) { cookIndex--; renderCookScreen(); } }
   function closeCookMode() {
     stopCookTimer();
-    stopLunaListening();
     speechToken++;
     if ("speechSynthesis" in window) window.speechSynthesis.cancel();
     document.getElementById("cook-shell-wrap").style.display = "none";
-    document.getElementById("luna-help-strip").style.display = "none";
     cookSequence = [];
     currentCookRecipe = null;
   }
   document.getElementById("cook-back-btn").addEventListener("click", closeCookMode);
   document.getElementById("cook-next-btn").addEventListener("click", cookNext);
   document.getElementById("cook-prev-btn").addEventListener("click", cookPrev);
+
+  // ---- Ask a question — a button now, not voice. Answers using the
+  // recipe's ingredients and the current step as context. ----
+  document.getElementById("cook-ask-btn").addEventListener("click", () => {
+    document.getElementById("cook-ask-input").value = "";
+    document.getElementById("cook-ask-answer").style.display = "none";
+    document.getElementById("cook-ask-overlay").classList.add("open");
+    document.getElementById("cook-ask-input").focus();
+  });
+  document.getElementById("cook-ask-close-btn").addEventListener("click", () => {
+    document.getElementById("cook-ask-overlay").classList.remove("open");
+  });
+  document.getElementById("cook-ask-submit-btn").addEventListener("click", async () => {
+    const question = document.getElementById("cook-ask-input").value.trim();
+    if (!question) return;
+    const answerEl = document.getElementById("cook-ask-answer");
+    const submitBtn = document.getElementById("cook-ask-submit-btn");
+    submitBtn.disabled = true;
+    answerEl.style.display = "block";
+    answerEl.textContent = "Thinking…";
+    try {
+      const currentStepText = (cookSequence[cookIndex] && cookSequence[cookIndex].text) || "";
+      const context = currentCookRecipe
+        ? `Recipe: ${currentCookRecipe.title}\nIngredients: ${(currentCookRecipe.parts || []).flatMap((p) => p.ingredients).join(", ")}\nCurrent step: ${currentStepText}`
+        : "";
+      const answer = await callAI(
+        "You are a friendly cooking assistant answering a quick question during a guided recipe. Use the recipe context if it's relevant. Keep the answer to 1-3 short sentences.",
+        [{ role: "user", text: context + "\n\nQuestion: " + question }],
+        "recipes"
+      );
+      answerEl.textContent = answer;
+      speak(answer);
+    } catch (err) {
+      answerEl.textContent = "Sorry, I couldn't get an answer right now.";
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
 
   let cookTimerRemaining = 0;
   let cookTimerTotal = 0;
@@ -5054,14 +4964,15 @@ ${rawSteps}`;
   }
   // Starts (or restarts) the countdown for the current step's timer —
   // called automatically by renderCookScreen the moment you land on a
-  // step that has one, and also reachable via the button or "Luna start
-  // over" if it needs restarting.
+  // step that has one, and also reachable via the "Start timer" button
+  // if it needs restarting.
   function startCookTimerCountdown(totalSeconds) {
     stopCookTimer();
     cookTimerTotal = totalSeconds;
     cookTimerRemaining = totalSeconds;
     cookTimerPaused = false;
     updateCookTimerDisplay(cookTimerRemaining);
+    document.getElementById("cook-timer-pause-btn").textContent = "Pause";
     const timerBtn = document.getElementById("cook-timer-btn");
     timerBtn.textContent = "Restart";
     timerBtn.disabled = false;
@@ -5076,25 +4987,26 @@ ${rawSteps}`;
       }
     }, 1000);
   }
-  function cookTimerPause() {
-    if (cookTimerInterval) cookTimerPaused = true;
-  }
-  function cookTimerResume() {
-    if (cookTimerInterval) cookTimerPaused = false;
+  function cookTimerTogglePause() {
+    if (!cookTimerInterval) return;
+    cookTimerPaused = !cookTimerPaused;
+    document.getElementById("cook-timer-pause-btn").textContent = cookTimerPaused ? "Resume" : "Pause";
   }
   function cookTimerAdjust(deltaSeconds) {
     if (!cookTimerInterval && cookTimerRemaining <= 0) return; // nothing running to adjust
     cookTimerRemaining = Math.max(0, cookTimerRemaining + deltaSeconds);
     updateCookTimerDisplay(cookTimerRemaining);
   }
-  function cookTimerRestart() {
-    if (cookTimerTotal > 0) startCookTimerCountdown(cookTimerTotal);
-  }
   document.getElementById("cook-timer-btn").addEventListener("click", () => {
     const screen = cookSequence[cookIndex];
     if (!screen || !screen.timerSeconds) return;
     startCookTimerCountdown(screen.timerSeconds);
   });
+  document.getElementById("cook-timer-pause-btn").addEventListener("click", cookTimerTogglePause);
+  document.getElementById("cook-timer-minus1m").addEventListener("click", () => cookTimerAdjust(-60));
+  document.getElementById("cook-timer-plus1m").addEventListener("click", () => cookTimerAdjust(60));
+  document.getElementById("cook-timer-minus10s").addEventListener("click", () => cookTimerAdjust(-10));
+  document.getElementById("cook-timer-plus10s").addEventListener("click", () => cookTimerAdjust(10));
 
   // ============================================================
   // AI ASSISTANT — Google Gemini, free tier, no billing required. Each
@@ -5334,6 +5246,8 @@ ${rawSteps}`;
     onSnapshot(query(membersRef, where("status", "==", "approved")), (snapshot) => {
       if (snapshot.empty) { approvedEl.innerHTML = '<p class="empty-state">Nobody approved yet.</p>'; return; }
       approvedEl.innerHTML = "";
+      const pointsListEl = document.getElementById("host-points-list");
+      pointsListEl.innerHTML = "";
       snapshot.forEach((docSnap) => {
         const m = docSnap.data();
         const isMe = docSnap.id === member.id;
@@ -5344,6 +5258,15 @@ ${rawSteps}`;
           <div class="actions">${(isMe || m.isHost) ? "" : `<button class="btn ghost sm" data-remove="${docSnap.id}">Remove</button>`}</div>
         `;
         approvedEl.appendChild(card);
+
+        const pointsRow = document.createElement("div");
+        pointsRow.style.cssText = "display:flex; align-items:center; gap:8px; padding:10px 0; border-bottom:1px solid var(--line);";
+        pointsRow.innerHTML = `
+          <div style="flex:1;"><strong>${escapeHtml(m.name)}</strong><div style="font-size:0.78rem; color:var(--muted);">🪙 ${m.points || 0}</div></div>
+          <input type="number" class="input" placeholder="±amount" style="width:100px;" data-points-amount="${docSnap.id}" />
+          <button type="button" class="btn amber sm" data-points-apply="${docSnap.id}">Apply</button>
+        `;
+        pointsListEl.appendChild(pointsRow);
       });
       approvedEl.querySelectorAll("[data-remove]").forEach((btn) => {
         btn.addEventListener("click", async () => {
@@ -5351,7 +5274,108 @@ ${rawSteps}`;
           if (ok) updateDoc(doc(db, "members", btn.dataset.remove), { status: "kicked" });
         });
       });
+      pointsListEl.querySelectorAll("[data-points-apply]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.pointsApply;
+          const input = pointsListEl.querySelector(`[data-points-amount="${id}"]`);
+          const amount = parseInt(input.value, 10);
+          if (!amount) { await showAlert("Enter an amount — a positive number to add, negative to take away."); return; }
+          try {
+            await updateDoc(doc(db, "members", id), {
+              points: increment(amount),
+              lastPointsAdjustment: { amount, at: Date.now(), seen: false }
+            });
+            input.value = "";
+          } catch (err) {
+            showConnError(err);
+          }
+        });
+      });
     }, (err) => showConnError(err));
+
+    startFeatureTogglesWatch();
+    renderFeatureToggleControls();
+  }
+
+  // ============================================================
+  // POINTS TRANSPARENCY — so nobody has to wonder whether the host
+  // changed their points. Checked on every member-doc update (which
+  // already fires on the normal points/photo/etc. cadence); a
+  // lastPointsAdjustment that hasn't been "seen" yet triggers a one-time
+  // alert + local notification, then gets marked seen so it never shows
+  // twice. Works whether or not the person was in the app when it happened.
+  // ============================================================
+  let lastSeenPointsAdjustmentKey = null;
+  function checkForPointsAdjustmentNotice() {
+    const adj = member.lastPointsAdjustment;
+    if (!adj || adj.seen) return;
+    const key = String(adj.at);
+    if (lastSeenPointsAdjustmentKey === key) return; // already handled this exact one this session
+    lastSeenPointsAdjustmentKey = key;
+    const verb = adj.amount > 0 ? "gave you" : "took away";
+    const message = `The host ${verb} ${Math.abs(adj.amount)} points.`;
+    showLocalNotification("🪙 Points updated", message);
+    showAlert(message);
+    updateDoc(doc(db, "members", member.id), { "lastPointsAdjustment.seen": true }).catch(() => {});
+  }
+
+  // ============================================================
+  // FEATURE TOGGLES — On / Under construction / Off, per main tab.
+  // Turning something off only hides it; nothing about its data is ever
+  // touched, so switching it back on picks up exactly where it left off.
+  // ============================================================
+  const FEATURE_KEYS = { feed: "Feed", dq: "Today's Question", chat: "Chat", games: "Games", calendar: "Calendar", recipes: "Recipes", ai: "Family AI" };
+  let featureToggles = {};
+  let featureTogglesWatchStarted = false;
+  function startFeatureTogglesWatch() {
+    if (featureTogglesWatchStarted) return;
+    featureTogglesWatchStarted = true;
+    onSnapshot(doc(db, "settings", "featureToggles"), (snap) => {
+      featureToggles = snap.exists() ? snap.data() : {};
+      applyFeatureToggles();
+      renderFeatureToggleControls();
+    }, (err) => showConnError(err));
+  }
+  function getFeatureState(key) {
+    return featureToggles[key] || "on";
+  }
+  function applyFeatureToggles() {
+    Object.keys(FEATURE_KEYS).forEach((key) => {
+      const navBtn = document.querySelector(`.nav-item[data-view="${key}"]`);
+      if (navBtn) navBtn.style.display = getFeatureState(key) === "off" ? "none" : "";
+    });
+    if (currentView) {
+      const currentFeatureKey = currentView === "room" ? getFeatureKeyForRoute("room", currentRoomId) : currentView;
+      if (getFeatureState(currentFeatureKey) === "off") navigateTo("feed");
+    }
+  }
+  function renderFeatureToggleControls() {
+    const container = document.getElementById("host-feature-toggles");
+    if (!container || !member || !member.isHost) return;
+    container.innerHTML = Object.entries(FEATURE_KEYS).map(([key, label]) => {
+      const state = getFeatureState(key);
+      return `
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 0; border-bottom:1px solid var(--line);">
+          <strong>${escapeHtml(label)}</strong>
+          <div class="pill-tabs" data-feature-key="${key}" style="margin:0;">
+            <button type="button" class="pill-tab ${state === "on" ? "active" : ""}" data-state="on">On</button>
+            <button type="button" class="pill-tab ${state === "construction" ? "active" : ""}" data-state="construction">Under construction</button>
+            <button type="button" class="pill-tab ${state === "off" ? "active" : ""}" data-state="off">Off</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+    container.querySelectorAll("[data-feature-key]").forEach((group) => {
+      group.querySelectorAll(".pill-tab").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          try {
+            await setDoc(doc(db, "settings", "featureToggles"), { [group.dataset.featureKey]: btn.dataset.state }, { merge: true });
+          } catch (err) {
+            showConnError(err);
+          }
+        });
+      });
+    });
   }
 
   // ============================================================
