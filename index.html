@@ -431,6 +431,10 @@
   .cook-timer { display: flex; align-items: center; gap: 14px; }
   .cook-timer #cook-timer-display { font-family: var(--font-display); font-size: 1.7rem; font-weight: 600; min-width: 60px; }
   .cook-controls { display: flex; gap: 8px; padding: 14px; padding-bottom: calc(14px + env(safe-area-inset-bottom)); background: #fff; border-top: 1px solid var(--line); flex-shrink: 0; }
+  #luna-indicator.on { display: flex !important; }
+  .luna-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--violet); display: inline-block; animation: luna-pulse 1.4s infinite; }
+  @keyframes luna-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+  #luna-help-strip { background: var(--violet-tint); color: var(--violet-dark); font-size: 0.76rem; padding: 10px 16px; line-height: 1.5; flex-shrink: 0; }
 
   /* ---------- AI view ---------- */
   #ai-fact-list { max-height: 180px; overflow-y: auto; margin-bottom: 4px; }
@@ -865,12 +869,30 @@
   </div>
 
   <!-- ---- Cook mode (full-screen overlay, reuses room-shell layout) ---- -->
+  <!-- ---- Serving size prompt — shown before Cook Mode starts, every time ---- -->
+  <div class="overlay" id="serving-prompt-overlay">
+    <div class="sheet" style="max-width:380px;">
+      <h2>How many servings?</h2>
+      <p id="serving-prompt-note" style="font-size:0.85rem; color:var(--muted); margin:-4px 0 14px;"></p>
+      <div class="field"><input type="number" id="serving-prompt-input" class="input" min="1" /></div>
+      <p style="font-size:0.78rem; color:var(--muted); margin:0 0 14px;">Only the ingredient amounts scale — step instructions stay as written, since times and temperatures don't simply double with quantity.</p>
+      <div class="sheet-actions">
+        <button class="btn ghost" id="serving-prompt-cancel-btn">Cancel</button>
+        <button class="btn amber" id="serving-prompt-start-btn">Start cooking</button>
+      </div>
+    </div>
+  </div>
+
   <div id="cook-shell-wrap" style="display:none;">
     <div class="room-shell">
       <div class="room-header">
         <button class="icon-btn" id="cook-back-btn"></button>
         <span class="room-title" id="cook-recipe-title">Cooking</span>
+        <div id="luna-indicator" style="display:none; margin-left:auto; align-items:center; gap:6px; font-size:0.72rem; color:var(--violet-dark); background:var(--violet-tint); padding:5px 10px; border-radius:999px; cursor:pointer;" title="Tap for the list of things you can say">
+          <span class="luna-dot"></span> Luna
+        </div>
       </div>
+      <div id="luna-help-strip" style="display:none;"></div>
       <div class="cook-body">
         <div class="cook-counter" id="cook-step-counter"></div>
         <ul class="cook-ingredient-list" id="cook-ingredient-list" style="display:none;"></ul>
@@ -940,6 +962,7 @@
     <div class="sheet" style="max-width:520px;">
       <h2 id="recipe-overlay-title">New recipe</h2>
       <div class="field"><label class="field-label">Title</label><input type="text" id="recipe-title-input" class="input" /></div>
+      <div class="field"><label class="field-label">This recipe makes (servings)</label><input type="number" id="recipe-servings-input" class="input" min="1" value="4" /></div>
       <div class="field">
         <label class="field-label">Paste the ingredients</label>
         <textarea id="recipe-ingredients-input" class="input" rows="5" placeholder="One per line works best…"></textarea>
@@ -4396,6 +4419,7 @@ ${factsText}`;
     document.getElementById("recipe-overlay-title").textContent = "New recipe";
     document.getElementById("recipe-save-btn").textContent = "Create recipe";
     document.getElementById("recipe-title-input").value = "";
+    document.getElementById("recipe-servings-input").value = "4";
     document.getElementById("recipe-ingredients-input").value = "";
     document.getElementById("recipe-steps-input").value = "";
     document.getElementById("recipe-overlay").classList.add("open");
@@ -4447,6 +4471,7 @@ ${rawSteps}`;
 
   document.getElementById("recipe-save-btn").addEventListener("click", async () => {
     const title = document.getElementById("recipe-title-input").value.trim();
+    const servings = Math.max(1, parseInt(document.getElementById("recipe-servings-input").value, 10) || 4);
     const rawIngredients = document.getElementById("recipe-ingredients-input").value.trim();
     const rawSteps = document.getElementById("recipe-steps-input").value.trim();
     if (!title || !rawIngredients || !rawSteps) {
@@ -4465,10 +4490,10 @@ ${rawSteps}`;
     hideBusy();
     try {
       if (editingRecipeId) {
-        await updateDoc(doc(db, "recipes", editingRecipeId), { title, rawIngredients, rawSteps, parts });
+        await updateDoc(doc(db, "recipes", editingRecipeId), { title, servings, rawIngredients, rawSteps, parts });
       } else {
         await addDoc(collection(db, "recipes"), {
-          title, rawIngredients, rawSteps, parts,
+          title, servings, rawIngredients, rawSteps, parts,
           addedById: member.id, addedByName: member.name, createdAt: serverTimestamp()
         });
       }
@@ -4526,7 +4551,7 @@ ${rawSteps}`;
     listEl.querySelectorAll("[data-cook]").forEach((btn) => {
       btn.addEventListener("click", () => {
         const recipe = allRecipes.find((r) => r.id === btn.dataset.cook);
-        if (recipe) startCookMode(recipe);
+        if (recipe) showServingPrompt(recipe);
       });
     });
     listEl.querySelectorAll("[data-editrecipe]").forEach((btn) => {
@@ -4538,6 +4563,7 @@ ${rawSteps}`;
         document.getElementById("recipe-overlay-title").textContent = "Edit recipe";
         document.getElementById("recipe-save-btn").textContent = "Save changes";
         document.getElementById("recipe-title-input").value = recipe.title;
+        document.getElementById("recipe-servings-input").value = recipe.servings || 4;
         document.getElementById("recipe-ingredients-input").value = ingredients;
         document.getElementById("recipe-steps-input").value = steps;
         document.getElementById("recipe-overlay").classList.add("open");
@@ -4562,12 +4588,17 @@ ${rawSteps}`;
   let cookTimerInterval = null;
   let speechToken = 0;
 
+  let lastSpokenFullText = "";
   function speak(text) {
     if (!("speechSynthesis" in window)) return;
     speechToken++;
+    lastSpokenFullText = text;
     window.speechSynthesis.cancel();
+    pauseLunaForSpeech();
     const utter = new SpeechSynthesisUtterance(text);
     utter.rate = 0.85; // a little slower than default, as asked
+    utter.onend = resumeLunaAfterSpeech;
+    utter.onerror = resumeLunaAfterSpeech;
     window.speechSynthesis.speak(utter);
   }
 
@@ -4581,25 +4612,274 @@ ${rawSteps}`;
     if (!("speechSynthesis" in window) || !parts || parts.length === 0) return;
     speechToken++;
     const myToken = speechToken;
+    lastSpokenFullText = parts.join(". ");
     window.speechSynthesis.cancel();
+    pauseLunaForSpeech();
     let i = 0;
     function speakNext() {
-      if (myToken !== speechToken) return;
-      if (i >= parts.length) return;
+      if (myToken !== speechToken) { resumeLunaAfterSpeech(); return; }
+      if (i >= parts.length) { resumeLunaAfterSpeech(); return; }
       const utter = new SpeechSynthesisUtterance(parts[i]);
       utter.rate = 0.85;
       utter.onend = () => {
-        if (myToken !== speechToken) return;
+        if (myToken !== speechToken) { resumeLunaAfterSpeech(); return; }
         i++;
         if (i < parts.length) setTimeout(speakNext, 1000); // stop for a second between items
+        else resumeLunaAfterSpeech();
       };
       window.speechSynthesis.speak(utter);
     }
     speakNext();
   }
 
-  function buildCookSequence(recipe) {
-    const parts = recipe.parts || [];
+  // Cuts the usual first-utterance startup delay: getVoices() sometimes
+  // loads asynchronously, and the engine itself has a one-time spin-up
+  // cost. Speaking a silent utterance right when Cook Mode opens gets
+  // both out of the way before the first real step needs to talk — this
+  // isn't true pre-recorded audio (the built-in, free speech engine has
+  // no way to render to a file ahead of time; that would need a paid
+  // third-party text-to-speech API), but it removes the actual source of
+  // the delay in most cases.
+  let speechEngineWarmedUp = false;
+  function warmUpSpeechEngine() {
+    if (speechEngineWarmedUp || !("speechSynthesis" in window)) return;
+    speechEngineWarmedUp = true;
+    window.speechSynthesis.getVoices();
+    try {
+      const warm = new SpeechSynthesisUtterance(" ");
+      warm.volume = 0;
+      window.speechSynthesis.speak(warm);
+    } catch (e) { /* best effort */ }
+  }
+
+  // ============================================================
+  // LUNA — wake-word voice control for Cook Mode. Says nothing and does
+  // nothing until it hears "Luna" (with some tolerance for how clearly
+  // it's said), specifically to solve the "listens to everything and
+  // reacts to noise" problem rather than reintroduce it. Requires the
+  // browser's SpeechRecognition API, which is reliable on Chrome/Edge/
+  // Android but genuinely inconsistent on Safari/iPhone/iPad — this
+  // feature-detects and quietly stays off if unsupported; the rest of
+  // Cook Mode (buttons, spoken steps) is unaffected either way.
+  // ============================================================
+  let lunaSupported = false;
+  let lunaShouldBeListening = false;
+  let lunaPausedForSpeech = false;
+  let lunaRecognition = null;
+  let currentCookRecipe = null;
+
+  function getSpeechRecognitionApi() {
+    return window.SpeechRecognition || window.webkitSpeechRecognition || null;
+  }
+
+  function startLunaListening() {
+    const SpeechRecognitionApi = getSpeechRecognitionApi();
+    lunaSupported = !!SpeechRecognitionApi;
+    const indicatorEl = document.getElementById("luna-indicator");
+    if (!lunaSupported) {
+      if (indicatorEl) indicatorEl.classList.remove("on");
+      return;
+    }
+    lunaShouldBeListening = true;
+    if (indicatorEl) indicatorEl.classList.add("on");
+    actuallyStartLunaRecognition(SpeechRecognitionApi);
+  }
+  function actuallyStartLunaRecognition(SpeechRecognitionApi) {
+    if (!lunaShouldBeListening || lunaPausedForSpeech) return;
+    try {
+      lunaRecognition = new SpeechRecognitionApi();
+      lunaRecognition.continuous = true;
+      lunaRecognition.interimResults = false;
+      lunaRecognition.lang = "en-US";
+      lunaRecognition.onresult = (event) => {
+        const result = event.results[event.results.length - 1];
+        if (result && result.isFinal) handleLunaTranscript(result[0].transcript || "");
+      };
+      lunaRecognition.onerror = (event) => {
+        // 'no-speech' fires constantly in continuous mode during silence —
+        // completely normal, not an error worth acting on. A permission
+        // problem or genuine lack of support means stop trying quietly.
+        if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+          lunaShouldBeListening = false;
+          const el = document.getElementById("luna-indicator");
+          if (el) el.classList.remove("on");
+        }
+      };
+      lunaRecognition.onend = () => {
+        // Browsers stop continuous recognition periodically on their own —
+        // restart seamlessly unless we've been told to stop or we're mid-speech.
+        if (lunaShouldBeListening && !lunaPausedForSpeech) {
+          setTimeout(() => actuallyStartLunaRecognition(SpeechRecognitionApi), 300);
+        }
+      };
+      lunaRecognition.start();
+    } catch (e) { /* already running, or truly unsupported on this device */ }
+  }
+  function pauseLunaForSpeech() {
+    lunaPausedForSpeech = true;
+    if (lunaRecognition) { try { lunaRecognition.stop(); } catch (e) {} }
+  }
+  function resumeLunaAfterSpeech() {
+    lunaPausedForSpeech = false;
+    if (lunaShouldBeListening) {
+      const SpeechRecognitionApi = getSpeechRecognitionApi();
+      setTimeout(() => actuallyStartLunaRecognition(SpeechRecognitionApi), 250);
+    }
+  }
+  function stopLunaListening() {
+    lunaShouldBeListening = false;
+    if (lunaRecognition) { try { lunaRecognition.stop(); } catch (e) {} lunaRecognition = null; }
+    const el = document.getElementById("luna-indicator");
+    if (el) el.classList.remove("on");
+  }
+
+  function levenshtein(a, b) {
+    const m = a.length, n = b.length;
+    const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+    for (let i = 0; i <= m; i++) dp[i][0] = i;
+    for (let j = 0; j <= n; j++) dp[0][j] = j;
+    for (let i = 1; i <= m; i++) {
+      for (let j = 1; j <= n; j++) {
+        dp[i][j] = a[i - 1] === b[j - 1] ? dp[i - 1][j - 1] : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+      }
+    }
+    return dp[m][n];
+  }
+  // Fuzzy wake-word check: exact "luna", a couple of known mishears
+  // ("tuna" being the obvious one), or anything within 1 edit of "luna" —
+  // close enough that saying it fast still works, far enough that random
+  // words don't accidentally match.
+  function handleLunaTranscript(rawTranscript) {
+    const words = rawTranscript.toLowerCase().replace(/[^a-z0-9\s]/g, "").split(/\s+/).filter(Boolean);
+    let wakeIndex = -1;
+    for (let i = 0; i < words.length; i++) {
+      const w = words[i];
+      if (w.length < 2) continue;
+      if (w === "luna" || w === "tuna" || w === "lunar" || w === "loona" || w === "lunas" || levenshtein(w, "luna") <= 1) { wakeIndex = i; break; }
+    }
+    if (wakeIndex === -1) return; // no wake word — ignored entirely, which is the whole point
+    const command = words.slice(wakeIndex + 1).join(" ").trim();
+    if (command) executeLunaCommand(command);
+  }
+  function parseSpokenNumber(s) {
+    return SPOKEN_NUMBER_WORDS[s] !== undefined ? SPOKEN_NUMBER_WORDS[s] : (parseInt(s, 10) || 0);
+  }
+  function repeatLastSpoken() {
+    if (lastSpokenFullText) speak(lastSpokenFullText);
+  }
+  async function askLunaQuestion(question) {
+    if (!question) { speak("What's your question?"); return; }
+    speak("Let me think about that.");
+    try {
+      const currentStepText = (cookSequence[cookIndex] && cookSequence[cookIndex].text) || "";
+      const context = currentCookRecipe
+        ? `Recipe: ${currentCookRecipe.title}\nIngredients: ${(currentCookRecipe.parts || []).flatMap((p) => p.ingredients).join(", ")}\nCurrent step: ${currentStepText}`
+        : "";
+      const answer = await callAI(
+        "You are a friendly cooking assistant answering a quick spoken question during a guided recipe. Use the recipe context if it's relevant. Keep the answer to 1-2 short sentences, spoken-friendly — no lists, no markdown, no asterisks.",
+        [{ role: "user", text: context + "\n\nQuestion: " + question }],
+        "recipes"
+      );
+      speak(answer);
+    } catch (e) {
+      speak("Sorry, I couldn't get an answer right now.");
+    }
+  }
+  // Every command below is matched against whatever came *after* the wake
+  // word — a handful of natural phrasings per command, not just the exact
+  // words given, since real speech is rarely that tidy.
+  function executeLunaCommand(command) {
+    const t = command.trim();
+    const questionMatch = t.match(/^(?:i have a question|quick question|question)[,:]?\s*(.*)$/);
+    if (questionMatch) { askLunaQuestion(questionMatch[1] || ""); return; }
+
+    if (/^(next|okay|ok|continue|go on|ready|got it|done|move on)\b/.test(t)) { cookNext(); return; }
+    if (/^(back|previous|go back|last step|wait go back)\b/.test(t)) { cookPrev(); return; }
+    if (/^(pause|stop|hold on|wait)\b/.test(t)) { cookTimerPause(); return; }
+    if (/^(resume|keep going|unpause|continue timer)\b/.test(t)) { cookTimerResume(); return; }
+    if (/^(start over|restart|reset|start the timer over|do it again)\b/.test(t)) { cookTimerRestart(); return; }
+
+    const addMatch = t.match(/^add\s+(?:a |an )?(\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s*minutes?/);
+    if (addMatch) { cookTimerAdjust(parseSpokenNumber(addMatch[1]) * 60); return; }
+    const removeMatch = t.match(/^(?:remove|subtract|take off|take away)\s+(?:a |an )?(\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s*minutes?/);
+    if (removeMatch) { cookTimerAdjust(-parseSpokenNumber(removeMatch[1]) * 60); return; }
+
+    if (/^(where was i|say that again|repeat that|what did you say|come again|repeat|one more time)\b/.test(t)) { repeatLastSpoken(); return; }
+    // Anything unmatched is silently ignored, on purpose — reducing noise
+    // was the whole point, so Luna doesn't talk back just to say "I don't
+    // understand" every time someone's kitchen conversation brushes past her name.
+  }
+  document.getElementById("luna-indicator").addEventListener("click", () => {
+    const strip = document.getElementById("luna-help-strip");
+    if (strip.style.display === "block") { strip.style.display = "none"; return; }
+    strip.innerHTML = `<strong>Say "Luna" then:</strong> next / back / pause / resume / start over &middot; add (or remove) N minutes &middot; say that again &middot; I have a question, [ask anything]`;
+    strip.style.display = "block";
+  });
+
+  // ---- Serving-size scaling — asked fresh every time you cook, since
+  // remembering to double something every single time is exactly the
+  // friction this removes. Only ingredient amounts scale; step text is
+  // left exactly as written, since a step might mention a temperature,
+  // a pan size, or a time that has nothing to do with quantity and
+  // shouldn't change just because the batch got bigger — safely telling
+  // those apart from an actual quantity in free-form prose isn't
+  // reliable enough to risk, so this stays scoped to the ingredient list.
+  const SPOKEN_NUMBER_WORDS = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10 };
+  function showServingPrompt(recipe) {
+    const baseServings = recipe.servings || 4;
+    document.getElementById("serving-prompt-note").textContent = `This recipe makes ${baseServings}.`;
+    document.getElementById("serving-prompt-input").value = baseServings;
+    document.getElementById("serving-prompt-overlay").classList.add("open");
+    const startBtn = document.getElementById("serving-prompt-start-btn");
+    const cancelBtn = document.getElementById("serving-prompt-cancel-btn");
+    const onStart = () => {
+      const desired = Math.max(1, parseInt(document.getElementById("serving-prompt-input").value, 10) || baseServings);
+      document.getElementById("serving-prompt-overlay").classList.remove("open");
+      startBtn.removeEventListener("click", onStart);
+      cancelBtn.removeEventListener("click", onCancel);
+      startCookMode(recipe, desired / baseServings);
+    };
+    const onCancel = () => {
+      document.getElementById("serving-prompt-overlay").classList.remove("open");
+      startBtn.removeEventListener("click", onStart);
+      cancelBtn.removeEventListener("click", onCancel);
+    };
+    startBtn.addEventListener("click", onStart);
+    cancelBtn.addEventListener("click", onCancel);
+  }
+  function scaleIngredientText(text, factor) {
+    if (Math.abs(factor - 1) < 0.001) return text; // no scaling needed
+    const match = text.match(/^(\d+\s+\d+\/\d+|\d+\/\d+|\d+\.\d+|\d+)(.*)$/);
+    if (!match) return text;
+    const [, numStr, rest] = match;
+    let value;
+    if (numStr.includes(" ")) {
+      const [whole, frac] = numStr.split(" ");
+      const [n, d] = frac.split("/");
+      value = parseInt(whole, 10) + parseInt(n, 10) / parseInt(d, 10);
+    } else if (numStr.includes("/")) {
+      const [n, d] = numStr.split("/");
+      value = parseInt(n, 10) / parseInt(d, 10);
+    } else {
+      value = parseFloat(numStr);
+    }
+    return formatScaledNumber(value * factor) + rest;
+  }
+  function formatScaledNumber(n) {
+    const rounded = Math.round(n * 100) / 100;
+    if (Number.isInteger(rounded)) return String(rounded);
+    const whole = Math.floor(rounded);
+    const frac = rounded - whole;
+    const fractionSymbols = [[0.25, "¼"], [0.33, "⅓"], [0.5, "½"], [0.67, "⅔"], [0.75, "¾"]];
+    for (const [val, sym] of fractionSymbols) {
+      if (Math.abs(frac - val) < 0.04) return (whole > 0 ? whole + " " : "") + sym;
+    }
+    return String(rounded);
+  }
+
+  function buildCookSequence(recipe, scaleFactor) {
+    const factor = scaleFactor || 1;
+    const parts = (recipe.parts || []).map((p) => ({ ...p, ingredients: p.ingredients.map((i) => scaleIngredientText(i, factor)) }));
     const seq = [];
     const allIngredients = parts.flatMap((p) => p.ingredients);
     seq.push({
@@ -4623,11 +4903,14 @@ ${rawSteps}`;
     return seq;
   }
 
-  function startCookMode(recipe) {
-    cookSequence = buildCookSequence(recipe);
+  function startCookMode(recipe, scaleFactor) {
+    currentCookRecipe = recipe;
+    cookSequence = buildCookSequence(recipe, scaleFactor);
     cookIndex = 0;
     document.getElementById("cook-recipe-title").textContent = recipe.title;
     document.getElementById("cook-shell-wrap").style.display = "flex";
+    warmUpSpeechEngine();
+    startLunaListening();
     renderCookScreen();
   }
 
@@ -4670,17 +4953,24 @@ ${rawSteps}`;
   function cookPrev() { if (cookIndex > 0) { cookIndex--; renderCookScreen(); } }
   function closeCookMode() {
     stopCookTimer();
+    stopLunaListening();
     speechToken++;
     if ("speechSynthesis" in window) window.speechSynthesis.cancel();
     document.getElementById("cook-shell-wrap").style.display = "none";
+    document.getElementById("luna-help-strip").style.display = "none";
     cookSequence = [];
+    currentCookRecipe = null;
   }
   document.getElementById("cook-back-btn").addEventListener("click", closeCookMode);
   document.getElementById("cook-next-btn").addEventListener("click", cookNext);
   document.getElementById("cook-prev-btn").addEventListener("click", cookPrev);
 
+  let cookTimerRemaining = 0;
+  let cookTimerTotal = 0;
+  let cookTimerPaused = false;
   function updateCookTimerDisplay(seconds) {
-    const m = Math.floor(seconds / 60), s = seconds % 60;
+    const clamped = Math.max(0, seconds);
+    const m = Math.floor(clamped / 60), s = clamped % 60;
     document.getElementById("cook-timer-display").textContent = `${m}:${String(s).padStart(2, "0")}`;
   }
   function stopCookTimer() {
@@ -4688,24 +4978,41 @@ ${rawSteps}`;
   }
   // Starts (or restarts) the countdown for the current step's timer —
   // called automatically by renderCookScreen the moment you land on a
-  // step that has one, and also reachable via the button if it needs
-  // restarting (e.g. you got distracted and it finished already).
+  // step that has one, and also reachable via the button or "Luna start
+  // over" if it needs restarting.
   function startCookTimerCountdown(totalSeconds) {
     stopCookTimer();
-    let remaining = totalSeconds;
-    updateCookTimerDisplay(remaining);
+    cookTimerTotal = totalSeconds;
+    cookTimerRemaining = totalSeconds;
+    cookTimerPaused = false;
+    updateCookTimerDisplay(cookTimerRemaining);
     const timerBtn = document.getElementById("cook-timer-btn");
     timerBtn.textContent = "Restart";
     timerBtn.disabled = false;
     cookTimerInterval = setInterval(() => {
-      remaining--;
-      updateCookTimerDisplay(remaining);
-      if (remaining <= 0) {
+      if (cookTimerPaused) return;
+      cookTimerRemaining--;
+      updateCookTimerDisplay(cookTimerRemaining);
+      if (cookTimerRemaining <= 0) {
         stopCookTimer();
         timerBtn.textContent = "Restart";
         speak("Time's up!");
       }
     }, 1000);
+  }
+  function cookTimerPause() {
+    if (cookTimerInterval) cookTimerPaused = true;
+  }
+  function cookTimerResume() {
+    if (cookTimerInterval) cookTimerPaused = false;
+  }
+  function cookTimerAdjust(deltaSeconds) {
+    if (!cookTimerInterval && cookTimerRemaining <= 0) return; // nothing running to adjust
+    cookTimerRemaining = Math.max(0, cookTimerRemaining + deltaSeconds);
+    updateCookTimerDisplay(cookTimerRemaining);
+  }
+  function cookTimerRestart() {
+    if (cookTimerTotal > 0) startCookTimerCountdown(cookTimerTotal);
   }
   document.getElementById("cook-timer-btn").addEventListener("click", () => {
     const screen = cookSequence[cookIndex];
