@@ -1,4 +1,4 @@
-[README.md](https://github.com/user-attachments/files/32123402/README.md)
+[README (1).md](https://github.com/user-attachments/files/32177320/README.1.md)
 # Neumify
 
 A family-only PWA: an open, categorized photo/video/music feed, a
@@ -56,6 +56,27 @@ live exactly as before — only the destructive re-navigation was the
 problem.
 
 ## Why one file right now (and what changes later)
+
+## Visual theme — gradient background, glass nav, no layout changes
+
+The app now has a colorful pink-to-orange gradient as its background,
+and the nav (bottom pill on phones, sidebar on desktop) plus the top
+bar use a frosted-glass look (translucent + blurred) instead of solid
+white — inspired by a reference image, but deliberately **not**
+copying its actual layout, since that image was an ad mockup, not a
+real app screen. Everything people actually interact with — every
+card, form, message bubble, button position, and the whole navigation
+structure — is untouched; only the background and the nav/top bar's
+own colors changed. Mobile nav icons are also slightly bigger now (20px → 24px), as asked.
+
+This was deliberately scoped narrowly: the main content area (`main`)
+keeps its own light, nearly-opaque background sitting on top of the
+gradient, specifically so none of the existing dark-text-on-light
+color combinations throughout the app needed to be touched or
+re-audited for contrast — the risk in a full-app re-theme is
+exactly the kind of thing that's easy to get subtly wrong in places
+that don't get checked, so this keeps the blast radius to just the
+outer chrome.
 
 This app used to be split into a separate HTML file per screen. It's
 temporarily consolidated back into a single `index.html` — a proper
@@ -160,11 +181,87 @@ sequence:
 cooking it later never calls the AI again; it just plays back what
 was already organized.
 
-Cook Mode itself is **Back/Next buttons only, no voice input** — each
-screen (ingredients, part intros, individual steps) is read aloud
-automatically via `speechSynthesis` (broad browser support) the
-moment it appears, and a step with a timer shows a **Start timer**
-button with a live countdown.
+### Cook for however many you actually need
+
+Recipes now have a **servings** field (set when adding or editing
+one — defaults to 4). Every time you start Cook Mode, it asks how
+many servings you want *that time*, pre-filled with the recipe's
+normal amount — say 8 instead of 4 and every ingredient quantity
+doubles automatically, so there's no mental math and nothing to
+remember for next time either, since it asks fresh every time.
+
+This is scoped to the **ingredients list only** — step instructions
+are left exactly as written. A step might mention a temperature, a
+pan size, or a bake time that has nothing to do with batch size, and
+reliably telling an actual quantity apart from those in free-form
+prose isn't safe to guess at, so it's left alone rather than risking
+a wrong rewrite. The scaling itself handles whole numbers, decimals,
+and fractions ("1/2", "1 1/2") and renders common fractions back as
+symbols (¼ ½ ¾ ⅓ ⅔); an ingredient with no leading number (like "a
+pinch of salt") is simply left as-is.
+
+### Luna — a wake-word voice assistant for hands-busy cooking
+
+Cook Mode now listens for **"Luna"** and does nothing else until it
+hears it — that's deliberate, and solves a real problem: a system
+that reacts to *everything* said nearby picks up ordinary kitchen
+conversation and misfires constantly. Luna only ever acts on what
+comes right after her name.
+
+**The wake word is forgiving on purpose, without being noisy.** It
+matches "Luna" exactly, a short list of known mishearings ("tuna,"
+"loona," "lunar"), and anything within one letter-edit of "luna" —
+enough that saying it quickly still works. It deliberately does
+*not* go looser than that: a wider fuzzy match was tested and found
+to falsely trigger on ordinary words like "Linda" or "Lane," which
+would recreate the exact noise problem this feature exists to solve.
+
+**What you can say**, right after "Luna": **next** / **okay** (also
+"continue," "go on," "got it") to advance, **back** to return to the
+previous step, **pause** and **resume** for the timer, **start
+over** to restart the timer from its full duration, **add** or
+**remove** any number of minutes ("Luna add seven minutes," "Luna
+remove two minutes" — not limited to round numbers), **say that
+again** (also "where was I," "repeat that") to re-hear whatever was
+just said, and **I have a question, [anything]** to ask the AI a
+real question about the recipe — it answers using the recipe's
+ingredients and your current step as context, spoken back in 1-2
+sentences. A tap on the small "Luna" pill in the header shows the
+full list any time.
+
+**The honest limitation:** this needs the browser's speech
+recognition, which is reliably supported on Chrome, Edge, and
+Android, but genuinely inconsistent on Safari for iPhone and iPad —
+real-world reports describe it as unreliable there, especially for
+continuous "always listening" use, and it may not work at all
+depending on iOS version. This is feature-detected: on a device where
+it's not well supported, Luna's indicator simply never turns on, and
+every other part of Cook Mode (the buttons, the spoken steps) works
+exactly the same either way.
+
+One more integrity detail: Luna's microphone is explicitly paused
+for the duration of every spoken response and resumed right after —
+without that, she could hear her own voice reading a step and
+misinterpret it as a command.
+
+### Starting to talk faster
+
+Steps used to have a noticeable pause between appearing on screen and
+starting to speak. **True pre-recorded audio isn't possible** with
+the free, built-in speech engine this app uses — that would need a
+paid text-to-speech API generating and hosting audio files ahead of
+time, which is a different scale of thing entirely. What *is* done:
+the speech engine is "warmed up" — its voice list loaded and a
+silent utterance spoken — the moment Cook Mode opens, which is where
+most of that delay actually lived, rather than in anything about the
+step text itself.
+
+Cook Mode's controls are **Back/Next buttons, plus Luna's voice
+commands where supported** — each screen (ingredients, part intros,
+individual steps) is still read aloud automatically via
+`speechSynthesis` the moment it appears, and a step with a timer
+shows a **Start timer** button with a live countdown alongside
+whatever Luna can now also do to it.
 
 **Editing a recipe** (the recipe's author, or the host) shows the
 **AI-organized version**, not your original raw paste — the
@@ -344,6 +441,43 @@ swapping means changing that one function, not touching Feed or Chat.
   above). No provider configured yet means no profile picture yet,
   same graceful-degradation pattern as every other upload feature
   here.
+- **Reply to a message** — tap "↩ reply" under any message, a
+  preview strip shows above the compose bar with what you're replying
+  to (and a way to cancel), and the sent message shows a small quoted
+  block above its own content. Works for text and media messages
+  alike.
+- **Emoji reactions** — tap "😊" under a message for a quick picker
+  (👍❤️😂😮😢🙏), or tap an existing reaction pill to toggle your own.
+  Reactions are stored per-emoji as a list of who reacted, so counts
+  and "did I already react" both just work.
+- **Voice messages record like WhatsApp's** — press and hold the mic
+  button to record; a bar appears showing a live timer and two
+  gestures: **drag left to cancel** (discards the recording) and
+  **drag up to lock** (keeps recording after you let go, showing
+  Delete/Send buttons instead). Uses Pointer Events, so it works with
+  touch on a phone and mouse on desktop identically.
+- **A dedicated camera button** now sits next to the gallery button —
+  it uses `capture="environment"` so mobile browsers open the camera
+  directly for a brand-new photo, instead of only being able to
+  attach one that already exists. (On desktop, browsers that have no
+  camera concept just fall back to a normal file picker, which is the
+  correct and expected behavior.)
+- **GIFs** — a GIF button opens a search sheet backed by **GIPHY**'s
+  free API. **Not Tenor** — Google fully shut down the Tenor API on
+  June 30, 2026, so it's simply not usable anymore; GIPHY is the
+  current, actually-available free option. Needs a free GIPHY key in
+  Host → Integrations (no credit card). Sent GIFs are just a media
+  message with `mediaType: "gif"` — an `<img>` tag animates a GIF
+  natively, no special player needed.
+- **Every message now shows the sender's avatar and a timestamp** —
+  the avatar (their profile picture, or their first initial if they
+  haven't set one) sits beside each of *their* messages; your own
+  messages skip it, matching how WhatsApp only shows the other
+  person's avatar. `authorPhoto` is captured at send time (the same
+  denormalization pattern already used for `authorName`), so a
+  message keeps showing the photo the sender had *then*, even if they
+  change it later — consistent with how chat history works everywhere
+  else.
 
 ## Notifications — what "free and serverless" actually allows
 
@@ -424,6 +558,89 @@ badge in the top bar, live-updated via the same `members/{id}`
 document everything else already reads, using Firestore's
 `increment()` so simultaneous point-earning across devices can't
 silently overwrite itself.
+
+**Four family-made games** are also in there — **Coin Sweeper**,
+**Coin Tic-Tac-Toe**, **Coin Sudoku**, and a **3D Platform Runner**
+(built with Three.js) — each a complete, self-contained HTML game,
+played in an iframe. They're embedded as base64-encoded text rather
+than plain JS strings on purpose: their own code contains
+`${...}` template-literal syntax and `<script>` tags, both of which
+would collide with this file's own JavaScript if embedded any more
+directly — base64 sidesteps that completely, and the round-trip
+(encode → decode) was verified byte-for-byte identical to the
+originals before shipping.
+
+**Their coins now feed into the app's shared points** — each game got
+one small addition at its own win/game-over moment: a
+`window.parent.postMessage({ type: 'neumify-game-points', points: N },
+'*')` call. The main app listens for exactly that message shape and
+awards points through the same `awardPoints()` every other game uses.
+Conversion is roughly: Coin Sweeper and the Runner give 1 point per
+in-game coin (Sweeper also gives partial credit if a trap ends the
+round early — effort isn't wasted); Coin Tic-Tac-Toe gives a flat 10
+for a win / 5 for a draw (it's a shared-screen 2-player game, so
+there's no way to know which "coin color" is the person actually
+signed into the app); Coin Sudoku gives a flat 25 for finishing.
+`'*'` as the postMessage target is unusually permissive, but a
+`srcdoc` iframe has no normal origin to target more precisely — the
+main app validates the message's shape before trusting it, which is
+the realistic amount of caution worth having for a family app's
+internal points, not a security boundary.
+
+**The Runner's touch controls were a real bug, now fixed:** its
+on-screen left/right/jump buttons used `touchstart`, which is known
+to be unreliable across devices in nested/embedded contexts — that's
+very likely exactly why it didn't work on some tablets. Switched to
+**Pointer Events** (`pointerdown`), the modern, unified input model
+already used elsewhere in this app (the voice-message recording
+gesture) for exactly this kind of reliability. Also added
+`touch-action: none` on the buttons so the browser doesn't intercept
+the gesture for scrolling first, and gave the Runner specifically a
+much taller iframe (`min(88vh, 900px)` vs `min(70vh, 640px)` for the
+simpler 2D games) since a 3D game needs real room to be playable —
+sizing now uses `min()` so it stays sensible across phone, tablet,
+and desktop instead of a value tuned for only one of them.
+
+**A fifth family-made game, added the same careful way: Cosmic Jet
+Simulator** — a 3D space-flight game (also Three.js), collecting
+energy cores while dodging asteroids. It arrived with the exact same
+`touchstart` reliability issue as the Runner, so the same fixes were
+applied proactively before it ever shipped rather than waiting for
+the same bug report twice: switched its on-screen up/down/left/right
+buttons to Pointer Events, added `touch-action: none`, wired its
+game-over moment to the points bridge (1 point per energy core), and
+gave it the same generous "tall" iframe sizing as the Runner. Verified
+byte-for-byte via the same base64 round-trip check as every other
+embedded game here.
+
+**A sixth, same treatment again: 3D Racing Game** — dodge traffic,
+collect coins. This one had *two* separate `touchstart` spots to fix:
+its on-screen left/right buttons, and a full-screen swipe-to-steer
+gesture (`touchstart`/`touchend` on the whole window). Both converted
+to Pointer Events the same way, `touch-action: none` added to the
+buttons, points wired in (1 per coin), and the same tall iframe as
+the other 3D games. Verified byte-for-byte, same as always.
+
+**Two more games, built from scratch for this app:** **Snake**
+(canvas-based, score = length, points = final score) and **2048**
+(the classic sliding-merge puzzle, points scale with final score,
+capped at 50). Both take arrow keys *and* on-screen touch controls
+built the same reliable way (Pointer Events, not touch events) —
+2048's swipe detection is just a pointerdown/pointerup delta, no
+gesture library needed. The 2048 merge logic (each tile merges at
+most once per move — `2,2,2,2` becomes `4,4`, not `4,2,2` or `8`) and
+Snake's collision detection were both verified against known test
+cases before shipping.
+
+**One actual fix, not just a style choice:** Coin Tic-Tac-Toe's
+turn-tracking and win logic depended on comparing two emoji values
+(🟡 vs ⚪) that had been stripped out somewhere before the file
+reached this app — as uploaded, both players' moves were being
+recorded as the same empty string, so no win could ever be detected
+and both players' marks looked identical on the board. Restored using
+🟡 (gold) and ⚪ (silver), matching the game's own "Gold Coins (P1)" /
+"Silver Coins (P2)" labels already in its HUD — everything else in
+all four games is byte-for-byte what was provided.
 
 **Chess** asks the player to pick the rules fresh, every single time
 they play — two genuinely different engines, not one game with a
