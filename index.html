@@ -1901,10 +1901,39 @@
     showBusy("Joining…");
     try {
       await ensureAnonAuth();
+      const ref = doc(db, "members", phone);
+      const existingSnap = await withTimeout(getDoc(ref), DB_TIMEOUT_MS, DB_TIMEOUT_MSG);
+      if (existingSnap.exists()) {
+        // This phone number already has an account — sign back into it
+        // instead of overwriting it, so a cleared browser, a new device,
+        // or reinstalling never resets someone's approval, host status,
+        // or original join date back to square one. Matching by name too
+        // (not just phone) avoids silently signing someone into a
+        // different family member's account if a household phone number
+        // is shared.
+        const existing = existingSnap.data();
+        const nameMatches = existing.name && existing.name.trim().toLowerCase() === name.toLowerCase();
+        hideBusy();
+        if (nameMatches) {
+          localStorage.setItem("myMemberId", phone);
+          watchMember(phone);
+          return;
+        }
+        const ok = await askConfirm(
+          "This phone number is already registered",
+          `It's registered under the name "${existing.name}". If that's you, continue to sign in as ${existing.name} — otherwise, double-check the name and phone number.`,
+          `Sign in as ${existing.name}`
+        );
+        if (ok) {
+          localStorage.setItem("myMemberId", phone);
+          watchMember(phone);
+        }
+        return;
+      }
       const isHost = HOST_PHONE && phone === normalizePhone(HOST_PHONE);
-      await withTimeout(setDoc(doc(db, "members", phone), {
+      await withTimeout(setDoc(ref, {
         name, phone, status: isHost ? "approved" : "pending", isHost: !!isHost, createdAt: serverTimestamp()
-      }, { merge: true }), DB_TIMEOUT_MS, DB_TIMEOUT_MSG);
+      }), DB_TIMEOUT_MS, DB_TIMEOUT_MSG);
       localStorage.setItem("myMemberId", phone);
       watchMember(phone);
     } catch (err) {
@@ -3580,9 +3609,18 @@ ${factsText}`;
     playEl.innerHTML = `
       <p style="text-align:center; font-size:0.85rem; color:var(--muted); margin:0 0 10px;">${escapeHtml(title)} — via GameZipper</p>
       <iframe src="https://gamezipper.com/${encodeURIComponent(slug)}/?utm_source=neumify" style="width:100%; height:min(75vh,650px); border:none; border-radius:12px;" allow="autoplay; fullscreen; gamepad" allowfullscreen></iframe>
-      <div style="text-align:center; margin-top:14px;"><button class="btn ghost sm" id="games-back-ext">Back to Games</button></div>
+      <div style="text-align:center; margin-top:14px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+        <button class="btn amber sm" id="games-claim-ext">🪙 Claim 10 points for playing</button>
+        <button class="btn ghost sm" id="games-back-ext">Back to Games</button>
+      </div>
     `;
     document.getElementById("games-back-ext").addEventListener("click", backToGamesSelector);
+    const claimBtn = document.getElementById("games-claim-ext");
+    claimBtn.addEventListener("click", async () => {
+      claimBtn.disabled = true;
+      claimBtn.textContent = "🪙 Claimed!";
+      await awardPoints(10);
+    });
   }
   // Decodes the base64 back to the game's original HTML and loads it into
   // an iframe via the srcdoc *property* (not an HTML attribute string) —
