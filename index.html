@@ -434,6 +434,7 @@
   #luna-indicator.on { display: flex !important; }
   .luna-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--violet); display: inline-block; animation: luna-pulse 1.4s infinite; }
   @keyframes luna-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+  #luna-indicator.luna-flash { background: var(--violet); color: #fff; transform: scale(1.08); transition: transform 0.15s, background 0.15s, color 0.15s; }
   #luna-help-strip { background: var(--violet-tint); color: var(--violet-dark); font-size: 0.76rem; padding: 10px 16px; line-height: 1.5; flex-shrink: 0; }
 
   /* ---------- AI view ---------- */
@@ -4689,11 +4690,25 @@ ${rawSteps}`;
     try {
       lunaRecognition = new SpeechRecognitionApi();
       lunaRecognition.continuous = true;
-      lunaRecognition.interimResults = false;
+      lunaRecognition.interimResults = true; // lets Luna react the moment her name is heard, not only once the whole sentence is finished
       lunaRecognition.lang = "en-US";
+      let ackPlayedThisUtterance = false;
       lunaRecognition.onresult = (event) => {
         const result = event.results[event.results.length - 1];
-        if (result && result.isFinal) handleLunaTranscript(result[0].transcript || "");
+        const transcript = (result[0] && result[0].transcript) || "";
+        if (!result.isFinal) {
+          // Interim (still-changing) text — only used for instant feedback
+          // that she heard her name; never used to execute a command, since
+          // interim transcripts can still be revised as more audio comes in.
+          if (!ackPlayedThisUtterance && containsWakeWord(transcript)) {
+            ackPlayedThisUtterance = true;
+            playLunaChime();
+            flashLunaIndicator();
+          }
+          return;
+        }
+        ackPlayedThisUtterance = false;
+        handleLunaTranscript(transcript);
       };
       lunaRecognition.onerror = (event) => {
         // 'no-speech' fires constantly in continuous mode during silence —
@@ -4707,9 +4722,12 @@ ${rawSteps}`;
       };
       lunaRecognition.onend = () => {
         // Browsers stop continuous recognition periodically on their own —
-        // restart seamlessly unless we've been told to stop or we're mid-speech.
+        // restart as fast as reliably possible unless told to stop or mid-speech.
+        // A short delay is still needed here (restarting in the exact same
+        // tick as onend can throw in some browsers), but this is the
+        // shortest gap that holds up in practice.
         if (lunaShouldBeListening && !lunaPausedForSpeech) {
-          setTimeout(() => actuallyStartLunaRecognition(SpeechRecognitionApi), 300);
+          setTimeout(() => actuallyStartLunaRecognition(SpeechRecognitionApi), 50);
         }
       };
       lunaRecognition.start();
@@ -4723,11 +4741,13 @@ ${rawSteps}`;
     lunaPausedForSpeech = false;
     if (lunaShouldBeListening) {
       const SpeechRecognitionApi = getSpeechRecognitionApi();
-      setTimeout(() => actuallyStartLunaRecognition(SpeechRecognitionApi), 250);
+      setTimeout(() => actuallyStartLunaRecognition(SpeechRecognitionApi), 150);
     }
   }
   function stopLunaListening() {
     lunaShouldBeListening = false;
+    lunaAwaitingCommand = false;
+    if (lunaAwaitingCommandTimer) clearTimeout(lunaAwaitingCommandTimer);
     if (lunaRecognition) { try { lunaRecognition.stop(); } catch (e) {} lunaRecognition = null; }
     const el = document.getElementById("luna-indicator");
     if (el) el.classList.remove("on");
@@ -4748,18 +4768,74 @@ ${rawSteps}`;
   // Fuzzy wake-word check: exact "luna", a couple of known mishears
   // ("tuna" being the obvious one), or anything within 1 edit of "luna" —
   // close enough that saying it fast still works, far enough that random
-  // words don't accidentally match.
-  function handleLunaTranscript(rawTranscript) {
-    const words = rawTranscript.toLowerCase().replace(/[^a-z0-9\s]/g, "").split(/\s+/).filter(Boolean);
-    let wakeIndex = -1;
+  // words don't accidentally match (a looser match was tested and found
+  // to trigger on ordinary words like "Linda" or "Lane" — see README).
+  function findWakeWordIndex(words) {
     for (let i = 0; i < words.length; i++) {
       const w = words[i];
       if (w.length < 2) continue;
-      if (w === "luna" || w === "tuna" || w === "lunar" || w === "loona" || w === "lunas" || levenshtein(w, "luna") <= 1) { wakeIndex = i; break; }
+      if (w === "luna" || w === "tuna" || w === "lunar" || w === "loona" || w === "lunas" || levenshtein(w, "luna") <= 1) return i;
     }
+    return -1;
+  }
+  function wordsFrom(transcript) {
+    return transcript.toLowerCase().replace(/[^a-z0-9\s]/g, "").split(/\s+/).filter(Boolean);
+  }
+  function containsWakeWord(transcript) {
+    return findWakeWordIndex(wordsFrom(transcript)) !== -1;
+  }
+  // If "Luna" was just said with nothing after it, she chimes and waits —
+  // the next thing said (within a few seconds, no need to say "Luna"
+  // again) is treated directly as the command. This is what makes saying
+  // "Luna" — pause — then the command work, instead of requiring it all
+  // in one breath.
+  let lunaAwaitingCommand = false;
+  let lunaAwaitingCommandTimer = null;
+  function handleLunaTranscript(rawTranscript) {
+    const cleaned = rawTranscript.trim();
+    if (lunaAwaitingCommand) {
+      clearTimeout(lunaAwaitingCommandTimer);
+      lunaAwaitingCommand = false;
+      executeLunaCommand(cleaned.toLowerCase());
+      return;
+    }
+    const words = wordsFrom(cleaned);
+    const wakeIndex = findWakeWordIndex(words);
     if (wakeIndex === -1) return; // no wake word — ignored entirely, which is the whole point
     const command = words.slice(wakeIndex + 1).join(" ").trim();
-    if (command) executeLunaCommand(command);
+    if (command) {
+      executeLunaCommand(command);
+    } else {
+      // Just "Luna", nothing else yet — acknowledge and wait for the follow-up.
+      playLunaChime();
+      flashLunaIndicator();
+      lunaAwaitingCommand = true;
+      lunaAwaitingCommandTimer = setTimeout(() => { lunaAwaitingCommand = false; }, 6000);
+    }
+  }
+  // A short, quiet tone confirming "I heard you" — generated on the fly
+  // with the Web Audio API, no sound file needed.
+  function playLunaChime() {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.25);
+    } catch (e) { /* best effort */ }
+  }
+  function flashLunaIndicator() {
+    const el = document.getElementById("luna-indicator");
+    if (!el) return;
+    el.classList.add("luna-flash");
+    setTimeout(() => el.classList.remove("luna-flash"), 600);
   }
   function parseSpokenNumber(s) {
     return SPOKEN_NUMBER_WORDS[s] !== undefined ? SPOKEN_NUMBER_WORDS[s] : (parseInt(s, 10) || 0);
@@ -4812,7 +4888,7 @@ ${rawSteps}`;
   document.getElementById("luna-indicator").addEventListener("click", () => {
     const strip = document.getElementById("luna-help-strip");
     if (strip.style.display === "block") { strip.style.display = "none"; return; }
-    strip.innerHTML = `<strong>Say "Luna" then:</strong> next / back / pause / resume / start over &middot; add (or remove) N minutes &middot; say that again &middot; I have a question, [ask anything]`;
+    strip.innerHTML = `<strong>Say "Luna" then your command</strong> (or just say "Luna" — you'll hear a chime, then say the command next, no need to repeat her name): next / back / pause / resume / start over &middot; add (or remove) N minutes &middot; say that again &middot; I have a question, [ask anything]`;
     strip.style.display = "block";
   });
 
