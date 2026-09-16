@@ -1,0 +1,9 @@
+{
+  "name": "neumify-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Backend for Neumify — holds AI keys, Cloudinary secrets, and the host PIN as server-side environment variables instead of client-side code.",
+  "dependencies": {
+    "firebase-admin": "^12.0.0"
+  }
+}
